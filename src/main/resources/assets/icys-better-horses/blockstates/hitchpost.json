@@ -1,0 +1,23 @@
+{
+  "multipart": [
+    {
+      "apply": { "model": "icys-better-horses:block/hitchpost_post" }
+    },
+    {
+      "when": { "north": "true" },
+      "apply": { "model": "icys-better-horses:block/hitchpost_side", "uvlock": true }
+    },
+    {
+      "when": { "east": "true" },
+      "apply": { "model": "icys-better-horses:block/hitchpost_side", "y": 90, "uvlock": true }
+    },
+    {
+      "when": { "south": "true" },
+      "apply": { "model": "icys-better-horses:block/hitchpost_side", "y": 180, "uvlock": true }
+    },
+    {
+      "when": { "west": "true" },
+      "apply": { "model": "icys-better-horses:block/hitchpost_side", "y": 270, "uvlock": true }
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "key.categories.icys-better-horses": "Icy's Better Horses",
+  "key.icys-better-horses.call": "Call Horse",
+
+  "screen.icys-better-horses.radial": "Horse Commands",
+
+  "command.icys-better-horses.follow": "Follow",
+  "command.icys-better-horses.stay": "Stay",
+  "command.icys-better-horses.return_home": "Return Home",
+  "command.icys-better-horses.set_home": "Set Home",
+
+  "message.icys-better-horses.claimed": "You've bonded with this horse!",
+  "message.icys-better-horses.home_set": "Home location set.",
+  "message.icys-better-horses.no_hitchpost": "No hitchpost within range. Place one nearby first.",
+
+  "item.icys-better-horses.upgraded_saddle": "Upgraded Saddle",
+  "item.icys-better-horses.horse_chest_gear": "Legacy Horse Chest",
+  "item.icys-better-horses.horse_hooves_gear": "Horse Hooves",
+  "item.icys-better-horses.horse_medkit_gear": "Horse Medkit",
+  "item.icys-better-horses.horse_stabilizer_gear": "Horse Stabilizer",
+  "item.icys-better-horses.hitchpost": "Hitchpost",
+
+  "block.icys-better-horses.hitchpost": "Hitchpost"
+}

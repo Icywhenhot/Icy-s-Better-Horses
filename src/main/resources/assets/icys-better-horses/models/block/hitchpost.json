@@ -1,0 +1,21 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "post": "icys-better-horses:item/hitchpost",
+    "particle": "icys-better-horses:item/hitchpost"
+  },
+  "elements": [
+    {
+      "from": [5, 0, 5],
+      "to": [11, 16, 11],
+      "faces": {
+        "north": { "uv": [5, 0, 11, 16], "texture": "#post" },
+        "east":  { "uv": [5, 0, 11, 16], "texture": "#post" },
+        "south": { "uv": [5, 0, 11, 16], "texture": "#post" },
+        "west":  { "uv": [5, 0, 11, 16], "texture": "#post" },
+        "up":    { "uv": [5, 5, 11, 11], "texture": "#post" },
+        "down":  { "uv": [5, 5, 11, 11], "texture": "#post" }
+      }
+    }
+  ]
+}

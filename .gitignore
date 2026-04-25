@@ -1,0 +1,13 @@
+.gradle/
+.idea/
+build/
+run/
+out/
+*.iml
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Optional
+.claude/

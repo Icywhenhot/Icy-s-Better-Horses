@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "icys-better-horses:item/horse_hooves"
+  }
+}
