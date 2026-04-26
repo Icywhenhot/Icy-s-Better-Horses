@@ -61,6 +61,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final int BH_MIDDLE_FILL = 0xFFC6C6C6;
     @Unique private static final int BH_MIDDLE_HIGHLIGHT = 0xFFF7F7F7;
     @Unique private static final int BH_MIDDLE_SHADOW = 0xFF8B8B8B;
+    @Unique private static final float BH_STATS_TEXT_SCALE = 0.8F;
+    @Unique private static final int BH_STATS_TEXT_X_OFFSET = 2;
 
     // Pseudo-constructor required for compilation — never actually called at runtime
     protected HorseInventoryScreenMixin(HorseInventoryMenu menu, Inventory inventory, Component title) {
@@ -175,15 +177,20 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         // Base horse jump 0.7 gives ~3.2 block height; linear fit within vanilla jump range.
         double jumpHeight = Math.max(0.0, jumpAttr * 6.0 - 1.0);
 
-        int x = this.leftPos + BH_GEAR_PANEL_X;
+        int x = this.leftPos + BH_GEAR_PANEL_X + BH_STATS_TEXT_X_OFFSET;
         // Gear slots occupy y=17..34, so draw stats at y=37 and y=47 (2 rows, 10px spacing).
         int y = this.topPos + BH_GEAR_PANEL_Y + 20;
+        int lineSpacing = Math.round(10.0F / BH_STATS_TEXT_SCALE);
 
         String speedText = String.format("Speed: %.1f blk/s", speedBps);
         String jumpText = String.format("Jump:  %.1f blk", jumpHeight);
 
-        gfx.drawString(this.font, speedText, x, y, 0x404040, false);
-        gfx.drawString(this.font, jumpText, x, y + 10, 0x404040, false);
+        gfx.pose().pushPose();
+        gfx.pose().translate(x, y, 0.0F);
+        gfx.pose().scale(BH_STATS_TEXT_SCALE, BH_STATS_TEXT_SCALE, 1.0F);
+        gfx.drawString(this.font, speedText, 0, 0, 0x404040, false);
+        gfx.drawString(this.font, jumpText, 0, lineSpacing, 0x404040, false);
+        gfx.pose().popPose();
     }
 
     @Unique
