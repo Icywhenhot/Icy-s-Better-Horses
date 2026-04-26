@@ -8,5 +8,15 @@
       "icys-better-horses:call_whistle/w5",
       "icys-better-horses:call_whistle/w6"
     ]
+  },
+  "stabilizer_intro": {
+    "sounds": [
+      "icys-better-horses:stabilizer/s1"
+    ]
+  },
+  "stabilizer_loop": {
+    "sounds": [
+      "icys-better-horses:stabilizer/s2"
+    ]
   }
 }

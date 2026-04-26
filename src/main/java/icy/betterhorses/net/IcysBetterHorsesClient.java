@@ -1,5 +1,6 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.client.HorseStabilizerSoundController;
 import icy.betterhorses.net.client.RadialMenuScreen;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.OpenRadialPayload;
@@ -81,6 +82,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
     }
 
     private void onClientTick(Minecraft client) {
+        HorseStabilizerSoundController.tick(client);
         if (client.player == null || client.level == null) return;
 
         while (CALL_KEY.consumeClick()) {

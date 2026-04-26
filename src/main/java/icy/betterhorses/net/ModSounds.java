@@ -8,6 +8,8 @@ import net.minecraft.sounds.SoundEvent;
 public final class ModSounds {
 
     public static final SoundEvent CALL_WHISTLE = register("call_whistle");
+    public static final SoundEvent STABILIZER_INTRO = register("stabilizer_intro");
+    public static final SoundEvent STABILIZER_LOOP = register("stabilizer_loop");
 
     public static void init() {
         // Trigger static registration.
