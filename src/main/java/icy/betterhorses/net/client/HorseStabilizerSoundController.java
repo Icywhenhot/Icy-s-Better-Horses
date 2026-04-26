@@ -20,6 +20,7 @@ import java.util.Set;
 public final class HorseStabilizerSoundController {
 
     private static final int INTRO_DURATION_TICKS = 104;
+    private static final float ACTIVATION_FALL_DISTANCE = 4.0F;
     private static final Map<Integer, ActiveStabilizerSound> ACTIVE_SOUNDS = new HashMap<>();
 
     public static void tick(Minecraft client) {
@@ -39,7 +40,9 @@ public final class HorseStabilizerSoundController {
                     horse.getId(),
                     id -> new ActiveStabilizerSound(horse));
             controller.setHorse(horse);
-            controller.setActive(data.bh_getStabilizerState() != HorseStabilizerState.CLOSED);
+            controller.setActive(
+                    data.bh_getStabilizerState() != HorseStabilizerState.CLOSED,
+                    horse.fallDistance >= ACTIVATION_FALL_DISTANCE);
             controller.tick(client.getSoundManager());
         }
 
@@ -84,8 +87,8 @@ public final class HorseStabilizerSoundController {
             this.horse = horse;
         }
 
-        private void setActive(boolean active) {
-            this.active = active;
+        private void setActive(boolean stabilizerActive, boolean thresholdReached) {
+            this.active = stabilizerActive && (thresholdReached || this.introSound != null || this.loopSound != null);
         }
 
         private void tick(SoundManager soundManager) {

@@ -88,8 +88,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private static final double BH_WATER_SURFACE_SPEED = 0.001D;
     @Unique private static final double BH_WATER_MAX_RISE_SPEED = 0.015D;
     @Unique private static final float BH_HOOVES_FALL_DAMAGE_MULTIPLIER = 0.5F;
-    @Unique private static final float BH_STABILIZER_HALF_OPEN_FALL_DISTANCE = 1.5F;
-    @Unique private static final float BH_STABILIZER_OPEN_FALL_DISTANCE = 6.0F;
+    @Unique private static final float BH_STABILIZER_HALF_OPEN_FALL_DISTANCE = 4.0F;
+    @Unique private static final float BH_STABILIZER_OPEN_FALL_DISTANCE = 4.0F;
     @Unique private static final double BH_STABILIZER_HALF_OPEN_DESCENT_SPEED = -0.35D;
     @Unique private static final double BH_STABILIZER_MAX_DESCENT_SPEED = -0.125D;
     @Unique private static final double BH_STABILIZER_SMOOTHING = 0.35D;
