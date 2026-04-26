@@ -26,21 +26,36 @@ public class RadialMenuScreen extends Screen {
     private static final int LABEL_RADIUS = 79;
     private static final double SEGMENT_GAP_RADIANS = Math.toRadians(3.0D);
     private static final int BASE_BACKGROUND_COLOR = 0x5A070A12;
+<<<<<<< Updated upstream
     private static final int OUTER_HALO_COLOR = 0x40272C33;
     private static final int RING_BACKDROP_COLOR = 0xC0121822;
     private static final int RING_BACKDROP_SHADOW_COLOR = 0x70000000;
     private static final int INNER_DISC_COLOR = 0xD8D7DDE4;
     private static final int INNER_DISC_SHADOW_COLOR = 0x8C565E67;
+=======
+    private static final int OUTER_HALO_COLOR = 0x5019223A;
+    private static final int RING_BACKDROP_COLOR = 0xC0111723;
+    private static final int RING_BACKDROP_SHADOW_COLOR = 0x70000000;
+    private static final int INNER_DISC_COLOR = 0xDE82A7E8;
+    private static final int INNER_DISC_SHADOW_COLOR = 0x8C6385C5;
+>>>>>>> Stashed changes
     private static final int[] SEGMENT_COLORS = {
             0xB27C848E,
             0xB28A929C,
             0xB2767D87,
             0xB2939AA5
     };
+<<<<<<< Updated upstream
     private static final int HOVERED_SEGMENT_COLOR = 0xDCE3E7EB;
     private static final int HOVERED_SEGMENT_SHADE_COLOR = 0x90101826;
     private static final int SEGMENT_SHADOW_COLOR = 0x50111826;
     private static final int CENTER_DOT_COLOR = 0xFFF0F2F4;
+=======
+    private static final int HOVERED_SEGMENT_COLOR = 0xF4D5E7FF;
+    private static final int HOVERED_SEGMENT_SHADE_COLOR = 0x90101826;
+    private static final int SEGMENT_SHADOW_COLOR = 0x50111826;
+    private static final int CENTER_DOT_COLOR = 0xFFE6F1FF;
+>>>>>>> Stashed changes
     private static final int CENTER_DOT_HOVER_COLOR = 0xFFFFFFFF;
     private static final int CENTER_DOT_SHADOW_COLOR = 0xCC0C111A;
 
@@ -86,7 +101,11 @@ public class RadialMenuScreen extends Screen {
             int lx = cx + (int)(LABEL_DX[i] * LABEL_RADIUS);
             int ly = cy + (int)(LABEL_DY[i] * LABEL_RADIUS);
             String text = Component.translatable(commandKey(COMMANDS[i])).getString();
+<<<<<<< Updated upstream
             int textColor = (i == hoveredIndex) ? 0xFFF7F7F8 : 0xFFD2D4D7;
+=======
+            int textColor = (i == hoveredIndex) ? 0xFFF4F8FF : 0xFFD4DAE6;
+>>>>>>> Stashed changes
             gfx.drawCenteredString(font, text, lx, ly - font.lineHeight / 2, textColor);
         }
 
@@ -99,10 +118,17 @@ public class RadialMenuScreen extends Screen {
         gfx.flush();
         bh_beginRadialDraw();
         try {
+<<<<<<< Updated upstream
             // Large soft halo so the ring stays readable on bright scenery.
             bh_drawFilledCircle(gfx, cx, cy, RING_OUTER + 10, OUTER_HALO_COLOR);
 
             // Dark ring plate behind the options.
+=======
+            // Large soft halo so the ring still reads clearly against bright scenery.
+            bh_drawFilledCircle(gfx, cx, cy, RING_OUTER + 10, OUTER_HALO_COLOR);
+
+            // Dark ring plate behind every option.
+>>>>>>> Stashed changes
             bh_drawFilledCircle(gfx, cx + 2, cy + 3, RING_BACKDROP_OUTER + 2, RING_BACKDROP_SHADOW_COLOR);
             bh_drawAnnulus(gfx, cx, cy, 0.0D, Math.PI * 2.0D, RING_BACKDROP_INNER, RING_BACKDROP_OUTER, RING_BACKDROP_COLOR);
 
