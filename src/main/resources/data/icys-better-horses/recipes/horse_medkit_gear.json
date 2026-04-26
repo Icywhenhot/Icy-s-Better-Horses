@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "WWW",
+    "GRG",
+    "AAA"
+  ],
+  "key": {
+    "W": {
+      "tag": "minecraft:wool"
+    },
+    "G": {
+      "item": "minecraft:golden_carrot"
+    },
+    "R": {
+      "item": "minecraft:potion",
+      "components": {
+        "minecraft:potion_contents": {
+          "potion": "minecraft:regeneration"
+        }
+      }
+    },
+    "A": {
+      "item": "minecraft:golden_apple"
+    }
+  },
+  "result": {
+    "id": "icys-better-horses:horse_medkit_gear",
+    "count": 1
+  }
+}

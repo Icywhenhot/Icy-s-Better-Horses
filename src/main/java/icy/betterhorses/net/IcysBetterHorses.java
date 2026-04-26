@@ -13,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -36,6 +37,7 @@ public class IcysBetterHorses implements ModInitializer {
         ModBlocks.init();
         ModBlockEntities.init();
         ModItems.init();
+        ModSounds.init();
         registerPackets();
         registerServerHandlers();
         registerEntityTracking();
@@ -104,6 +106,18 @@ public class IcysBetterHorses implements ModInitializer {
     }
 
     private void handleCallHorse(ServerPlayer player) {
+        if (!(player.getVehicle() instanceof AbstractHorse)) {
+            player.level().playSound(
+                    null,
+                    player.getX(),
+                    player.getY(),
+                    player.getZ(),
+                    ModSounds.CALL_WHISTLE,
+                    SoundSource.PLAYERS,
+                    1.0F,
+                    1.0F);
+        }
+
         UUID playerId = player.getUUID();
         BlockPos target = player.blockPosition();
         for (AbstractHorse horse : HorseTracker.getAll()) {

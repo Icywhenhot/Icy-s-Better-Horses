@@ -17,6 +17,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -72,6 +73,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private final SimpleContainer bh_gearContainer = new SimpleContainer(GearSlot.COUNT);
     @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(27);
     @Unique private boolean bh_hadUpgradedSaddle = false;
+    @Unique private boolean bh_fedGoldenAppleThisTick = false;
+    @Unique private boolean bh_usedNameTagThisInteract = false;
+    @Unique private @Nullable Component bh_customNameBeforeInteract = null;
 
     @Unique
     private static final ResourceLocation BH_SPEED_ID =
@@ -303,6 +307,51 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             this.bh_onUpgradedSaddleRemoved(ItemStack.EMPTY);
         }
         this.bh_hadUpgradedSaddle = hasUpgradedSaddle;
+    }
+
+    @Inject(method = "fedFood", at = @At("HEAD"))
+    private void bh_markGoldenAppleFeed(net.minecraft.world.entity.player.Player player, ItemStack stack, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
+        this.bh_fedGoldenAppleThisTick = stack.is(Items.GOLDEN_APPLE);
+    }
+
+    @Inject(method = "fedFood", at = @At("RETURN"))
+    private void bh_rewardGoldenAppleBond(net.minecraft.world.entity.player.Player player, ItemStack stack, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
+        try {
+            AbstractHorse self = (AbstractHorse) (Object) this;
+            if (!this.bh_fedGoldenAppleThisTick || self.level().isClientSide() || !cir.getReturnValue().consumesAction()) {
+                return;
+            }
+
+            this.bh_setBond(this.bh_getBond() + 2);
+        } finally {
+            this.bh_fedGoldenAppleThisTick = false;
+        }
+    }
+
+    @Inject(method = "mobInteract", at = @At("HEAD"))
+    private void bh_trackNameTagUse(net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        ItemStack heldItem = player.getItemInHand(hand);
+        this.bh_usedNameTagThisInteract = heldItem.is(Items.NAME_TAG);
+        this.bh_customNameBeforeInteract = self.getCustomName();
+    }
+
+    @Inject(method = "mobInteract", at = @At("RETURN"))
+    private void bh_rewardNameTagBond(net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
+        try {
+            AbstractHorse self = (AbstractHorse) (Object) this;
+            if (!this.bh_usedNameTagThisInteract || self.level().isClientSide() || !cir.getReturnValue().consumesAction()) {
+                return;
+            }
+
+            Component currentName = self.getCustomName();
+            if (currentName != null && !currentName.equals(this.bh_customNameBeforeInteract)) {
+                this.bh_setBond(this.bh_getBond() + 10);
+            }
+        } finally {
+            this.bh_usedNameTagThisInteract = false;
+            this.bh_customNameBeforeInteract = null;
+        }
     }
 
     @Unique

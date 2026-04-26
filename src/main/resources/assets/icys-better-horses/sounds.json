@@ -1,0 +1,12 @@
+{
+  "call_whistle": {
+    "sounds": [
+      "icys-better-horses:call_whistle/w1",
+      "icys-better-horses:call_whistle/w2",
+      "icys-better-horses:call_whistle/w3",
+      "icys-better-horses:call_whistle/w4",
+      "icys-better-horses:call_whistle/w5",
+      "icys-better-horses:call_whistle/w6"
+    ]
+  }
+}
