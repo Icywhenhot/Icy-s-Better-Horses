@@ -20,21 +20,29 @@ public class RadialMenuScreen extends Screen {
     private static final int SEGMENT_COUNT = 4;
     private static final int RING_INNER = 42;
     private static final int RING_OUTER = 112;
+    private static final int RING_BACKDROP_INNER = 36;
+    private static final int RING_BACKDROP_OUTER = 118;
     private static final int CENTER_RADIUS = 33;
     private static final int LABEL_RADIUS = 79;
     private static final double SEGMENT_GAP_RADIANS = Math.toRadians(3.0D);
-    private static final int BASE_BACKGROUND_COLOR = 0x4A080B14;
-    private static final int OUTER_HALO_COLOR = 0x3019223A;
-    private static final int INNER_DISC_COLOR = 0xDE82A7E8;
-    private static final int INNER_DISC_SHADOW_COLOR = 0x8C6385C5;
+    private static final int BASE_BACKGROUND_COLOR = 0x5A070A12;
+    private static final int OUTER_HALO_COLOR = 0x40272C33;
+    private static final int RING_BACKDROP_COLOR = 0xC0121822;
+    private static final int RING_BACKDROP_SHADOW_COLOR = 0x70000000;
+    private static final int INNER_DISC_COLOR = 0xD8D7DDE4;
+    private static final int INNER_DISC_SHADOW_COLOR = 0x8C565E67;
     private static final int[] SEGMENT_COLORS = {
-            0xD06D89C6,
-            0xD09AB8F5,
-            0xD06B87C0,
-            0xD094B3F0
+            0xB27C848E,
+            0xB28A929C,
+            0xB2767D87,
+            0xB2939AA5
     };
-    private static final int HOVERED_SEGMENT_COLOR = 0xF0BAD4FF;
+    private static final int HOVERED_SEGMENT_COLOR = 0xDCE3E7EB;
+    private static final int HOVERED_SEGMENT_SHADE_COLOR = 0x90101826;
     private static final int SEGMENT_SHADOW_COLOR = 0x50111826;
+    private static final int CENTER_DOT_COLOR = 0xFFF0F2F4;
+    private static final int CENTER_DOT_HOVER_COLOR = 0xFFFFFFFF;
+    private static final int CENTER_DOT_SHADOW_COLOR = 0xCC0C111A;
 
     private static final HorseCommand[] COMMANDS = {
             HorseCommand.FOLLOW,
@@ -71,30 +79,48 @@ public class RadialMenuScreen extends Screen {
         // Dim background
         gfx.fill(0, 0, width, height, BASE_BACKGROUND_COLOR);
 
-        // Soft backdrop for the radial.
-        bh_drawFilledCircle(gfx, cx, cy, RING_OUTER + 8, OUTER_HALO_COLOR);
-
-        // Draw smooth solid segments.
-        for (int i = 0; i < SEGMENT_COUNT; i++) {
-            int color = (i == hoveredIndex) ? HOVERED_SEGMENT_COLOR : SEGMENT_COLORS[i];
-            bh_drawSegmentShadow(gfx, cx, cy, i);
-            bh_drawSegment(gfx, cx, cy, i, color);
-        }
-
-        bh_drawFilledCircle(gfx, cx, cy, CENTER_RADIUS + 4, INNER_DISC_SHADOW_COLOR);
-        bh_drawFilledCircle(gfx, cx, cy, CENTER_RADIUS, INNER_DISC_COLOR);
+        bh_drawRadialGeometry(gfx, cx, cy);
 
         // Draw labels
         for (int i = 0; i < SEGMENT_COUNT; i++) {
             int lx = cx + (int)(LABEL_DX[i] * LABEL_RADIUS);
             int ly = cy + (int)(LABEL_DY[i] * LABEL_RADIUS);
             String text = Component.translatable(commandKey(COMMANDS[i])).getString();
-            int textColor = (i == hoveredIndex) ? 0xFFFFFFFF : 0xFFCCCCCC;
+            int textColor = (i == hoveredIndex) ? 0xFFF7F7F8 : 0xFFD2D4D7;
             gfx.drawCenteredString(font, text, lx, ly - font.lineHeight / 2, textColor);
         }
 
         // Center dot
-        gfx.fill(cx - 4, cy - 4, cx + 4, cy + 4, 0xFF888888);
+        gfx.fill(cx - 5, cy - 5, cx + 5, cy + 5, CENTER_DOT_SHADOW_COLOR);
+        gfx.fill(cx - 2, cy - 2, cx + 2, cy + 2, hoveredIndex >= 0 ? CENTER_DOT_HOVER_COLOR : CENTER_DOT_COLOR);
+    }
+
+    private void bh_drawRadialGeometry(GuiGraphics gfx, int cx, int cy) {
+        gfx.flush();
+        bh_beginRadialDraw();
+        try {
+            // Large soft halo so the ring stays readable on bright scenery.
+            bh_drawFilledCircle(gfx, cx, cy, RING_OUTER + 10, OUTER_HALO_COLOR);
+
+            // Dark ring plate behind the options.
+            bh_drawFilledCircle(gfx, cx + 2, cy + 3, RING_BACKDROP_OUTER + 2, RING_BACKDROP_SHADOW_COLOR);
+            bh_drawAnnulus(gfx, cx, cy, 0.0D, Math.PI * 2.0D, RING_BACKDROP_INNER, RING_BACKDROP_OUTER, RING_BACKDROP_COLOR);
+
+            if (hoveredIndex >= 0) {
+                bh_drawHoveredSegmentShade(gfx, cx, cy, hoveredIndex);
+            }
+
+            for (int i = 0; i < SEGMENT_COUNT; i++) {
+                int color = (i == hoveredIndex) ? HOVERED_SEGMENT_COLOR : SEGMENT_COLORS[i];
+                bh_drawSegmentShadow(gfx, cx, cy, i);
+                bh_drawSegment(gfx, cx, cy, i, color);
+            }
+
+            bh_drawFilledCircle(gfx, cx, cy, CENTER_RADIUS + 4, INNER_DISC_SHADOW_COLOR);
+            bh_drawFilledCircle(gfx, cx, cy, CENTER_RADIUS, INNER_DISC_COLOR);
+        } finally {
+            bh_endRadialDraw();
+        }
     }
 
     private void bh_drawSegment(GuiGraphics gfx, int cx, int cy, int index, int color) {
@@ -111,6 +137,28 @@ public class RadialMenuScreen extends Screen {
         bh_drawAnnulus(gfx, cx + 1, cy + 2, startAngle, endAngle, RING_INNER, RING_OUTER, SEGMENT_SHADOW_COLOR);
     }
 
+    private void bh_drawHoveredSegmentShade(GuiGraphics gfx, int cx, int cy, int index) {
+        double segAngle = Math.PI * 2 / SEGMENT_COUNT;
+        double startAngle = segAngle * index - Math.PI / 2 - segAngle / 2 + SEGMENT_GAP_RADIANS;
+        double endAngle = startAngle + segAngle - SEGMENT_GAP_RADIANS * 2.0D;
+        bh_drawAnnulus(gfx, cx + 3, cy + 4, startAngle, endAngle, RING_BACKDROP_INNER, RING_BACKDROP_OUTER + 2, HOVERED_SEGMENT_SHADE_COLOR);
+    }
+
+    private void bh_beginRadialDraw() {
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableCull();
+        RenderSystem.disableDepthTest();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
+    private void bh_endRadialDraw() {
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableCull();
+        RenderSystem.disableBlend();
+    }
+
     private void bh_drawAnnulus(
             GuiGraphics gfx,
             int cx,
@@ -122,10 +170,6 @@ public class RadialMenuScreen extends Screen {
             int color) {
         Matrix4f matrix = gfx.pose().last().pose();
         int steps = Math.max(24, (int) Math.ceil((endAngle - startAngle) * outerRadius / 10.0D));
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
         BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         for (int step = 0; step < steps; step++) {
@@ -151,16 +195,11 @@ public class RadialMenuScreen extends Screen {
         }
 
         BufferUploader.drawWithShader(buffer.buildOrThrow());
-        RenderSystem.disableBlend();
     }
 
     private void bh_drawFilledCircle(GuiGraphics gfx, int cx, int cy, int radius, int color) {
         Matrix4f matrix = gfx.pose().last().pose();
         int steps = Math.max(36, radius * 2);
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
         BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         for (int step = 0; step < steps; step++) {
@@ -173,7 +212,6 @@ public class RadialMenuScreen extends Screen {
         }
 
         BufferUploader.drawWithShader(buffer.buildOrThrow());
-        RenderSystem.disableBlend();
     }
 
     private int angleToIndex(double angle) {
