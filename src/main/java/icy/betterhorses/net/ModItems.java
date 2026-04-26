@@ -1,12 +1,12 @@
 package icy.betterhorses.net;
 
-import icy.betterhorses.net.item.HitchpostBlockItem;
 import icy.betterhorses.net.item.UpgradedSaddleItem;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
@@ -27,7 +27,7 @@ public final class ModItems {
             new Item(new Item.Properties().stacksTo(1)));
 
     public static final Item HITCHPOST = register("hitchpost",
-            new HitchpostBlockItem(new Item.Properties().stacksTo(16)));
+            new BlockItem(ModBlocks.HITCHPOST, new Item.Properties().stacksTo(16)));
 
     public static final Item HORSE_STABILIZER = register("horse_stabilizer_gear",
             new Item(new Item.Properties().stacksTo(1)));

@@ -5,6 +5,7 @@ import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.HorseTracker;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
+import icy.betterhorses.net.item.HitchpostBlock;
 import icy.betterhorses.net.goal.HorseFollowOwnerGoal;
 import icy.betterhorses.net.goal.HorseReturnHomeGoal;
 import icy.betterhorses.net.goal.HorseStayGoal;
@@ -17,6 +18,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
@@ -42,6 +44,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Mixin(AbstractHorse.class)
@@ -56,10 +59,15 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique
     private static final EntityDataAccessor<Integer> BH_STABILIZER_STATE_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
+    @Unique
+    private static final EntityDataAccessor<Optional<BlockPos>> BH_HITCHPOST_POS_SYNCED =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
 
     @Unique private @Nullable UUID bh_owner = null;
     @Unique private HorseCommand bh_command = HorseCommand.FOLLOW;
     @Unique private @Nullable BlockPos bh_home = null;
+    @Unique private @Nullable BlockPos bh_hitchpostPos = null;
+    @Unique private @Nullable Vec3 bh_hitchAnchor = null;
     @Unique private int bh_bond = 0;
     @Unique private final SimpleContainer bh_gearContainer = new SimpleContainer(GearSlot.COUNT);
     @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(27);
@@ -126,6 +134,20 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Override
+    public @Nullable BlockPos bh_getHitchpostPos() {
+        return bh_hitchpostPos;
+    }
+
+    @Override
+    public void bh_setHitchpostPos(@Nullable BlockPos pos) {
+        this.bh_hitchpostPos = pos == null ? null : pos.immutable();
+        this.bh_hitchAnchor = this.bh_hitchpostPos == null
+                ? null
+                : ((AbstractHorse) (Object) this).position();
+        this.entityData.set(BH_HITCHPOST_POS_SYNCED, Optional.ofNullable(this.bh_hitchpostPos));
+    }
+
+    @Override
     public int bh_getBond() {
         return this.entityData.get(BH_BOND_SYNCED);
     }
@@ -185,6 +207,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     private void bh_defineSynchedData(SynchedEntityData.Builder builder, CallbackInfo ci) {
         builder.define(BH_BOND_SYNCED, 0);
         builder.define(BH_STABILIZER_STATE_SYNCED, HorseStabilizerState.CLOSED.ordinal());
+        builder.define(BH_HITCHPOST_POS_SYNCED, Optional.empty());
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
@@ -199,6 +222,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             tag.putInt("BH_HomeY", bh_home.getY());
             tag.putInt("BH_HomeZ", bh_home.getZ());
         }
+        if (bh_hitchpostPos != null) {
+            tag.putInt("BH_HitchpostX", bh_hitchpostPos.getX());
+            tag.putInt("BH_HitchpostY", bh_hitchpostPos.getY());
+            tag.putInt("BH_HitchpostZ", bh_hitchpostPos.getZ());
+        }
         tag.put("BH_Gear", bh_writeContainer(bh_gearContainer));
         tag.put("BH_Chest", bh_writeContainer(bh_chestContainer));
     }
@@ -212,6 +240,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         if (tag.contains("BH_HomeX")) {
             bh_home = new BlockPos(tag.getInt("BH_HomeX"), tag.getInt("BH_HomeY"), tag.getInt("BH_HomeZ"));
         }
+        bh_hitchpostPos = tag.contains("BH_HitchpostX")
+                ? new BlockPos(tag.getInt("BH_HitchpostX"), tag.getInt("BH_HitchpostY"), tag.getInt("BH_HitchpostZ"))
+                : null;
+        bh_hitchAnchor = null;
+        this.entityData.set(BH_HITCHPOST_POS_SYNCED, Optional.ofNullable(bh_hitchpostPos));
         bh_applyBondAttributes();
         bh_readContainer(bh_gearContainer, tag.getList("BH_Gear", Tag.TAG_COMPOUND));
         bh_readContainer(bh_chestContainer, tag.getList("BH_Chest", Tag.TAG_COMPOUND));
@@ -328,6 +361,26 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.bh_setStabilizerState(state);
     }
 
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void bh_tickHitchpost(CallbackInfo ci) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (this.bh_hitchpostPos == null) {
+            return;
+        }
+
+        if (self.level() instanceof ServerLevel serverLevel
+                && !HitchpostBlock.isValidTether(serverLevel, self, this.bh_hitchpostPos)) {
+            HitchpostBlock.releaseHorse(serverLevel, self, true);
+            return;
+        }
+
+        if (this.bh_hitchAnchor == null) {
+            this.bh_hitchAnchor = self.position();
+        }
+
+        this.bh_applyHitchpostConstraint(self);
+    }
+
     @Inject(method = "causeFallDamage", at = @At("HEAD"), cancellable = true)
     private void bh_adjustFallDamage(float distance, float damageMultiplier, DamageSource source, CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -370,6 +423,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     private void bh_dropGearAndChest(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (self.level().isClientSide()) return;
+        if (self.level() instanceof ServerLevel serverLevel && this.bh_hitchpostPos != null) {
+            HitchpostBlock.releaseHorse(serverLevel, self, false);
+        }
         bh_dropContainerContents(self, bh_gearContainer);
         bh_dropContainerContents(self, bh_chestContainer);
     }
@@ -461,6 +517,24 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique
     private boolean bh_hasStabilizerGear() {
         return bh_gearContainer.getItem(GearSlot.STABILIZER.ordinal()).is(ModItems.HORSE_STABILIZER);
+    }
+
+    @Unique
+    private void bh_applyHitchpostConstraint(AbstractHorse horse) {
+        if (this.bh_hitchAnchor == null) {
+            return;
+        }
+
+        horse.getNavigation().stop();
+        Vec3 currentPos = horse.position();
+        double horizontalDistanceSq = (currentPos.x - this.bh_hitchAnchor.x) * (currentPos.x - this.bh_hitchAnchor.x)
+                + (currentPos.z - this.bh_hitchAnchor.z) * (currentPos.z - this.bh_hitchAnchor.z);
+        if (horizontalDistanceSq > 0.04D || Math.abs(currentPos.y - this.bh_hitchAnchor.y) > 1.25D) {
+            horse.teleportTo(this.bh_hitchAnchor.x, this.bh_hitchAnchor.y, this.bh_hitchAnchor.z);
+        }
+
+        horse.setDeltaMovement(Vec3.ZERO);
+        horse.hurtMarked = true;
     }
 
     @Unique

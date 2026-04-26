@@ -19,8 +19,8 @@ public final class ModBlocks {
                     .noOcclusion()));
 
     /**
-     * Called from {@link IcysBetterHorses#onInitialize()} before {@link ModItems#init()} so that
-     * the block items can reference the registered blocks.
+     * Called from {@link IcysBetterHorses#onInitialize()} before block entity and item setup so
+     * that the rest of the registries can reference the registered blocks.
      */
     public static void init() {
         // Registering happens via static initializer; touching the class triggers it.

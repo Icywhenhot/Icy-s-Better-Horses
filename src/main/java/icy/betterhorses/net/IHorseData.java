@@ -17,6 +17,9 @@ public interface IHorseData {
     @Nullable BlockPos bh_getHome();
     void bh_setHome(@Nullable BlockPos pos);
 
+    @Nullable BlockPos bh_getHitchpostPos();
+    void bh_setHitchpostPos(@Nullable BlockPos pos);
+
     int bh_getBond();
     void bh_setBond(int level);
 
@@ -25,6 +28,10 @@ public interface IHorseData {
 
     default boolean bh_isOwned() {
         return bh_getOwner() != null;
+    }
+
+    default boolean bh_isHitched() {
+        return bh_getHitchpostPos() != null;
     }
 
     // --- Upgraded saddle gear + chest ---

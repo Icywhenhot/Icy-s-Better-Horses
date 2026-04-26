@@ -1,6 +1,6 @@
 {
-  "parent": "minecraft:block/fence_inventory",
+  "parent": "minecraft:item/generated",
   "textures": {
-    "texture": "icys-better-horses:item/hitchpost"
+    "layer0": "icys-better-horses:item/hitchpost"
   }
 }

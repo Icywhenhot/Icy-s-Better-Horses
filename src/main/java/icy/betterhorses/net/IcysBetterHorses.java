@@ -34,6 +34,7 @@ public class IcysBetterHorses implements ModInitializer {
     @Override
     public void onInitialize() {
         ModBlocks.init();
+        ModBlockEntities.init();
         ModItems.init();
         registerPackets();
         registerServerHandlers();
@@ -130,7 +131,6 @@ public class IcysBetterHorses implements ModInitializer {
 
     private void registerTickEvents() {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            HitchpostPlacementTracker.tick(server);
             updateMountedWaterSpeed(server);
             if (server.getTickCount() % 60 == 0) {
                 growHorseBond(server);

@@ -12,6 +12,8 @@
   "message.icys-better-horses.claimed": "You've bonded with this horse!",
   "message.icys-better-horses.home_set": "Home location set.",
   "message.icys-better-horses.no_hitchpost": "No hitchpost within range. Place one nearby first.",
+  "message.icys-better-horses.no_horse_to_tether": "No owned horse close enough to tether.",
+  "message.icys-better-horses.hitchpost_tethered": "Horse is now tethered to hitch post.",
 
   "item.icys-better-horses.upgraded_saddle": "Upgraded Saddle",
   "item.icys-better-horses.horse_chest_gear": "Legacy Horse Chest",
