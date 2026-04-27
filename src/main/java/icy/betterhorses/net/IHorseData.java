@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import icy.betterhorses.net.inventory.GearSlot;
 
 import java.util.UUID;
 
@@ -25,6 +26,7 @@ public interface IHorseData {
 
     HorseStabilizerState bh_getStabilizerState();
     void bh_setStabilizerState(HorseStabilizerState state);
+    int bh_getGearFlags();
 
     default boolean bh_isOwned() {
         return bh_getOwner() != null;
@@ -32,6 +34,10 @@ public interface IHorseData {
 
     default boolean bh_isHitched() {
         return bh_getHitchpostPos() != null;
+    }
+
+    default boolean bh_hasGear(GearSlot slot) {
+        return (bh_getGearFlags() & (1 << slot.ordinal())) != 0;
     }
 
     // --- Upgraded saddle gear + chest ---

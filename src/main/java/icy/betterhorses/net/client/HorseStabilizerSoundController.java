@@ -1,6 +1,6 @@
 package icy.betterhorses.net.client;
 
-import icy.betterhorses.net.HorseStabilizerState;
+import icy.betterhorses.net.HorseStabilizerLogic;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModSounds;
 import net.minecraft.client.Minecraft;
@@ -9,7 +9,9 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.phys.AABB;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,8 +21,7 @@ import java.util.Set;
 
 public final class HorseStabilizerSoundController {
 
-    private static final int INTRO_DURATION_TICKS = 104;
-    private static final float ACTIVATION_FALL_DISTANCE = 4.0F;
+    private static final double TRACKING_RANGE = 96.0D;
     private static final Map<Integer, ActiveStabilizerSound> ACTIVE_SOUNDS = new HashMap<>();
 
     public static void tick(Minecraft client) {
@@ -29,8 +30,16 @@ public final class HorseStabilizerSoundController {
             return;
         }
 
+        Entity cameraEntity = client.getCameraEntity();
+        if (cameraEntity == null) {
+            stopAll();
+            return;
+        }
+
+        AABB searchBox = cameraEntity.getBoundingBox().inflate(TRACKING_RANGE);
         Set<Integer> seenHorseIds = new HashSet<>();
-        for (net.minecraft.world.entity.Entity entity : client.level.entitiesForRendering()) {
+        for (Entity entity : client.level.getEntities((Entity) null, searchBox,
+                entity -> entity instanceof AbstractHorse)) {
             if (!(entity instanceof AbstractHorse horse) || !(horse instanceof IHorseData data)) {
                 continue;
             }
@@ -40,9 +49,7 @@ public final class HorseStabilizerSoundController {
                     horse.getId(),
                     id -> new ActiveStabilizerSound(horse));
             controller.setHorse(horse);
-            controller.setActive(
-                    data.bh_getStabilizerState() != HorseStabilizerState.CLOSED,
-                    horse.fallDistance >= ACTIVATION_FALL_DISTANCE);
+            controller.setActive(HorseStabilizerLogic.shouldPlaySteam(data.bh_getStabilizerState()));
             controller.tick(client.getSoundManager());
         }
 
@@ -74,7 +81,7 @@ public final class HorseStabilizerSoundController {
         private final int horseId;
         private AbstractHorse horse;
         private boolean active;
-        private int introTicks;
+        private boolean introComplete;
         private StabilizerSoundInstance introSound;
         private StabilizerSoundInstance loopSound;
 
@@ -87,8 +94,14 @@ public final class HorseStabilizerSoundController {
             this.horse = horse;
         }
 
-        private void setActive(boolean stabilizerActive, boolean thresholdReached) {
-            this.active = stabilizerActive && (thresholdReached || this.introSound != null || this.loopSound != null);
+        private void setActive(boolean stabilizerActive) {
+            if (stabilizerActive && !this.active) {
+                this.introComplete = false;
+            } else if (!stabilizerActive && this.active) {
+                this.introComplete = false;
+            }
+
+            this.active = stabilizerActive;
         }
 
         private void tick(SoundManager soundManager) {
@@ -97,24 +110,26 @@ public final class HorseStabilizerSoundController {
                 return;
             }
 
+            if (this.introSound != null && this.introSound.isStopped()) {
+                this.introSound = null;
+                this.introComplete = true;
+            }
+
+            if (this.loopSound != null && this.loopSound.isStopped()) {
+                this.loopSound = null;
+            }
+
             if (this.active) {
-                if (this.loopSound != null && this.loopSound.isStopped()) {
-                    this.loopSound = null;
+                if ((this.introSound != null && this.introSound.isFadingOut())
+                        || (this.loopSound != null && this.loopSound.isFadingOut())) {
+                    this.stopImmediately();
+                    this.introComplete = false;
                 }
 
-                if (this.introSound == null && this.loopSound == null) {
+                if (this.introSound == null && this.loopSound == null && !this.introComplete) {
                     this.startIntro(soundManager);
-                } else if (this.introSound != null && this.introSound.isFadingOut()) {
-                    this.stopImmediately();
-                    this.startIntro(soundManager);
-                } else if (this.loopSound != null && this.loopSound.isFadingOut()) {
-                    this.stopImmediately();
-                    this.startIntro(soundManager);
-                } else if (this.loopSound == null) {
-                    this.introTicks++;
-                    if (this.introTicks >= INTRO_DURATION_TICKS) {
-                        this.startLoop(soundManager);
-                    }
+                } else if (this.loopSound == null && this.introSound == null && this.introComplete) {
+                    this.startLoop(soundManager);
                 }
             } else {
                 if (this.introSound != null) {
@@ -124,17 +139,9 @@ public final class HorseStabilizerSoundController {
                     this.loopSound.fadeOut();
                 }
             }
-
-            if (this.introSound != null && this.introSound.isStopped()) {
-                this.introSound = null;
-            }
-            if (this.loopSound != null && this.loopSound.isStopped()) {
-                this.loopSound = null;
-            }
         }
 
         private void startIntro(SoundManager soundManager) {
-            this.introTicks = 0;
             this.introSound = new StabilizerSoundInstance(this.horse, ModSounds.STABILIZER_INTRO, false);
             soundManager.play(this.introSound);
         }
@@ -157,6 +164,7 @@ public final class HorseStabilizerSoundController {
                 this.loopSound.stopNow();
                 this.loopSound = null;
             }
+            this.introComplete = false;
         }
 
         private boolean isFinished() {

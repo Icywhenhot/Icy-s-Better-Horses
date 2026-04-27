@@ -1,6 +1,7 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.HorseCommand;
+import icy.betterhorses.net.HorseStabilizerLogic;
 import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.HorseTracker;
 import icy.betterhorses.net.IHorseData;
@@ -61,6 +62,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     private static final EntityDataAccessor<Integer> BH_STABILIZER_STATE_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
     @Unique
+    private static final EntityDataAccessor<Integer> BH_GEAR_FLAGS_SYNCED =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
+    @Unique
     private static final EntityDataAccessor<Optional<BlockPos>> BH_HITCHPOST_POS_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
 
@@ -70,7 +74,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private @Nullable BlockPos bh_hitchpostPos = null;
     @Unique private @Nullable Vec3 bh_hitchAnchor = null;
     @Unique private int bh_bond = 0;
-    @Unique private final SimpleContainer bh_gearContainer = new SimpleContainer(GearSlot.COUNT);
+    @Unique
+    private final SimpleContainer bh_gearContainer = new SimpleContainer(GearSlot.COUNT) {
+        @Override
+        public void setChanged() {
+            super.setChanged();
+            AbstractHorseMixin.this.bh_syncGearFlags();
+        }
+    };
     @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(27);
     @Unique private boolean bh_hadUpgradedSaddle = false;
     @Unique private boolean bh_fedGoldenAppleThisTick = false;
@@ -88,8 +99,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private static final double BH_WATER_SURFACE_SPEED = 0.001D;
     @Unique private static final double BH_WATER_MAX_RISE_SPEED = 0.015D;
     @Unique private static final float BH_HOOVES_FALL_DAMAGE_MULTIPLIER = 0.5F;
-    @Unique private static final float BH_STABILIZER_HALF_OPEN_FALL_DISTANCE = 4.0F;
-    @Unique private static final float BH_STABILIZER_OPEN_FALL_DISTANCE = 4.0F;
     @Unique private static final double BH_STABILIZER_HALF_OPEN_DESCENT_SPEED = -0.35D;
     @Unique private static final double BH_STABILIZER_MAX_DESCENT_SPEED = -0.125D;
     @Unique private static final double BH_STABILIZER_SMOOTHING = 0.35D;
@@ -174,6 +183,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Override
+    public int bh_getGearFlags() {
+        return this.entityData.get(BH_GEAR_FLAGS_SYNCED);
+    }
+
+    @Override
     public boolean bh_hasUpgradedSaddle() {
         return inventory != null && inventory.getItem(0).is(ModItems.UPGRADED_SADDLE);
     }
@@ -205,12 +219,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         if (self.level().isClientSide()) return;
         bh_dropContainerContents(self, bh_gearContainer);
         bh_dropChestContents();
+        bh_syncGearFlags();
     }
 
     @Inject(method = "defineSynchedData", at = @At("TAIL"))
     private void bh_defineSynchedData(SynchedEntityData.Builder builder, CallbackInfo ci) {
         builder.define(BH_BOND_SYNCED, 0);
         builder.define(BH_STABILIZER_STATE_SYNCED, HorseStabilizerState.CLOSED.ordinal());
+        builder.define(BH_GEAR_FLAGS_SYNCED, 0);
         builder.define(BH_HITCHPOST_POS_SYNCED, Optional.empty());
     }
 
@@ -254,6 +270,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         bh_readContainer(bh_chestContainer, tag.getList("BH_Chest", Tag.TAG_COMPOUND));
         bh_restoreUpgradedSaddle(tag);
         bh_migrateLegacyGear();
+        bh_syncGearFlags();
         bh_hadUpgradedSaddle = this.bh_hasUpgradedSaddle();
     }
 
@@ -298,6 +315,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Inject(method = "createInventory", at = @At("TAIL"))
     private void bh_onCreateInventory(CallbackInfo ci) {
         this.bh_hadUpgradedSaddle = this.bh_hasUpgradedSaddle();
+        this.bh_syncGearFlags();
     }
 
     @Inject(method = "containerChanged", at = @At("TAIL"))
@@ -434,10 +452,18 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     private void bh_adjustFallDamage(float distance, float damageMultiplier, DamageSource source, CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (this.bh_hasStabilizerGear()) {
+            HorseStabilizerState landingState = HorseStabilizerLogic.resolveLandingState(
+                    true,
+                    distance,
+                    this.bh_getStabilizerState());
+            if (landingState == HorseStabilizerState.CLOSED) {
+                return;
+            }
+
             if (distance > 1.0F) {
                 self.playSound(SoundEvents.HORSE_LAND, 0.4F, 1.0F);
             }
-            this.bh_setStabilizerState(HorseStabilizerState.OPEN);
+            this.bh_setStabilizerState(landingState);
             this.fallDistance = 0.0F;
             cir.setReturnValue(false);
             return;
@@ -477,6 +503,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
         bh_dropContainerContents(self, bh_gearContainer);
         bh_dropContainerContents(self, bh_chestContainer);
+        bh_syncGearFlags();
     }
 
     @Inject(method = "registerGoals", at = @At("TAIL"))
@@ -528,44 +555,25 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Unique
     private HorseStabilizerState bh_computeStabilizerState(AbstractHorse horse) {
-        if (!this.bh_hasStabilizerGear()
-                || horse.onGround()
-                || horse.isInWater()
-                || horse.isInLava()
-                || horse.isPassenger()) {
-            return HorseStabilizerState.CLOSED;
-        }
-
-        HorseStabilizerState currentState = this.bh_getStabilizerState();
-        double verticalSpeed = horse.getDeltaMovement().y;
-        if (currentState == HorseStabilizerState.OPEN) {
-            return HorseStabilizerState.OPEN;
-        }
-        if (currentState == HorseStabilizerState.HALF_OPEN && verticalSpeed < -0.02D) {
-            return this.fallDistance >= BH_STABILIZER_OPEN_FALL_DISTANCE
-                    ? HorseStabilizerState.OPEN
-                    : HorseStabilizerState.HALF_OPEN;
-        }
-        if (verticalSpeed >= -0.08D) {
-            return HorseStabilizerState.CLOSED;
-        }
-        if (this.fallDistance >= BH_STABILIZER_OPEN_FALL_DISTANCE) {
-            return HorseStabilizerState.OPEN;
-        }
-        if (this.fallDistance >= BH_STABILIZER_HALF_OPEN_FALL_DISTANCE) {
-            return HorseStabilizerState.HALF_OPEN;
-        }
-        return HorseStabilizerState.CLOSED;
+        return HorseStabilizerLogic.computeState(
+                this.bh_hasStabilizerGear(),
+                horse.onGround(),
+                horse.isInWater(),
+                horse.isInLava(),
+                horse.isPassenger(),
+                horse.getDeltaMovement().y,
+                this.fallDistance,
+                this.bh_getStabilizerState());
     }
 
     @Unique
     private boolean bh_hasHoovesGear() {
-        return bh_gearContainer.getItem(GearSlot.HOOVES.ordinal()).is(ModItems.HORSE_HOOVES);
+        return this.bh_hasGear(GearSlot.HOOVES);
     }
 
     @Unique
     private boolean bh_hasStabilizerGear() {
-        return bh_gearContainer.getItem(GearSlot.STABILIZER.ordinal()).is(ModItems.HORSE_STABILIZER);
+        return this.bh_hasGear(GearSlot.STABILIZER);
     }
 
     @Unique
@@ -601,5 +609,18 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                 horse.spawnAtLocation(stack);
             }
         }
+    }
+
+    @Unique
+    private void bh_syncGearFlags() {
+        int flags = 0;
+        for (GearSlot slot : GearSlot.values()) {
+            if (slot.accepts(this.bh_gearContainer.getItem(slot.ordinal()))
+                    && !this.bh_gearContainer.getItem(slot.ordinal()).isEmpty()) {
+                flags |= 1 << slot.ordinal();
+            }
+        }
+
+        this.entityData.set(BH_GEAR_FLAGS_SYNCED, flags);
     }
 }

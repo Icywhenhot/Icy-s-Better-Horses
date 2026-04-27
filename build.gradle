@@ -7,11 +7,9 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
-	// Add repositories to retrieve artifacts from in here.
-	// You should only use this when depending on other mods because
-	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
-	// for more information about repositories.
+    maven {
+    url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+    }
 }
 
 dependencies {
@@ -26,7 +24,7 @@ dependencies {
 	testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
 	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.0"
-	
+	modImplementation "software.bernie.geckolib:geckolib-fabric-1.21:4.5.8"
 }
 
 processResources {

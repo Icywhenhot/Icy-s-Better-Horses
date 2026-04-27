@@ -13,7 +13,9 @@
 		"SlotAccessor"
 	],
 	"client": [
+		"AbstractHorseRendererMixin",
 		"HorseInventoryScreenMixin",
+		"HorseModelAccessor",
 		"KeyboardInputMixin"
 	],
 	"injectors": {

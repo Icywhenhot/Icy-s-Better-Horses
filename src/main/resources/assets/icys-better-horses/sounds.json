@@ -11,12 +11,18 @@
   },
   "stabilizer_intro": {
     "sounds": [
-      "icys-better-horses:stabilizer/s1"
+      {
+        "name": "icys-better-horses:stabilizer/s1",
+        "stream": true
+      }
     ]
   },
   "stabilizer_loop": {
     "sounds": [
-      "icys-better-horses:stabilizer/s2"
+      {
+        "name": "icys-better-horses:stabilizer/s2",
+        "stream": true
+      }
     ]
   }
 }
