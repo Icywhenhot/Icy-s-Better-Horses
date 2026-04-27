@@ -21,6 +21,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
@@ -54,6 +55,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Shadow
     protected SimpleContainer inventory;
+
+    @Shadow
+    protected abstract void doPlayerRide(net.minecraft.world.entity.player.Player player);
 
     @Unique
     private static final EntityDataAccessor<Integer> BH_BOND_SYNCED =
@@ -103,6 +107,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private static final double BH_STABILIZER_MAX_DESCENT_SPEED = -0.125D;
     @Unique private static final double BH_STABILIZER_SMOOTHING = 0.35D;
     @Unique private static final double BH_STABILIZER_HALF_OPEN_SMOOTHING = 0.2D;
+    @Unique private static final double BH_FRONT_PASSENGER_Z_OFFSET = 0.2D;
+    @Unique private static final double BH_REAR_PASSENGER_Z_OFFSET = -0.55D;
 
     protected AbstractHorseMixin(EntityType<? extends Animal> type, Level level) {
         super(type, level);
@@ -254,6 +260,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
     private void bh_onRead(CompoundTag tag, CallbackInfo ci) {
         bh_owner = tag.hasUUID("BH_Owner") ? tag.getUUID("BH_Owner") : null;
+        if (bh_owner == null) {
+            bh_owner = ((AbstractHorse) (Object) this).getOwnerUUID();
+        }
         bh_command = HorseCommand.fromId(tag.getInt("BH_Command"));
         bh_bond = tag.getInt("BH_Bond");
         this.entityData.set(BH_BOND_SYNCED, bh_bond);
@@ -370,6 +379,57 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             this.bh_usedNameTagThisInteract = false;
             this.bh_customNameBeforeInteract = null;
         }
+    }
+
+    @Inject(method = "tameWithName", at = @At("RETURN"))
+    private void bh_claimHorseOnTame(net.minecraft.world.entity.player.Player player, CallbackInfoReturnable<Boolean> cir) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (!cir.getReturnValueZ() || self.level().isClientSide() || player.getUUID().equals(this.bh_getOwner())) {
+            return;
+        }
+
+        this.bh_setOwner(player.getUUID());
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.claimed"));
+        }
+    }
+
+    @Inject(method = "mobInteract", at = @At("HEAD"), cancellable = true)
+    private void bh_allowSecondPlayerRider(
+            net.minecraft.world.entity.player.Player player,
+            net.minecraft.world.InteractionHand hand,
+            CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (!self.isVehicle()
+                || self.isBaby()
+                || self.hasPassenger(player)
+                || self.getPassengers().size() >= 2) {
+            return;
+        }
+
+        net.minecraft.world.InteractionResult animalResult = super.mobInteract(player, hand);
+        if (animalResult.consumesAction()) {
+            cir.setReturnValue(animalResult);
+            return;
+        }
+
+        if (self.isTamed() && player.isSecondaryUseActive()) {
+            self.openCustomInventoryScreen(player);
+            cir.setReturnValue(net.minecraft.world.InteractionResult.sidedSuccess(self.level().isClientSide));
+            return;
+        }
+
+        ItemStack heldItem = player.getItemInHand(hand);
+        if (!heldItem.isEmpty()) {
+            net.minecraft.world.InteractionResult heldItemResult = heldItem.interactLivingEntity(player, self, hand);
+            if (heldItemResult.consumesAction()) {
+                cir.setReturnValue(heldItemResult);
+                return;
+            }
+        }
+
+        this.doPlayerRide(player);
+        cir.setReturnValue(net.minecraft.world.InteractionResult.sidedSuccess(self.level().isClientSide));
     }
 
     @Unique
@@ -512,6 +572,37 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         goalSelector.addGoal(3, new HorseStayGoal(self));
         goalSelector.addGoal(3, new HorseFollowOwnerGoal(self));
         goalSelector.addGoal(3, new HorseReturnHomeGoal(self));
+    }
+
+    @Inject(method = "getPassengerAttachmentPoint", at = @At("RETURN"), cancellable = true)
+    private void bh_offsetSecondPassenger(
+            Entity passenger,
+            net.minecraft.world.entity.EntityDimensions dimensions,
+            float scaleFactor,
+            CallbackInfoReturnable<Vec3> cir) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.getPassengers().size() <= 1) {
+            return;
+        }
+
+        int passengerIndex = self.getPassengers().indexOf(passenger);
+        if (passengerIndex < 0) {
+            return;
+        }
+
+        double zOffset = passengerIndex == 0 ? BH_FRONT_PASSENGER_Z_OFFSET : BH_REAR_PASSENGER_Z_OFFSET;
+        Vec3 offset = new Vec3(0.0D, 0.0D, zOffset).yRot(-self.getYRot() * ((float) Math.PI / 180.0F));
+        cir.setReturnValue(cir.getReturnValue().add(offset));
+    }
+
+    @Override
+    protected boolean canAddPassenger(Entity passenger) {
+        if (this.getPassengers().isEmpty()) {
+            return true;
+        }
+
+        return this.getPassengers().size() < 2
+                && passenger instanceof net.minecraft.world.entity.player.Player;
     }
 
     @Unique

@@ -1,0 +1,22 @@
+{
+  "name": "Claiming a Mount",
+  "category": "icys-better-horses:basics",
+  "icon": "minecraft:name_tag",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The moment a horse is fully tamed, it becomes $(thing)owned$() and starts working with Better Horses systems. No paperwork."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Command Wheel",
+      "text": "Use $(item)Ctrl + Right Click$() on an owned horse to open the radial command wheel.$(br2)$(li)$(thing)Follow$(): the horse tails after you.$(li)$(thing)Stay$(): it waits right where you leave it.$(li)$(thing)Set Home$(): marks the current spot as home and switches the horse to Stay.$(li)$(thing)Return Home$(): sends the horse trotting back to that saved spot."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Whistle and Bond",
+      "text": "Press $(item)P$() by default to whistle for your owned horse. Nearby mounts switch to $(thing)Follow$(), while distant ones get hauled closer to you.$(br2)Bond runs from $(item)0$() to $(item)100$(), and every 20 bond adds more speed and jump strength.$(br2)$(li)Stick close to your horse for passive bond gain.$(li)Use a $(item)Name Tag$() for +10 bond.$(li)Feed a $(item)Golden Apple$() for +2 bond."
+    }
+  ]
+}

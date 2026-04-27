@@ -1,0 +1,28 @@
+{
+  "name": "Upgraded Saddle",
+  "category": "icys-better-horses:equipment",
+  "icon": "icys-better-horses:upgraded_saddle",
+  "sortnum": 2,
+  "extra_recipe_mappings": {
+    "icys-better-horses:upgraded_saddle": 0
+  },
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "icys-better-horses:upgraded_saddle",
+      "title": "Build the Saddle",
+      "text": "This is the heart of the whole tack room. A vanilla $(item)Saddle$(), a little copper, and a handful of diamonds turns your horse into a proper gear hauler."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "What It Unlocks",
+      "text": "Once equipped, the $(item)Upgraded Saddle$() opens five dedicated gear slots: $(thing)Chest$(), $(thing)Hooves$(), $(thing)Medkit$(), $(thing)Stabilizer$(), and $(thing)Hitchpost$(). Most of the mod's equipment starts here."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "minecraft:chest",
+      "title": "Chest Storage",
+      "text": "Slide a plain $(item)Chest$() into the chest slot to unlock 27 storage spaces on the horse screen. Empty it before removal unless you want your trail supplies tumbling into the dirt."
+    }
+  ]
+}

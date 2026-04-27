@@ -1,0 +1,24 @@
+{
+  "name": "Horse Medkit",
+  "category": "icys-better-horses:equipment",
+  "icon": "icys-better-horses:horse_medkit_gear",
+  "sortnum": 4,
+  "extra_recipe_mappings": {
+    "icys-better-horses:horse_medkit_gear": 0
+  },
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "icys-better-horses:horse_medkit_gear",
+      "title": "Pack a Medkit",
+      "text": "This one is emergency tack. Wrap it up with wool, healing supplies, and a proper regeneration potion before you head into dangerous country."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "icys-better-horses:horse_medkit_gear",
+      "title": "Last-Second Rescue",
+      "link_recipe": true,
+      "text": "If incoming damage would shove your horse below half health, the medkit is consumed and grants $(thing)Regeneration$(), $(thing)Instant Health$(), $(thing)Resistance$(), and $(thing)Fire Resistance$(). It is the difference between a close call and a funeral."
+    }
+  ]
+}

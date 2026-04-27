@@ -1,0 +1,22 @@
+{
+  "name": "Trail Tricks",
+  "category": "icys-better-horses:travel",
+  "icon": "minecraft:saddle",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Better Horses smooths out the rough edges of mounted travel.$(br2)$(li)Two players can ride the same horse for co-op trips.$(li)The first rider keeps the reins, $(li)The second rider gets a steady back seat."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Let the Horse Cruise",
+      "text": "Double tap $(item)W$() while riding to enable auto-ride. Once it kicks in, the horse keeps moving forward and you just handle the steering.$(br2)Tap a movement key again when you want the full reins back in your hands."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Mud, Water, and Leaves",
+      "text": "Horses no longer behave like they are made of stone in bad terrain.$(br2)$(li)They float instead of sinking in water.$(li)They move faster while crossing water.$(li)Leaf blocks lose collision while you are riding, so forests feel more like a path and less like an argument."
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "Horse Hooves",
+  "category": "icys-better-horses:equipment",
+  "icon": "icys-better-horses:horse_hooves_gear",
+  "sortnum": 3,
+  "extra_recipe_mappings": {
+    "icys-better-horses:horse_hooves_gear": 0
+  },
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "icys-better-horses:horse_hooves_gear",
+      "title": "Shoe the Horse",
+      "text": "A few copper ingots and a leather strap are enough to give your mount a steadier step in nasty country."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "icys-better-horses:horse_hooves_gear",
+      "title": "Sure-Footed Travel",
+      "link_recipe": true,
+      "text": "Horse Hooves let a mount walk on powdered snow instead of plunging through it. They also soften fall damage, which makes them good everyday tack for mountain trails and cold biomes."
+    }
+  ]
+}

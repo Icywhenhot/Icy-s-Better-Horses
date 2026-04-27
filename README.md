@@ -4,8 +4,11 @@ Icy's Better Horses
 A Fabric mod for Minecraft 1.21 that overhauls horse gameplay with a bonding system, new gear, smarter AI, and quality-of-life riding improvements.
 
 Features
+Patchouli Guide Book
+Better Horses now ships with a Patchouli handbook that explains the mod's systems and every custom recipe in-game.
+
 Taming & Ownership
-Horses can be claimed as your own. Hold Ctrl + Right Click on a horse to open the Radial Command Wheel and mark it as yours. Once claimed, your bond with the horse begins.
+Taming a horse now claims it as your own immediately, so your bond starts the moment the horse is tamed. Two players can also ride the same horse at once.
 
 Radial Command Wheel (Ctrl + Right Click)
 Interact with your horse through a radial menu with the following commands:
@@ -60,6 +63,8 @@ Equipping a chest gives the horse additional inventory storage slots.
 
 Setup
 For IDE setup instructions see the Fabric Documentation.
+
+Patchouli is a required dependency for this 1.21 build.
 
 License
 This mod is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.

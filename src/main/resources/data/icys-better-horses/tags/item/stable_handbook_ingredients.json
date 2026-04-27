@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "icys-better-horses:upgraded_saddle",
+    "icys-better-horses:horse_chest_gear",
+    "icys-better-horses:horse_hooves_gear",
+    "icys-better-horses:horse_medkit_gear",
+    "icys-better-horses:canister",
+    "icys-better-horses:horse_stabilizer_gear",
+    "icys-better-horses:hitchpost"
+  ]
+}

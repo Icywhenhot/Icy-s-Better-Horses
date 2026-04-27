@@ -1,0 +1,24 @@
+{
+  "name": "Canister",
+  "category": "icys-better-horses:equipment",
+  "icon": "icys-better-horses:canister",
+  "sortnum": 5,
+  "extra_recipe_mappings": {
+    "icys-better-horses:canister": 0
+  },
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "icys-better-horses:canister",
+      "title": "Pack a Canister",
+      "text": "This little copper-and-gold capsule is workshop stock. It does not do much on its own, but the stabilizer won't come together without it."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "icys-better-horses:canister",
+      "title": "Workshop Note",
+      "link_recipe": true,
+      "text": "Think of the canister as the business end of the stabilizer. Craft the canister first, then move on to the full rig once you are ready to protect a horse from ugly falls."
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "Hitchpost",
+  "category": "icys-better-horses:equipment",
+  "icon": "icys-better-horses:hitchpost",
+  "sortnum": 7,
+  "extra_recipe_mappings": {
+    "icys-better-horses:hitchpost": 0
+  },
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "icys-better-horses:hitchpost",
+      "title": "Set a Hitchpost",
+      "text": "A $(item)Lead$() and any block in the $(item)Fences$() tag will do. Simple build, mighty useful."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Tie Up Properly",
+      "text": "Place a hitchpost near a ridden horse, or near another owned horse, to tether it in place. The post only works with horses that belong to you, and breaking it releases the tether."
+    }
+  ]
+}

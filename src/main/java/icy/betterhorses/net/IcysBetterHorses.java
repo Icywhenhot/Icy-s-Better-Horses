@@ -91,11 +91,6 @@ public class IcysBetterHorses implements ModInitializer {
         if (horse == null) return;
 
         IHorseData data = (IHorseData) horse;
-        if (!data.bh_isOwned()) {
-            data.bh_setOwner(player.getUUID());
-            player.sendSystemMessage(Component.translatable("message.icys-better-horses.claimed"));
-        }
-
         if (command == HorseCommand.SET_HOME) {
             data.bh_setHome(horse.blockPosition());
             data.bh_setCommand(HorseCommand.STAY);
