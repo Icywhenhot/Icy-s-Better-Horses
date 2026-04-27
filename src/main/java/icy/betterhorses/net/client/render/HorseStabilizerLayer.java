@@ -16,9 +16,9 @@ import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 public final class HorseStabilizerLayer<T extends AbstractHorse, M extends HorseModel<T>> extends RenderLayer<T, M> {
     private static final HorseStabilizerGeoRenderer GEO_RENDERER = new HorseStabilizerGeoRenderer();
-    private static final double TORSO_X_OFFSET = -1.0D / 16.0D;
-    private static final double TORSO_Y_OFFSET = -37.0D / 16.0D;
-    private static final double TORSO_Z_OFFSET = -2.0D / 16.0D;
+    private static final double TORSO_X_OFFSET = 8.0D / 16.0D;
+    private static final double FEET_Y_IN_FLIPPED_FRAME = 2.0D;
+    private static final double TORSO_Z_OFFSET = -8.0D / 16.0D;
     private static final float MODEL_ROLL_DEGREES = 180.0F;
 
     public HorseStabilizerLayer(RenderLayerParent<T, M> renderer) {
@@ -46,7 +46,7 @@ public final class HorseStabilizerLayer<T extends AbstractHorse, M extends Horse
         body.translateAndRotate(poseStack);
         poseStack.translate(
                 -body.x / 16.0F + TORSO_X_OFFSET,
-                -(body.y + 6.0F) / 16.0F + TORSO_Y_OFFSET,
+                FEET_Y_IN_FLIPPED_FRAME - body.y / 16.0F,
                 -body.z / 16.0F + TORSO_Z_OFFSET);
         poseStack.mulPose(Axis.ZP.rotationDegrees(MODEL_ROLL_DEGREES));
 
