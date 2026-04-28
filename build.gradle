@@ -28,7 +28,8 @@ dependencies {
 	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.0"
 	modImplementation "software.bernie.geckolib:geckolib-fabric-1.21:4.5.8"
-	modImplementation "vazkii.patchouli:Patchouli:${project.patchouli_version}"
+	modCompileOnly "vazkii.patchouli:Patchouli:${project.patchouli_version}"
+	modLocalRuntime "vazkii.patchouli:Patchouli:${project.patchouli_version}"
 }
 
 processResources {

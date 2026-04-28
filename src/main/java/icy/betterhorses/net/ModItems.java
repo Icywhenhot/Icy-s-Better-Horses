@@ -17,10 +17,6 @@ public final class ModItems {
     public static final Item UPGRADED_SADDLE = register("upgraded_saddle",
             new UpgradedSaddleItem(new Item.Properties().stacksTo(1)));
 
-    // Legacy compatibility item. New horse chest storage uses the vanilla chest item directly.
-    public static final Item HORSE_CHEST_GEAR = register("horse_chest_gear",
-            new Item(new Item.Properties().stacksTo(1)));
-
     public static final Item HORSE_HOOVES = register("horse_hooves_gear",
             new Item(new Item.Properties().stacksTo(1)));
 

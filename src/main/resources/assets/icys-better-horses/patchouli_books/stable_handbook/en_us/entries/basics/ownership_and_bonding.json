@@ -16,7 +16,7 @@
     {
       "type": "patchouli:text",
       "title": "Whistle and Bond",
-      "text": "Press $(item)P$() by default to whistle for your owned horse. Nearby mounts switch to $(thing)Follow$(), while distant ones get hauled closer to you.$(br2)Bond runs from $(item)0$() to $(item)100$(), and every 20 bond adds more speed and jump strength.$(br2)$(li)Stick close to your horse for passive bond gain.$(li)Use a $(item)Name Tag$() for +10 bond.$(li)Feed a $(item)Golden Apple$() for +2 bond."
+      "text": "Press $(item)P$() by default to whistle for your owned horse. Nearby mounts switch to $(thing)Follow$(), while distant ones get hauled closer to you.$(br2)Bond runs from $(item)0$() to $(item)100$(), and every 20 bond adds more speed and jump strength.$(br2)$(li)Stick close to your horse for slow, steady passive bond gain.$(li)Use a $(item)Name Tag$() for +10 bond.$(li)Feed a $(item)Golden Apple$() for +2 bond."
     }
   ]
 }

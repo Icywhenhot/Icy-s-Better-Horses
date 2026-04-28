@@ -246,6 +246,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
     @Unique
     private boolean bh_isChestGear(ItemStack stack) {
-        return stack.is(Items.CHEST) || stack.is(ModItems.HORSE_CHEST_GEAR);
+        return stack.is(Items.CHEST);
     }
 }

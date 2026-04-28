@@ -31,6 +31,7 @@ public class IcysBetterHorses implements ModInitializer {
 
     private static final ResourceLocation WATER_SPEED_ID =
             ResourceLocation.fromNamespaceAndPath(MOD_ID, "water_speed");
+    private static final int PASSIVE_BOND_INTERVAL_TICKS = 60 * 20;
 
     @Override
     public void onInitialize() {
@@ -141,7 +142,7 @@ public class IcysBetterHorses implements ModInitializer {
     private void registerTickEvents() {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             updateMountedWaterSpeed(server);
-            if (server.getTickCount() % 60 == 0) {
+            if (server.getTickCount() % PASSIVE_BOND_INTERVAL_TICKS == 0) {
                 growHorseBond(server);
             }
         });

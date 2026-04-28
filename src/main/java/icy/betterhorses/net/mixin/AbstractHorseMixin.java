@@ -211,7 +211,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Override
     public boolean bh_hasChestGear() {
         ItemStack chestGear = bh_gearContainer.getItem(GearSlot.CHEST.ordinal());
-        return chestGear.is(Items.CHEST) || chestGear.is(ModItems.HORSE_CHEST_GEAR);
+        return chestGear.is(Items.CHEST);
     }
 
     @Override
@@ -278,7 +278,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         bh_readContainer(bh_gearContainer, tag.getList("BH_Gear", Tag.TAG_COMPOUND));
         bh_readContainer(bh_chestContainer, tag.getList("BH_Chest", Tag.TAG_COMPOUND));
         bh_restoreUpgradedSaddle(tag);
-        bh_migrateLegacyGear();
         bh_syncGearFlags();
         bh_hadUpgradedSaddle = this.bh_hasUpgradedSaddle();
     }
@@ -430,14 +429,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
         this.doPlayerRide(player);
         cir.setReturnValue(net.minecraft.world.InteractionResult.sidedSuccess(self.level().isClientSide));
-    }
-
-    @Unique
-    private void bh_migrateLegacyGear() {
-        ItemStack chestGear = bh_gearContainer.getItem(GearSlot.CHEST.ordinal());
-        if (chestGear.is(ModItems.HORSE_CHEST_GEAR)) {
-            bh_gearContainer.setItem(GearSlot.CHEST.ordinal(), new ItemStack(Items.CHEST));
-        }
     }
 
     @Override
