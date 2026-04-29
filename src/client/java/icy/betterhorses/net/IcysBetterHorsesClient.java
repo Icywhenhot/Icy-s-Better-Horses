@@ -13,6 +13,7 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -26,7 +27,8 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
 
     public static KeyMapping CALL_KEY;
 
-    private static final String CATEGORY = "key.categories.icys-better-horses";
+    private static final KeyMapping.Category CATEGORY =
+            KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "main"));
 
     @Override
     public void onInitializeClient() {
@@ -91,7 +93,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
     }
 
     private boolean bh_isControlDown() {
-        long window = Minecraft.getInstance().getWindow().getWindow();
+        var window = Minecraft.getInstance().getWindow();
         return InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT_CONTROL)
                 || InputConstants.isKeyDown(window, GLFW.GLFW_KEY_RIGHT_CONTROL);
     }

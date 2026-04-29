@@ -3,20 +3,25 @@ package icy.betterhorses.net;
 import icy.betterhorses.net.item.HitchpostBlock;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 
+import java.util.function.Function;
+
 public final class ModBlocks {
 
     public static final Block HITCHPOST = register("hitchpost",
-            new HitchpostBlock(BlockBehaviour.Properties.of()
+            HitchpostBlock::new,
+            BlockBehaviour.Properties.of()
                     .mapColor(MapColor.WOOD)
                     .strength(2.0f, 3.0f)
                     .sound(SoundType.WOOD)
-                    .noOcclusion()));
+                    .noOcclusion());
 
     /**
      * Called from {@link IcysBetterHorses#onInitialize()} before block entity and item setup so
@@ -26,10 +31,10 @@ public final class ModBlocks {
         // Registering happens via static initializer; touching the class triggers it.
     }
 
-    private static Block register(String path, Block block) {
-        return Registry.register(BuiltInRegistries.BLOCK,
-                ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path),
-                block);
+    private static Block register(String path, Function<BlockBehaviour.Properties, Block> factory, BlockBehaviour.Properties properties) {
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
+        ResourceKey<Block> key = ResourceKey.create(Registries.BLOCK, id);
+        return Registry.register(BuiltInRegistries.BLOCK, key, factory.apply(properties.setId(key)));
     }
 
     private ModBlocks() {}

@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
@@ -24,7 +25,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -43,7 +44,7 @@ import java.util.UUID;
 public class HitchpostBlock extends BaseEntityBlock {
 
     public static final MapCodec<HitchpostBlock> CODEC = simpleCodec(HitchpostBlock::new);
-    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     private static final double TETHER_SEARCH_RADIUS = 7.0D;
     private static final double TETHER_OFFSET = 1.35D;
@@ -105,7 +106,7 @@ public class HitchpostBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
+    protected VoxelShape getOcclusionShape(BlockState state) {
         return Shapes.empty();
     }
 
@@ -118,22 +119,22 @@ public class HitchpostBlock extends BaseEntityBlock {
 
         AbstractHorse horse = findHorseToTether(serverLevel, pos, player);
         if (horse == null) {
-            player.sendSystemMessage(Component.translatable("message.icys-better-horses.no_horse_to_tether"));
+            player.displayClientMessage(Component.translatable("message.icys-better-horses.no_horse_to_tether"), false);
             return;
         }
 
         if (tetherHorse(serverLevel, pos, state, horse, player)) {
-            player.sendSystemMessage(Component.translatable("message.icys-better-horses.hitchpost_tethered"));
+            player.displayClientMessage(Component.translatable("message.icys-better-horses.hitchpost_tethered"), false);
         }
     }
 
     @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if (!state.is(newState.getBlock()) && level instanceof ServerLevel serverLevel) {
+    public void destroy(LevelAccessor level, BlockPos pos, BlockState state) {
+        if (level instanceof ServerLevel serverLevel) {
             releaseHorseAtPost(serverLevel, pos);
         }
 
-        super.onRemove(state, level, pos, newState, movedByPiston);
+        super.destroy(level, pos, state);
     }
 
     public static boolean isValidTether(ServerLevel level, AbstractHorse horse, BlockPos pos) {
@@ -210,7 +211,7 @@ public class HitchpostBlock extends BaseEntityBlock {
         horse.setDeltaMovement(Vec3.ZERO);
         horse.hurtMarked = true;
 
-        if (player != null && data.bh_getOwner() == null && player.getUUID().equals(horse.getOwnerUUID())) {
+        if (player != null && data.bh_getOwner() == null && player.getUUID().equals(getVanillaOwnerId(horse))) {
             data.bh_setOwner(player.getUUID());
         }
 
@@ -241,9 +242,14 @@ public class HitchpostBlock extends BaseEntityBlock {
         }
 
         UUID playerId = player.getUUID();
-        UUID ownerId = horse.getOwnerUUID();
+        UUID ownerId = getVanillaOwnerId(horse);
         UUID modOwnerId = ((IHorseData) horse).bh_getOwner();
         return playerId.equals(ownerId) || playerId.equals(modOwnerId);
+    }
+
+    private static @Nullable UUID getVanillaOwnerId(AbstractHorse horse) {
+        var ownerReference = horse.getOwnerReference();
+        return ownerReference != null ? ownerReference.getUUID() : null;
     }
 
     private static Vec3 chooseAnchor(BlockPos pos, BlockState state, AbstractHorse horse) {

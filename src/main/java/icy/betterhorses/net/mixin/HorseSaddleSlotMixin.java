@@ -1,35 +1,14 @@
 package icy.betterhorses.net.mixin;
 
-import icy.betterhorses.net.ModItems;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
 /**
- * The anonymous saddle slot inside {@link net.minecraft.world.inventory.HorseInventoryMenu}
- * checks {@code stack.is(Items.SADDLE)}. Extend acceptance to also allow our upgraded saddle.
+ * Dormant 1.21.10 placeholder.
+ *
+ * Saddle insertion now flows through the equipment-slot system instead of the old anonymous
+ * {@code HorseInventoryMenu$1.mayPlace} slot, so the previous mixin target no longer exists.
+ * Keep this source file around for future migration work, but do not annotate it as a mixin.
  */
-@Mixin(targets = "net/minecraft/world/inventory/HorseInventoryMenu$1")
-public abstract class HorseSaddleSlotMixin extends Slot {
+public final class HorseSaddleSlotMixin {
 
-    @Shadow @Final
-    AbstractHorse val$horse;
-
-    // Never used; satisfies compiler so `this` exposes Slot members.
     private HorseSaddleSlotMixin() {
-        super(null, 0, 0, 0);
-    }
-
-    @Inject(method = "mayPlace", at = @At("HEAD"), cancellable = true)
-    private void bh_acceptUpgradedSaddle(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-        if (stack.is(ModItems.UPGRADED_SADDLE) && !hasItem() && val$horse.isSaddleable()) {
-            cir.setReturnValue(true);
-        }
     }
 }

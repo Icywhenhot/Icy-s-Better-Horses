@@ -186,12 +186,11 @@ public class IcysBetterHorses implements ModInitializer {
     }
 
     private AbstractHorse findCommandHorse(ServerPlayer player, int horseId, double radius) {
-        if (!(player.serverLevel().getEntity(horseId) instanceof AbstractHorse horse)) {
+        var entity = player.level().getEntity(horseId);
+        if (!(entity instanceof AbstractHorse horse)) {
             LOGGER.info("[RADIAL][V1] Fail: entity id {} is not an AbstractHorse in player's level (got {})",
                     horseId,
-                    player.serverLevel().getEntity(horseId) == null
-                            ? "null"
-                            : player.serverLevel().getEntity(horseId).getClass().getSimpleName());
+                    entity == null ? "null" : entity.getClass().getSimpleName());
             return null;
         }
         if (!horse.isTamed()) {

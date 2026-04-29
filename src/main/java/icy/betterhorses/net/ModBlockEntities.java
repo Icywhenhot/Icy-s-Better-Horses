@@ -1,19 +1,18 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.item.HitchpostBlockEntity;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
-import java.util.Set;
-
 public final class ModBlockEntities {
 
     public static final BlockEntityType<HitchpostBlockEntity> HITCHPOST = register(
             "hitchpost",
-            new BlockEntityType<>(HitchpostBlockEntity::new, Set.of(ModBlocks.HITCHPOST), null));
+            FabricBlockEntityTypeBuilder.create(HitchpostBlockEntity::new, ModBlocks.HITCHPOST).build());
 
     public static void init() {
         // Registration happens via static initializer; touching the class triggers it.

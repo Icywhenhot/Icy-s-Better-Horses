@@ -7,23 +7,18 @@
     "AAA"
   ],
   "key": {
-    "W": {
-      "tag": "minecraft:wool"
-    },
-    "G": {
-      "item": "minecraft:golden_carrot"
-    },
+    "W": "#minecraft:wool",
+    "G": "minecraft:golden_carrot",
     "R": {
-      "item": "minecraft:potion",
+      "fabric:type": "fabric:components",
+      "base": "minecraft:potion",
       "components": {
         "minecraft:potion_contents": {
           "potion": "minecraft:regeneration"
         }
       }
     },
-    "A": {
-      "item": "minecraft:golden_apple"
-    }
+    "A": "minecraft:golden_apple"
   },
   "result": {
     "id": "icys-better-horses:horse_medkit_gear",

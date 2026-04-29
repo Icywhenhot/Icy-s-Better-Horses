@@ -1,7 +1,8 @@
 package icy.betterhorses.net;
 
 public interface HorseInventoryLayoutAccess {
-    void bh_refreshLayout();
+    default void bh_refreshLayout() {
+    }
 
     boolean bh_hasUpgradedSaddleLayout();
 

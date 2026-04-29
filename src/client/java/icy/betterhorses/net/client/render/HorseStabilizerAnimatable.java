@@ -1,45 +1,42 @@
 package icy.betterhorses.net.client.render;
 
 import icy.betterhorses.net.HorseStabilizerState;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoAnimatable;
-import software.bernie.geckolib.animation.Animation;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animatable.manager.AnimatableManager;
+import software.bernie.geckolib.animatable.processing.AnimationController;
+import software.bernie.geckolib.animatable.processing.AnimationTest;
+import software.bernie.geckolib.animation.Animation;
 import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class HorseStabilizerAnimatable implements GeoAnimatable {
     private static final RawAnimation DEPLOY_AND_GLIDE = RawAnimation.begin()
             .then("animation", Animation.LoopType.PLAY_ONCE)
             .thenLoop("wingflap");
     private static final RawAnimation GLIDE_LOOP = RawAnimation.begin().thenLoop("wingflap");
-    private static final Map<AbstractHorse, HorseStabilizerAnimatable> INSTANCES = new WeakHashMap<>();
+    private static final Map<Integer, HorseStabilizerAnimatable> INSTANCES = new ConcurrentHashMap<>();
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private final AnimationController<HorseStabilizerAnimatable> controller =
-            new AnimationController<>(this, "stabilizer", 0, this::animationPredicate);
+            new AnimationController<HorseStabilizerAnimatable>("stabilizer", 0, this::animationPredicate);
 
-    private @Nullable AbstractHorse horse;
+    private double tick;
     private HorseStabilizerState state = HorseStabilizerState.CLOSED;
     private boolean active;
     private boolean deploySequenceRequested;
 
-    public static HorseStabilizerAnimatable get(AbstractHorse horse) {
-        return INSTANCES.computeIfAbsent(horse, ignored -> new HorseStabilizerAnimatable());
+    public static HorseStabilizerAnimatable get(int horseId) {
+        return INSTANCES.computeIfAbsent(horseId, ignored -> new HorseStabilizerAnimatable());
     }
 
-    public void syncFromHorse(AbstractHorse horse, HorseStabilizerState state) {
-        this.horse = horse;
-
-        boolean nextActive = state != HorseStabilizerState.CLOSED;
+    public void syncFromState(HorseStabilizerState newState, double tick) {
+        this.tick = tick;
+        boolean nextActive = newState != HorseStabilizerState.CLOSED;
         if (nextActive && !this.active) {
             this.deploySequenceRequested = true;
             this.controller.forceAnimationReset();
@@ -47,9 +44,8 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
             this.deploySequenceRequested = false;
             this.controller.stop();
         }
-
         this.active = nextActive;
-        this.state = state;
+        this.state = newState;
     }
 
     public boolean isActive() {
@@ -72,25 +68,23 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
 
     @Override
     public double getTick(Object relatedObject) {
-        return this.horse == null ? 0 : this.horse.tickCount;
+        return this.tick;
     }
 
-    private PlayState animationPredicate(AnimationState<HorseStabilizerAnimatable> state) {
+    private PlayState animationPredicate(AnimationTest<HorseStabilizerAnimatable> test) {
         if (!this.active) {
             return PlayState.STOP;
         }
 
         if (this.deploySequenceRequested) {
             this.deploySequenceRequested = false;
-            state.setAnimation(DEPLOY_AND_GLIDE);
-
+            test.setAnimation(DEPLOY_AND_GLIDE);
             return PlayState.CONTINUE;
         }
 
-        if (!state.isCurrentAnimation(DEPLOY_AND_GLIDE) && !state.isCurrentAnimation(GLIDE_LOOP)) {
-            state.setAnimation(GLIDE_LOOP);
+        if (!test.isCurrentAnimation(DEPLOY_AND_GLIDE) && !test.isCurrentAnimation(GLIDE_LOOP)) {
+            test.setAnimation(GLIDE_LOOP);
         }
-
         return PlayState.CONTINUE;
     }
 }

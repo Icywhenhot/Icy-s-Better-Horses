@@ -4,19 +4,11 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"AbstractHorseMixin",
-		"HorseInventoryMenuAccessor",
 		"HorseInventoryMenuMixin",
-		"HorseSaddleSlotMixin",
 		"LeafPassthroughMixin",
 		"LivingEntityMixin",
 		"PowderSnowBlockMixin",
 		"SlotAccessor"
-	],
-	"client": [
-		"AbstractHorseRendererMixin",
-		"HorseInventoryScreenMixin",
-		"HorseModelAccessor",
-		"KeyboardInputMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

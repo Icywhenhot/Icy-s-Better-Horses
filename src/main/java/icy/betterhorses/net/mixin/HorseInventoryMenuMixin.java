@@ -38,13 +38,12 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Unique private static final int BH_CHEST_SLOT_X = 8;
     @Unique private static final int BH_CHEST_SLOT_Y = 79;
     @Unique private static final int BH_CHEST_SLOT_COUNT = 27;
-    @Unique private static final int BH_PLAYER_SLOT_Y_OFFSET = 54;
+    @Unique private static final int BH_VANILLA_PLAYER_INV_Y = 84;
+    @Unique private static final int BH_VANILLA_HOTBAR_Y = 142;
+    @Unique private static final int BH_PLAYER_INV_Y_SHIFT = 54;
 
     @Unique private int bh_gearStartIndex = -1;
     @Unique private int bh_chestStartIndex = -1;
-    @Unique private int bh_playerInventoryStartIndex = -1;
-    @Unique private int bh_playerInventoryEndIndex = -1;
-    @Unique private boolean bh_playerInventoryShifted = false;
 
     protected HorseInventoryMenuMixin(MenuType<?> type, int id) {
         super(type, id);
@@ -61,8 +60,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         final IHorseData data = (IHorseData) horse;
         final SimpleContainer gear = data.bh_getGearContainer();
         final SimpleContainer chest = data.bh_getChestContainer();
-        this.bh_playerInventoryStartIndex = horseContainer.getContainerSize() + 1;
-        this.bh_playerInventoryEndIndex = Math.min(this.bh_playerInventoryStartIndex + 36, this.slots.size());
 
         this.bh_gearStartIndex = this.slots.size();
         for (GearSlot slot : GearSlot.values()) {
@@ -95,8 +92,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                 });
             }
         }
-
-        this.bh_refreshLayout();
     }
 
     @Inject(method = "quickMoveStack", at = @At("HEAD"), cancellable = true)
@@ -114,7 +109,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         ItemStack sourceStack = sourceSlot.getItem();
         ItemStack copiedStack = sourceStack.copy();
 
-        int horseSlotEnd = this.horseContainer.getContainerSize() + 1;
+        int horseSlotEnd = 2 + this.horseContainer.getContainerSize();
         int playerInventoryStart = horseSlotEnd;
         int playerInventoryEnd = playerInventoryStart + 27;
         int hotbarStart = playerInventoryEnd;
@@ -192,22 +187,35 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
     @Override
     public void bh_refreshLayout() {
-        if (this.bh_playerInventoryStartIndex < 0 || this.bh_playerInventoryEndIndex < 0) {
+        bh_updatePlayerInventorySlotY();
+    }
+
+    @Unique
+    private void bh_updatePlayerInventorySlotY() {
+        if (this.bh_gearStartIndex < 0) {
+            return;
+        }
+        int playerStart = 2 + this.horseContainer.getContainerSize();
+        if (playerStart + 36 > this.bh_gearStartIndex) {
             return;
         }
 
-        boolean shouldShiftPlayerInventory = this.bh_hasChestStorageLayout();
-        if (shouldShiftPlayerInventory == this.bh_playerInventoryShifted) {
-            return;
-        }
+        int yOffset = this.bh_hasChestStorageLayout() ? BH_PLAYER_INV_Y_SHIFT : 0;
 
-        int offset = shouldShiftPlayerInventory ? BH_PLAYER_SLOT_Y_OFFSET : -BH_PLAYER_SLOT_Y_OFFSET;
-        for (int slotIndex = this.bh_playerInventoryStartIndex; slotIndex < this.bh_playerInventoryEndIndex; slotIndex++) {
-            Slot slot = this.slots.get(slotIndex);
-            ((SlotAccessor) slot).bh_setY(slot.y + offset);
+        for (int i = 0; i < 27; i++) {
+            Slot s = this.slots.get(playerStart + i);
+            int targetY = BH_VANILLA_PLAYER_INV_Y + (i / 9) * 18 + yOffset;
+            if (s.y != targetY) {
+                ((SlotAccessor) s).bh_setY(targetY);
+            }
         }
-
-        this.bh_playerInventoryShifted = shouldShiftPlayerInventory;
+        for (int i = 0; i < 9; i++) {
+            Slot s = this.slots.get(playerStart + 27 + i);
+            int targetY = BH_VANILLA_HOTBAR_Y + yOffset;
+            if (s.y != targetY) {
+                ((SlotAccessor) s).bh_setY(targetY);
+            }
+        }
     }
 
     @Override

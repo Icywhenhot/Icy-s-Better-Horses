@@ -10,12 +10,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "minecraft:book"
-    },
-    {
-      "tag": "icys-better-horses:stable_handbook_ingredients"
-    }
+    "minecraft:book",
+    "#icys-better-horses:stable_handbook_ingredients"
   ],
   "result": {
     "id": "patchouli:guide_book",

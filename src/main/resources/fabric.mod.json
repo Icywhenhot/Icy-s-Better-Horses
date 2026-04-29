@@ -23,14 +23,18 @@
 		]
 	},
 	"mixins": [
-		"icys-better-horses.mixins.json"
+		"icys-better-horses.mixins.json",
+		{
+			"config": "icys-better-horses.client.mixins.json",
+			"environment": "client"
+		}
 	],
 	"depends": {
 		"fabricloader": ">=0.19.2",
-		"minecraft": "~1.21",
+		"minecraft": "~1.21.10",
 		"java": ">=21",
 		"fabric-api": "*",
-		"geckolib": ">=4.5.8"
+		"geckolib": "*"
 	},
 	"suggests": {
 		"patchouli": "*"

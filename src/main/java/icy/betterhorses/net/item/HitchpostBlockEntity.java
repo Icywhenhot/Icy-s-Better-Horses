@@ -2,10 +2,11 @@ package icy.betterhorses.net.item;
 
 import icy.betterhorses.net.ModBlockEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -33,16 +34,14 @@ public class HitchpostBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        this.tetheredHorseId = tag.hasUUID("TetheredHorse") ? tag.getUUID("TetheredHorse") : null;
+    protected void loadAdditional(ValueInput tag) {
+        super.loadAdditional(tag);
+        this.tetheredHorseId = tag.read("TetheredHorse", UUIDUtil.CODEC).orElse(null);
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        if (this.tetheredHorseId != null) {
-            tag.putUUID("TetheredHorse", this.tetheredHorseId);
-        }
+    protected void saveAdditional(ValueOutput tag) {
+        super.saveAdditional(tag);
+        tag.storeNullable("TetheredHorse", UUIDUtil.CODEC, this.tetheredHorseId);
     }
 }

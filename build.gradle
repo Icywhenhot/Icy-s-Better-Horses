@@ -7,12 +7,21 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
-    maven {
-    url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
-    }
-    maven {
-    url 'https://maven.blamejared.com'
-    }
+	maven {
+		name = 'GeckoLib'
+		url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+	}
+}
+
+loom {
+	splitEnvironmentSourceSets()
+
+	mods {
+		"icys-better-horses" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
 }
 
 dependencies {
@@ -24,24 +33,45 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
+	modImplementation "software.bernie.geckolib:geckolib-fabric-${project.minecraft_version}:${project.geckolib_version}"
+
 	testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
 	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.0"
-	modImplementation "software.bernie.geckolib:geckolib-fabric-1.21:4.5.8"
-	modCompileOnly "vazkii.patchouli:Patchouli:${project.patchouli_version}"
-	modLocalRuntime "vazkii.patchouli:Patchouli:${project.patchouli_version}"
 }
 
 processResources {
-	inputs.property "version", project.version
+	def version = project.version
+	inputs.property "version", version
 
 	filesMatching("fabric.mod.json") {
-		expand "version": inputs.properties.version
+		expand "version": version
 	}
 }
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.release = 21
+}
+
+tasks.named("runClient").configure {
+	doFirst {
+		def modsDir = file("run/mods")
+		def processedModsDir = file("run/.fabric/processedMods")
+		def hasPatchouliJar = modsDir.exists() && modsDir.listFiles()?.any { file ->
+			file.name ==~ /(?i)patchouli-.*\.jar/
+		}
+
+		if (!hasPatchouliJar && processedModsDir.exists()) {
+			def stalePatchouliMods = processedModsDir.listFiles()?.findAll { file ->
+				file.name ==~ /(?i)(patchouli|fiber)-.*\.jar/
+			} ?: []
+
+			stalePatchouliMods.each { file ->
+				logger.lifecycle("Removing stale dev Patchouli cache: ${file.name}")
+				file.delete()
+			}
+		}
+	}
 }
 
 test {
@@ -59,10 +89,11 @@ java {
 }
 
 jar {
-	inputs.property "projectName", project.name
+	def projectName = project.name
+	inputs.property "projectName", projectName
 
 	from("LICENSE") {
-		rename { "${it}_${project.name}"}
+		rename { "${it}_$projectName"}
 	}
 }
 
