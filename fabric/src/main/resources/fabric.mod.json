@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "icys-better-horses",
+  "version": "${version}",
+  "name": "Icy's better horses",
+  "description": "Horse-focused gameplay upgrades and utility systems.",
+  "authors": [
+    "Icy"
+  ],
+  "license": "CC0-1.0",
+  "icon": "assets/icys-better-horses/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "icy.betterhorses.net.fabric.IcysBetterHorsesFabric"
+    ],
+    "client": [
+      "icy.betterhorses.net.IcysBetterHorsesClient"
+    ]
+  },
+  "mixins": [
+    "icys-better-horses.mixins.json",
+    {
+      "config": "icys-better-horses.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.2",
+    "minecraft": "~1.21.10",
+    "java": ">=21",
+    "architectury": ">=18.0.6",
+    "fabric-api": "*",
+    "geckolib": "*"
+  },
+  "suggests": {
+    "patchouli": "*"
+  }
+}

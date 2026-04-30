@@ -1,40 +1,39 @@
 package icy.betterhorses.net;
 
-import icy.betterhorses.net.item.HitchpostBlock;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
+import dev.architectury.registry.registries.DeferredRegister;
+import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import icy.betterhorses.net.item.HitchpostBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 
-import java.util.function.Function;
-
 public final class ModBlocks {
 
-    public static final Block HITCHPOST = register("hitchpost",
-            HitchpostBlock::new,
-            BlockBehaviour.Properties.of()
+    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(IcysBetterHorses.registryOwnerId(), Registries.BLOCK);
+
+    public static final RegistrySupplier<Block> HITCHPOST = BLOCKS.register(
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "hitchpost"),
+            () -> {
+                ResourceKey<Block> key = ResourceKey.create(
+                        Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "hitchpost"));
+                return new HitchpostBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.WOOD)
                     .strength(2.0f, 3.0f)
                     .sound(SoundType.WOOD)
-                    .noOcclusion());
+                    .noOcclusion()
+                    .setId(key));
+            });
 
     /**
-     * Called from {@link IcysBetterHorses#onInitialize()} before block entity and item setup so
+     * Called from {@link IcysBetterHorses#init()} before block entity and item setup so
      * that the rest of the registries can reference the registered blocks.
      */
     public static void init() {
-        // Registering happens via static initializer; touching the class triggers it.
-    }
-
-    private static Block register(String path, Function<BlockBehaviour.Properties, Block> factory, BlockBehaviour.Properties properties) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
-        ResourceKey<Block> key = ResourceKey.create(Registries.BLOCK, id);
-        return Registry.register(BuiltInRegistries.BLOCK, key, factory.apply(properties.setId(key)));
+        BLOCKS.register();
     }
 
     private ModBlocks() {}

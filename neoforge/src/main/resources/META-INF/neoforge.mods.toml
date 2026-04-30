@@ -1,0 +1,36 @@
+modLoader = "javafml"
+loaderVersion = "[10,)"
+license = "CC0-1.0"
+
+[[mods]]
+modId = "icys_better_horses"
+version = "${version}"
+displayName = "Icy's better horses"
+authors = "Icy"
+description = '''
+Horse-focused gameplay upgrades and utility systems.
+'''
+
+[[dependencies.icys_better_horses]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.10,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.icys_better_horses]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.10,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.icys_better_horses]]
+modId = "architectury"
+type = "required"
+versionRange = "[18.0.6,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[mixins]]
+config = "icys-better-horses.mixins.json"

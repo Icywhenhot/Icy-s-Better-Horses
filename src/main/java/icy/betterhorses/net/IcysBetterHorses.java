@@ -1,14 +1,5 @@
 package icy.betterhorses.net;
 
-import icy.betterhorses.net.network.CallHorsePayload;
-import icy.betterhorses.net.network.OpenRadialPayload;
-import icy.betterhorses.net.network.RadialCommandPayload;
-import icy.betterhorses.net.network.RequestOpenRadialPayload;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -18,62 +9,56 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.Entity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
-public class IcysBetterHorses implements ModInitializer {
+public final class IcysBetterHorses {
 
     public static final String MOD_ID = "icys-better-horses";
+    public static final String NEOFORGE_MOD_ID = "icys_better_horses";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static final ResourceLocation WATER_SPEED_ID =
             ResourceLocation.fromNamespaceAndPath(MOD_ID, "water_speed");
     private static final int PASSIVE_BOND_INTERVAL_TICKS = 60 * 20;
 
-    @Override
-    public void onInitialize() {
+    public static String registryOwnerId() {
+        return dev.architectury.platform.Platform.isNeoForge() ? NEOFORGE_MOD_ID : MOD_ID;
+    }
+
+    public static void init() {
         ModBlocks.init();
-        ModBlockEntities.init();
         ModItems.init();
         ModSounds.init();
-        registerPackets();
-        registerServerHandlers();
-        registerEntityTracking();
-        registerTickEvents();
         LOGGER.info("Icy's Better Horses initialized.");
     }
 
-    private void registerPackets() {
-        PayloadTypeRegistry.playC2S().register(RadialCommandPayload.TYPE, new RadialCommandPayload.StreamCodec());
-        PayloadTypeRegistry.playC2S().register(CallHorsePayload.TYPE, new CallHorsePayload.StreamCodec());
-        PayloadTypeRegistry.playC2S().register(RequestOpenRadialPayload.TYPE, new RequestOpenRadialPayload.StreamCodec());
-        PayloadTypeRegistry.playS2C().register(OpenRadialPayload.TYPE, new OpenRadialPayload.StreamCodec());
+    private IcysBetterHorses() {
     }
 
-    private void registerServerHandlers() {
-        ServerPlayNetworking.registerGlobalReceiver(RadialCommandPayload.TYPE, (payload, context) -> {
-            ServerPlayer player = context.player();
-            HorseCommand command = HorseCommand.fromId(payload.commandOrdinal());
-            context.server().execute(() -> handleRadialCommand(player, payload.horseId(), command));
-        });
-
-        ServerPlayNetworking.registerGlobalReceiver(CallHorsePayload.TYPE, (payload, context) -> {
-            ServerPlayer player = context.player();
-            context.server().execute(() -> handleCallHorse(player));
-        });
-
-        ServerPlayNetworking.registerGlobalReceiver(RequestOpenRadialPayload.TYPE, (payload, context) -> {
-            ServerPlayer player = context.player();
-            LOGGER.info("[RADIAL][3] C2S received RequestOpenRadialPayload(horseId={}) from player {}",
-                    payload.horseId(), player.getName().getString());
-            context.server().execute(() -> handleOpenRadialRequest(player, payload.horseId()));
-        });
+    public static void onHorseLoaded(Entity entity) {
+        if (entity instanceof AbstractHorse horse && ((IHorseData) horse).bh_isOwned()) {
+            HorseTracker.register(horse);
+        }
     }
 
-    private void handleOpenRadialRequest(ServerPlayer player, int horseId) {
+    public static void onHorseUnloaded(Entity entity) {
+        if (entity instanceof AbstractHorse horse) {
+            HorseTracker.unregister(horse);
+        }
+    }
+
+    public static void onServerTick(net.minecraft.server.MinecraftServer server) {
+        updateMountedWaterSpeed(server);
+        if (server.getTickCount() % PASSIVE_BOND_INTERVAL_TICKS == 0) {
+            growHorseBond(server);
+        }
+    }
+
+    public static void handleOpenRadialRequest(ServerPlayer player, int horseId, java.util.function.IntConsumer openScreenSender) {
         LOGGER.info("[RADIAL][3a] handleOpenRadialRequest on main thread: player={}, horseId={}",
                 player.getName().getString(), horseId);
         AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
@@ -84,10 +69,10 @@ public class IcysBetterHorses implements ModInitializer {
 
         LOGGER.info("[RADIAL][4] Validation passed, sending OpenRadialPayload(horseId={}) back to player {}",
                 horse.getId(), player.getName().getString());
-        ServerPlayNetworking.send(player, new OpenRadialPayload(horse.getId()));
+        openScreenSender.accept(horse.getId());
     }
 
-    private void handleRadialCommand(ServerPlayer player, int horseId, HorseCommand command) {
+    public static void handleRadialCommand(ServerPlayer player, int horseId, HorseCommand command) {
         AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
         if (horse == null) return;
 
@@ -101,14 +86,14 @@ public class IcysBetterHorses implements ModInitializer {
         }
     }
 
-    private void handleCallHorse(ServerPlayer player) {
+    public static void handleCallHorse(ServerPlayer player) {
         if (!(player.getVehicle() instanceof AbstractHorse)) {
             player.level().playSound(
                     null,
                     player.getX(),
                     player.getY(),
                     player.getZ(),
-                    ModSounds.CALL_WHISTLE,
+                    ModSounds.CALL_WHISTLE.get(),
                     SoundSource.PLAYERS,
                     1.0F,
                     1.0F);
@@ -126,29 +111,7 @@ public class IcysBetterHorses implements ModInitializer {
         }
     }
 
-    private void registerEntityTracking() {
-        ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
-            if (entity instanceof AbstractHorse horse && ((IHorseData) horse).bh_isOwned()) {
-                HorseTracker.register(horse);
-            }
-        });
-        ServerEntityEvents.ENTITY_UNLOAD.register((entity, world) -> {
-            if (entity instanceof AbstractHorse horse) {
-                HorseTracker.unregister(horse);
-            }
-        });
-    }
-
-    private void registerTickEvents() {
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            updateMountedWaterSpeed(server);
-            if (server.getTickCount() % PASSIVE_BOND_INTERVAL_TICKS == 0) {
-                growHorseBond(server);
-            }
-        });
-    }
-
-    private void updateMountedWaterSpeed(net.minecraft.server.MinecraftServer server) {
+    private static void updateMountedWaterSpeed(net.minecraft.server.MinecraftServer server) {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             if (!(player.getVehicle() instanceof AbstractHorse horse)) continue;
 
@@ -168,7 +131,7 @@ public class IcysBetterHorses implements ModInitializer {
         }
     }
 
-    private void growHorseBond(net.minecraft.server.MinecraftServer server) {
+    private static void growHorseBond(net.minecraft.server.MinecraftServer server) {
         for (AbstractHorse horse : HorseTracker.getAll()) {
             IHorseData data = (IHorseData) horse;
             if (data.bh_getBond() >= 100) continue;
@@ -185,7 +148,7 @@ public class IcysBetterHorses implements ModInitializer {
         }
     }
 
-    private AbstractHorse findCommandHorse(ServerPlayer player, int horseId, double radius) {
+    private static AbstractHorse findCommandHorse(ServerPlayer player, int horseId, double radius) {
         var entity = player.level().getEntity(horseId);
         if (!(entity instanceof AbstractHorse horse)) {
             LOGGER.info("[RADIAL][V1] Fail: entity id {} is not an AbstractHorse in player's level (got {})",

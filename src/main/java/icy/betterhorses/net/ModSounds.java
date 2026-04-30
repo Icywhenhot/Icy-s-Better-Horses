@@ -1,23 +1,24 @@
 package icy.betterhorses.net;
 
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
+import dev.architectury.registry.registries.DeferredRegister;
+import dev.architectury.registry.registries.RegistrySupplier;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 
 public final class ModSounds {
-
-    public static final SoundEvent CALL_WHISTLE = register("call_whistle");
-    public static final SoundEvent STABILIZER_INTRO = register("stabilizer_intro");
-    public static final SoundEvent STABILIZER_LOOP = register("stabilizer_loop");
+    public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(IcysBetterHorses.registryOwnerId(), Registries.SOUND_EVENT);
+    public static final RegistrySupplier<SoundEvent> CALL_WHISTLE = register("call_whistle");
+    public static final RegistrySupplier<SoundEvent> STABILIZER_INTRO = register("stabilizer_intro");
+    public static final RegistrySupplier<SoundEvent> STABILIZER_LOOP = register("stabilizer_loop");
 
     public static void init() {
-        // Trigger static registration.
+        SOUNDS.register();
     }
 
-    private static SoundEvent register(String path) {
+    private static RegistrySupplier<SoundEvent> register(String path) {
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
-        return Registry.register(BuiltInRegistries.SOUND_EVENT, id, SoundEvent.createVariableRangeEvent(id));
+        return SOUNDS.register(id, () -> SoundEvent.createVariableRangeEvent(id));
     }
 
     private ModSounds() {}

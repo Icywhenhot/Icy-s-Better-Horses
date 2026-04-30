@@ -197,7 +197,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     public boolean bh_hasUpgradedSaddle() {
         // In 1.21.10 the saddle lives in the equipment-slot container, not in `inventory`.
         AbstractHorse self = (AbstractHorse) (Object) this;
-        return self.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.SADDLE).is(ModItems.UPGRADED_SADDLE);
+        return self.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.SADDLE).is(ModItems.UPGRADED_SADDLE.get());
     }
 
     @Override
@@ -321,7 +321,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
 
         ItemStack saddle = tag.read("SaddleItem", ItemStack.CODEC).orElse(ItemStack.EMPTY);
-        if (saddle.is(ModItems.UPGRADED_SADDLE)) {
+        if (saddle.is(ModItems.UPGRADED_SADDLE.get())) {
             inventory.setItem(0, saddle);
         }
     }

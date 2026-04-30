@@ -33,7 +33,7 @@ public abstract class PowderSnowBlockMixin {
         }
 
         ItemStack hooves = gear.getItem(GearSlot.HOOVES.ordinal());
-        if (hooves.is(ModItems.HORSE_HOOVES)) {
+        if (hooves.is(ModItems.HORSE_HOOVES.get())) {
             cir.setReturnValue(true);
         }
     }

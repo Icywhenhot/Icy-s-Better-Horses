@@ -76,7 +76,7 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Unique
     private boolean bh_hasEquippedMedkit(IHorseData data) {
-        return data.bh_getGearContainer().getItem(GearSlot.MEDKIT.ordinal()).is(ModItems.HORSE_MEDKIT);
+        return data.bh_getGearContainer().getItem(GearSlot.MEDKIT.ordinal()).is(ModItems.HORSE_MEDKIT.get());
     }
 
     @Unique

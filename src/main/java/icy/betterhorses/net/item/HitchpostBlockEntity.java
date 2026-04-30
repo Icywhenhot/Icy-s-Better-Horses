@@ -17,7 +17,7 @@ public class HitchpostBlockEntity extends BlockEntity {
     private @Nullable UUID tetheredHorseId;
 
     public HitchpostBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.HITCHPOST, pos, state);
+        super(ModBlockEntities.HITCHPOST.get(), pos, state);
     }
 
     public @Nullable UUID getTetheredHorseId() {

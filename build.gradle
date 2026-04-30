@@ -1,115 +1,65 @@
 plugins {
-	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
-	id 'maven-publish'
+    id 'dev.architectury.loom' version "${loom_version}" apply false
+    id 'architectury-plugin' version "${architectury_plugin_version}"
+    id 'com.gradleup.shadow' version "${shadow_version}" apply false
 }
 
-version = project.mod_version
-group = project.maven_group
-
-repositories {
-	maven {
-		name = 'GeckoLib'
-		url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
-	}
+architectury {
+    minecraft = project.minecraft_version
 }
 
-loom {
-	splitEnvironmentSourceSets()
-
-	mods {
-		"icys-better-horses" {
-			sourceSet sourceSets.main
-			sourceSet sourceSets.client
-		}
-	}
+allprojects {
+    group = rootProject.maven_group
+    version = rootProject.mod_version
 }
 
-dependencies {
-	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+subprojects {
+    apply plugin: 'dev.architectury.loom'
+    apply plugin: 'architectury-plugin'
+    apply plugin: 'maven-publish'
 
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    base {
+        archivesName = "$rootProject.archives_name-$project.name"
+    }
 
-	modImplementation "software.bernie.geckolib:geckolib-fabric-${project.minecraft_version}:${project.geckolib_version}"
+    repositories {
+        maven { url = 'https://maven.architectury.dev/' }
+        maven {
+            name = 'GeckoLib'
+            url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        }
+        maven {
+            name = 'NeoForged'
+            url = 'https://maven.neoforged.net/releases'
+        }
+        mavenCentral()
+    }
 
-	testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
-	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
-	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.0"
-}
+    loom {
+        silentMojangMappingsLicense()
+    }
 
-processResources {
-	def version = project.version
-	inputs.property "version", version
+    dependencies {
+        minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
+        mappings loom.officialMojangMappings()
+    }
 
-	filesMatching("fabric.mod.json") {
-		expand "version": version
-	}
-}
+    java {
+        withSourcesJar()
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
 
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
-}
+    tasks.withType(JavaCompile).configureEach {
+        it.options.release = 21
+    }
 
-tasks.named("runClient").configure {
-	doFirst {
-		def modsDir = file("run/mods")
-		def processedModsDir = file("run/.fabric/processedMods")
-		def hasPatchouliJar = modsDir.exists() && modsDir.listFiles()?.any { file ->
-			file.name ==~ /(?i)patchouli-.*\.jar/
-		}
-
-		if (!hasPatchouliJar && processedModsDir.exists()) {
-			def stalePatchouliMods = processedModsDir.listFiles()?.findAll { file ->
-				file.name ==~ /(?i)(patchouli|fiber)-.*\.jar/
-			} ?: []
-
-			stalePatchouliMods.each { file ->
-				logger.lifecycle("Removing stale dev Patchouli cache: ${file.name}")
-				file.delete()
-			}
-		}
-	}
-}
-
-test {
-	useJUnitPlatform()
-}
-
-java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
-	withSourcesJar()
-
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
-}
-
-jar {
-	def projectName = project.name
-	inputs.property "projectName", projectName
-
-	from("LICENSE") {
-		rename { "${it}_$projectName"}
-	}
-}
-
-// configure the maven publication
-publishing {
-	publications {
-		create("mavenJava", MavenPublication) {
-			from components.java
-		}
-	}
-
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-	repositories {
-		// Add repositories to publish to here.
-		// Notice: This block does NOT have the same function as the block in the top level.
-		// The repositories here will be used for publishing your artifact, not for
-		// retrieving dependencies.
-	}
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId = base.archivesName.get()
+                from components.java
+            }
+        }
+    }
 }

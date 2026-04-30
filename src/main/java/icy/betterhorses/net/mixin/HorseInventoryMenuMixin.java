@@ -240,7 +240,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
     @Unique
     private boolean bh_hasUpgradedSaddleInMenu() {
-        return this.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE);
+        return this.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE.get());
     }
 
     @Unique

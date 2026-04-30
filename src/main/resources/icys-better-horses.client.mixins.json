@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "icy.betterhorses.net.client.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "AbstractEquineModelAccessor",
+    "AbstractHorseRendererMixin",
+    "EquineRenderStateMixin",
+    "HorseInventoryScreenMixin",
+    "KeyboardInputMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

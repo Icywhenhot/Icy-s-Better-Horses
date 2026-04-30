@@ -138,7 +138,7 @@ public class HitchpostBlock extends BaseEntityBlock {
     }
 
     public static boolean isValidTether(ServerLevel level, AbstractHorse horse, BlockPos pos) {
-        if (!level.getBlockState(pos).is(ModBlocks.HITCHPOST)) {
+        if (!level.getBlockState(pos).is(ModBlocks.HITCHPOST.get())) {
             return false;
         }
 

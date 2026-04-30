@@ -1,0 +1,30 @@
+architectury {
+    common rootProject.enabled_platforms.split(',')
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['../src/main/java']
+        }
+        resources {
+            srcDirs = ['../src/main/resources']
+            exclude 'fabric.mod.json'
+        }
+    }
+    test {
+        java {
+            srcDirs = ['../src/test/java']
+        }
+    }
+}
+
+dependencies {
+    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
+    modImplementation "dev.architectury:architectury:$rootProject.architectury_api_version"
+}
+
+test {
+    useJUnitPlatform()
+}
