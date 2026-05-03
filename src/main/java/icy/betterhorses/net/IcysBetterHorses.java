@@ -32,6 +32,7 @@ public final class IcysBetterHorses {
     public static void init() {
         ModBlocks.init();
         ModItems.init();
+        ModBlockEntities.init();
         ModSounds.init();
         LOGGER.info("Icy's Better Horses initialized.");
     }
