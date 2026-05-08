@@ -15,11 +15,11 @@ import software.bernie.geckolib.renderer.base.GeoRenderState;
  */
 public final class HorseStabilizerGeoModel extends GeoModel<HorseStabilizerAnimatable> {
     private static final Identifier MODEL =
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "geo/st.geo.json");
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "st");
     private static final Identifier TEXTURE =
             Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "textures/entity/horse_stabilizer.png");
     private static final Identifier ANIMATION =
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "animations/st.animation.json");
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "st");
 
     @Override
     public Identifier getModelResource(GeoRenderState renderState) {

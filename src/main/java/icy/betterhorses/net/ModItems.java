@@ -2,36 +2,42 @@ package icy.betterhorses.net;
 
 import icy.betterhorses.net.item.UpgradedSaddleItem;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.equipment.Equippable;
 
 public final class ModItems {
 
     public static final Item UPGRADED_SADDLE = register("upgraded_saddle",
-            new UpgradedSaddleItem(new Item.Properties().stacksTo(1)));
+            new UpgradedSaddleItem(itemProperties("upgraded_saddle")
+                    .stacksTo(1)
+                    .component(DataComponents.EQUIPPABLE, Equippable.saddle())));
 
     public static final Item HORSE_HOOVES = register("horse_hooves_gear",
-            new Item(new Item.Properties().stacksTo(1)));
+            new Item(itemProperties("horse_hooves_gear").stacksTo(1)));
 
     // Keep the original medkit id so existing worlds keep their saved item stacks.
     public static final Item HORSE_MEDKIT = register("horse_medkit_gear",
-            new Item(new Item.Properties().stacksTo(1)));
+            new Item(itemProperties("horse_medkit_gear").stacksTo(1)));
 
     public static final Item CANISTER = register("canister",
-            new Item(new Item.Properties()));
+            new Item(itemProperties("canister")));
 
     public static final Item HITCHPOST = register("hitchpost",
-            new BlockItem(ModBlocks.HITCHPOST, new Item.Properties().stacksTo(16)));
+            new BlockItem(ModBlocks.HITCHPOST, blockItemProperties("hitchpost").stacksTo(16)));
 
     public static final Item HORSE_STABILIZER = register("horse_stabilizer_gear",
-            new Item(new Item.Properties().stacksTo(1)));
+            new Item(itemProperties("horse_stabilizer_gear").stacksTo(1)));
 
     public static final CreativeModeTab STABLE_SUPPLIES_TAB = Registry.register(
             BuiltInRegistries.CREATIVE_MODE_TAB,
@@ -61,6 +67,20 @@ public final class ModItems {
         return Registry.register(BuiltInRegistries.ITEM,
                 Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path),
                 item);
+    }
+
+    private static Item.Properties itemProperties(String path) {
+        return new Item.Properties().setId(itemKey(path));
+    }
+
+    private static Item.Properties blockItemProperties(String path) {
+        return itemProperties(path).useBlockDescriptionPrefix();
+    }
+
+    private static ResourceKey<Item> itemKey(String path) {
+        return ResourceKey.create(
+                Registries.ITEM,
+                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path));
     }
 
     private ModItems() {}

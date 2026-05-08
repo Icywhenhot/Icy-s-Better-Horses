@@ -28,6 +28,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -197,7 +198,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public boolean bh_hasUpgradedSaddle() {
-        return inventory != null && inventory.getItem(0).is(ModItems.UPGRADED_SADDLE);
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        return self.getItemBySlot(EquipmentSlot.SADDLE).is(ModItems.UPGRADED_SADDLE);
     }
 
     @Override
@@ -267,6 +269,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.entityData.set(BH_BOND_SYNCED, bh_bond);
         bh_home = input.read("BH_Home", BlockPos.CODEC).orElse(null);
         bh_hitchpostPos = input.read("BH_Hitchpost", BlockPos.CODEC).orElse(null);
+        if (bh_home == null) {
+            bh_home = bh_readLegacyBlockPos(input, "BH_Home");
+        }
+        if (bh_hitchpostPos == null) {
+            bh_hitchpostPos = bh_readLegacyBlockPos(input, "BH_Hitchpost");
+        }
         bh_hitchAnchor = null;
         this.entityData.set(BH_HITCHPOST_POS_SYNCED, Optional.ofNullable(bh_hitchpostPos));
         bh_applyBondAttributes();
@@ -305,6 +313,18 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         if (saddle.is(ModItems.UPGRADED_SADDLE)) {
             inventory.setItem(0, saddle);
         }
+    }
+
+    @Unique
+    private static @Nullable BlockPos bh_readLegacyBlockPos(ValueInput input, String keyPrefix) {
+        Optional<Integer> x = input.getInt(keyPrefix + "X");
+        Optional<Integer> y = input.getInt(keyPrefix + "Y");
+        Optional<Integer> z = input.getInt(keyPrefix + "Z");
+        if (x.isEmpty() || y.isEmpty() || z.isEmpty()) {
+            return null;
+        }
+
+        return new BlockPos(x.get(), y.get(), z.get());
     }
 
     /** Codec-friendly slot/stack pair used for {@code BH_Gear}/{@code BH_Chest} list entries. */

@@ -2,7 +2,6 @@ package icy.betterhorses.net.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.mixin.HorseModelAccessor;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
@@ -55,10 +54,6 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
             float xRot) {
         IBhEquineStabilizerState bhState = (IBhEquineStabilizerState) (Object) state;
         if (!bhState.bh_hasStabilizer()) {
-            return;
-        }
-        if (bhState.bh_getStabilizerState() == HorseStabilizerState.CLOSED) {
-            // Wings furled — nothing to draw.
             return;
         }
 

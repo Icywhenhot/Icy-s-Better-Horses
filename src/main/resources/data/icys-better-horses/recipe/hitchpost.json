@@ -6,8 +6,8 @@
     "F"
   ],
   "key": {
-    "L": { "item": "minecraft:lead" },
-    "F": { "tag": "minecraft:fences" }
+    "L": "minecraft:lead",
+    "F": "#minecraft:fences"
   },
   "result": {
     "id": "icys-better-horses:hitchpost",
