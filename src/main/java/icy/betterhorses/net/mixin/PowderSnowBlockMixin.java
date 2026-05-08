@@ -5,7 +5,7 @@ import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.PowderSnowBlock;
 import org.spongepowered.asm.mixin.Mixin;

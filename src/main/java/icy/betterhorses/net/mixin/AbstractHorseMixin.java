@@ -12,14 +12,12 @@ import icy.betterhorses.net.goal.HorseReturnHomeGoal;
 import icy.betterhorses.net.goal.HorseStayGoal;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -28,15 +26,19 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -93,11 +95,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private @Nullable Component bh_customNameBeforeInteract = null;
 
     @Unique
-    private static final ResourceLocation BH_SPEED_ID =
-            ResourceLocation.fromNamespaceAndPath("icys-better-horses", "bond_speed");
+    private static final Identifier BH_SPEED_ID =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "bond_speed");
     @Unique
-    private static final ResourceLocation BH_JUMP_ID =
-            ResourceLocation.fromNamespaceAndPath("icys-better-horses", "bond_jump");
+    private static final Identifier BH_JUMP_ID =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "bond_jump");
     @Unique private static final float BH_WATER_SPEED_MULTIPLIER = 1.5F;
     @Unique private static final double BH_WATER_RISE_SPEED = 0.006D;
     @Unique private static final double BH_WATER_SURFACE_SPEED = 0.001D;
@@ -222,8 +224,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Override
     public void bh_onUpgradedSaddleRemoved(ItemStack previousSaddle) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self.level().isClientSide()) return;
-        bh_dropContainerContents(self, bh_gearContainer);
+        if (!(self.level() instanceof ServerLevel serverLevel)) return;
+        bh_dropContainerContents(self, serverLevel, bh_gearContainer);
         bh_dropChestContents();
         bh_syncGearFlags();
     }
@@ -237,87 +239,82 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
-    private void bh_onWrite(CompoundTag tag, CallbackInfo ci) {
+    private void bh_onWrite(ValueOutput output, CallbackInfo ci) {
         if (bh_owner != null) {
-            tag.putUUID("BH_Owner", bh_owner);
+            output.store("BH_Owner", UUIDUtil.CODEC, bh_owner);
         }
-        tag.putInt("BH_Command", bh_command.ordinal());
-        tag.putInt("BH_Bond", bh_bond);
+        output.putInt("BH_Command", bh_command.ordinal());
+        output.putInt("BH_Bond", bh_bond);
         if (bh_home != null) {
-            tag.putInt("BH_HomeX", bh_home.getX());
-            tag.putInt("BH_HomeY", bh_home.getY());
-            tag.putInt("BH_HomeZ", bh_home.getZ());
+            output.store("BH_Home", BlockPos.CODEC, bh_home);
         }
         if (bh_hitchpostPos != null) {
-            tag.putInt("BH_HitchpostX", bh_hitchpostPos.getX());
-            tag.putInt("BH_HitchpostY", bh_hitchpostPos.getY());
-            tag.putInt("BH_HitchpostZ", bh_hitchpostPos.getZ());
+            output.store("BH_Hitchpost", BlockPos.CODEC, bh_hitchpostPos);
         }
-        tag.put("BH_Gear", bh_writeContainer(bh_gearContainer));
-        tag.put("BH_Chest", bh_writeContainer(bh_chestContainer));
+        bh_writeContainer(output.list("BH_Gear", BhSlotEntry.CODEC), bh_gearContainer);
+        bh_writeContainer(output.list("BH_Chest", BhSlotEntry.CODEC), bh_chestContainer);
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
-    private void bh_onRead(CompoundTag tag, CallbackInfo ci) {
-        bh_owner = tag.hasUUID("BH_Owner") ? tag.getUUID("BH_Owner") : null;
+    private void bh_onRead(ValueInput input, CallbackInfo ci) {
+        bh_owner = input.read("BH_Owner", UUIDUtil.CODEC).orElse(null);
         if (bh_owner == null) {
-            bh_owner = ((AbstractHorse) (Object) this).getOwnerUUID();
+            EntityReference<LivingEntity> ownerRef = ((AbstractHorse) (Object) this).getOwnerReference();
+            bh_owner = ownerRef == null ? null : ownerRef.getUUID();
         }
-        bh_command = HorseCommand.fromId(tag.getInt("BH_Command"));
-        bh_bond = tag.getInt("BH_Bond");
+        bh_command = HorseCommand.fromId(input.getIntOr("BH_Command", HorseCommand.FOLLOW.ordinal()));
+        bh_bond = input.getIntOr("BH_Bond", 0);
         this.entityData.set(BH_BOND_SYNCED, bh_bond);
-        if (tag.contains("BH_HomeX")) {
-            bh_home = new BlockPos(tag.getInt("BH_HomeX"), tag.getInt("BH_HomeY"), tag.getInt("BH_HomeZ"));
-        }
-        bh_hitchpostPos = tag.contains("BH_HitchpostX")
-                ? new BlockPos(tag.getInt("BH_HitchpostX"), tag.getInt("BH_HitchpostY"), tag.getInt("BH_HitchpostZ"))
-                : null;
+        bh_home = input.read("BH_Home", BlockPos.CODEC).orElse(null);
+        bh_hitchpostPos = input.read("BH_Hitchpost", BlockPos.CODEC).orElse(null);
         bh_hitchAnchor = null;
         this.entityData.set(BH_HITCHPOST_POS_SYNCED, Optional.ofNullable(bh_hitchpostPos));
         bh_applyBondAttributes();
-        bh_readContainer(bh_gearContainer, tag.getList("BH_Gear", Tag.TAG_COMPOUND));
-        bh_readContainer(bh_chestContainer, tag.getList("BH_Chest", Tag.TAG_COMPOUND));
-        bh_restoreUpgradedSaddle(tag);
+        bh_readContainer(input.listOrEmpty("BH_Gear", BhSlotEntry.CODEC), bh_gearContainer);
+        bh_readContainer(input.listOrEmpty("BH_Chest", BhSlotEntry.CODEC), bh_chestContainer);
+        bh_restoreUpgradedSaddle(input);
         bh_syncGearFlags();
         bh_hadUpgradedSaddle = this.bh_hasUpgradedSaddle();
     }
 
     @Unique
-    private ListTag bh_writeContainer(SimpleContainer container) {
-        ListTag list = new ListTag();
+    private void bh_writeContainer(ValueOutput.TypedOutputList<BhSlotEntry> list, SimpleContainer container) {
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack stack = container.getItem(i);
             if (stack.isEmpty()) continue;
-            CompoundTag entry = new CompoundTag();
-            entry.putByte("Slot", (byte) i);
-            entry.put("Item", stack.save(registryAccess()));
-            list.add(entry);
+            list.add(new BhSlotEntry(i, stack));
         }
-        return list;
     }
 
     @Unique
-    private void bh_readContainer(SimpleContainer container, ListTag list) {
+    private void bh_readContainer(ValueInput.TypedInputList<BhSlotEntry> list, SimpleContainer container) {
         container.clearContent();
-        for (int i = 0; i < list.size(); i++) {
-            CompoundTag entry = list.getCompound(i);
-            int slot = entry.getByte("Slot") & 0xFF;
+        for (BhSlotEntry entry : list) {
+            int slot = entry.slot();
             if (slot < 0 || slot >= container.getContainerSize()) continue;
-            ItemStack stack = ItemStack.parse(registryAccess(), entry.getCompound("Item")).orElse(ItemStack.EMPTY);
-            container.setItem(slot, stack);
+            container.setItem(slot, entry.stack());
         }
     }
 
     @Unique
-    private void bh_restoreUpgradedSaddle(CompoundTag tag) {
-        if (inventory == null || !inventory.getItem(0).isEmpty() || !tag.contains("SaddleItem", Tag.TAG_COMPOUND)) {
+    private void bh_restoreUpgradedSaddle(ValueInput input) {
+        if (inventory == null || !inventory.getItem(0).isEmpty()) {
             return;
         }
-
-        ItemStack saddle = ItemStack.parse(registryAccess(), tag.getCompound("SaddleItem")).orElse(ItemStack.EMPTY);
+        ItemStack saddle = input.read("SaddleItem", ItemStack.CODEC).orElse(ItemStack.EMPTY);
         if (saddle.is(ModItems.UPGRADED_SADDLE)) {
             inventory.setItem(0, saddle);
         }
+    }
+
+    /** Codec-friendly slot/stack pair used for {@code BH_Gear}/{@code BH_Chest} list entries. */
+    @Unique
+    public record BhSlotEntry(int slot, ItemStack stack) {
+        public static final com.mojang.serialization.Codec<BhSlotEntry> CODEC =
+                com.mojang.serialization.codecs.RecordCodecBuilder.create(instance -> instance.group(
+                        com.mojang.serialization.Codec.INT.fieldOf("Slot").forGetter(BhSlotEntry::slot),
+                        ItemStack.CODEC.fieldOf("Item").forGetter(BhSlotEntry::stack)
+                ).apply(instance, BhSlotEntry::new));
     }
 
     @Inject(method = "createInventory", at = @At("TAIL"))
@@ -326,8 +323,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.bh_syncGearFlags();
     }
 
-    @Inject(method = "containerChanged", at = @At("TAIL"))
-    private void bh_onContainerChanged(net.minecraft.world.Container container, CallbackInfo ci) {
+    /**
+     * 1.21.11 dropped {@code AbstractHorse.containerChanged(Container)} (the old
+     * {@code ContainerListener} hook). Watch for upgraded-saddle removal from a tick poll instead.
+     * Cheap: one item-slot check per horse per tick on the server.
+     */
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void bh_pollUpgradedSaddleRemoval(CallbackInfo ci) {
+        if (((AbstractHorse) (Object) this).level().isClientSide()) {
+            return;
+        }
         boolean hasUpgradedSaddle = this.bh_hasUpgradedSaddle();
         if (this.bh_hadUpgradedSaddle && !hasUpgradedSaddle) {
             this.bh_onUpgradedSaddleRemoved(ItemStack.EMPTY);
@@ -414,7 +419,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
         if (self.isTamed() && player.isSecondaryUseActive()) {
             self.openCustomInventoryScreen(player);
-            cir.setReturnValue(net.minecraft.world.InteractionResult.sidedSuccess(self.level().isClientSide));
+            cir.setReturnValue((self.level().isClientSide() ? net.minecraft.world.InteractionResult.SUCCESS : net.minecraft.world.InteractionResult.CONSUME));
             return;
         }
 
@@ -428,7 +433,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
 
         this.doPlayerRide(player);
-        cir.setReturnValue(net.minecraft.world.InteractionResult.sidedSuccess(self.level().isClientSide));
+        cir.setReturnValue((self.level().isClientSide() ? net.minecraft.world.InteractionResult.SUCCESS : net.minecraft.world.InteractionResult.CONSUME));
     }
 
     @Override
@@ -472,7 +477,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                 self.hurtMarked = true;
             }
             if (state == HorseStabilizerState.OPEN) {
-                this.fallDistance = 0.0F;
+                this.fallDistance = 0.0D;
             }
         }
 
@@ -500,22 +505,22 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Inject(method = "causeFallDamage", at = @At("HEAD"), cancellable = true)
-    private void bh_adjustFallDamage(float distance, float damageMultiplier, DamageSource source, CallbackInfoReturnable<Boolean> cir) {
+    private void bh_adjustFallDamage(double distance, float damageMultiplier, DamageSource source, CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (this.bh_hasStabilizerGear()) {
             HorseStabilizerState landingState = HorseStabilizerLogic.resolveLandingState(
                     true,
-                    distance,
+                    (float) distance,
                     this.bh_getStabilizerState());
             if (landingState == HorseStabilizerState.CLOSED) {
                 return;
             }
 
-            if (distance > 1.0F) {
+            if (distance > 1.0D) {
                 self.playSound(SoundEvents.HORSE_LAND, 0.4F, 1.0F);
             }
             this.bh_setStabilizerState(landingState);
-            this.fallDistance = 0.0F;
+            this.fallDistance = 0.0D;
             cir.setReturnValue(false);
             return;
         }
@@ -524,7 +529,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             return;
         }
 
-        if (distance > 1.0F) {
+        if (distance > 1.0D) {
             self.playSound(SoundEvents.HORSE_LAND, 0.4F, 1.0F);
         }
 
@@ -546,14 +551,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Inject(method = "dropEquipment", at = @At("TAIL"))
-    private void bh_dropGearAndChest(CallbackInfo ci) {
+    private void bh_dropGearAndChest(ServerLevel level, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (self.level().isClientSide()) return;
-        if (self.level() instanceof ServerLevel serverLevel && this.bh_hitchpostPos != null) {
-            HitchpostBlock.releaseHorse(serverLevel, self, false);
+        if (this.bh_hitchpostPos != null) {
+            HitchpostBlock.releaseHorse(level, self, false);
         }
-        bh_dropContainerContents(self, bh_gearContainer);
-        bh_dropContainerContents(self, bh_chestContainer);
+        bh_dropContainerContents(self, level, bh_gearContainer);
+        bh_dropContainerContents(self, level, bh_chestContainer);
         bh_syncGearFlags();
     }
 
@@ -644,7 +649,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                 horse.isInLava(),
                 horse.isPassenger(),
                 horse.getDeltaMovement().y,
-                this.fallDistance,
+                (float) this.fallDistance,
                 this.bh_getStabilizerState());
     }
 
@@ -679,16 +684,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique
     private void bh_dropChestContents() {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self.level().isClientSide()) return;
-        bh_dropContainerContents(self, bh_chestContainer);
+        if (!(self.level() instanceof ServerLevel serverLevel)) return;
+        bh_dropContainerContents(self, serverLevel, bh_chestContainer);
     }
 
     @Unique
-    private void bh_dropContainerContents(AbstractHorse horse, SimpleContainer container) {
+    private void bh_dropContainerContents(AbstractHorse horse, ServerLevel level, SimpleContainer container) {
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack stack = container.removeItemNoUpdate(i);
             if (!stack.isEmpty()) {
-                horse.spawnAtLocation(stack);
+                horse.spawnAtLocation(level, stack);
             }
         }
     }

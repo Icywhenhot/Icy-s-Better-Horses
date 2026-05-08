@@ -1,45 +1,37 @@
 package icy.betterhorses.net.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.network.RadialCommandPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import org.joml.Matrix4f;
 
 public class RadialMenuScreen extends Screen {
 
     private static final int SEGMENT_COUNT = 4;
-    private static final int RING_INNER = 42;
-    private static final int RING_OUTER = 112;
-    private static final int RING_BACKDROP_INNER = 36;
-    private static final int RING_BACKDROP_OUTER = 118;
-    private static final int CENTER_RADIUS = 33;
-    private static final int LABEL_RADIUS = 79;
-    private static final double SEGMENT_GAP_RADIANS = Math.toRadians(3.0D);
-    private static final int BASE_BACKGROUND_COLOR = 0x5A070A12;
-    private static final int OUTER_HALO_COLOR = 0x5019223A;
-    private static final int RING_BACKDROP_COLOR = 0xC0111723;
-    private static final int RING_BACKDROP_SHADOW_COLOR = 0x70000000;
-    private static final int INNER_DISC_COLOR = 0xDE82A7E8;
-    private static final int INNER_DISC_SHADOW_COLOR = 0x8C6385C5;
+    private static final int RING_INNER = 44;
+    private static final int RING_OUTER = 110;
+    private static final int RING_BACKDROP_INNER = 38;
+    private static final int RING_BACKDROP_OUTER = 116;
+    private static final int CENTER_RADIUS = 32;
+    private static final int LABEL_RADIUS = 78;
+    private static final double SEGMENT_GAP_RADIANS = Math.toRadians(2.5D);
+
+    private static final int BASE_BACKGROUND_COLOR = 0x88060912;
+    private static final int RING_BACKDROP_COLOR = 0xD0111723;
+    private static final int RING_BACKDROP_SHADOW_COLOR = 0x80000000;
+    private static final int INNER_DISC_COLOR = 0xE082A7E8;
+    private static final int INNER_DISC_SHADOW_COLOR = 0x90000000;
     private static final int[] SEGMENT_COLORS = {
-            0xB27C848E,
-            0xB28A929C,
-            0xB2767D87,
-            0xB2939AA5
+            0xC07C848E,
+            0xC08A929C,
+            0xC0767D87,
+            0xC0939AA5
     };
     private static final int HOVERED_SEGMENT_COLOR = 0xF4D5E7FF;
-    private static final int HOVERED_SEGMENT_SHADE_COLOR = 0x90101826;
-    private static final int SEGMENT_SHADOW_COLOR = 0x50111826;
     private static final int CENTER_DOT_COLOR = 0xFFE6F1FF;
     private static final int CENTER_DOT_HOVER_COLOR = 0xFFFFFFFF;
     private static final int CENTER_DOT_SHADOW_COLOR = 0xCC0C111A;
@@ -72,21 +64,40 @@ public class RadialMenuScreen extends Screen {
         int cx = width / 2;
         int cy = height / 2;
 
-        double angle = Math.atan2(mouseY - cy, mouseX - cx);
-        double dist = Math.sqrt((mouseX - cx) * (double)(mouseX - cx) + (mouseY - cy) * (double)(mouseY - cy));
-        hoveredIndex = (dist >= RING_INNER && dist <= RING_OUTER) ? angleToIndex(angle) : -1;
+        double dx = mouseX - cx;
+        double dy = mouseY - cy;
+        double dist = Math.sqrt(dx * dx + dy * dy);
+        double angle = Math.atan2(dy, dx);
+        hoveredIndex = (dist >= RING_INNER && dist <= RING_OUTER) ? bh_angleToIndex(angle) : -1;
 
         // Dim background
         gfx.fill(0, 0, width, height, BASE_BACKGROUND_COLOR);
 
-        bh_drawRadialGeometry(gfx, cx, cy);
+        // Drop shadow ring (offset down/right)
+        bh_drawAnnulus(gfx, cx + 2, cy + 3, RING_BACKDROP_INNER, RING_BACKDROP_OUTER,
+                0.0D, Math.PI * 2.0D, RING_BACKDROP_SHADOW_COLOR);
+        // Backdrop ring
+        bh_drawAnnulus(gfx, cx, cy, RING_BACKDROP_INNER, RING_BACKDROP_OUTER,
+                0.0D, Math.PI * 2.0D, RING_BACKDROP_COLOR);
 
-        // Draw labels
+        double segAngle = Math.PI * 2.0D / SEGMENT_COUNT;
         for (int i = 0; i < SEGMENT_COUNT; i++) {
-            int lx = cx + (int)(LABEL_DX[i] * LABEL_RADIUS);
-            int ly = cy + (int)(LABEL_DY[i] * LABEL_RADIUS);
+            double startAngle = segAngle * i - Math.PI / 2.0D - segAngle / 2.0D + SEGMENT_GAP_RADIANS;
+            double endAngle = startAngle + segAngle - SEGMENT_GAP_RADIANS * 2.0D;
+            int color = (i == hoveredIndex) ? HOVERED_SEGMENT_COLOR : SEGMENT_COLORS[i];
+            bh_drawAnnulus(gfx, cx, cy, RING_INNER, RING_OUTER, startAngle, endAngle, color);
+        }
+
+        // Center disc shadow + disc
+        bh_drawDisc(gfx, cx, cy + 2, CENTER_RADIUS + 2, INNER_DISC_SHADOW_COLOR);
+        bh_drawDisc(gfx, cx, cy, CENTER_RADIUS, INNER_DISC_COLOR);
+
+        // Labels
+        for (int i = 0; i < SEGMENT_COUNT; i++) {
+            int lx = cx + LABEL_DX[i] * LABEL_RADIUS;
+            int ly = cy + LABEL_DY[i] * LABEL_RADIUS;
             String text = Component.translatable(commandKey(COMMANDS[i])).getString();
-            int textColor = (i == hoveredIndex) ? 0xFFF4F8FF : 0xFFD4DAE6;
+            int textColor = (i == hoveredIndex) ? 0xFFFFFFFF : 0xFFD4DAE6;
             gfx.drawCenteredString(font, text, lx, ly - font.lineHeight / 2, textColor);
         }
 
@@ -95,146 +106,122 @@ public class RadialMenuScreen extends Screen {
         gfx.fill(cx - 2, cy - 2, cx + 2, cy + 2, hoveredIndex >= 0 ? CENTER_DOT_HOVER_COLOR : CENTER_DOT_COLOR);
     }
 
-    private void bh_drawRadialGeometry(GuiGraphics gfx, int cx, int cy) {
-        gfx.flush();
-        bh_beginRadialDraw();
-        try {
-            // Large soft halo so the ring still reads clearly against bright scenery.
-            bh_drawFilledCircle(gfx, cx, cy, RING_OUTER + 10, OUTER_HALO_COLOR);
-
-            // Dark ring plate behind every option.
-            bh_drawFilledCircle(gfx, cx + 2, cy + 3, RING_BACKDROP_OUTER + 2, RING_BACKDROP_SHADOW_COLOR);
-            bh_drawAnnulus(gfx, cx, cy, 0.0D, Math.PI * 2.0D, RING_BACKDROP_INNER, RING_BACKDROP_OUTER, RING_BACKDROP_COLOR);
-
-            if (hoveredIndex >= 0) {
-                bh_drawHoveredSegmentShade(gfx, cx, cy, hoveredIndex);
-            }
-
-            for (int i = 0; i < SEGMENT_COUNT; i++) {
-                int color = (i == hoveredIndex) ? HOVERED_SEGMENT_COLOR : SEGMENT_COLORS[i];
-                bh_drawSegmentShadow(gfx, cx, cy, i);
-                bh_drawSegment(gfx, cx, cy, i, color);
-            }
-
-            bh_drawFilledCircle(gfx, cx, cy, CENTER_RADIUS + 4, INNER_DISC_SHADOW_COLOR);
-            bh_drawFilledCircle(gfx, cx, cy, CENTER_RADIUS, INNER_DISC_COLOR);
-        } finally {
-            bh_endRadialDraw();
+    /** Filled disc using horizontal scanlines — produces a perfectly clean circle at any radius. */
+    private void bh_drawDisc(GuiGraphics gfx, int cx, int cy, int radius, int color) {
+        int r2 = radius * radius;
+        for (int dy = -radius; dy <= radius; dy++) {
+            int xExtent = (int) Math.sqrt(r2 - dy * dy);
+            gfx.fill(cx - xExtent, cy + dy, cx + xExtent + 1, cy + dy + 1, color);
         }
     }
 
-    private void bh_drawSegment(GuiGraphics gfx, int cx, int cy, int index, int color) {
-        double segAngle = Math.PI * 2 / SEGMENT_COUNT;
-        double startAngle = segAngle * index - Math.PI / 2 - segAngle / 2 + SEGMENT_GAP_RADIANS;
-        double endAngle = startAngle + segAngle - SEGMENT_GAP_RADIANS * 2.0D;
-        bh_drawAnnulus(gfx, cx, cy, startAngle, endAngle, RING_INNER, RING_OUTER, color);
-    }
-
-    private void bh_drawSegmentShadow(GuiGraphics gfx, int cx, int cy, int index) {
-        double segAngle = Math.PI * 2 / SEGMENT_COUNT;
-        double startAngle = segAngle * index - Math.PI / 2 - segAngle / 2 + SEGMENT_GAP_RADIANS;
-        double endAngle = startAngle + segAngle - SEGMENT_GAP_RADIANS * 2.0D;
-        bh_drawAnnulus(gfx, cx + 1, cy + 2, startAngle, endAngle, RING_INNER, RING_OUTER, SEGMENT_SHADOW_COLOR);
-    }
-
-    private void bh_drawHoveredSegmentShade(GuiGraphics gfx, int cx, int cy, int index) {
-        double segAngle = Math.PI * 2 / SEGMENT_COUNT;
-        double startAngle = segAngle * index - Math.PI / 2 - segAngle / 2 + SEGMENT_GAP_RADIANS;
-        double endAngle = startAngle + segAngle - SEGMENT_GAP_RADIANS * 2.0D;
-        bh_drawAnnulus(gfx, cx + 3, cy + 4, startAngle, endAngle, RING_BACKDROP_INNER, RING_BACKDROP_OUTER + 2, HOVERED_SEGMENT_SHADE_COLOR);
-    }
-
-    private void bh_beginRadialDraw() {
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableCull();
-        RenderSystem.disableDepthTest();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-    }
-
-    private void bh_endRadialDraw() {
-        RenderSystem.enableDepthTest();
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
-    }
-
+    /**
+     * Filled annular arc using horizontal scanlines, clipped to the angular range
+     * [startAngle, endAngle]. Pass startAngle=0, endAngle=2π for a full ring.
+     */
     private void bh_drawAnnulus(
             GuiGraphics gfx,
             int cx,
             int cy,
-            double startAngle,
-            double endAngle,
             int innerRadius,
             int outerRadius,
+            double startAngle,
+            double endAngle,
             int color) {
-        Matrix4f matrix = gfx.pose().last().pose();
-        int steps = Math.max(24, (int) Math.ceil((endAngle - startAngle) * outerRadius / 10.0D));
+        int outerR2 = outerRadius * outerRadius;
+        int innerR2 = innerRadius * innerRadius;
+        boolean fullCircle = (endAngle - startAngle) >= Math.PI * 2.0D - 1.0e-6D;
 
-        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
-        for (int step = 0; step < steps; step++) {
-            double angle1 = startAngle + (endAngle - startAngle) * step / steps;
-            double angle2 = startAngle + (endAngle - startAngle) * (step + 1) / steps;
+        for (int dy = -outerRadius; dy <= outerRadius; dy++) {
+            int dy2 = dy * dy;
+            if (dy2 > outerR2) continue;
+            int outerX = (int) Math.sqrt(outerR2 - dy2);
+            int yPx = cy + dy;
 
-            float outerX1 = (float) (cx + Math.cos(angle1) * outerRadius);
-            float outerY1 = (float) (cy + Math.sin(angle1) * outerRadius);
-            float outerX2 = (float) (cx + Math.cos(angle2) * outerRadius);
-            float outerY2 = (float) (cy + Math.sin(angle2) * outerRadius);
-            float innerX1 = (float) (cx + Math.cos(angle1) * innerRadius);
-            float innerY1 = (float) (cy + Math.sin(angle1) * innerRadius);
-            float innerX2 = (float) (cx + Math.cos(angle2) * innerRadius);
-            float innerY2 = (float) (cy + Math.sin(angle2) * innerRadius);
-
-            buffer.addVertex(matrix, outerX1, outerY1, 0.0F).setColor(color);
-            buffer.addVertex(matrix, outerX2, outerY2, 0.0F).setColor(color);
-            buffer.addVertex(matrix, innerX1, innerY1, 0.0F).setColor(color);
-
-            buffer.addVertex(matrix, innerX1, innerY1, 0.0F).setColor(color);
-            buffer.addVertex(matrix, outerX2, outerY2, 0.0F).setColor(color);
-            buffer.addVertex(matrix, innerX2, innerY2, 0.0F).setColor(color);
+            if (dy2 >= innerR2) {
+                // Single horizontal run from -outerX to +outerX
+                if (fullCircle) {
+                    gfx.fill(cx - outerX, yPx, cx + outerX + 1, yPx + 1, color);
+                } else {
+                    bh_emitClippedRun(gfx, cx - outerX, cx + outerX, yPx, dy, cx, startAngle, endAngle, color);
+                }
+            } else {
+                int innerX = (int) Math.sqrt(innerR2 - dy2);
+                // Two horizontal runs: left and right of the inner cutout
+                if (fullCircle) {
+                    gfx.fill(cx - outerX, yPx, cx - innerX, yPx + 1, color);
+                    gfx.fill(cx + innerX + 1, yPx, cx + outerX + 1, yPx + 1, color);
+                } else {
+                    bh_emitClippedRun(gfx, cx - outerX, cx - innerX - 1, yPx, dy, cx, startAngle, endAngle, color);
+                    bh_emitClippedRun(gfx, cx + innerX + 1, cx + outerX, yPx, dy, cx, startAngle, endAngle, color);
+                }
+            }
         }
-
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
     }
 
-    private void bh_drawFilledCircle(GuiGraphics gfx, int cx, int cy, int radius, int color) {
-        Matrix4f matrix = gfx.pose().last().pose();
-        int steps = Math.max(36, radius * 2);
-
-        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
-        for (int step = 0; step < steps; step++) {
-            double angle1 = Math.PI * 2.0D * step / steps;
-            double angle2 = Math.PI * 2.0D * (step + 1) / steps;
-
-            buffer.addVertex(matrix, cx, cy, 0.0F).setColor(color);
-            buffer.addVertex(matrix, (float) (cx + Math.cos(angle1) * radius), (float) (cy + Math.sin(angle1) * radius), 0.0F).setColor(color);
-            buffer.addVertex(matrix, (float) (cx + Math.cos(angle2) * radius), (float) (cy + Math.sin(angle2) * radius), 0.0F).setColor(color);
+    /**
+     * Walks x from xStart..xEnd inclusive, emitting horizontal rect fills covering pixels whose
+     * angle from (cx, cy+dy) falls inside [startAngle, endAngle].
+     */
+    private void bh_emitClippedRun(
+            GuiGraphics gfx,
+            int xStart,
+            int xEnd,
+            int yPx,
+            int dy,
+            int cx,
+            double startAngle,
+            double endAngle,
+            int color) {
+        if (xEnd < xStart) return;
+        int runStart = -1;
+        for (int x = xStart; x <= xEnd; x++) {
+            double a = Math.atan2(dy, x - cx);
+            boolean inside = bh_angleInRange(a, startAngle, endAngle);
+            if (inside && runStart == -1) {
+                runStart = x;
+            } else if (!inside && runStart != -1) {
+                gfx.fill(runStart, yPx, x, yPx + 1, color);
+                runStart = -1;
+            }
         }
-
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
+        if (runStart != -1) {
+            gfx.fill(runStart, yPx, xEnd + 1, yPx + 1, color);
+        }
     }
 
-    private int angleToIndex(double angle) {
-        // Offset so that "up" = index 0
-        double adjusted = angle + Math.PI / 2;
-        if (adjusted < 0) adjusted += Math.PI * 2;
-        double segAngle = Math.PI * 2 / SEGMENT_COUNT;
-        return (int)(adjusted / segAngle) % SEGMENT_COUNT;
+    private boolean bh_angleInRange(double a, double start, double end) {
+        double twoPi = Math.PI * 2.0D;
+        double diff = a - start;
+        diff = ((diff % twoPi) + twoPi) % twoPi;
+        return diff <= (end - start);
+    }
+
+    /**
+     * Maps a mouse angle to a segment index. Segments are centered on the cardinal directions
+     * (top=0, right=1, bottom=2, left=3), so we shift by π/2 to put "up" at angle 0 and by an
+     * additional half-segment so each segment's center lands at the integer index.
+     */
+    private int bh_angleToIndex(double angle) {
+        double segAngle = Math.PI * 2.0D / SEGMENT_COUNT;
+        double adjusted = angle + Math.PI / 2.0D + segAngle / 2.0D;
+        double twoPi = Math.PI * 2.0D;
+        adjusted = ((adjusted % twoPi) + twoPi) % twoPi;
+        return (int) (adjusted / segAngle) % SEGMENT_COUNT;
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0 && hoveredIndex >= 0) { // left click to confirm
+    public boolean mouseReleased(MouseButtonEvent event) {
+        if (event.button() == 0 && hoveredIndex >= 0) {
             sendCommand(COMMANDS[hoveredIndex]);
             onClose();
             return true;
         }
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(event);
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        // Close on Escape or the radial key itself
+    public boolean keyPressed(KeyEvent event) {
         onClose();
         return true;
     }

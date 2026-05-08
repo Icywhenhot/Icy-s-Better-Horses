@@ -3,7 +3,7 @@ package icy.betterhorses.net;
 import icy.betterhorses.net.item.HitchpostBlock;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -28,7 +28,7 @@ public final class ModBlocks {
 
     private static Block register(String path, Block block) {
         return Registry.register(BuiltInRegistries.BLOCK,
-                ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path),
+                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path),
                 block);
     }
 

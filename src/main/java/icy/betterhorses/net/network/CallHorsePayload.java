@@ -2,12 +2,12 @@ package icy.betterhorses.net.network;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public record CallHorsePayload() implements CustomPacketPayload {
 
     public static final Type<CallHorsePayload> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath("icys-better-horses", "call_horse"));
+            new Type<>(Identifier.fromNamespaceAndPath("icys-better-horses", "call_horse"));
 
     public static final StreamCodec STREAM_CODEC = new StreamCodec();
 

@@ -3,21 +3,30 @@ package icy.betterhorses.net.mixin;
 import icy.betterhorses.net.client.HorseAutodriveController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.player.Input;
+import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.player.Input;
+import net.minecraft.world.phys.Vec2;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+/**
+ * Mixin into KeyboardInput.tick() to drive the horse autodrive controller.
+ *
+ * 1.21.11 reshape: KeyboardInput now extends ClientInput, the keyboard state lives in an immutable
+ * Input record at {@code keyPresses}, and movement impulse comes from {@code moveVector}.
+ * We rebuild both at TAIL using the autodrive controller's output.
+ */
 @Mixin(KeyboardInput.class)
-public abstract class KeyboardInputMixin extends Input {
+public abstract class KeyboardInputMixin extends ClientInput {
 
     @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_applyHorseAutodrive(boolean slowDown, float slowDownFactor, CallbackInfo ci) {
+    private void bh_applyHorseAutodrive(CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
         LocalPlayer player = client.player;
         Screen screen = client.screen;
@@ -35,23 +44,29 @@ public abstract class KeyboardInputMixin extends Input {
             }
         }
 
+        Input current = this.keyPresses;
+        Vec2 currentMove = this.moveVector;
         HorseAutodriveController.Output output = HorseAutodriveController.INSTANCE.tick(
                 tick,
                 eligible,
                 horseId,
-                this.up,
-                this.down,
-                this.left,
-                this.right,
-                this.forwardImpulse,
-                this.leftImpulse
+                current.forward(),
+                current.backward(),
+                current.left(),
+                current.right(),
+                currentMove.y,
+                currentMove.x
         );
 
-        this.up = output.forwardDown();
-        this.down = output.backDown();
-        this.left = output.leftDown();
-        this.right = output.rightDown();
-        this.forwardImpulse = output.forwardImpulse();
-        this.leftImpulse = output.leftImpulse();
+        this.keyPresses = new Input(
+                output.forwardDown(),
+                output.backDown(),
+                output.leftDown(),
+                output.rightDown(),
+                current.jump(),
+                current.shift(),
+                current.sprint()
+        );
+        this.moveVector = new Vec2(output.leftImpulse(), output.forwardImpulse());
     }
 }

@@ -15,7 +15,7 @@ import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,12 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
 
     public static KeyMapping CALL_KEY;
 
-    private static final String CATEGORY = "key.categories.icys-better-horses";
+    /**
+     * 1.21.11: {@link KeyMapping}'s category is now a typed {@link KeyMapping.Category} record,
+     * not a free-form translation key. {@link KeyMapping.Category#GAMEPLAY} is the closest
+     * built-in match for a "call your horse" bind; we register here on first use.
+     */
+    private static final KeyMapping.Category CATEGORY = KeyMapping.Category.GAMEPLAY;
 
     @Override
     public void onInitializeClient() {
@@ -91,7 +96,8 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
     }
 
     private boolean bh_isControlDown() {
-        long window = Minecraft.getInstance().getWindow().getWindow();
+        // 1.21.11: InputConstants.isKeyDown takes the Window object directly (no longer a long handle).
+        com.mojang.blaze3d.platform.Window window = Minecraft.getInstance().getWindow();
         return InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT_CONTROL)
                 || InputConstants.isKeyDown(window, GLFW.GLFW_KEY_RIGHT_CONTROL);
     }

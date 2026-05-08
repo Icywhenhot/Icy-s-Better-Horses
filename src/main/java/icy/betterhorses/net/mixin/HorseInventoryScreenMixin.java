@@ -8,12 +8,13 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraft.world.entity.animal.horse.Llama;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.Llama;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.item.Item;
@@ -34,16 +35,16 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Shadow private float xMouse;
     @Shadow private float yMouse;
 
-    @Unique private static final ResourceLocation BH_SLOT_SPRITE =
-            ResourceLocation.withDefaultNamespace("container/slot");
-    @Unique private static final ResourceLocation BH_SADDLE_SLOT_SPRITE =
-            ResourceLocation.withDefaultNamespace("container/horse/saddle_slot");
-    @Unique private static final ResourceLocation BH_LLAMA_ARMOR_SLOT_SPRITE =
-            ResourceLocation.withDefaultNamespace("container/horse/llama_armor_slot");
-    @Unique private static final ResourceLocation BH_ARMOR_SLOT_SPRITE =
-            ResourceLocation.withDefaultNamespace("container/horse/armor_slot");
-    @Unique private static final ResourceLocation BH_HORSE_TEXTURE =
-            ResourceLocation.withDefaultNamespace("textures/gui/container/horse.png");
+    @Unique private static final Identifier BH_SLOT_SPRITE =
+            Identifier.withDefaultNamespace("container/slot");
+    @Unique private static final Identifier BH_SADDLE_SLOT_SPRITE =
+            Identifier.withDefaultNamespace("container/horse/saddle_slot");
+    @Unique private static final Identifier BH_LLAMA_ARMOR_SLOT_SPRITE =
+            Identifier.withDefaultNamespace("container/horse/llama_armor_slot");
+    @Unique private static final Identifier BH_ARMOR_SLOT_SPRITE =
+            Identifier.withDefaultNamespace("container/horse/armor_slot");
+    @Unique private static final Identifier BH_HORSE_TEXTURE =
+            Identifier.withDefaultNamespace("textures/gui/container/horse.png");
 
     @Unique private static final int BH_VANILLA_IMAGE_HEIGHT = 166;
     @Unique private static final int BH_TOP_SECTION_HEIGHT = 77;
@@ -89,10 +90,9 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
         int x = this.leftPos;
         int y = this.topPos;
-        gfx.blit(BH_HORSE_TEXTURE, x, y, 0, 0, this.imageWidth, BH_TOP_SECTION_HEIGHT);
+        bh_blitGui(gfx, BH_HORSE_TEXTURE, x, y, 0, 0, this.imageWidth, BH_TOP_SECTION_HEIGHT);
         this.bh_drawMiddlePanel(gfx, x, y + BH_TOP_SECTION_HEIGHT, this.imageWidth, BH_PLAYER_SECTION_Y_OFFSET);
-        gfx.blit(
-                BH_HORSE_TEXTURE,
+        bh_blitGui(gfx, BH_HORSE_TEXTURE,
                 x,
                 y + BH_TOP_SECTION_HEIGHT + BH_PLAYER_SECTION_Y_OFFSET,
                 0,
@@ -100,14 +100,14 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
                 this.imageWidth,
                 BH_VANILLA_IMAGE_HEIGHT - BH_TOP_SECTION_HEIGHT);
 
-        if (this.horse.isSaddleable()) {
-            gfx.blitSprite(BH_SADDLE_SLOT_SPRITE, x + 7, y + 17, 18, 18);
+        if (this.horse.canUseSlot(EquipmentSlot.SADDLE)) {
+            gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SADDLE_SLOT_SPRITE, x + 7, y + 17, 18, 18);
         }
 
         if (this.horse.canUseSlot(EquipmentSlot.BODY)) {
-            ResourceLocation armorSlotSprite =
+            Identifier armorSlotSprite =
                     this.horse instanceof Llama ? BH_LLAMA_ARMOR_SLOT_SPRITE : BH_ARMOR_SLOT_SPRITE;
-            gfx.blitSprite(armorSlotSprite, x + 7, y + 35, 18, 18);
+            gfx.blitSprite(RenderPipelines.GUI_TEXTURED, armorSlotSprite, x + 7, y + 35, 18, 18);
         }
 
         this.bh_drawGearPanel(gfx);
@@ -185,12 +185,14 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         String speedText = String.format("Speed: %.1f blk/s", speedBps);
         String jumpText = String.format("Jump:  %.1f blk", jumpHeight);
 
-        gfx.pose().pushPose();
-        gfx.pose().translate(x, y, 0.0F);
-        gfx.pose().scale(BH_STATS_TEXT_SCALE, BH_STATS_TEXT_SCALE, 1.0F);
+        // 1.21.11: gfx.pose() returns a Matrix3x2fStack (joml 2D), so push/pop are matrix-named
+        // and translate/scale take 2 floats, not 3.
+        gfx.pose().pushMatrix();
+        gfx.pose().translate((float) x, (float) y);
+        gfx.pose().scale(BH_STATS_TEXT_SCALE, BH_STATS_TEXT_SCALE);
         gfx.drawString(this.font, speedText, 0, 0, 0x404040, false);
         gfx.drawString(this.font, jumpText, 0, lineSpacing, 0x404040, false);
-        gfx.pose().popPose();
+        gfx.pose().popMatrix();
     }
 
     @Unique
@@ -198,7 +200,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int x = this.leftPos + BH_GEAR_PANEL_X;
         int y = this.topPos + BH_GEAR_PANEL_Y;
         for (int i = 0; i < GearSlot.COUNT; i++) {
-            gfx.blitSprite(BH_SLOT_SPRITE, x + i * 18, y, 18, 18);
+            gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SLOT_SPRITE, x + i * 18, y, 18, 18);
         }
         if (!this.bh_hasUpgradedSaddleInMenu()) {
             return;
@@ -219,7 +221,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int y = this.topPos + BH_CHEST_PANEL_Y;
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                gfx.blitSprite(BH_SLOT_SPRITE, x + col * 18, y + row * 18, 18, 18);
+                gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SLOT_SPRITE, x + col * 18, y + row * 18, 18, 18);
             }
         }
     }
@@ -229,14 +231,21 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int innerLeft = x + BH_SIDE_BORDER_WIDTH;
         int innerRight = x + width - BH_SIDE_BORDER_WIDTH;
 
-        gfx.blit(BH_HORSE_TEXTURE, x, y, 0, BH_TOP_SECTION_HEIGHT, BH_SIDE_BORDER_WIDTH, height);
-        gfx.blit(BH_HORSE_TEXTURE, innerRight, y, this.imageWidth - BH_SIDE_BORDER_WIDTH, BH_TOP_SECTION_HEIGHT, BH_SIDE_BORDER_WIDTH, height);
+        bh_blitGui(gfx, BH_HORSE_TEXTURE, x, y, 0, BH_TOP_SECTION_HEIGHT, BH_SIDE_BORDER_WIDTH, height);
+        bh_blitGui(gfx, BH_HORSE_TEXTURE, innerRight, y,
+                this.imageWidth - BH_SIDE_BORDER_WIDTH, BH_TOP_SECTION_HEIGHT, BH_SIDE_BORDER_WIDTH, height);
 
         gfx.fill(innerLeft, y, innerRight, y + height, BH_MIDDLE_FILL);
         gfx.fill(innerLeft, y, innerRight, y + 1, BH_MIDDLE_HIGHLIGHT);
         gfx.fill(innerLeft, y + height - 1, innerRight, y + height, BH_MIDDLE_SHADOW);
     }
 
+    /**
+     * 1.21.11 removed {@code gfx.setColor} (the old way to tint a {@code renderItem} call).
+     * To replicate the "ghost" feel of the old hint icons, we draw the item normally and then
+     * lay a translucent overlay rectangle on top of it: a milky-white wash dims & desaturates
+     * the icon so it reads as a placeholder rather than a real equipped item.
+     */
     @Unique
     private void bh_drawGearHint(GuiGraphics gfx, int x, int y, GearSlot slot, Item item) {
         int slotIndex = this.bh_getGearSlotIndex(slot.ordinal());
@@ -244,13 +253,22 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
             return;
         }
 
-        gfx.setColor(
-                ((BH_HINT_TINT >> 16) & 0xFF) / 255.0F,
-                ((BH_HINT_TINT >> 8) & 0xFF) / 255.0F,
-                (BH_HINT_TINT & 0xFF) / 255.0F,
-                ((BH_HINT_TINT >> 24) & 0xFF) / 255.0F);
-        gfx.renderItem(new ItemStack(item), x + slot.ordinal() * 18 + 1, y + 1);
-        gfx.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+        int iconX = x + slot.ordinal() * 18 + 1;
+        int iconY = y + 1;
+        gfx.renderItem(new ItemStack(item), iconX, iconY);
+        // Translucent wash. ARGB: alpha 0xA0 (~63%), warm-grey RGB matching old BH_HINT_TINT.
+        gfx.fill(iconX, iconY, iconX + 16, iconY + 16, 0xA0B7AB99);
+    }
+
+    /**
+     * Helper for the new 1.21.11 {@code blit} signature, which now requires an explicit
+     * {@link com.mojang.blaze3d.pipeline.RenderPipeline} and texture sheet dimensions.
+     * The vanilla horse GUI texture is the standard 256×256 sheet.
+     */
+    @Unique
+    private static void bh_blitGui(GuiGraphics gfx, Identifier texture,
+                                   int x, int y, int u, int v, int width, int height) {
+        gfx.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, (float) u, (float) v, width, height, 256, 256);
     }
 
     @Unique

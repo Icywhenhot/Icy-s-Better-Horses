@@ -1,6 +1,6 @@
 package icy.betterhorses.net;
 
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 
 import java.util.Collection;
 import java.util.HashMap;

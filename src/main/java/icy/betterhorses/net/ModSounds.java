@@ -2,7 +2,7 @@ package icy.betterhorses.net;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 
 public final class ModSounds {
@@ -16,7 +16,7 @@ public final class ModSounds {
     }
 
     private static SoundEvent register(String path) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
+        Identifier id = Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
         return Registry.register(BuiltInRegistries.SOUND_EVENT, id, SoundEvent.createVariableRangeEvent(id));
     }
 

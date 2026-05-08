@@ -1,31 +1,44 @@
 package icy.betterhorses.net.client.render;
 
 import icy.betterhorses.net.HorseStabilizerState;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoAnimatable;
-import software.bernie.geckolib.animation.Animation;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.object.LoopType;
+import software.bernie.geckolib.animation.object.PlayState;
+import software.bernie.geckolib.animation.state.AnimationTest;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.Map;
 import java.util.WeakHashMap;
 
+/**
+ * GeckoLib-driven animation state holder for the stabilizer wings.
+ *
+ * Updated for GeckoLib 5: {@code Animation.LoopType} → {@link LoopType}, {@code AnimationState}
+ * → {@link AnimationTest}, and {@code AnimatableManager} now lives under {@code animatable.manager}.
+ * The actual rendering side (stabilizer model on the horse) is currently stubbed pending the
+ * GeckoLib 5 GeoRenderState pipeline port — see {@link HorseStabilizerLayer}.
+ */
 public final class HorseStabilizerAnimatable implements GeoAnimatable {
     private static final RawAnimation DEPLOY_AND_GLIDE = RawAnimation.begin()
-            .then("animation", Animation.LoopType.PLAY_ONCE)
+            .then("animation", LoopType.PLAY_ONCE)
             .thenLoop("wingflap");
     private static final RawAnimation GLIDE_LOOP = RawAnimation.begin().thenLoop("wingflap");
     private static final Map<AbstractHorse, HorseStabilizerAnimatable> INSTANCES = new WeakHashMap<>();
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    /**
+     * GeckoLib 5 changed the {@link AnimationController} ctor: there's no leading {@code this}
+     * animatable parameter, and the animatable is implicitly tied through registration. Signature
+     * is now {@code (String name, int transitionTicks, AnimationStateHandler<T>)}.
+     */
     private final AnimationController<HorseStabilizerAnimatable> controller =
-            new AnimationController<>(this, "stabilizer", 0, this::animationPredicate);
+            new AnimationController<>("stabilizer", 0, this::animationPredicate);
 
     private @Nullable AbstractHorse horse;
     private HorseStabilizerState state = HorseStabilizerState.CLOSED;
@@ -36,16 +49,31 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
         return INSTANCES.computeIfAbsent(horse, ignored -> new HorseStabilizerAnimatable());
     }
 
+    /**
+     * Look up the animatable for a horse by its entity id. Used by the render layer in 1.21.11,
+     * which only has access to the {@code RenderState} (entity id captured at extract time)
+     * during {@code submit}.
+     */
+    public static @Nullable HorseStabilizerAnimatable getById(int entityId) {
+        for (Map.Entry<AbstractHorse, HorseStabilizerAnimatable> entry : INSTANCES.entrySet()) {
+            if (entry.getKey().getId() == entityId) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
     public void syncFromHorse(AbstractHorse horse, HorseStabilizerState state) {
         this.horse = horse;
 
         boolean nextActive = state != HorseStabilizerState.CLOSED;
+        // GeckoLib 5: forceAnimationReset() and stop() were unified into reset().
         if (nextActive && !this.active) {
             this.deploySequenceRequested = true;
-            this.controller.forceAnimationReset();
+            this.controller.reset();
         } else if (!nextActive && this.active) {
             this.deploySequenceRequested = false;
-            this.controller.stop();
+            this.controller.reset();
         }
 
         this.active = nextActive;
@@ -70,25 +98,18 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
         return this.cache;
     }
 
-    @Override
-    public double getTick(Object relatedObject) {
-        return this.horse == null ? 0 : this.horse.tickCount;
-    }
-
-    private PlayState animationPredicate(AnimationState<HorseStabilizerAnimatable> state) {
+    private PlayState animationPredicate(AnimationTest<HorseStabilizerAnimatable> test) {
         if (!this.active) {
             return PlayState.STOP;
         }
 
         if (this.deploySequenceRequested) {
             this.deploySequenceRequested = false;
-            state.setAnimation(DEPLOY_AND_GLIDE);
-
-            return PlayState.CONTINUE;
+            return test.setAndContinue(DEPLOY_AND_GLIDE);
         }
 
-        if (!state.isCurrentAnimation(DEPLOY_AND_GLIDE) && !state.isCurrentAnimation(GLIDE_LOOP)) {
-            state.setAnimation(GLIDE_LOOP);
+        if (!test.isCurrentAnimation(DEPLOY_AND_GLIDE) && !test.isCurrentAnimation(GLIDE_LOOP)) {
+            return test.setAndContinue(GLIDE_LOOP);
         }
 
         return PlayState.CONTINUE;

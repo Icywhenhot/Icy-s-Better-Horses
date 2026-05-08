@@ -9,7 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -43,7 +43,7 @@ import java.util.UUID;
 public class HitchpostBlock extends BaseEntityBlock {
 
     public static final MapCodec<HitchpostBlock> CODEC = simpleCodec(HitchpostBlock::new);
-    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     private static final double TETHER_SEARCH_RADIUS = 7.0D;
     private static final double TETHER_OFFSET = 1.35D;
@@ -105,7 +105,7 @@ public class HitchpostBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
+    protected VoxelShape getOcclusionShape(BlockState state) {
         return Shapes.empty();
     }
 
@@ -118,22 +118,24 @@ public class HitchpostBlock extends BaseEntityBlock {
 
         AbstractHorse horse = findHorseToTether(serverLevel, pos, player);
         if (horse == null) {
-            player.sendSystemMessage(Component.translatable("message.icys-better-horses.no_horse_to_tether"));
+            player.displayClientMessage(Component.translatable("message.icys-better-horses.no_horse_to_tether"), false);
             return;
         }
 
         if (tetherHorse(serverLevel, pos, state, horse, player)) {
-            player.sendSystemMessage(Component.translatable("message.icys-better-horses.hitchpost_tethered"));
+            player.displayClientMessage(Component.translatable("message.icys-better-horses.hitchpost_tethered"), false);
         }
     }
 
+    /**
+     * 1.21.5+ replaces {@code onRemove} with {@link #affectNeighborsAfterRemoval}, which is only
+     * invoked when the block is actually removed (not for in-place state changes), so we no longer
+     * need the {@code !state.is(newState.getBlock())} guard.
+     */
     @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if (!state.is(newState.getBlock()) && level instanceof ServerLevel serverLevel) {
-            releaseHorseAtPost(serverLevel, pos);
-        }
-
-        super.onRemove(state, level, pos, newState, movedByPiston);
+    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+        releaseHorseAtPost(level, pos);
+        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
     }
 
     public static boolean isValidTether(ServerLevel level, AbstractHorse horse, BlockPos pos) {
@@ -210,8 +212,12 @@ public class HitchpostBlock extends BaseEntityBlock {
         horse.setDeltaMovement(Vec3.ZERO);
         horse.hurtMarked = true;
 
-        if (player != null && data.bh_getOwner() == null && player.getUUID().equals(horse.getOwnerUUID())) {
-            data.bh_setOwner(player.getUUID());
+        if (player != null && data.bh_getOwner() == null) {
+            net.minecraft.world.entity.EntityReference<net.minecraft.world.entity.LivingEntity> ownerRef = horse.getOwnerReference();
+            UUID horseOwner = ownerRef == null ? null : ownerRef.getUUID();
+            if (player.getUUID().equals(horseOwner)) {
+                data.bh_setOwner(player.getUUID());
+            }
         }
 
         data.bh_setHitchpostPos(pos);
@@ -241,7 +247,8 @@ public class HitchpostBlock extends BaseEntityBlock {
         }
 
         UUID playerId = player.getUUID();
-        UUID ownerId = horse.getOwnerUUID();
+        net.minecraft.world.entity.EntityReference<net.minecraft.world.entity.LivingEntity> ownerRef = horse.getOwnerReference();
+        UUID ownerId = ownerRef == null ? null : ownerRef.getUUID();
         UUID modOwnerId = ((IHorseData) horse).bh_getOwner();
         return playerId.equals(ownerId) || playerId.equals(modOwnerId);
     }

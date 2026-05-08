@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -35,16 +35,16 @@ public final class ModItems {
 
     public static final CreativeModeTab STABLE_SUPPLIES_TAB = Registry.register(
             BuiltInRegistries.CREATIVE_MODE_TAB,
-            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "stable_supplies"),
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "stable_supplies"),
             FabricItemGroup.builder()
                     .title(Component.translatable("itemGroup.icys-better-horses.stable_supplies"))
                     .icon(() -> new ItemStack(UPGRADED_SADDLE))
                     .displayItems((parameters, entries) -> {
-                        Item handbook = BuiltInRegistries.ITEM.get(
-                                ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "stable_handbook"));
-                        if (handbook != Items.AIR) {
-                            entries.accept(handbook);
-                        }
+                        BuiltInRegistries.ITEM
+                                .get(Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "stable_handbook"))
+                                .map(net.minecraft.core.Holder::value)
+                                .filter(item -> item != Items.AIR)
+                                .ifPresent(entries::accept);
                         entries.accept(UPGRADED_SADDLE);
                         entries.accept(HORSE_HOOVES);
                         entries.accept(HORSE_MEDKIT);
@@ -59,7 +59,7 @@ public final class ModItems {
 
     private static Item register(String path, Item item) {
         return Registry.register(BuiltInRegistries.ITEM,
-                ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path),
+                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path),
                 item);
     }
 

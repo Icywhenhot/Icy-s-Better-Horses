@@ -11,13 +11,14 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +30,8 @@ public class IcysBetterHorses implements ModInitializer {
     public static final String MOD_ID = "icys-better-horses";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    private static final ResourceLocation WATER_SPEED_ID =
-            ResourceLocation.fromNamespaceAndPath(MOD_ID, "water_speed");
+    private static final Identifier WATER_SPEED_ID =
+            Identifier.fromNamespaceAndPath(MOD_ID, "water_speed");
     private static final int PASSIVE_BOND_INTERVAL_TICKS = 60 * 20;
 
     @Override
@@ -186,12 +187,13 @@ public class IcysBetterHorses implements ModInitializer {
     }
 
     private AbstractHorse findCommandHorse(ServerPlayer player, int horseId, double radius) {
-        if (!(player.serverLevel().getEntity(horseId) instanceof AbstractHorse horse)) {
+        ServerLevel serverLevel = (ServerLevel) player.level();
+        if (!(serverLevel.getEntity(horseId) instanceof AbstractHorse horse)) {
             LOGGER.info("[RADIAL][V1] Fail: entity id {} is not an AbstractHorse in player's level (got {})",
                     horseId,
-                    player.serverLevel().getEntity(horseId) == null
+                    serverLevel.getEntity(horseId) == null
                             ? "null"
-                            : player.serverLevel().getEntity(horseId).getClass().getSimpleName());
+                            : serverLevel.getEntity(horseId).getClass().getSimpleName());
             return null;
         }
         if (!horse.isTamed()) {

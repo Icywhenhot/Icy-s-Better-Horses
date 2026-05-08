@@ -8,10 +8,8 @@ group = project.maven_group
 
 repositories {
     maven {
-    url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
-    }
-    maven {
-    url 'https://maven.blamejared.com'
+        name = 'GeckoLib'
+        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
     }
 }
 
@@ -27,9 +25,9 @@ dependencies {
 	testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
 	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.0"
-	modImplementation "software.bernie.geckolib:geckolib-fabric-1.21:4.5.8"
-	modCompileOnly "vazkii.patchouli:Patchouli:${project.patchouli_version}"
-	modLocalRuntime "vazkii.patchouli:Patchouli:${project.patchouli_version}"
+	modImplementation "software.bernie.geckolib:geckolib-fabric-${project.minecraft_version}:${project.geckolib_version}"
+	// Patchouli has no 1.21.11 Fabric release yet (latest supports 1.21.1 only).
+	// Re-enable when upstream publishes a 1.21.11 build.
 }
 
 processResources {

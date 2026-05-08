@@ -14,9 +14,11 @@
 	],
 	"client": [
 		"AbstractHorseRendererMixin",
+		"EquineRenderStateMixin",
 		"HorseInventoryScreenMixin",
 		"HorseModelAccessor",
-		"KeyboardInputMixin"
+		"KeyboardInputMixin",
+		"LivingEntityRendererSubmitMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
