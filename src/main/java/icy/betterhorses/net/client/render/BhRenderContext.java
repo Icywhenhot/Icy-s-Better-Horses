@@ -1,6 +1,6 @@
 package icy.betterhorses.net.client.render;
 
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.jetbrains.annotations.Nullable;
 
 /**

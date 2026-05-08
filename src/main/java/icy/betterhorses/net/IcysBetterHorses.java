@@ -11,15 +11,10 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
-import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,8 +25,6 @@ public class IcysBetterHorses implements ModInitializer {
     public static final String MOD_ID = "icys-better-horses";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    private static final Identifier WATER_SPEED_ID =
-            Identifier.fromNamespaceAndPath(MOD_ID, "water_speed");
     private static final int PASSIVE_BOND_INTERVAL_TICKS = 60 * 20;
 
     @Override
@@ -48,10 +41,10 @@ public class IcysBetterHorses implements ModInitializer {
     }
 
     private void registerPackets() {
-        PayloadTypeRegistry.playC2S().register(RadialCommandPayload.TYPE, new RadialCommandPayload.StreamCodec());
-        PayloadTypeRegistry.playC2S().register(CallHorsePayload.TYPE, new CallHorsePayload.StreamCodec());
-        PayloadTypeRegistry.playC2S().register(RequestOpenRadialPayload.TYPE, new RequestOpenRadialPayload.StreamCodec());
-        PayloadTypeRegistry.playS2C().register(OpenRadialPayload.TYPE, new OpenRadialPayload.StreamCodec());
+        PayloadTypeRegistry.serverboundPlay().register(RadialCommandPayload.TYPE, new RadialCommandPayload.StreamCodec());
+        PayloadTypeRegistry.serverboundPlay().register(CallHorsePayload.TYPE, new CallHorsePayload.StreamCodec());
+        PayloadTypeRegistry.serverboundPlay().register(RequestOpenRadialPayload.TYPE, new RequestOpenRadialPayload.StreamCodec());
+        PayloadTypeRegistry.clientboundPlay().register(OpenRadialPayload.TYPE, new OpenRadialPayload.StreamCodec());
     }
 
     private void registerServerHandlers() {
@@ -145,31 +138,10 @@ public class IcysBetterHorses implements ModInitializer {
 
     private void registerTickEvents() {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            updateMountedWaterSpeed(server);
             if (server.getTickCount() % PASSIVE_BOND_INTERVAL_TICKS == 0) {
                 growHorseBond(server);
             }
         });
-    }
-
-    private void updateMountedWaterSpeed(net.minecraft.server.MinecraftServer server) {
-        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            if (!(player.getVehicle() instanceof AbstractHorse horse)) continue;
-
-            AttributeInstance speed = horse.getAttribute(Attributes.MOVEMENT_SPEED);
-            if (speed == null) continue;
-
-            boolean inWater = horse.isInWater();
-            boolean hasModifier = speed.getModifier(WATER_SPEED_ID) != null;
-            if (inWater == hasModifier) continue;
-
-            if (inWater) {
-                speed.addTransientModifier(new AttributeModifier(
-                        WATER_SPEED_ID, 0.5, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
-            } else {
-                speed.removeModifier(WATER_SPEED_ID);
-            }
-        }
     }
 
     private void growHorseBond(net.minecraft.server.MinecraftServer server) {

@@ -21,7 +21,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -99,10 +98,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique
     private static final Identifier BH_JUMP_ID =
             Identifier.fromNamespaceAndPath("icys-better-horses", "bond_jump");
-    @Unique private static final float BH_WATER_SPEED_MULTIPLIER = 1.5F;
-    @Unique private static final double BH_WATER_RISE_SPEED = 0.006D;
-    @Unique private static final double BH_WATER_SURFACE_SPEED = 0.001D;
-    @Unique private static final double BH_WATER_MAX_RISE_SPEED = 0.015D;
     @Unique private static final float BH_HOOVES_FALL_DAMAGE_MULTIPLIER = 0.5F;
     @Unique private static final double BH_STABILIZER_HALF_OPEN_DESCENT_SPEED = -0.35D;
     @Unique private static final double BH_STABILIZER_MAX_DESCENT_SPEED = -0.125D;
@@ -441,24 +436,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         cir.setReturnValue((self.level().isClientSide() ? net.minecraft.world.InteractionResult.SUCCESS : net.minecraft.world.InteractionResult.CONSUME));
     }
 
-    @Override
-    protected float getWaterSlowDown() {
-        float vanillaSlowDown = super.getWaterSlowDown();
-        float vanillaSpeedRatio = vanillaSlowDown / (1.0F - vanillaSlowDown);
-        float boostedSpeedRatio = vanillaSpeedRatio * BH_WATER_SPEED_MULTIPLIER;
-        return boostedSpeedRatio / (1.0F + boostedSpeedRatio);
-    }
-
-    @Override
-    public Vec3 getFluidFallingAdjustedMovement(double gravity, boolean falling, Vec3 movement) {
-        Vec3 adjustedMovement = super.getFluidFallingAdjustedMovement(gravity, falling, movement);
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (!self.isInWater()) {
-            return adjustedMovement;
-        }
-        return bh_applyWaterBuoyancy(adjustedMovement);
-    }
-
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_tickStabilizer(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -629,20 +606,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                         BH_JUMP_ID, bonus, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
             }
         }
-    }
-
-    @Unique
-    private Vec3 bh_applyWaterBuoyancy(Vec3 movement) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        double waterHeight = self.getFluidHeight(FluidTags.WATER);
-        if (waterHeight <= 0.0D) {
-            return movement;
-        }
-
-        double minVerticalSpeed =
-                waterHeight > self.getFluidJumpThreshold() ? BH_WATER_RISE_SPEED : BH_WATER_SURFACE_SPEED;
-        double verticalSpeed = Math.max(movement.y, minVerticalSpeed);
-        return new Vec3(movement.x, Math.min(verticalSpeed, BH_WATER_MAX_RISE_SPEED), movement.z);
     }
 
     @Unique

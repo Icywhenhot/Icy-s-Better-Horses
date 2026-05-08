@@ -1,10 +1,10 @@
 package icy.betterhorses.net.client.render;
 
-import software.bernie.geckolib.constant.dataticket.DataTicket;
-import software.bernie.geckolib.renderer.GeoObjectRenderer;
-import software.bernie.geckolib.renderer.base.BoneSnapshots;
-import software.bernie.geckolib.renderer.base.GeoRenderState;
-import software.bernie.geckolib.renderer.base.RenderPassInfo;
+import com.geckolib.constant.dataticket.DataTicket;
+import com.geckolib.renderer.GeoObjectRenderer;
+import com.geckolib.renderer.base.BoneSnapshots;
+import com.geckolib.renderer.base.GeoRenderState;
+import com.geckolib.renderer.base.RenderPassInfo;
 
 /**
  * GeckoLib 5 widened {@link GeoObjectRenderer} from one type parameter to three:
