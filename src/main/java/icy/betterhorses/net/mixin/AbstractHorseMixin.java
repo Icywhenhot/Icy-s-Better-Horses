@@ -92,8 +92,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(27);
     @Unique private boolean bh_hadUpgradedSaddle = false;
     @Unique private boolean bh_fedGoldenAppleThisTick = false;
-    @Unique private boolean bh_usedNameTagThisInteract = false;
-    @Unique private @Nullable Component bh_customNameBeforeInteract = null;
 
     @Unique
     private static final Identifier BH_SPEED_ID =
@@ -379,30 +377,17 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     }
 
-    @Inject(method = "mobInteract", at = @At("HEAD"))
-    private void bh_trackNameTagUse(net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
+    @Inject(method = "doPlayerRide", at = @At("TAIL"))
+    private void bh_trackLastRidden(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        ItemStack heldItem = player.getItemInHand(hand);
-        this.bh_usedNameTagThisInteract = heldItem.is(Items.NAME_TAG);
-        this.bh_customNameBeforeInteract = self.getCustomName();
-    }
-
-    @Inject(method = "mobInteract", at = @At("RETURN"))
-    private void bh_rewardNameTagBond(net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
-        try {
-            AbstractHorse self = (AbstractHorse) (Object) this;
-            if (!this.bh_usedNameTagThisInteract || self.level().isClientSide() || !cir.getReturnValue().consumesAction()) {
-                return;
-            }
-
-            Component currentName = self.getCustomName();
-            if (currentName != null && !currentName.equals(this.bh_customNameBeforeInteract)) {
-                this.bh_setBond(this.bh_getBond() + 10);
-            }
-        } finally {
-            this.bh_usedNameTagThisInteract = false;
-            this.bh_customNameBeforeInteract = null;
+        if (self.level().isClientSide() || player.getVehicle() != self) {
+            return;
         }
+        UUID owner = this.bh_getOwner();
+        if (owner == null || !owner.equals(player.getUUID())) {
+            return;
+        }
+        HorseTracker.setLastRidden(owner, self);
     }
 
     @Inject(method = "tameWithName", at = @At("RETURN"))

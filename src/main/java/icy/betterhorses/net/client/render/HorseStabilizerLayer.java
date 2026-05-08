@@ -35,9 +35,9 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
 
     private static final HorseStabilizerGeoRenderer GEO_RENDERER = new HorseStabilizerGeoRenderer();
 
-    private static final double TORSO_X_OFFSET = 8.0D / 16.0D;
-    private static final double FEET_Y_IN_FLIPPED_FRAME = 2.0D;
-    private static final double TORSO_Z_OFFSET = -8.0D / 16.0D;
+    private static final double TORSO_X_OFFSET = 0.1D / 16.0D;
+    private static final double FEET_Y_IN_FLIPPED_FRAME = 1.35D;
+    private static final double TORSO_Z_OFFSET = -1.0D / 16.0D;
     private static final float MODEL_ROLL_DEGREES = 180.0F;
 
     public HorseStabilizerLayer(RenderLayerParent<S, M> renderer) {
@@ -74,7 +74,7 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
         poseStack.pushPose();
         body.translateAndRotate(poseStack);
         poseStack.translate(
-                -body.x / 16.0F + TORSO_X_OFFSET,
+                -body.x / 16.0F,
                 FEET_Y_IN_FLIPPED_FRAME - body.y / 16.0F,
                 -body.z / 16.0F + TORSO_Z_OFFSET);
         poseStack.mulPose(Axis.ZP.rotationDegrees(MODEL_ROLL_DEGREES));

@@ -9,6 +9,7 @@
 		"HorseSaddleSlotMixin",
 		"LeafPassthroughMixin",
 		"LivingEntityMixin",
+		"MobNameTagBondMixin",
 		"PowderSnowBlockMixin",
 		"SlotAccessor"
 	],

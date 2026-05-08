@@ -116,14 +116,17 @@ public class IcysBetterHorses implements ModInitializer {
         }
 
         UUID playerId = player.getUUID();
+        AbstractHorse horse = HorseTracker.getLastRidden(playerId);
+        if (horse == null) return;
+
+        IHorseData data = (IHorseData) horse;
+        if (!playerId.equals(data.bh_getOwner()) || data.bh_getBond() <= 0) return;
+
         BlockPos target = player.blockPosition();
-        for (AbstractHorse horse : HorseTracker.getAll()) {
-            if (!playerId.equals(((IHorseData) horse).bh_getOwner())) continue;
-            if (horse.distanceToSqr(player) > 400.0) {
-                horse.teleportTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
-            } else {
-                ((IHorseData) horse).bh_setCommand(HorseCommand.FOLLOW);
-            }
+        if (horse.distanceToSqr(player) > 400.0) {
+            horse.teleportTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
+        } else {
+            data.bh_setCommand(HorseCommand.FOLLOW);
         }
     }
 
