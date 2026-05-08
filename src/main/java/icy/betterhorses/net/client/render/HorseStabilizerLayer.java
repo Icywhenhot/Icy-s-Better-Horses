@@ -53,7 +53,7 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
             float yRot,
             float xRot) {
         IBhEquineStabilizerState bhState = (IBhEquineStabilizerState) (Object) state;
-        if (!bhState.bh_hasStabilizer()) {
+        if (!bhState.bh_hasStabilizer() || BhRenderContext.currentOpacity() < 0.999F) {
             return;
         }
 

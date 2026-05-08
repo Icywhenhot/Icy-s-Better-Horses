@@ -39,6 +39,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -105,6 +106,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private static final double BH_STABILIZER_HALF_OPEN_SMOOTHING = 0.2D;
     @Unique private static final double BH_FRONT_PASSENGER_Z_OFFSET = 0.2D;
     @Unique private static final double BH_REAR_PASSENGER_Z_OFFSET = -0.55D;
+    @Unique private static final float BH_FREE_CAMERA_ANGLE_THRESHOLD = 90.0F;
     // Vanilla water drag scales horizontal velocity by ~0.8 per tick on ridden horses.
     // 1.125 ≈ 0.9 / 0.8 — leaves the horse with half of vanilla's water slowdown rather
     // than overriding it entirely (1.6 produced a net speed-up, which felt unnatural).
@@ -389,6 +391,25 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         HorseTracker.setLastRidden(owner, self);
     }
 
+    @Inject(
+            method = "doPlayerRide",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;isClientSide()Z"),
+            cancellable = true)
+    private void bh_rotateHorseInsteadOfPlayer(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        self.setYRot(player.getYRot());
+        self.yRotO = self.getYRot();
+        self.setYHeadRot(player.getYHeadRot());
+        self.setXRot(player.getXRot());
+
+        player.startRiding(self);
+
+        player.setYRot(self.getYRot());
+        player.yRotO = self.yRotO;
+        player.setXRot(self.getXRot());
+        ci.cancel();
+    }
+
     @Inject(method = "tameWithName", at = @At("RETURN"))
     private void bh_claimHorseOnTame(net.minecraft.world.entity.player.Player player, CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -591,6 +612,28 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         double zOffset = passengerIndex == 0 ? BH_FRONT_PASSENGER_Z_OFFSET : BH_REAR_PASSENGER_Z_OFFSET;
         Vec3 offset = new Vec3(0.0D, 0.0D, zOffset).yRot(-self.getYRot() * ((float) Math.PI / 180.0F));
         cir.setReturnValue(cir.getReturnValue().add(offset));
+    }
+
+    @Inject(method = "getRiddenRotation", at = @At("HEAD"), cancellable = true)
+    private void bh_allowMountedFreeCamera(LivingEntity rider, CallbackInfoReturnable<Vec2> cir) {
+        if (!(rider instanceof net.minecraft.world.entity.player.Player player)
+                || player.xxa != 0.0F
+                || player.zza != 0.0F) {
+            return;
+        }
+
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        float playerYRot = Mth.wrapDegrees(player.getYRot());
+        float rotationDifference = Mth.wrapDegrees(playerYRot - self.getYRot());
+
+        if (Math.abs(rotationDifference) > BH_FREE_CAMERA_ANGLE_THRESHOLD) {
+            float horseYRot = Mth.wrapDegrees(
+                    playerYRot - Math.signum(rotationDifference) * BH_FREE_CAMERA_ANGLE_THRESHOLD);
+            cir.setReturnValue(new Vec2(player.getXRot() * 0.5F, horseYRot));
+            return;
+        }
+
+        cir.setReturnValue(new Vec2(player.getXRot() * 0.5F, self.getYRot()));
     }
 
     @Override

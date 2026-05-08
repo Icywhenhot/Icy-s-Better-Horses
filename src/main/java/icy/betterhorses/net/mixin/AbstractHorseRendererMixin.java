@@ -1,10 +1,14 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.HorseStabilizerState;
+import icy.betterhorses.net.client.render.BhMountedHorseVisibility;
 import icy.betterhorses.net.client.render.HorseStabilizerAnimatable;
 import icy.betterhorses.net.client.render.HorseStabilizerLayer;
 import icy.betterhorses.net.client.render.IBhEquineStabilizerState;
 import icy.betterhorses.net.inventory.GearSlot;
+import net.minecraft.client.CameraType;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.entity.AbstractHorseRenderer;
 import net.minecraft.client.renderer.entity.AgeableMobRenderer;
@@ -54,12 +58,19 @@ public abstract class AbstractHorseRendererMixin<
      */
     @Inject(method = "extractRenderState", at = @At("TAIL"))
     private void bh_captureStabilizerState(T entity, S state, float partialTick, CallbackInfo ci) {
+        IBhEquineStabilizerState extState = (IBhEquineStabilizerState) state;
+        Minecraft minecraft = Minecraft.getInstance();
+        boolean riddenByPlayerInFirstPerson = minecraft.options.getCameraType() == CameraType.FIRST_PERSON
+                && minecraft.player != null
+                && entity.hasPassenger(minecraft.player);
+        extState.bh_setMountedViewData(riddenByPlayerInFirstPerson, BhMountedHorseVisibility.getOpacity(entity));
+
         if (!(entity instanceof IHorseData data)) {
+            extState.bh_setStabilizerData(false, HorseStabilizerState.CLOSED, entity.getId(), partialTick);
             return;
         }
 
         boolean hasStabilizer = data.bh_hasGear(GearSlot.STABILIZER);
-        IBhEquineStabilizerState extState = (IBhEquineStabilizerState) state;
         extState.bh_setStabilizerData(
                 hasStabilizer, data.bh_getStabilizerState(), entity.getId(), partialTick);
 

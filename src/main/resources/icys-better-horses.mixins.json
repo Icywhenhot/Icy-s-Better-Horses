@@ -4,7 +4,10 @@
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
 		"AbstractHorseMixin",
+		"AbstractChestedHorseCreativeTamingMixin",
 		"AbstractMountInventoryMenuMixin",
+		"EntityMixin",
+		"HorseCreativeTamingMixin",
 		"HorseInventoryMenuMixin",
 		"HorseSaddleSlotMixin",
 		"LeafPassthroughMixin",
@@ -15,11 +18,15 @@
 	],
 	"client": [
 		"AbstractContainerScreenAccessor",
+		"AbstractEquineModelMixin",
 		"AbstractHorseRendererMixin",
+		"EquipmentLayerRendererMixin",
 		"EquineRenderStateMixin",
+		"HorseMarkingLayerMixin",
 		"HorseInventoryScreenMixin",
 		"HorseModelAccessor",
 		"KeyboardInputMixin",
+		"LivingEntityRendererMixin",
 		"LivingEntityRendererSubmitMixin"
 	],
 	"injectors": {
