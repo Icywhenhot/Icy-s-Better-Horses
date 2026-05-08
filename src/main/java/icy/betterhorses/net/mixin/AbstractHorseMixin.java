@@ -105,6 +105,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private static final double BH_STABILIZER_HALF_OPEN_SMOOTHING = 0.2D;
     @Unique private static final double BH_FRONT_PASSENGER_Z_OFFSET = 0.2D;
     @Unique private static final double BH_REAR_PASSENGER_Z_OFFSET = -0.55D;
+    // Vanilla water drag scales horizontal velocity by ~0.8 per tick on ridden horses.
+    // 1.125 ≈ 0.9 / 0.8 — leaves the horse with half of vanilla's water slowdown rather
+    // than overriding it entirely (1.6 produced a net speed-up, which felt unnatural).
+    @Unique private static final double BH_WATER_HORIZONTAL_BOOST = 1.125D;
 
     protected AbstractHorseMixin(EntityType<? extends Animal> type, Level level) {
         super(type, level);
@@ -464,6 +468,22 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
 
         this.bh_setStabilizerState(state);
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void bh_boostWaterMovement(CallbackInfo ci) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (!self.isInWater() || !self.isVehicle()) {
+            return;
+        }
+        Vec3 motion = self.getDeltaMovement();
+        if (motion.x * motion.x + motion.z * motion.z < 1.0E-6D) {
+            return;
+        }
+        self.setDeltaMovement(
+                motion.x * BH_WATER_HORIZONTAL_BOOST,
+                motion.y,
+                motion.z * BH_WATER_HORIZONTAL_BOOST);
     }
 
     @Inject(method = "tick", at = @At("TAIL"))

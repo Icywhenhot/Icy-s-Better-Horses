@@ -78,6 +78,14 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         if (!(menu instanceof HorseInventoryLayoutAccess layoutAccess) || !(mount instanceof AbstractHorse)) {
             return;
         }
+        // Pre-size the screen so AbstractContainerScreen.init() centers topPos against the right
+        // imageHeight. Otherwise hasClickedOutside uses topPos+166 as the bottom bound while the
+        // shifted player-inventory slots sit below it — clicks become "outside GUI" and items get
+        // tossed.
+        ((AbstractContainerScreenAccessor) (Object) this).bh_setImageHeight(
+                layoutAccess.bh_hasChestStorageLayout()
+                        ? BH_EXTENDED_IMAGE_HEIGHT
+                        : BH_VANILLA_IMAGE_HEIGHT);
         this.inventoryLabelY = layoutAccess.bh_hasUpgradedSaddleLayout()
                 ? this.imageHeight + 1000
                 : BH_DEFAULT_INVENTORY_LABEL_Y;
@@ -173,11 +181,11 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
         boolean chestLayout = layoutAccess.bh_hasChestStorageLayout();
         boolean upgradedSaddleLayout = layoutAccess.bh_hasUpgradedSaddleLayout();
-        int desiredTopPos = (this.height - BH_VANILLA_IMAGE_HEIGHT) / 2
-                - (chestLayout ? BH_PLAYER_SLOT_Y_OFFSET / 2 : 0);
+        int desiredImageHeight = chestLayout ? BH_EXTENDED_IMAGE_HEIGHT : BH_VANILLA_IMAGE_HEIGHT;
 
-        if (this.topPos != desiredTopPos) {
-            this.topPos = desiredTopPos;
+        if (this.imageHeight != desiredImageHeight) {
+            ((AbstractContainerScreenAccessor) (Object) this).bh_setImageHeight(desiredImageHeight);
+            this.topPos = (this.height - this.imageHeight) / 2;
             this.leftPos = (this.width - this.imageWidth) / 2;
         }
 
@@ -188,10 +196,13 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     private void bh_drawBondLabel(GuiGraphicsExtractor gfx, AbstractHorse horse) {
         String text = "Bond: " + ((IHorseData) horse).bh_getBond();
         int textWidth = this.font.width(text);
+        // shadow=false: with the dark-grey BH_TEXT_COLOR the offset shadow looks like a doubled
+        // duplicate letter, which reads as "muddy" on top of the slot panel.
         gfx.text(this.font, text,
                 this.leftPos + this.imageWidth - textWidth - 8,
                 this.topPos + 6,
-                BH_TEXT_COLOR);
+                BH_TEXT_COLOR,
+                false);
     }
 
     @Unique
@@ -206,11 +217,13 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         gfx.text(this.font, speedText,
                 this.leftPos + BH_STATS_TEXT_X,
                 this.topPos + BH_STATS_TEXT_Y,
-                BH_TEXT_COLOR);
+                BH_TEXT_COLOR,
+                false);
         gfx.text(this.font, jumpText,
                 this.leftPos + BH_STATS_TEXT_X,
                 this.topPos + BH_STATS_TEXT_Y + BH_STATS_LINE_SPACING,
-                BH_TEXT_COLOR);
+                BH_TEXT_COLOR,
+                false);
     }
 
     @Unique
