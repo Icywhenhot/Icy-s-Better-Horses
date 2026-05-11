@@ -104,8 +104,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private static final double BH_STABILIZER_MAX_DESCENT_SPEED = -0.125D;
     @Unique private static final double BH_STABILIZER_SMOOTHING = 0.35D;
     @Unique private static final double BH_STABILIZER_HALF_OPEN_SMOOTHING = 0.2D;
-    @Unique private static final double BH_FRONT_PASSENGER_Z_OFFSET = 0.2D;
-    @Unique private static final double BH_REAR_PASSENGER_Z_OFFSET = -0.55D;
+    // Horse bbox is 1.39625 wide (±0.698 from center). The 2nd-passenger player hitbox is
+    // ±0.3 around their attachment point, so any rear offset more negative than -0.398 pushes
+    // the rear of their hitbox past the horse's bbox — when the horse backs into a wall, the
+    // rider clips into the block and takes in-wall (suffocation) damage. -0.35 keeps the rear
+    // edge at -0.65, leaving ~0.05 of buffer against the horse's rear edge. Front offset is
+    // mirrored for visual balance and to keep the 1st passenger symmetric with the 2nd.
+    @Unique private static final double BH_FRONT_PASSENGER_Z_OFFSET = 0.35D;
+    @Unique private static final double BH_REAR_PASSENGER_Z_OFFSET = -0.35D;
     @Unique private static final float BH_FREE_CAMERA_ANGLE_THRESHOLD = 90.0F;
     // Vanilla water drag scales horizontal velocity by ~0.8 per tick on ridden horses.
     // 1.125 ≈ 0.9 / 0.8 — leaves the horse with half of vanilla's water slowdown rather

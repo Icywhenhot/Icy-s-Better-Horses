@@ -63,6 +63,23 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                 @Override public int getMaxStackSize() { return 1; }
 
                 @Override
+                public void set(ItemStack stack) {
+                    super.set(stack);
+                    // Refresh the player-inventory Y shift the moment the chest-gear slot is
+                    // populated. Critical for the client: at menu construction the client's gear
+                    // container is empty (the menu was built before the SetContent sync packet
+                    // arrived), so the construction-time bh_refreshLayout() can't see the chest
+                    // gear and leaves player inv at default Y. Without this hook, the chest slots
+                    // become active on sync but the player-inv slots don't shift until the *next*
+                    // render frame — in that window they overlap and findSlot returns the
+                    // player-inv slot beneath the chest panel (added first in the slot list),
+                    // routing clicks to the wrong container and producing ghost-item reverts.
+                    if (type == GearSlot.CHEST) {
+                        HorseInventoryMenuMixin.this.bh_refreshLayout();
+                    }
+                }
+
+                @Override
                 public void onTake(Player player, ItemStack stack) {
                     super.onTake(player, stack);
                     if (type == GearSlot.CHEST) {
