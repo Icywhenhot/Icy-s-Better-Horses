@@ -400,6 +400,57 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     }
 
+    /**
+     * Block non-owners from becoming the primary rider of an owned horse. A non-owner is allowed
+     * to mount only when the owner is already the primary rider (the 2-rider scenario the
+     * second-passenger feature enables). Wild/untamed horses fall through to vanilla so taming
+     * still works. We hook {@code doPlayerRide} rather than {@code mobInteract} because vanilla,
+     * commands like {@code /ride}, and some other mods all funnel through this method — gating
+     * here covers every path. Server-side only: clients don't have authoritative owner state.
+     */
+    @Inject(method = "doPlayerRide", at = @At("HEAD"), cancellable = true)
+    private void bh_gateOwnerOnlyMount(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.level().isClientSide()) return;
+        UUID owner = this.bh_getOwner();
+        if (owner == null || owner.equals(player.getUUID())) return;
+        if (bh_ownerIsPrimaryPassenger(self, owner)) return;
+        self.playSound(net.minecraft.sounds.SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_owner"));
+        }
+        // Belt-and-suspenders force-eject — covers the case where another mod/path already
+        // attached the player as a passenger before our gate ran, or where the client
+        // optimistically predicted a mount. Idempotent if they aren't actually riding.
+        if (player.getVehicle() == self) {
+            player.stopRiding();
+        }
+        ci.cancel();
+    }
+
+    /**
+     * Catch-all: if at any tick the primary rider isn't the owner of an owned horse, eject
+     * every passenger. Covers owner-dismount-while-friend-was-secondary (friend slides into the
+     * primary slot), forced mounts from plugins/datapacks, and any future path we don't gate
+     * explicitly at mount time. Cheap — only runs when the horse is being ridden.
+     */
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void bh_enforceOwnerPrimaryRider(CallbackInfo ci) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.level().isClientSide()) return;
+        UUID owner = this.bh_getOwner();
+        if (owner == null) return;
+        java.util.List<Entity> passengers = self.getPassengers();
+        if (passengers.isEmpty()) return;
+        Entity primary = passengers.get(0);
+        if (!(primary instanceof net.minecraft.world.entity.player.Player)) return;
+        if (primary.getUUID().equals(owner)) return;
+        self.playSound(net.minecraft.sounds.SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
+        for (Entity passenger : new java.util.ArrayList<>(passengers)) {
+            passenger.stopRiding();
+        }
+    }
+
     @Inject(method = "doPlayerRide", at = @At("TAIL"))
     private void bh_trackLastRidden(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -419,6 +470,21 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             cancellable = true)
     private void bh_rotateHorseInsteadOfPlayer(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
+        // Owner data only exists server-side. Let the client run vanilla's doPlayerRide body,
+        // which performs the usual non-authoritative rotation work but leaves the real mount
+        // decision to the server. Starting the ride here on the client caused the "message +
+        // angry sound, but still mounted" desync when the server rejected non-owners.
+        if (self.level().isClientSide()) {
+            return;
+        }
+
+        // Defense in depth: even if HEAD-cancel from bh_gateOwnerOnlyMount didn't suppress
+        // this injector for some mixin-ordering reason, never mount a non-owner here.
+        UUID owner = this.bh_getOwner();
+        if (owner != null && !owner.equals(player.getUUID()) && !bh_ownerIsPrimaryPassenger(self, owner)) {
+            ci.cancel();
+            return;
+        }
         self.setYRot(player.getYRot());
         self.yRotO = self.getYRot();
         self.setYHeadRot(player.getYHeadRot());
@@ -668,12 +734,37 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     protected boolean canAddPassenger(Entity passenger) {
-        if (this.getPassengers().isEmpty()) {
-            return true;
+        UUID owner = this.bh_getOwner();
+        // Untamed (no owner): preserve vanilla mounting / taming behaviour.
+        if (owner == null) {
+            if (this.getPassengers().isEmpty()) return true;
+            return this.getPassengers().size() < 2
+                    && passenger instanceof net.minecraft.world.entity.player.Player;
         }
 
-        return this.getPassengers().size() < 2
-                && passenger instanceof net.minecraft.world.entity.player.Player;
+        // Owned horse: only the owner can become primary rider; anyone else can only join
+        // as a second passenger while the owner is the current primary. Non-players (e.g.
+        // entities forced on by datapacks) are blocked outright for owned horses.
+        if (!(passenger instanceof net.minecraft.world.entity.player.Player player)) {
+            return false;
+        }
+        boolean isOwner = owner.equals(player.getUUID());
+        if (this.getPassengers().isEmpty()) {
+            return isOwner;
+        }
+        if (this.getPassengers().size() >= 2) {
+            return false;
+        }
+        if (isOwner) {
+            return true;
+        }
+        return this.getPassengers().get(0).getUUID().equals(owner);
+    }
+
+    @Unique
+    private static boolean bh_ownerIsPrimaryPassenger(AbstractHorse horse, UUID owner) {
+        java.util.List<Entity> passengers = horse.getPassengers();
+        return !passengers.isEmpty() && passengers.get(0).getUUID().equals(owner);
     }
 
     @Unique
