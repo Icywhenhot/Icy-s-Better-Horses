@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
@@ -80,7 +81,8 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Unique
     private boolean bh_hasEquippedMedkit(IHorseData data) {
-        return data.bh_getGearContainer().getItem(GearSlot.MEDKIT.ordinal()).is(ModItems.HORSE_MEDKIT);
+        return BhConfig.medkitEnabled()
+                && data.bh_getGearContainer().getItem(GearSlot.MEDKIT.ordinal()).is(ModItems.HORSE_MEDKIT);
     }
 
     @Unique

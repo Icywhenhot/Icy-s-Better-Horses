@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.HorseStabilizerLogic;
 import icy.betterhorses.net.HorseStabilizerState;
@@ -420,7 +421,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Inject(method = "doPlayerRide", at = @At("HEAD"), cancellable = true)
     private void bh_gateOwnerOnlyMount(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self.level().isClientSide()) return;
+        if (self.level().isClientSide() || !BhConfig.horseExclusivityEnabled()) return;
         UUID owner = this.bh_getOwner();
         if (owner == null || owner.equals(player.getUUID())) return;
         if (bh_ownerIsPrimaryPassenger(self, owner)) return;
@@ -447,10 +448,25 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     private void bh_enforceOwnerPrimaryRider(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (self.level().isClientSide()) return;
-        UUID owner = this.bh_getOwner();
-        if (owner == null) return;
         java.util.List<Entity> passengers = self.getPassengers();
         if (passengers.isEmpty()) return;
+
+        if (!BhConfig.multiRidingEnabled() && passengers.size() > 1) {
+            for (int i = 1; i < passengers.size(); i++) {
+                passengers.get(i).stopRiding();
+            }
+            passengers = self.getPassengers();
+            if (passengers.isEmpty()) {
+                return;
+            }
+        }
+
+        if (!BhConfig.horseExclusivityEnabled()) {
+            return;
+        }
+
+        UUID owner = this.bh_getOwner();
+        if (owner == null) return;
         Entity primary = passengers.get(0);
         if (!(primary instanceof net.minecraft.world.entity.player.Player)) return;
         if (primary.getUUID().equals(owner)) return;
@@ -490,7 +506,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         // Defense in depth: even if HEAD-cancel from bh_gateOwnerOnlyMount didn't suppress
         // this injector for some mixin-ordering reason, never mount a non-owner here.
         UUID owner = this.bh_getOwner();
-        if (owner != null && !owner.equals(player.getUUID()) && !bh_ownerIsPrimaryPassenger(self, owner)) {
+        if (BhConfig.horseExclusivityEnabled()
+                && owner != null
+                && !owner.equals(player.getUUID())
+                && !bh_ownerIsPrimaryPassenger(self, owner)) {
             ci.cancel();
             return;
         }
@@ -523,7 +542,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Inject(method = "openCustomInventoryScreen", at = @At("HEAD"), cancellable = true)
     private void bh_blockNonOwnerInventoryAccess(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self.level().isClientSide()) {
+        if (self.level().isClientSide() || !BhConfig.horseExclusivityEnabled()) {
             return;
         }
 
@@ -579,6 +598,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                 cir.setReturnValue(heldItemResult);
                 return;
             }
+        }
+
+        if (!BhConfig.multiRidingEnabled()) {
+            return;
         }
 
         this.doPlayerRide(player);
@@ -659,6 +682,13 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     private void bh_tickHitchpost(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (this.bh_hitchpostPos == null) {
+            return;
+        }
+
+        if (!BhConfig.hitchpostEnabled()) {
+            if (self.level() instanceof ServerLevel serverLevel) {
+                HitchpostBlock.releaseHorse(serverLevel, self, true);
+            }
             return;
         }
 
@@ -748,7 +778,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             float scaleFactor,
             CallbackInfoReturnable<Vec3> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self.getPassengers().size() <= 1) {
+        if (!BhConfig.multiRidingEnabled() || self.getPassengers().size() <= 1) {
             return;
         }
 
@@ -786,31 +816,35 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     protected boolean canAddPassenger(Entity passenger) {
-        UUID owner = this.bh_getOwner();
-        // Untamed (no owner): preserve vanilla mounting / taming behaviour.
-        if (owner == null) {
-            if (this.getPassengers().isEmpty()) return true;
-            return this.getPassengers().size() < 2
-                    && passenger instanceof net.minecraft.world.entity.player.Player;
+        java.util.List<Entity> passengers = this.getPassengers();
+        boolean multiRidingEnabled = BhConfig.multiRidingEnabled();
+        boolean horseExclusivityEnabled = BhConfig.horseExclusivityEnabled();
+        if (passengers.size() >= (multiRidingEnabled ? 2 : 1)) {
+            return false;
         }
 
-        // Owned horse: only the owner can become primary rider; anyone else can only join
-        // as a second passenger while the owner is the current primary. Non-players (e.g.
-        // entities forced on by datapacks) are blocked outright for owned horses.
+        UUID owner = this.bh_getOwner();
+        if (owner == null || !horseExclusivityEnabled) {
+            if (passengers.isEmpty()) {
+                return true;
+            }
+            return multiRidingEnabled && passenger instanceof net.minecraft.world.entity.player.Player;
+        }
+
         if (!(passenger instanceof net.minecraft.world.entity.player.Player player)) {
             return false;
         }
         boolean isOwner = owner.equals(player.getUUID());
-        if (this.getPassengers().isEmpty()) {
+        if (passengers.isEmpty()) {
             return isOwner;
         }
-        if (this.getPassengers().size() >= 2) {
+        if (!multiRidingEnabled) {
             return false;
         }
         if (isOwner) {
             return true;
         }
-        return this.getPassengers().get(0).getUUID().equals(owner);
+        return passengers.get(0).getUUID().equals(owner);
     }
 
     @Unique
@@ -859,16 +893,19 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Unique
     private boolean bh_hasHoovesGear() {
-        return this.bh_hasGear(GearSlot.HOOVES);
+        return BhConfig.hoovesEnabled() && this.bh_hasGear(GearSlot.HOOVES);
     }
 
     @Unique
     private boolean bh_hasStabilizerGear() {
-        return this.bh_hasGear(GearSlot.STABILIZER);
+        return BhConfig.stabilizerEnabled() && this.bh_hasGear(GearSlot.STABILIZER);
     }
 
     @Unique
     private int bh_getHoovesFrostWalkerLevel() {
+        if (!BhConfig.hoovesEnabled()) {
+            return 0;
+        }
         ItemStack hooves = this.bh_gearContainer.getItem(GearSlot.HOOVES.ordinal());
         if (hooves.isEmpty()) {
             return 0;

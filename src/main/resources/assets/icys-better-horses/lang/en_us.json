@@ -3,6 +3,9 @@
   "key.icys-better-horses.call": "Call Horse",
 
   "screen.icys-better-horses.radial": "Horse Commands",
+  "hud.icys-better-horses.horse_stats": "Horse Stats",
+  "hud.icys-better-horses.speed": "Speed: %s blk/s",
+  "hud.icys-better-horses.jump": "Jump: %s blk",
 
   "command.icys-better-horses.follow": "Follow",
   "command.icys-better-horses.stay": "Stay",
