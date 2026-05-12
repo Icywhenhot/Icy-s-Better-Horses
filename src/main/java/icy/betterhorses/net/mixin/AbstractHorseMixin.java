@@ -36,9 +36,13 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -93,6 +97,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(27);
     @Unique private boolean bh_hadUpgradedSaddle = false;
     @Unique private boolean bh_fedGoldenAppleThisTick = false;
+    @Unique private @Nullable Vec3 bh_lastFrostWalkerPos = null;
 
     @Unique
     private static final Identifier BH_SPEED_ID =
@@ -118,6 +123,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     // 1.125 ≈ 0.9 / 0.8 — leaves the horse with half of vanilla's water slowdown rather
     // than overriding it entirely (1.6 produced a net speed-up, which felt unnatural).
     @Unique private static final double BH_WATER_HORIZONTAL_BOOST = 1.125D;
+    @Unique private static final double BH_FROST_WALKER_SAMPLE_STEP = 0.75D;
+    @Unique private static final double BH_FROST_WALKER_RESET_DISTANCE = 8.0D;
 
     protected AbstractHorseMixin(EntityType<? extends Animal> type, Level level) {
         super(type, level);
@@ -231,12 +238,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Override
     public boolean bh_hasChestGear() {
         ItemStack chestGear = bh_gearContainer.getItem(GearSlot.CHEST.ordinal());
-        return chestGear.is(Items.CHEST);
+        return chestGear.is(Items.CHEST) || chestGear.is(Items.ENDER_CHEST);
     }
 
     @Override
     public void bh_onChestGearRemoved(ItemStack previousChestGear) {
-        bh_dropChestContents();
+        if (previousChestGear.is(Items.CHEST)) {
+            bh_dropChestContents();
+        }
     }
 
     @Override
@@ -604,6 +613,30 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
+    private void bh_freezeWaterWithFrostWalkerHooves(CallbackInfo ci) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        Vec3 currentPos = self.position();
+        Vec3 previousPos = this.bh_lastFrostWalkerPos;
+        this.bh_lastFrostWalkerPos = currentPos;
+
+        if (!(self.level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+
+        int frostWalkerLevel = this.bh_getHoovesFrostWalkerLevel();
+        if (frostWalkerLevel <= 0 || self.isInLava() || (!self.onGround() && !self.isInWater())) {
+            return;
+        }
+
+        if (previousPos == null
+                || previousPos.distanceToSqr(currentPos) > BH_FROST_WALKER_RESET_DISTANCE * BH_FROST_WALKER_RESET_DISTANCE) {
+            previousPos = currentPos;
+        }
+
+        this.bh_applyFrostWalkerTrail(serverLevel, previousPos, currentPos, frostWalkerLevel);
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
     private void bh_tickHitchpost(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (this.bh_hitchpostPos == null) {
@@ -813,6 +846,75 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique
     private boolean bh_hasStabilizerGear() {
         return this.bh_hasGear(GearSlot.STABILIZER);
+    }
+
+    @Unique
+    private int bh_getHoovesFrostWalkerLevel() {
+        ItemStack hooves = this.bh_gearContainer.getItem(GearSlot.HOOVES.ordinal());
+        if (hooves.isEmpty()) {
+            return 0;
+        }
+
+        for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<net.minecraft.core.Holder<net.minecraft.world.item.enchantment.Enchantment>> entry
+                : hooves.getEnchantments().entrySet()) {
+            if (entry.getKey().is(Enchantments.FROST_WALKER)) {
+                return entry.getIntValue();
+            }
+        }
+
+        return 0;
+    }
+
+    @Unique
+    private void bh_applyFrostWalkerTrail(ServerLevel level, Vec3 start, Vec3 end, int frostWalkerLevel) {
+        int radius = Math.min(16, 3 + frostWalkerLevel);
+        double dx = end.x - start.x;
+        double dz = end.z - start.z;
+        double horizontalDistance = Math.sqrt(dx * dx + dz * dz);
+        if (horizontalDistance < 1.0E-6D) {
+            this.bh_freezeWaterAtSample(level, end, radius);
+            return;
+        }
+        int samples = Math.max(1, Mth.ceil(horizontalDistance / BH_FROST_WALKER_SAMPLE_STEP));
+
+        for (int i = 0; i <= samples; i++) {
+            double progress = (double) i / (double) samples;
+            this.bh_freezeWaterAtSample(level, new Vec3(
+                    Mth.lerp(progress, start.x, end.x),
+                    Mth.lerp(progress, start.y, end.y),
+                    Mth.lerp(progress, start.z, end.z)),
+                    radius);
+        }
+    }
+
+    @Unique
+    private void bh_freezeWaterAtSample(ServerLevel level, Vec3 sample, int radius) {
+        BlockPos center = BlockPos.containing(sample.x, sample.y - 1.0D, sample.z);
+        BlockState frostedIce = Blocks.FROSTED_ICE.defaultBlockState();
+        int radiusSq = radius * radius;
+        BlockPos.MutableBlockPos waterPos = new BlockPos.MutableBlockPos();
+        BlockPos.MutableBlockPos abovePos = new BlockPos.MutableBlockPos();
+
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                if (dx * dx + dz * dz > radiusSq) {
+                    continue;
+                }
+
+                waterPos.set(center.getX() + dx, center.getY(), center.getZ() + dz);
+                BlockState waterState = level.getBlockState(waterPos);
+                if (!waterState.is(Blocks.WATER) || !level.getFluidState(waterPos).isSourceOfType(Fluids.WATER)) {
+                    continue;
+                }
+
+                abovePos.set(waterPos.getX(), waterPos.getY() + 1, waterPos.getZ());
+                if (!level.getBlockState(abovePos).isAir()) {
+                    continue;
+                }
+
+                level.setBlock(waterPos, frostedIce, 3);
+            }
+        }
     }
 
     @Unique

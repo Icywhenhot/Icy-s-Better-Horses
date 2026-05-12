@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.PlayerEnderChestContainer;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -51,6 +52,69 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         final IHorseData data = (IHorseData) horse;
         final SimpleContainer gear = data.bh_getGearContainer();
         final SimpleContainer chest = data.bh_getChestContainer();
+        final PlayerEnderChestContainer enderChest = playerInventory.player.getEnderChestInventory();
+        final Container extraStorage = new Container() {
+            private Container bh_active() {
+                return HorseInventoryMenuMixin.this.bh_isEnderChestGear(gear.getItem(GearSlot.CHEST.ordinal()))
+                        ? enderChest
+                        : chest;
+            }
+
+            @Override
+            public int getContainerSize() {
+                return chest.getContainerSize();
+            }
+
+            @Override
+            public boolean isEmpty() {
+                return this.bh_active().isEmpty();
+            }
+
+            @Override
+            public ItemStack getItem(int slot) {
+                return this.bh_active().getItem(slot);
+            }
+
+            @Override
+            public ItemStack removeItem(int slot, int amount) {
+                return this.bh_active().removeItem(slot, amount);
+            }
+
+            @Override
+            public ItemStack removeItemNoUpdate(int slot) {
+                return this.bh_active().removeItemNoUpdate(slot);
+            }
+
+            @Override
+            public void setItem(int slot, ItemStack stack) {
+                this.bh_active().setItem(slot, stack);
+            }
+
+            @Override
+            public void setChanged() {
+                this.bh_active().setChanged();
+            }
+
+            @Override
+            public boolean stillValid(Player player) {
+                return this.bh_active().stillValid(player);
+            }
+
+            @Override
+            public void startOpen(net.minecraft.world.entity.ContainerUser user) {
+                this.bh_active().startOpen(user);
+            }
+
+            @Override
+            public void stopOpen(net.minecraft.world.entity.ContainerUser user) {
+                this.bh_active().stopOpen(user);
+            }
+
+            @Override
+            public void clearContent() {
+                this.bh_active().clearContent();
+            }
+        };
         this.bh_playerInventoryStartIndex = horseContainer.getContainerSize() + 2;
         this.bh_playerInventoryEndIndex = Math.min(this.bh_playerInventoryStartIndex + 36, this.slots.size());
 
@@ -64,7 +128,13 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
                 @Override
                 public void set(ItemStack stack) {
+                    ItemStack previousStack = this.getItem().copy();
                     super.set(stack);
+                    if (type == GearSlot.CHEST
+                            && HorseInventoryMenuMixin.this.bh_isStorageChestGear(previousStack)
+                            && !HorseInventoryMenuMixin.this.bh_isStorageChestGear(stack)) {
+                        data.bh_onChestGearRemoved(previousStack);
+                    }
                     // Refresh the player-inventory Y shift the moment the chest-gear slot is
                     // populated. Critical for the client: at menu construction the client's gear
                     // container is empty (the menu was built before the SetContent sync packet
@@ -93,7 +163,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
                 final int index = col + row * 9;
-                this.addSlot(new Slot(chest, index, BH_CHEST_SLOT_X + col * 18, BH_CHEST_SLOT_Y + row * 18) {
+                this.addSlot(new Slot(extraStorage, index, BH_CHEST_SLOT_X + col * 18, BH_CHEST_SLOT_Y + row * 18) {
                     @Override
                     public boolean isActive() {
                         return HorseInventoryMenuMixin.this.bh_hasUpgradedSaddleInMenu()
@@ -148,7 +218,17 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
     @Unique
     private boolean bh_isChestGear(ItemStack stack) {
+        return this.bh_isStorageChestGear(stack) || this.bh_isEnderChestGear(stack);
+    }
+
+    @Unique
+    private boolean bh_isStorageChestGear(ItemStack stack) {
         return stack.is(Items.CHEST);
+    }
+
+    @Unique
+    private boolean bh_isEnderChestGear(ItemStack stack) {
+        return stack.is(Items.ENDER_CHEST);
     }
 
     @Unique
