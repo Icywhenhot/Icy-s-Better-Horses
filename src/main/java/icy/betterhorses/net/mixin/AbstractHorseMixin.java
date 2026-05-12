@@ -520,6 +520,25 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     }
 
+    @Inject(method = "openCustomInventoryScreen", at = @At("HEAD"), cancellable = true)
+    private void bh_blockNonOwnerInventoryAccess(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.level().isClientSide()) {
+            return;
+        }
+
+        UUID owner = this.bh_getOwner();
+        if (owner == null || owner.equals(player.getUUID())) {
+            return;
+        }
+
+        self.playSound(SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_inventory_owner"));
+        }
+        ci.cancel();
+    }
+
     @Inject(method = "mobInteract", at = @At("HEAD"), cancellable = true)
     private void bh_allowSecondPlayerRider(
             net.minecraft.world.entity.player.Player player,

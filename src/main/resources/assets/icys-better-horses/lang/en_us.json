@@ -15,6 +15,7 @@
   "message.icys-better-horses.no_horse_to_tether": "No owned horse close enough to tether.",
   "message.icys-better-horses.hitchpost_tethered": "Horse is now tethered to hitch post.",
   "message.icys-better-horses.not_owner": "This horse doesn't trust you enough to ride.",
+  "message.icys-better-horses.not_inventory_owner": "This horse won't let you access its gear.",
 
   "itemGroup.icys-better-horses.stable_supplies": "Stable Supplies",
 
