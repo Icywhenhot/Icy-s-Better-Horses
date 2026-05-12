@@ -81,6 +81,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private @Nullable BlockPos bh_hitchpostPos = null;
     @Unique private @Nullable Vec3 bh_hitchAnchor = null;
     @Unique private int bh_bond = 0;
+    @Unique private boolean bh_nameTagBondReceived = false;
     @Unique
     private final SimpleContainer bh_gearContainer = new SimpleContainer(GearSlot.COUNT) {
         @Override
@@ -187,6 +188,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Override
+    public boolean bh_hasReceivedNameTagBond() {
+        return this.bh_nameTagBondReceived;
+    }
+
+    @Override
+    public void bh_setReceivedNameTagBond(boolean received) {
+        this.bh_nameTagBondReceived = received;
+    }
+
+    @Override
     public HorseStabilizerState bh_getStabilizerState() {
         return HorseStabilizerState.fromId(this.entityData.get(BH_STABILIZER_STATE_SYNCED));
     }
@@ -252,6 +263,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
         output.putInt("BH_Command", bh_command.ordinal());
         output.putInt("BH_Bond", bh_bond);
+        output.putInt("BH_NameTagBondGiven", bh_nameTagBondReceived ? 1 : 0);
         if (bh_home != null) {
             output.store("BH_Home", BlockPos.CODEC, bh_home);
         }
@@ -272,6 +284,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         bh_command = HorseCommand.fromId(input.getIntOr("BH_Command", HorseCommand.FOLLOW.ordinal()));
         bh_bond = input.getIntOr("BH_Bond", 0);
         this.entityData.set(BH_BOND_SYNCED, bh_bond);
+        // Pre-existing horses (saved before this flag existed) that already have bond should
+        // be treated as having received their first-rename bond, so reloading and renaming
+        // doesn't reopen the exploit. Brand-new horses (bond == 0) start with it unconsumed.
+        bh_nameTagBondReceived = input.getIntOr("BH_NameTagBondGiven", bh_bond > 0 ? 1 : 0) != 0;
         bh_home = input.read("BH_Home", BlockPos.CODEC).orElse(null);
         bh_hitchpostPos = input.read("BH_Hitchpost", BlockPos.CODEC).orElse(null);
         if (bh_home == null) {
@@ -435,6 +451,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             net.minecraft.world.InteractionHand hand,
             CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
+        // Ctrl+rightclick fires both our radial-open packet AND vanilla's interact packet.
+        // The radial packet arrives first and arms a suppression flag; consume it here so the
+        // mount/inventory/heldItem branches below never run for that click.
+        if (!self.level().isClientSide()
+                && HorseTracker.consumeInteractSuppression(player.getUUID(), self.getId())) {
+            cir.setReturnValue(net.minecraft.world.InteractionResult.CONSUME);
+            return;
+        }
         if (!self.isVehicle()
                 || self.isBaby()
                 || self.hasPassenger(player)

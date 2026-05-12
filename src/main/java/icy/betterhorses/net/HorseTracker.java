@@ -18,6 +18,12 @@ public final class HorseTracker {
 
     private static final Map<UUID, AbstractHorse> ownedHorses = new HashMap<>();
     private static final Map<UUID, UUID> lastRiddenByPlayer = new HashMap<>();
+    // When a player Ctrl+rightclicks a horse, the client sends RequestOpenRadialPayload AND
+    // vanilla sends a ServerboundInteractPacket. The radial packet wins the race (it's sent
+    // from inside Fabric's UseEntityCallback, which fires before vanilla's interact-packet
+    // send) and arms this map; the subsequent mobInteract on the server then short-circuits
+    // instead of mounting the player. Map is keyed by player UUID → horse entity id.
+    private static final Map<UUID, Integer> pendingInteractSuppression = new HashMap<>();
 
     private HorseTracker() {}
 
@@ -44,5 +50,18 @@ public final class HorseTracker {
     public static @Nullable AbstractHorse getLastRidden(UUID playerId) {
         UUID horseId = lastRiddenByPlayer.get(playerId);
         return horseId == null ? null : ownedHorses.get(horseId);
+    }
+
+    public static void armInteractSuppression(UUID playerId, int horseEntityId) {
+        pendingInteractSuppression.put(playerId, horseEntityId);
+    }
+
+    public static boolean consumeInteractSuppression(UUID playerId, int horseEntityId) {
+        Integer pending = pendingInteractSuppression.get(playerId);
+        if (pending != null && pending == horseEntityId) {
+            pendingInteractSuppression.remove(playerId);
+            return true;
+        }
+        return false;
     }
 }

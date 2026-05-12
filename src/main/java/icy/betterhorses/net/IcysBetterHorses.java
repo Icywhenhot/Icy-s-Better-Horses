@@ -78,6 +78,10 @@ public class IcysBetterHorses implements ModInitializer {
 
         LOGGER.info("[RADIAL][4] Validation passed, sending OpenRadialPayload(horseId={}) back to player {}",
                 horse.getId(), player.getName().getString());
+        // Arm before the vanilla ServerboundInteractPacket arrives in this same tick, so the
+        // mount path in AbstractHorse#mobInteract gets short-circuited and the player doesn't
+        // end up riding the horse just because Ctrl+rightclick also fires the vanilla interact.
+        HorseTracker.armInteractSuppression(player.getUUID(), horse.getId());
         ServerPlayNetworking.send(player, new OpenRadialPayload(horse.getId()));
     }
 
@@ -109,18 +113,53 @@ public class IcysBetterHorses implements ModInitializer {
         }
 
         UUID playerId = player.getUUID();
-        AbstractHorse horse = HorseTracker.getLastRidden(playerId);
+        AbstractHorse horse = findCallableHorse(player, playerId);
         if (horse == null) return;
 
         IHorseData data = (IHorseData) horse;
-        if (!playerId.equals(data.bh_getOwner()) || data.bh_getBond() <= 0) return;
+        if (data.bh_getBond() <= 0) return;
+
+        // Whistling always cancels whatever standing order the horse was on (STAY,
+        // RETURN_HOME, etc.) — the player explicitly wants the horse to come to them.
+        data.bh_setCommand(HorseCommand.FOLLOW);
 
         BlockPos target = player.blockPosition();
         if (horse.distanceToSqr(player) > 400.0) {
             horse.teleportTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
-        } else {
-            data.bh_setCommand(HorseCommand.FOLLOW);
         }
+    }
+
+    /**
+     * Resolve which horse the whistle should summon for {@code player}.
+     *
+     * Prefers the last horse this player rode (matches the singleplayer feel where the most
+     * recently mounted horse is the one you whistled for), but falls back to the nearest owned
+     * horse in the same level. The last-ridden map is process-static and empty on every server
+     * boot, which is why the whistle silently failed in multiplayer until the player remounted —
+     * the ownership UUID stored on the horse entity is the durable source of truth.
+     */
+    private AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {
+        AbstractHorse lastRidden = HorseTracker.getLastRidden(playerId);
+        if (lastRidden != null
+                && playerId.equals(((IHorseData) lastRidden).bh_getOwner())
+                && lastRidden.level() == player.level()
+                && lastRidden.isAlive()) {
+            return lastRidden;
+        }
+
+        AbstractHorse nearest = null;
+        double nearestDistSq = Double.MAX_VALUE;
+        for (AbstractHorse candidate : HorseTracker.getAll()) {
+            if (!candidate.isAlive() || candidate.level() != player.level()) continue;
+            UUID owner = ((IHorseData) candidate).bh_getOwner();
+            if (!playerId.equals(owner)) continue;
+            double distSq = candidate.distanceToSqr(player);
+            if (distSq < nearestDistSq) {
+                nearestDistSq = distSq;
+                nearest = candidate;
+            }
+        }
+        return nearest;
     }
 
     private void registerEntityTracking() {

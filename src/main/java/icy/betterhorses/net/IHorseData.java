@@ -24,6 +24,10 @@ public interface IHorseData {
     int bh_getBond();
     void bh_setBond(int level);
 
+    /** True once this horse has already been awarded the one-time name-tag bond. */
+    boolean bh_hasReceivedNameTagBond();
+    void bh_setReceivedNameTagBond(boolean received);
+
     HorseStabilizerState bh_getStabilizerState();
     void bh_setStabilizerState(HorseStabilizerState state);
     int bh_getGearFlags();
