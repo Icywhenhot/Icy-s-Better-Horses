@@ -28,6 +28,15 @@ public interface IHorseData {
     boolean bh_hasReceivedNameTagBond();
     void bh_setReceivedNameTagBond(boolean received);
 
+    HorseGender bh_getGender();
+    void bh_setGender(HorseGender gender);
+
+    HorseBreed bh_getBreed();
+    void bh_setBreed(HorseBreed breed);
+
+    boolean bh_isMixedBreed();
+    void bh_setMixedBreed(boolean mixed);
+
     HorseStabilizerState bh_getStabilizerState();
     void bh_setStabilizerState(HorseStabilizerState state);
     int bh_getGearFlags();

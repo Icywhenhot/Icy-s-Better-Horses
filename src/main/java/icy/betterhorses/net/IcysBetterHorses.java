@@ -34,6 +34,7 @@ public class IcysBetterHorses implements ModInitializer {
         ModBlockEntities.init();
         ModItems.init();
         ModSounds.init();
+        BhBiomeSpawns.register();
         registerPackets();
         registerServerHandlers();
         registerEntityTracking();
