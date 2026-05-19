@@ -2,7 +2,7 @@ package icy.betterhorses.net.client;
 
 import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.network.RadialCommandPayload;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
@@ -49,7 +49,7 @@ public class RadialMenuScreen extends Screen {
     private int hoveredIndex = -1;
 
     public RadialMenuScreen(int horseId) {
-        super(Component.translatable("screen.icys-better-horses.radial"));
+        super(Component.translatable("screen.icys_better_horses.radial"));
         this.horseId = horseId;
     }
 
@@ -227,16 +227,17 @@ public class RadialMenuScreen extends Screen {
     }
 
     private void sendCommand(HorseCommand command) {
-        ClientPlayNetworking.send(new RadialCommandPayload(this.horseId, command.ordinal()));
+        ClientPacketDistributor.sendToServer(new RadialCommandPayload(this.horseId, command.ordinal()));
     }
 
     private String commandKey(HorseCommand command) {
         return switch (command) {
-            case FOLLOW -> "command.icys-better-horses.follow";
-            case WANDER -> "command.icys-better-horses.wander";
-            case STAY -> "command.icys-better-horses.stay";
-            case RETURN_HOME -> "command.icys-better-horses.return_home";
-            case SET_HOME -> "command.icys-better-horses.set_home";
+            case FOLLOW -> "command.icys_better_horses.follow";
+            case WANDER -> "command.icys_better_horses.wander";
+            case STAY -> "command.icys_better_horses.stay";
+            case RETURN_HOME -> "command.icys_better_horses.return_home";
+            case SET_HOME -> "command.icys_better_horses.set_home";
         };
     }
 }
+

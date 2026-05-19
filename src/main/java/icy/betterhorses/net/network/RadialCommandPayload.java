@@ -7,7 +7,7 @@ import net.minecraft.resources.Identifier;
 public record RadialCommandPayload(int horseId, int commandOrdinal) implements CustomPacketPayload {
 
     public static final Type<RadialCommandPayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath("icys-better-horses", "radial_cmd"));
+            new Type<>(Identifier.fromNamespaceAndPath("icys_better_horses", "radial_cmd"));
 
     public static final StreamCodec STREAM_CODEC = new StreamCodec();
 
@@ -29,3 +29,5 @@ public record RadialCommandPayload(int horseId, int commandOrdinal) implements C
         }
     }
 }
+
+

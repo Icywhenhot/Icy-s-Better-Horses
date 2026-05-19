@@ -6,7 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.loading.FMLPaths;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -25,9 +25,7 @@ public final class BhConfig {
     private static final String KEY_HORSE_EXCLUSIVITY = "horse_exclusivity";
     private static final String KEY_MULTI_RIDING = "multiriding";
 
-    private static final Path CONFIG_PATH = FabricLoader.getInstance()
-            .getConfigDir()
-            .resolve(IcysBetterHorses.MOD_ID + ".json");
+    private static final Path CONFIG_PATH = FMLPaths.CONFIGDIR.get().resolve(IcysBetterHorses.MOD_ID + ".json");
     private static final Gson GSON = new GsonBuilder()
             .disableHtmlEscaping()
             .setPrettyPrinting()

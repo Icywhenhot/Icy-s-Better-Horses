@@ -72,7 +72,7 @@ public enum HorseBreed {
     }
 
     public Component displayName() {
-        return Component.translatable("breed.icys-better-horses." + name().toLowerCase());
+        return Component.translatable("breed.icys_better_horses." + name().toLowerCase());
     }
 
     public Component displayName(boolean mixed) {
@@ -80,8 +80,8 @@ public enum HorseBreed {
             return displayName();
         }
         return Component.translatable(
-                "breed.icys-better-horses.mix_format",
-                Component.translatable("breed.icys-better-horses." + name().toLowerCase()));
+                "breed.icys_better_horses.mix_format",
+                Component.translatable("breed.icys_better_horses." + name().toLowerCase()));
     }
 
     /** Coat combinations allowed for this breed, or empty for species placeholders. */

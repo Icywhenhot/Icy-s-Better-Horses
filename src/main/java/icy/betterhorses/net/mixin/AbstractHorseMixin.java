@@ -116,10 +116,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Unique
     private static final Identifier BH_SPEED_ID =
-            Identifier.fromNamespaceAndPath("icys-better-horses", "bond_speed");
+            Identifier.fromNamespaceAndPath("icys_better_horses", "bond_speed");
     @Unique
     private static final Identifier BH_JUMP_ID =
-            Identifier.fromNamespaceAndPath("icys-better-horses", "bond_jump");
+            Identifier.fromNamespaceAndPath("icys_better_horses", "bond_jump");
     @Unique private static final float BH_HOOVES_FALL_DAMAGE_MULTIPLIER = 0.5F;
     @Unique private static final double BH_STABILIZER_HALF_OPEN_DESCENT_SPEED = -0.35D;
     @Unique private static final double BH_STABILIZER_MAX_DESCENT_SPEED = -0.125D;
@@ -545,7 +545,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                     self.resetLove();
                     if (player instanceof ServerPlayer serverPlayer) {
                         serverPlayer.sendSystemMessage(Component.translatable(
-                                "message.icys-better-horses.same_gender_breed"));
+                                "message.icys_better_horses.same_gender_breed"));
                     }
                 }
             }
@@ -571,7 +571,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         if (bh_ownerIsPrimaryPassenger(self, owner)) return;
         self.playSound(net.minecraft.sounds.SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
         if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_owner"));
+            serverPlayer.sendSystemMessage(Component.translatable("message.icys_better_horses.not_owner"));
         }
         // Belt-and-suspenders force-eject — covers the case where another mod/path already
         // attached the player as a passenger before our gate ran, or where the client
@@ -679,7 +679,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
         this.bh_setOwner(player.getUUID());
         if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.claimed"));
+            serverPlayer.sendSystemMessage(Component.translatable("message.icys_better_horses.claimed"));
         }
     }
 
@@ -697,7 +697,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
         self.playSound(SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
         if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_inventory_owner"));
+            serverPlayer.sendSystemMessage(Component.translatable("message.icys_better_horses.not_inventory_owner"));
         }
         ci.cancel();
     }

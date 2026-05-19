@@ -120,6 +120,6 @@
   "slots": [
     "feet"
   ],
-  "supported_items": "#icys-better-horses:frost_walker_supported",
+  "supported_items": "#icys_better_horses:frost_walker_supported",
   "weight": 2
 }

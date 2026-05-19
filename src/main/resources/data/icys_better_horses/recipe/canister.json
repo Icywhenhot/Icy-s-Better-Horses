@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "CGC",
+    "C C",
+    "CGC"
+  ],
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "G": "minecraft:gold_ingot"
+  },
+  "result": {
+    "id": "icys_better_horses:canister",
+    "count": 1
+  }
+}

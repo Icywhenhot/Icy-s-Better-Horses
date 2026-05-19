@@ -7,7 +7,7 @@ import net.minecraft.resources.Identifier;
 public record OpenRadialPayload(int horseId) implements CustomPacketPayload {
 
     public static final Type<OpenRadialPayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath("icys-better-horses", "open_radial"));
+            new Type<>(Identifier.fromNamespaceAndPath("icys_better_horses", "open_radial"));
 
     public static final StreamCodec STREAM_CODEC = new StreamCodec();
 
@@ -28,3 +28,5 @@ public record OpenRadialPayload(int horseId) implements CustomPacketPayload {
         }
     }
 }
+
+

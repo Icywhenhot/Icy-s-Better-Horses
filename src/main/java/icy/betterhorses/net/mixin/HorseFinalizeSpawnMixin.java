@@ -37,7 +37,7 @@ import java.util.Optional;
 public abstract class HorseFinalizeSpawnMixin {
 
     @Unique
-    private static final Logger BH_LOGGER = LoggerFactory.getLogger("icys-better-horses/spawn");
+    private static final Logger BH_LOGGER = LoggerFactory.getLogger("icys_better_horses/spawn");
 
     @Unique
     @Nullable

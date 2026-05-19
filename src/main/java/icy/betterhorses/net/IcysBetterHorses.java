@@ -1,24 +1,18 @@
 package icy.betterhorses.net;
 
-import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.OpenRadialPayload;
-import icy.betterhorses.net.network.RadialCommandPayload;
-import icy.betterhorses.net.network.RequestOpenRadialPayload;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
@@ -26,15 +20,25 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
+import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public class IcysBetterHorses implements ModInitializer {
+@Mod(IcysBetterHorses.MOD_ID)
+public final class IcysBetterHorses {
 
-    public static final String MOD_ID = "icys-better-horses";
+    public static final String MOD_ID = "icys_better_horses";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static final int PASSIVE_BOND_INTERVAL_TICKS = 60 * 20;
@@ -45,50 +49,89 @@ public class IcysBetterHorses implements ModInitializer {
     private static final int WILD_HORSE_GROUP_MIN = 1;
     private static final int WILD_HORSE_GROUP_MAX = 3;
 
-    @Override
-    public void onInitialize() {
-        BhConfig.load();
-        ModBlocks.init();
-        ModBlockEntities.init();
-        ModItems.init();
-        ModSounds.init();
-        BhBiomeSpawns.register();
-        BhHorseSpawnRules.installSpawnPlacementOverride();
-        registerPackets();
-        registerServerHandlers();
-        registerEntityTracking();
-        registerTickEvents();
+    public IcysBetterHorses(IEventBus modEventBus) {
+        bhInitStep("BhConfig.load", BhConfig::load);
+        bhInitStep("force-init ModBlocks", () -> Class.forName(ModBlocks.class.getName(), true, ModBlocks.class.getClassLoader()));
+        bhInitStep("force-init ModBlockEntities", () -> Class.forName(ModBlockEntities.class.getName(), true, ModBlockEntities.class.getClassLoader()));
+        bhInitStep("force-init ModItems", () -> Class.forName(ModItems.class.getName(), true, ModItems.class.getClassLoader()));
+        bhInitStep("force-init ModSounds", () -> Class.forName(ModSounds.class.getName(), true, ModSounds.class.getClassLoader()));
+        bhInitStep("ModBlocks.register", () -> ModBlocks.register(modEventBus));
+        bhInitStep("ModBlockEntities.register", () -> ModBlockEntities.register(modEventBus));
+        bhInitStep("ModItems.register", () -> ModItems.register(modEventBus));
+        bhInitStep("ModSounds.register", () -> ModSounds.register(modEventBus));
+        bhInitStep("network/spawn listeners", () -> {
+            modEventBus.addListener(BhNetworking::register);
+            modEventBus.addListener(this::registerSpawnPlacements);
+            NeoForge.EVENT_BUS.register(this);
+        });
+        System.err.println("[BH][INIT] Icy's Better Horses constructor finished cleanly.");
         LOGGER.info("Icy's Better Horses initialized.");
     }
 
-    private void registerPackets() {
-        PayloadTypeRegistry.serverboundPlay().register(RadialCommandPayload.TYPE, new RadialCommandPayload.StreamCodec());
-        PayloadTypeRegistry.serverboundPlay().register(CallHorsePayload.TYPE, new CallHorsePayload.StreamCodec());
-        PayloadTypeRegistry.serverboundPlay().register(RequestOpenRadialPayload.TYPE, new RequestOpenRadialPayload.StreamCodec());
-        PayloadTypeRegistry.clientboundPlay().register(OpenRadialPayload.TYPE, new OpenRadialPayload.StreamCodec());
+    @FunctionalInterface
+    private interface BhInitTask {
+        void run() throws Throwable;
     }
 
-    private void registerServerHandlers() {
-        ServerPlayNetworking.registerGlobalReceiver(RadialCommandPayload.TYPE, (payload, context) -> {
-            ServerPlayer player = context.player();
-            HorseCommand command = HorseCommand.fromId(payload.commandOrdinal());
-            context.server().execute(() -> handleRadialCommand(player, payload.horseId(), command));
-        });
-
-        ServerPlayNetworking.registerGlobalReceiver(CallHorsePayload.TYPE, (payload, context) -> {
-            ServerPlayer player = context.player();
-            context.server().execute(() -> handleCallHorse(player));
-        });
-
-        ServerPlayNetworking.registerGlobalReceiver(RequestOpenRadialPayload.TYPE, (payload, context) -> {
-            ServerPlayer player = context.player();
-            LOGGER.info("[RADIAL][3] C2S received RequestOpenRadialPayload(horseId={}) from player {}",
-                    payload.horseId(), player.getName().getString());
-            context.server().execute(() -> handleOpenRadialRequest(player, payload.horseId()));
-        });
+    private static void bhInitStep(String name, BhInitTask task) {
+        try {
+            task.run();
+        } catch (Throwable t) {
+            try (java.io.PrintWriter pw = new java.io.PrintWriter(
+                    new java.io.FileWriter("bh-init-error.txt", false))) {
+                pw.println("[BH][INIT] FAILED at: " + name);
+                pw.println();
+                t.printStackTrace(pw);
+                Throwable cause = t.getCause();
+                while (cause != null) {
+                    pw.println();
+                    pw.println("--- caused by ---");
+                    cause.printStackTrace(pw);
+                    cause = cause.getCause();
+                }
+            } catch (java.io.IOException ignored) {}
+            throw new RuntimeException("[BH][INIT] failed at: " + name + " (see bh-init-error.txt)", t);
+        }
     }
 
-    private void handleOpenRadialRequest(ServerPlayer player, int horseId) {
+    private void registerSpawnPlacements(RegisterSpawnPlacementsEvent event) {
+        event.register(
+                EntityType.HORSE,
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                BhHorseSpawnRules::checkHorseSpawnRules,
+                RegisterSpawnPlacementsEvent.Operation.REPLACE);
+    }
+
+    @SubscribeEvent
+    public void onEntityJoinLevel(EntityJoinLevelEvent event) {
+        if (event.getLevel().isClientSide()) {
+            return;
+        }
+        if (event.getEntity() instanceof AbstractHorse horse && ((IHorseData) horse).bh_isOwned()) {
+            HorseTracker.register(horse);
+        }
+    }
+
+    @SubscribeEvent
+    public void onEntityLeaveLevel(EntityLeaveLevelEvent event) {
+        if (event.getEntity() instanceof AbstractHorse horse) {
+            HorseTracker.unregister(horse);
+        }
+    }
+
+    @SubscribeEvent
+    public void onServerTick(ServerTickEvent.Post event) {
+        MinecraftServer server = event.getServer();
+        if (server.getTickCount() % PASSIVE_BOND_INTERVAL_TICKS == 0) {
+            growHorseBond(server);
+        }
+        if (server.getTickCount() % WILD_HORSE_REPOP_INTERVAL_TICKS == 0) {
+            tryRepopulateWildHorses(server);
+        }
+    }
+
+    public static void handleOpenRadialRequest(ServerPlayer player, int horseId) {
         LOGGER.info("[RADIAL][3a] handleOpenRadialRequest on main thread: player={}, horseId={}",
                 player.getName().getString(), horseId);
         AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
@@ -99,31 +142,31 @@ public class IcysBetterHorses implements ModInitializer {
 
         LOGGER.info("[RADIAL][4] Validation passed, sending OpenRadialPayload(horseId={}) back to player {}",
                 horse.getId(), player.getName().getString());
-        // Arm before the vanilla ServerboundInteractPacket arrives in this same tick, so the
-        // mount path in AbstractHorse#mobInteract gets short-circuited and the player doesn't
-        // end up riding the horse just because Ctrl+rightclick also fires the vanilla interact.
         HorseTracker.armInteractSuppression(player.getUUID(), horse.getId());
-        ServerPlayNetworking.send(player, new OpenRadialPayload(horse.getId()));
+        PacketDistributor.sendToPlayer(player, new OpenRadialPayload(horse.getId()));
     }
 
-    private void handleRadialCommand(ServerPlayer player, int horseId, HorseCommand command) {
+    public static void handleRadialCommand(ServerPlayer player, int horseId, HorseCommand command) {
         AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
-        if (horse == null) return;
+        if (horse == null) {
+            return;
+        }
 
         IHorseData data = (IHorseData) horse;
         if (command == HorseCommand.SET_HOME) {
             data.bh_setHome(horse.blockPosition());
             data.bh_setCommand(HorseCommand.STAY);
-            player.sendSystemMessage(Component.translatable("message.icys-better-horses.home_set"));
-        } else {
-            if (command == HorseCommand.WANDER) {
-                data.bh_setWanderCenter(horse.blockPosition());
-            }
-            data.bh_setCommand(command);
+            player.sendSystemMessage(Component.translatable("message.icys_better_horses.home_set"));
+            return;
         }
+
+        if (command == HorseCommand.WANDER) {
+            data.bh_setWanderCenter(horse.blockPosition());
+        }
+        data.bh_setCommand(command);
     }
 
-    private void handleCallHorse(ServerPlayer player) {
+    public static void handleCallHorse(ServerPlayer player) {
         if (!(player.getVehicle() instanceof AbstractHorse)) {
             player.level().playSound(
                     null,
@@ -138,13 +181,15 @@ public class IcysBetterHorses implements ModInitializer {
 
         UUID playerId = player.getUUID();
         AbstractHorse horse = findCallableHorse(player, playerId);
-        if (horse == null) return;
+        if (horse == null) {
+            return;
+        }
 
         IHorseData data = (IHorseData) horse;
-        if (data.bh_getBond() <= 0) return;
+        if (data.bh_getBond() <= 0) {
+            return;
+        }
 
-        // Whistling always cancels whatever standing order the horse was on (STAY,
-        // RETURN_HOME, etc.) — the player explicitly wants the horse to come to them.
         data.bh_setCommand(HorseCommand.FOLLOW);
 
         BlockPos target = player.blockPosition();
@@ -153,16 +198,7 @@ public class IcysBetterHorses implements ModInitializer {
         }
     }
 
-    /**
-     * Resolve which horse the whistle should summon for {@code player}.
-     *
-     * Prefers the last horse this player rode (matches the singleplayer feel where the most
-     * recently mounted horse is the one you whistled for), but falls back to the nearest owned
-     * horse in the same level. The last-ridden map is process-static and empty on every server
-     * boot, which is why the whistle silently failed in multiplayer until the player remounted —
-     * the ownership UUID stored on the horse entity is the durable source of truth.
-     */
-    private AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {
+    private static AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {
         AbstractHorse lastRidden = HorseTracker.getLastRidden(playerId);
         if (lastRidden != null
                 && playerId.equals(((IHorseData) lastRidden).bh_getOwner())
@@ -174,9 +210,13 @@ public class IcysBetterHorses implements ModInitializer {
         AbstractHorse nearest = null;
         double nearestDistSq = Double.MAX_VALUE;
         for (AbstractHorse candidate : HorseTracker.getAll()) {
-            if (!candidate.isAlive() || candidate.level() != player.level()) continue;
+            if (!candidate.isAlive() || candidate.level() != player.level()) {
+                continue;
+            }
             UUID owner = ((IHorseData) candidate).bh_getOwner();
-            if (!playerId.equals(owner)) continue;
+            if (!playerId.equals(owner)) {
+                continue;
+            }
             double distSq = candidate.distanceToSqr(player);
             if (distSq < nearestDistSq) {
                 nearestDistSq = distSq;
@@ -186,37 +226,17 @@ public class IcysBetterHorses implements ModInitializer {
         return nearest;
     }
 
-    private void registerEntityTracking() {
-        ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
-            if (entity instanceof AbstractHorse horse && ((IHorseData) horse).bh_isOwned()) {
-                HorseTracker.register(horse);
-            }
-        });
-        ServerEntityEvents.ENTITY_UNLOAD.register((entity, world) -> {
-            if (entity instanceof AbstractHorse horse) {
-                HorseTracker.unregister(horse);
-            }
-        });
-    }
-
-    private void registerTickEvents() {
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            if (server.getTickCount() % PASSIVE_BOND_INTERVAL_TICKS == 0) {
-                growHorseBond(server);
-            }
-            if (server.getTickCount() % WILD_HORSE_REPOP_INTERVAL_TICKS == 0) {
-                tryRepopulateWildHorses(server);
-            }
-        });
-    }
-
-    private void growHorseBond(net.minecraft.server.MinecraftServer server) {
+    private static void growHorseBond(MinecraftServer server) {
         for (AbstractHorse horse : HorseTracker.getAll()) {
             IHorseData data = (IHorseData) horse;
-            if (data.bh_getBond() >= 100) continue;
+            if (data.bh_getBond() >= 100) {
+                continue;
+            }
 
             UUID ownerId = data.bh_getOwner();
-            if (ownerId == null) continue;
+            if (ownerId == null) {
+                continue;
+            }
 
             ServerPlayer owner = server.getPlayerList().getPlayer(ownerId);
             if (owner == null || owner.level() != horse.level() || horse.distanceToSqr(owner) >= 100.0) {
@@ -227,9 +247,11 @@ public class IcysBetterHorses implements ModInitializer {
         }
     }
 
-    private void tryRepopulateWildHorses(net.minecraft.server.MinecraftServer server) {
+    private static void tryRepopulateWildHorses(MinecraftServer server) {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            if (player.isSpectator()) continue;
+            if (player.isSpectator()) {
+                continue;
+            }
             if (!(player.level() instanceof ServerLevel level) || !level.dimension().equals(Level.OVERWORLD)) {
                 continue;
             }
@@ -247,14 +269,14 @@ public class IcysBetterHorses implements ModInitializer {
         }
     }
 
-    private boolean hasNearbyWildHorse(ServerLevel level, BlockPos center) {
+    private static boolean hasNearbyWildHorse(ServerLevel level, BlockPos center) {
         return !level.getEntitiesOfClass(Horse.class, new AABB(center).inflate(WILD_HORSE_NEARBY_RADIUS), horse -> {
             IHorseData data = (IHorseData) horse;
             return !data.bh_isOwned() && !horse.isPersistenceRequired();
         }).isEmpty();
     }
 
-    private void spawnWildHorseGroup(ServerLevel level, ServerPlayer player, ResourceKey<Biome> targetBiome) {
+    private static void spawnWildHorseGroup(ServerLevel level, ServerPlayer player, ResourceKey<Biome> targetBiome) {
         int targetCount = WILD_HORSE_GROUP_MIN
                 + level.getRandom().nextInt(WILD_HORSE_GROUP_MAX - WILD_HORSE_GROUP_MIN + 1);
         int spawned = 0;
@@ -356,7 +378,7 @@ public class IcysBetterHorses implements ModInitializer {
                 spawnRuleSample);
     }
 
-    private AbstractHorse findCommandHorse(ServerPlayer player, int horseId, double radius) {
+    private static AbstractHorse findCommandHorse(ServerPlayer player, int horseId, double radius) {
         ServerLevel serverLevel = (ServerLevel) player.level();
         if (!(serverLevel.getEntity(horseId) instanceof AbstractHorse horse)) {
             LOGGER.info("[RADIAL][V1] Fail: entity id {} is not an AbstractHorse in player's level (got {})",
@@ -389,3 +411,4 @@ public class IcysBetterHorses implements ModInitializer {
         return horse;
     }
 }
+

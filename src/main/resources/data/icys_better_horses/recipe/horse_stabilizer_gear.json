@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "CCC",
+    "NLN",
+    "CCC"
+  ],
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "N": "icys_better_horses:canister",
+    "L": "minecraft:leather"
+  },
+  "result": {
+    "id": "icys_better_horses:horse_stabilizer_gear",
+    "count": 1
+  }
+}

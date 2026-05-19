@@ -20,10 +20,10 @@ public abstract class EntityMixin {
 
     @Unique
     private static final Identifier BH_MOUNTED_STEP_HEIGHT_ID =
-            Identifier.fromNamespaceAndPath("icys-better-horses", "mounted_step_height");
+            Identifier.fromNamespaceAndPath("icys_better_horses", "mounted_step_height");
     @Unique
     private static final Identifier BH_MOUNTED_BREAK_SPEED_ID =
-            Identifier.fromNamespaceAndPath("icys-better-horses", "mounted_break_speed");
+            Identifier.fromNamespaceAndPath("icys_better_horses", "mounted_break_speed");
     @Unique private static final double BH_MOUNTED_STEP_HEIGHT_BONUS = 0.1D;
     @Unique private static final double BH_MOUNTED_BREAK_SPEED_BONUS = 5.0D;
 

@@ -122,12 +122,12 @@ public class HitchpostBlock extends BaseEntityBlock {
 
         AbstractHorse horse = findHorseToTether(serverLevel, pos, player);
         if (horse == null) {
-            player.sendSystemMessage(Component.translatable("message.icys-better-horses.no_horse_to_tether"));
+            player.sendSystemMessage(Component.translatable("message.icys_better_horses.no_horse_to_tether"));
             return;
         }
 
         if (tetherHorse(serverLevel, pos, state, horse, player)) {
-            player.sendSystemMessage(Component.translatable("message.icys-better-horses.hitchpost_tethered"));
+            player.sendSystemMessage(Component.translatable("message.icys_better_horses.hitchpost_tethered"));
         }
     }
 

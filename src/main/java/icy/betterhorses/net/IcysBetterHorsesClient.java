@@ -1,108 +1,105 @@
 package icy.betterhorses.net;
 
+import com.mojang.blaze3d.platform.InputConstants;
+import icy.betterhorses.net.client.HorseInfoScreen;
 import icy.betterhorses.net.client.HorseStabilizerSoundController;
 import icy.betterhorses.net.client.RadialMenuScreen;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.OpenRadialPayload;
 import icy.betterhorses.net.network.RequestOpenRadialPayload;
-import com.mojang.blaze3d.platform.InputConstants;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IcysBetterHorsesClient implements ClientModInitializer {
+@Mod(value = IcysBetterHorses.MOD_ID, dist = Dist.CLIENT)
+public final class IcysBetterHorsesClient {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger("icys-better-horses/client");
+    public static final Logger LOGGER = LoggerFactory.getLogger("icys_better_horses/client");
 
-    public static KeyMapping CALL_KEY;
+    public static final KeyMapping CALL_KEY = new KeyMapping(
+            "key.icys_better_horses.call",
+            InputConstants.Type.KEYSYM,
+            80,
+            KeyMapping.Category.GAMEPLAY);
 
-    /**
-     * 1.21.11: {@link KeyMapping}'s category is now a typed {@link KeyMapping.Category} record,
-     * not a free-form translation key. {@link KeyMapping.Category#GAMEPLAY} is the closest
-     * built-in match for a "call your horse" bind; we register here on first use.
-     */
-    private static final KeyMapping.Category CATEGORY = KeyMapping.Category.GAMEPLAY;
-
-    @Override
-    public void onInitializeClient() {
-        CALL_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-                "key.icys-better-horses.call",
-                InputConstants.Type.KEYSYM,
-                80, // GLFW_KEY_P
-                CATEGORY
-        ));
-
-        // Server tells us to open the radial menu after a validated Ctrl + right-click on a horse.
-        ClientPlayNetworking.registerGlobalReceiver(OpenRadialPayload.TYPE, (payload, context) -> {
-            LOGGER.info("[RADIAL][5] S2C received OpenRadialPayload(horseId={})", payload.horseId());
-            context.client().execute(() -> {
-                if (context.client().player != null) {
-                    context.client().player.closeContainer();
-                }
-                LOGGER.info("[RADIAL][6] Opening RadialMenuScreen for horse {}", payload.horseId());
-                context.client().setScreen(new RadialMenuScreen(payload.horseId()));
-            });
-        });
-
-        UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            // UseEntityCallback fires on both client and server — bail silently on the server.
-            if (!world.isClientSide()) {
-                return InteractionResult.PASS;
-            }
-            LOGGER.info("[RADIAL][1] UseEntityCallback fired on client: entity={}, hand={}",
-                    entity.getType().toShortString(), hand);
-            if (hand != InteractionHand.MAIN_HAND) {
-                LOGGER.info("[RADIAL][1a] Skip: hand is {}, need MAIN_HAND", hand);
-                return InteractionResult.PASS;
-            }
-            if (!(entity instanceof AbstractHorse horse)) {
-                LOGGER.info("[RADIAL][1b] Skip: entity is not an AbstractHorse (was {})",
-                        entity.getClass().getSimpleName());
-                return InteractionResult.PASS;
-            }
-            boolean ctrl = this.bh_isControlDown();
-            LOGGER.info("[RADIAL][1c] Target is horse id={}; Ctrl held? {}", horse.getId(), ctrl);
-            if (!ctrl) {
-                LOGGER.info("[RADIAL][1d] Skip: Ctrl not held, letting vanilla interaction proceed");
-                return InteractionResult.PASS;
-            }
-
-            LOGGER.info("[RADIAL][2] All gates passed — sending RequestOpenRadialPayload(horseId={})", horse.getId());
-            ClientPlayNetworking.send(new RequestOpenRadialPayload(horse.getId()));
-            return InteractionResult.CONSUME;
-        });
-
-        ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
-        LOGGER.info("[RADIAL][0] Client init complete — keybind, OpenRadialPayload receiver, and UseEntityCallback registered");
+    public IcysBetterHorsesClient(IEventBus modEventBus) {
+        modEventBus.addListener(this::registerKeyMappings);
+        modEventBus.addListener(this::registerClientPayloads);
+        NeoForge.EVENT_BUS.addListener(this::onClientTick);
+        NeoForge.EVENT_BUS.addListener(this::onEntityInteractSpecific);
+        LOGGER.info("[RADIAL][0] Client init complete.");
     }
 
-    private void onClientTick(Minecraft client) {
+    private void registerKeyMappings(RegisterKeyMappingsEvent event) {
+        event.register(CALL_KEY);
+    }
+
+    private void registerClientPayloads(RegisterClientPayloadHandlersEvent event) {
+        event.register(OpenRadialPayload.TYPE, this::handleOpenRadialPayload);
+    }
+
+    private void handleOpenRadialPayload(OpenRadialPayload payload, IPayloadContext context) {
+        LOGGER.info("[RADIAL][5] S2C received OpenRadialPayload(horseId={})", payload.horseId());
+        context.enqueueWork(() -> {
+            Minecraft client = Minecraft.getInstance();
+            if (client.player != null) {
+                client.player.closeContainer();
+            }
+            LOGGER.info("[RADIAL][6] Opening RadialMenuScreen for horse {}", payload.horseId());
+            client.setScreen(new RadialMenuScreen(payload.horseId()));
+        });
+    }
+
+    private void onEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event) {
+        if (!event.getLevel().isClientSide() || event.getHand() != InteractionHand.MAIN_HAND) {
+            return;
+        }
+        if (!(event.getTarget() instanceof AbstractHorse horse)) {
+            return;
+        }
+        if (!bh_isControlDown()) {
+            return;
+        }
+
+        LOGGER.info("[RADIAL][2] Sending RequestOpenRadialPayload(horseId={})", horse.getId());
+        ClientPacketDistributor.sendToServer(new RequestOpenRadialPayload(horse.getId()));
+        event.setCancellationResult(InteractionResult.SUCCESS);
+        event.setCanceled(true);
+    }
+
+    private void onClientTick(ClientTickEvent.Post event) {
+        Minecraft client = Minecraft.getInstance();
         HorseStabilizerSoundController.tick(client);
-        if (client.player == null || client.level == null) return;
+        if (client.player == null || client.level == null) {
+            return;
+        }
 
         while (CALL_KEY.consumeClick()) {
             if (client.player.getVehicle() instanceof AbstractHorse mount) {
-                client.setScreen(new icy.betterhorses.net.client.HorseInfoScreen(mount));
+                client.setScreen(new HorseInfoScreen(mount));
             } else {
-                ClientPlayNetworking.send(new CallHorsePayload());
+                ClientPacketDistributor.sendToServer(new CallHorsePayload());
             }
         }
     }
 
-    private boolean bh_isControlDown() {
-        // 1.21.11: InputConstants.isKeyDown takes the Window object directly (no longer a long handle).
-        com.mojang.blaze3d.platform.Window window = Minecraft.getInstance().getWindow();
-        return InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT_CONTROL)
-                || InputConstants.isKeyDown(window, GLFW.GLFW_KEY_RIGHT_CONTROL);
+    private static boolean bh_isControlDown() {
+        return InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL)
+                || InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_RIGHT_CONTROL);
     }
 }

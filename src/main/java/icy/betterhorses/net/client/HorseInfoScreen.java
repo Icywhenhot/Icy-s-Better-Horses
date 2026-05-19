@@ -44,7 +44,7 @@ public class HorseInfoScreen extends Screen {
     private final AbstractHorse horse;
 
     public HorseInfoScreen(AbstractHorse horse) {
-        super(Component.translatable("screen.icys-better-horses.info"));
+        super(Component.translatable("screen.icys_better_horses.info"));
         this.horse = horse;
     }
 
@@ -71,61 +71,61 @@ public class HorseInfoScreen extends Screen {
         int y = top + PADDING + 18;
 
         drawLabel(gfx, font, left + PADDING, y,
-                Component.translatable("screen.icys-better-horses.info.gender"),
+                Component.translatable("screen.icys_better_horses.info.gender"),
                 data.bh_getGender().displayName());
         y += ROW_HEIGHT;
 
         drawLabel(gfx, font, left + PADDING, y,
-                Component.translatable("screen.icys-better-horses.info.breed"),
+                Component.translatable("screen.icys_better_horses.info.breed"),
                 data.bh_getBreed().displayName(data.bh_isMixedBreed()));
         y += ROW_HEIGHT;
 
         drawLabel(gfx, font, left + PADDING, y,
-                Component.translatable("screen.icys-better-horses.info.coat"),
+                Component.translatable("screen.icys_better_horses.info.coat"),
                 coatLabel(horse));
         y += ROW_HEIGHT + 4;
 
         int bond = data.bh_getBond();
         drawStatRow(gfx, font, left + PADDING, y,
-                Component.translatable("screen.icys-better-horses.info.bond"),
+                Component.translatable("screen.icys_better_horses.info.bond"),
                 bond + " / 100",
                 bond / 100.0D);
         y += ROW_HEIGHT;
 
         double speedBlocksPerSec = horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * SPEED_DISPLAY_FACTOR;
         drawStatRow(gfx, font, left + PADDING, y,
-                Component.translatable("screen.icys-better-horses.info.speed"),
+                Component.translatable("screen.icys_better_horses.info.speed"),
                 String.format(java.util.Locale.ROOT, "%.1f blk/s", speedBlocksPerSec),
                 speedBlocksPerSec / SPEED_MAX);
         y += ROW_HEIGHT;
 
         double jumpBlocks = Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D);
         drawStatRow(gfx, font, left + PADDING, y,
-                Component.translatable("screen.icys-better-horses.info.jump"),
+                Component.translatable("screen.icys_better_horses.info.jump"),
                 String.format(java.util.Locale.ROOT, "%.2f blk", jumpBlocks),
                 jumpBlocks / JUMP_MAX);
         y += ROW_HEIGHT;
 
         double health = horse.getMaxHealth();
         drawStatRow(gfx, font, left + PADDING, y,
-                Component.translatable("screen.icys-better-horses.info.health"),
+                Component.translatable("screen.icys_better_horses.info.health"),
                 String.format(java.util.Locale.ROOT, "%.1f HP", health),
                 health / HEALTH_MAX);
     }
 
     private static Component coatLabel(AbstractHorse horse) {
         if (!(horse instanceof Horse h)) {
-            return Component.translatable("coat.icys-better-horses.none");
+            return Component.translatable("coat.icys_better_horses.none");
         }
         Variant color = h.getVariant();
         Markings markings = h.getMarkings();
-        Component colorComponent = Component.translatable("coat.icys-better-horses.color." + color.getSerializedName());
+        Component colorComponent = Component.translatable("coat.icys_better_horses.color." + color.getSerializedName());
         if (markings == Markings.NONE) {
             return colorComponent;
         }
         Component markingsComponent = Component.translatable(
-                "coat.icys-better-horses.markings." + markings.name().toLowerCase(java.util.Locale.ROOT));
-        return Component.translatable("coat.icys-better-horses.combined", colorComponent, markingsComponent);
+                "coat.icys_better_horses.markings." + markings.name().toLowerCase(java.util.Locale.ROOT));
+        return Component.translatable("coat.icys_better_horses.combined", colorComponent, markingsComponent);
     }
 
     private void drawLabel(GuiGraphicsExtractor gfx, Font font, int x, int y, Component label, Component value) {

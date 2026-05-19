@@ -1,33 +1,38 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.item.HitchpostBlockEntity;
-import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+import java.lang.reflect.Constructor;
+import java.util.Set;
 
 public final class ModBlockEntities {
 
-    /**
-     * 1.21.11 made {@link BlockEntityType}'s constructor and the inner {@code BlockEntitySupplier}
-     * package-private. Fabric API exposes {@link FabricBlockEntityTypeBuilder} as the supported
-     * way to create one — same outcome, public API.
-     */
-    public static final BlockEntityType<HitchpostBlockEntity> HITCHPOST = register(
-            "hitchpost",
-            FabricBlockEntityTypeBuilder.create(HitchpostBlockEntity::new, ModBlocks.HITCHPOST).build());
+    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, IcysBetterHorses.MOD_ID);
 
-    public static void init() {
-        // Registration happens via static initializer; touching the class triggers it.
+    public static final BlockEntityType<HitchpostBlockEntity> HITCHPOST = create(HitchpostBlockEntity::new, ModBlocks.HITCHPOST);
+
+    @SuppressWarnings("unused")
+    private static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HitchpostBlockEntity>> HITCHPOST_ENTRY = BLOCK_ENTITY_TYPES.register("hitchpost", () -> HITCHPOST);
+
+    public static void register(IEventBus modEventBus) {
+        BLOCK_ENTITY_TYPES.register(modEventBus);
     }
 
-    private static <T extends BlockEntity> BlockEntityType<T> register(String path, BlockEntityType<T> type) {
-        return Registry.register(
-                BuiltInRegistries.BLOCK_ENTITY_TYPE,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path),
-                type);
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityType<T> create(BlockEntityType.BlockEntitySupplier<? extends T> supplier, Block... validBlocks) {
+        try {
+            Constructor<BlockEntityType> ctor = BlockEntityType.class.getDeclaredConstructor(BlockEntityType.BlockEntitySupplier.class, Set.class);
+            ctor.setAccessible(true);
+            return (BlockEntityType<T>) ctor.newInstance(supplier, Set.of(validBlocks));
+        } catch (ReflectiveOperationException exception) {
+            throw new IllegalStateException("Failed to construct block entity type", exception);
+        }
     }
 
     private ModBlockEntities() {}

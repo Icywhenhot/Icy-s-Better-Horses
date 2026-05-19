@@ -25,6 +25,6 @@ public enum GearSlot {
     }
 
     public String translationKey() {
-        return "gear.icys-better-horses." + name().toLowerCase();
+        return "gear.icys_better_horses." + name().toLowerCase();
     }
 }

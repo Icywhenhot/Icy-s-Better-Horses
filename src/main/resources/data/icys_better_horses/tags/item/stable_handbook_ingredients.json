@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "icys_better_horses:upgraded_saddle",
+    "minecraft:chest",
+    "icys_better_horses:horse_hooves_gear",
+    "icys_better_horses:horse_medkit_gear",
+    "icys_better_horses:canister",
+    "icys_better_horses:horse_stabilizer_gear",
+    "icys_better_horses:hitchpost"
+  ]
+}

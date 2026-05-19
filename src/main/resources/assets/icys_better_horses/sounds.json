@@ -1,0 +1,28 @@
+{
+  "call_whistle": {
+    "sounds": [
+      "icys_better_horses:call_whistle/w1",
+      "icys_better_horses:call_whistle/w2",
+      "icys_better_horses:call_whistle/w3",
+      "icys_better_horses:call_whistle/w4",
+      "icys_better_horses:call_whistle/w5",
+      "icys_better_horses:call_whistle/w6"
+    ]
+  },
+  "stabilizer_intro": {
+    "sounds": [
+      {
+        "name": "icys_better_horses:stabilizer/s1",
+        "stream": true
+      }
+    ]
+  },
+  "stabilizer_loop": {
+    "sounds": [
+      {
+        "name": "icys_better_horses:stabilizer/s2",
+        "stream": true
+      }
+    ]
+  }
+}

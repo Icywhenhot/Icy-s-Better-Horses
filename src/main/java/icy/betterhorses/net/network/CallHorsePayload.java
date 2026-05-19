@@ -7,7 +7,7 @@ import net.minecraft.resources.Identifier;
 public record CallHorsePayload() implements CustomPacketPayload {
 
     public static final Type<CallHorsePayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath("icys-better-horses", "call_horse"));
+            new Type<>(Identifier.fromNamespaceAndPath("icys_better_horses", "call_horse"));
 
     public static final StreamCodec STREAM_CODEC = new StreamCodec();
 
@@ -28,3 +28,5 @@ public record CallHorsePayload() implements CustomPacketPayload {
         }
     }
 }
+
+

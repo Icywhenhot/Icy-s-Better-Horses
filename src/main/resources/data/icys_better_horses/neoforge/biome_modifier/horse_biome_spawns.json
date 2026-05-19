@@ -1,0 +1,12 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": "#icys_better_horses:horse_breeds",
+  "spawners": [
+    {
+      "type": "minecraft:horse",
+      "weight": 5,
+      "minCount": 2,
+      "maxCount": 6
+    }
+  ]
+}

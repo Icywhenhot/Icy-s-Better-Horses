@@ -49,11 +49,11 @@ public abstract class GuiMixin {
                 Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D));
 
         IHorseData data = (IHorseData) horse;
-        Component title = Component.translatable("hud.icys-better-horses.horse_stats");
-        Component genderLine = Component.translatable("hud.icys-better-horses.gender", data.bh_getGender().displayName());
-        Component breedLine = Component.translatable("hud.icys-better-horses.breed", data.bh_getBreed().displayName(data.bh_isMixedBreed()));
-        Component speedLine = Component.translatable("hud.icys-better-horses.speed", speedValue);
-        Component jumpLine = Component.translatable("hud.icys-better-horses.jump", jumpValue);
+        Component title = Component.translatable("hud.icys_better_horses.horse_stats");
+        Component genderLine = Component.translatable("hud.icys_better_horses.gender", data.bh_getGender().displayName());
+        Component breedLine = Component.translatable("hud.icys_better_horses.breed", data.bh_getBreed().displayName(data.bh_isMixedBreed()));
+        Component speedLine = Component.translatable("hud.icys_better_horses.speed", speedValue);
+        Component jumpLine = Component.translatable("hud.icys_better_horses.jump", jumpValue);
 
         Component[] lines = {genderLine, breedLine, speedLine, jumpLine};
         int lineHeight = this.minecraft.font.lineHeight + 2;

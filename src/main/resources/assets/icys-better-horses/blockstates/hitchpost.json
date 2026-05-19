@@ -1,8 +1,0 @@
-{
-  "variants": {
-    "facing=north": { "model": "icys-better-horses:block/hitchpost" },
-    "facing=east": { "model": "icys-better-horses:block/hitchpost", "y": 90 },
-    "facing=south": { "model": "icys-better-horses:block/hitchpost", "y": 180 },
-    "facing=west": { "model": "icys-better-horses:block/hitchpost", "y": 270 }
-  }
-}
