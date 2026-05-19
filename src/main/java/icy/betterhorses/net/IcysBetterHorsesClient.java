@@ -86,7 +86,11 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         if (client.player == null || client.level == null) return;
 
         while (CALL_KEY.consumeClick()) {
-            ClientPlayNetworking.send(new CallHorsePayload());
+            if (client.player.getVehicle() instanceof AbstractHorse mount) {
+                client.setScreen(new icy.betterhorses.net.client.HorseInfoScreen(mount));
+            } else {
+                ClientPlayNetworking.send(new CallHorsePayload());
+            }
         }
     }
 

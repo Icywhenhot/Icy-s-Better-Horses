@@ -24,6 +24,15 @@ public interface IHorseData {
     int bh_getBond();
     void bh_setBond(int level);
 
+    HorseGender bh_getGender();
+    void bh_setGender(HorseGender gender);
+
+    HorseBreed bh_getBreed();
+    void bh_setBreed(HorseBreed breed);
+
+    boolean bh_isMixedBreed();
+    void bh_setMixedBreed(boolean mixed);
+
     HorseStabilizerState bh_getStabilizerState();
     void bh_setStabilizerState(HorseStabilizerState state);
     int bh_getGearFlags();

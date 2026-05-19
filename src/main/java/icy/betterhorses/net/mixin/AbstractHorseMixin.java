@@ -1,6 +1,8 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.HorseCommand;
+import icy.betterhorses.net.HorseGender;
 import icy.betterhorses.net.HorseStabilizerLogic;
 import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.HorseTracker;
@@ -71,6 +73,15 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique
     private static final EntityDataAccessor<Optional<BlockPos>> BH_HITCHPOST_POS_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
+    @Unique
+    private static final EntityDataAccessor<Integer> BH_GENDER_SYNCED =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
+    @Unique
+    private static final EntityDataAccessor<Integer> BH_BREED_SYNCED =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
+    @Unique
+    private static final EntityDataAccessor<Boolean> BH_BREED_MIXED_SYNCED =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
 
     @Unique private @Nullable UUID bh_owner = null;
     @Unique private HorseCommand bh_command = HorseCommand.FOLLOW;
@@ -179,6 +190,36 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Override
+    public HorseGender bh_getGender() {
+        return HorseGender.fromId(this.entityData.get(BH_GENDER_SYNCED));
+    }
+
+    @Override
+    public void bh_setGender(HorseGender gender) {
+        this.entityData.set(BH_GENDER_SYNCED, gender.ordinal());
+    }
+
+    @Override
+    public HorseBreed bh_getBreed() {
+        return HorseBreed.fromId(this.entityData.get(BH_BREED_SYNCED));
+    }
+
+    @Override
+    public void bh_setBreed(HorseBreed breed) {
+        this.entityData.set(BH_BREED_SYNCED, breed.ordinal());
+    }
+
+    @Override
+    public boolean bh_isMixedBreed() {
+        return this.entityData.get(BH_BREED_MIXED_SYNCED);
+    }
+
+    @Override
+    public void bh_setMixedBreed(boolean mixed) {
+        this.entityData.set(BH_BREED_MIXED_SYNCED, mixed);
+    }
+
+    @Override
     public HorseStabilizerState bh_getStabilizerState() {
         return HorseStabilizerState.fromId(this.entityData.get(BH_STABILIZER_STATE_SYNCED));
     }
@@ -234,6 +275,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         builder.define(BH_STABILIZER_STATE_SYNCED, HorseStabilizerState.CLOSED.ordinal());
         builder.define(BH_GEAR_FLAGS_SYNCED, 0);
         builder.define(BH_HITCHPOST_POS_SYNCED, Optional.empty());
+        builder.define(BH_GENDER_SYNCED, 0);
+        builder.define(BH_BREED_SYNCED, HorseBreed.UNKNOWN_SPECIES.ordinal());
+        builder.define(BH_BREED_MIXED_SYNCED, false);
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
@@ -255,6 +299,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
         tag.put("BH_Gear", bh_writeContainer(bh_gearContainer));
         tag.put("BH_Chest", bh_writeContainer(bh_chestContainer));
+        tag.putInt("BH_Gender", this.entityData.get(BH_GENDER_SYNCED));
+        tag.putInt("BH_Breed", this.entityData.get(BH_BREED_SYNCED));
+        tag.putBoolean("BH_BreedMixed", this.entityData.get(BH_BREED_MIXED_SYNCED));
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
@@ -280,6 +327,46 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         bh_restoreUpgradedSaddle(tag);
         bh_syncGearFlags();
         bh_hadUpgradedSaddle = this.bh_hasUpgradedSaddle();
+
+        if (tag.contains("BH_Gender")) {
+            this.entityData.set(BH_GENDER_SYNCED, tag.getInt("BH_Gender"));
+        } else {
+            this.entityData.set(BH_GENDER_SYNCED, this.random.nextBoolean() ? 0 : 1);
+        }
+        if (tag.contains("BH_Breed")) {
+            this.entityData.set(BH_BREED_SYNCED, tag.getInt("BH_Breed"));
+            this.entityData.set(BH_BREED_MIXED_SYNCED, tag.getBoolean("BH_BreedMixed"));
+        } else {
+            bh_assignDefaultBreed();
+        }
+    }
+
+    @Inject(method = "finalizeSpawn", at = @At("TAIL"))
+    private void bh_assignTraitsOnSpawn(net.minecraft.world.level.ServerLevelAccessor level,
+                                        net.minecraft.world.DifficultyInstance difficulty,
+                                        net.minecraft.world.entity.MobSpawnType reason,
+                                        @Nullable net.minecraft.world.entity.SpawnGroupData groupData,
+                                        CallbackInfoReturnable<net.minecraft.world.entity.SpawnGroupData> cir) {
+        // Only roll if no NBT-restored values were present (defaults still in synched data).
+        if (this.bh_getBreed() == HorseBreed.UNKNOWN_SPECIES) {
+            bh_assignDefaultBreed();
+        }
+        // Gender default of 0 (MALE) doesn't tell us "unset", so always randomize at finalize-spawn for fresh mobs.
+        this.entityData.set(BH_GENDER_SYNCED, this.random.nextBoolean() ? 0 : 1);
+    }
+
+    @Unique
+    private void bh_assignDefaultBreed() {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        HorseBreed species = HorseBreed.speciesFor(self);
+        if (species != null) {
+            this.entityData.set(BH_BREED_SYNCED, species.ordinal());
+            this.entityData.set(BH_BREED_MIXED_SYNCED, false);
+            return;
+        }
+        int idx = this.random.nextInt(HorseBreed.HORSE_BREED_COUNT);
+        this.entityData.set(BH_BREED_SYNCED, idx);
+        this.entityData.set(BH_BREED_MIXED_SYNCED, false);
     }
 
     @Unique
@@ -349,6 +436,22 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             }
 
             this.bh_setBond(this.bh_getBond() + 2);
+
+            // If horse just entered love mode and a same-gender horse is already in love nearby, cancel and warn.
+            if (self.isInLove()) {
+                HorseGender myGender = this.bh_getGender();
+                java.util.List<AbstractHorse> nearby = self.level().getEntitiesOfClass(
+                        AbstractHorse.class,
+                        self.getBoundingBox().inflate(8.0D),
+                        h -> h != self && h.isInLove() && ((IHorseData) h).bh_getGender() == myGender);
+                if (!nearby.isEmpty()) {
+                    self.resetLove();
+                    if (player instanceof ServerPlayer serverPlayer) {
+                        serverPlayer.sendSystemMessage(Component.translatable(
+                                "message.icys-better-horses.same_gender_breed"));
+                    }
+                }
+            }
         } finally {
             this.bh_fedGoldenAppleThisTick = false;
         }
