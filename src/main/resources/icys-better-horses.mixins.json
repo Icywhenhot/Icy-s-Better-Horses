@@ -17,6 +17,7 @@
 		"LivingEntityMixin",
 		"MobNameTagBondMixin",
 		"PowderSnowBlockMixin",
+		"SpawnPlacementsAccessor",
 		"SlotAccessor"
 	],
 	"client": [

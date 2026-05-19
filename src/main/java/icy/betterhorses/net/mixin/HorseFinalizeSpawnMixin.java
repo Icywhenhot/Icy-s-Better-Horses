@@ -86,8 +86,12 @@ public abstract class HorseFinalizeSpawnMixin {
             ((HorseAccessor) self).bh_setVariantAndMarkings(coat.color(), coat.markings());
         }
 
-        BH_LOGGER.debug("[SPAWN] Horse at {} -> breed={} coat={}",
-                self.blockPosition(), breed, coat);
+        String biomeId = level.getBiome(self.blockPosition())
+                .unwrapKey()
+                .map(key -> key.identifier().toString())
+                .orElse("<unregistered>");
+        BH_LOGGER.info("[HORSE_SPAWN] reason={} pos={} biome={} breed={} coat={}",
+                reason, self.blockPosition(), biomeId, breed, coat);
 
         // Propagate breed to the next sibling in this spawn group. The vanilla return value
         // (HorseGroupData) is preserved inside the wrapper so any downstream code that looked

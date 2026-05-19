@@ -11,7 +11,15 @@ import net.minecraft.network.chat.Component;
 
 public class RadialMenuScreen extends Screen {
 
-    private static final int SEGMENT_COUNT = 4;
+    private static final HorseCommand[] COMMANDS = {
+            HorseCommand.FOLLOW,
+            HorseCommand.WANDER,
+            HorseCommand.STAY,
+            HorseCommand.RETURN_HOME,
+            HorseCommand.SET_HOME,
+    };
+
+    private static final int SEGMENT_COUNT = COMMANDS.length;
     private static final int RING_INNER = 44;
     private static final int RING_OUTER = 110;
     private static final int RING_BACKDROP_INNER = 38;
@@ -29,22 +37,13 @@ public class RadialMenuScreen extends Screen {
             0xC07C848E,
             0xC08A929C,
             0xC0767D87,
-            0xC0939AA5
+            0xC0939AA5,
+            0xC088929D
     };
     private static final int HOVERED_SEGMENT_COLOR = 0xF4D5E7FF;
     private static final int CENTER_DOT_COLOR = 0xFFE6F1FF;
     private static final int CENTER_DOT_HOVER_COLOR = 0xFFFFFFFF;
     private static final int CENTER_DOT_SHADOW_COLOR = 0xCC0C111A;
-
-    private static final HorseCommand[] COMMANDS = {
-            HorseCommand.FOLLOW,
-            HorseCommand.SET_HOME,
-            HorseCommand.STAY,
-            HorseCommand.RETURN_HOME,
-    };
-
-    private static final int[] LABEL_DX = {0, 1, 0, -1};
-    private static final int[] LABEL_DY = {-1, 0, 1, 0};
 
     private final int horseId;
     private int hoveredIndex = -1;
@@ -84,7 +83,7 @@ public class RadialMenuScreen extends Screen {
         for (int i = 0; i < SEGMENT_COUNT; i++) {
             double startAngle = segAngle * i - Math.PI / 2.0D - segAngle / 2.0D + SEGMENT_GAP_RADIANS;
             double endAngle = startAngle + segAngle - SEGMENT_GAP_RADIANS * 2.0D;
-            int color = (i == hoveredIndex) ? HOVERED_SEGMENT_COLOR : SEGMENT_COLORS[i];
+            int color = (i == hoveredIndex) ? HOVERED_SEGMENT_COLOR : SEGMENT_COLORS[i % SEGMENT_COLORS.length];
             bh_drawAnnulus(gfx, cx, cy, RING_INNER, RING_OUTER, startAngle, endAngle, color);
         }
 
@@ -94,8 +93,9 @@ public class RadialMenuScreen extends Screen {
 
         // Labels
         for (int i = 0; i < SEGMENT_COUNT; i++) {
-            int lx = cx + LABEL_DX[i] * LABEL_RADIUS;
-            int ly = cy + LABEL_DY[i] * LABEL_RADIUS;
+            double labelAngle = segAngle * i - Math.PI / 2.0D;
+            int lx = cx + (int) Math.round(Math.cos(labelAngle) * LABEL_RADIUS);
+            int ly = cy + (int) Math.round(Math.sin(labelAngle) * LABEL_RADIUS);
             String text = Component.translatable(commandKey(COMMANDS[i])).getString();
             int textColor = (i == hoveredIndex) ? 0xFFFFFFFF : 0xFFD4DAE6;
             gfx.centeredText(font, text, lx, ly - font.lineHeight / 2, textColor);
@@ -233,6 +233,7 @@ public class RadialMenuScreen extends Screen {
     private String commandKey(HorseCommand command) {
         return switch (command) {
             case FOLLOW -> "command.icys-better-horses.follow";
+            case WANDER -> "command.icys-better-horses.wander";
             case STAY -> "command.icys-better-horses.stay";
             case RETURN_HOME -> "command.icys-better-horses.return_home";
             case SET_HOME -> "command.icys-better-horses.set_home";

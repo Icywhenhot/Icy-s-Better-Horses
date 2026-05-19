@@ -18,6 +18,7 @@
   "hud.icys-better-horses.jump": "Jump: %s blk",
 
   "command.icys-better-horses.follow": "Follow",
+  "command.icys-better-horses.wander": "Wander",
   "command.icys-better-horses.stay": "Stay",
   "command.icys-better-horses.return_home": "Return Home",
   "command.icys-better-horses.set_home": "Set Home",

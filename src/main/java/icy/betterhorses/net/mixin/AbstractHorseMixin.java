@@ -13,6 +13,7 @@ import icy.betterhorses.net.item.HitchpostBlock;
 import icy.betterhorses.net.goal.HorseFollowOwnerGoal;
 import icy.betterhorses.net.goal.HorseReturnHomeGoal;
 import icy.betterhorses.net.goal.HorseStayGoal;
+import icy.betterhorses.net.goal.HorseWanderBoundsGoal;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
@@ -95,6 +96,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private @Nullable UUID bh_owner = null;
     @Unique private HorseCommand bh_command = HorseCommand.FOLLOW;
     @Unique private @Nullable BlockPos bh_home = null;
+    @Unique private @Nullable BlockPos bh_wanderCenter = null;
     @Unique private @Nullable BlockPos bh_hitchpostPos = null;
     @Unique private @Nullable Vec3 bh_hitchAnchor = null;
     @Unique private int bh_bond = 0;
@@ -179,6 +181,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Override
     public void bh_setHome(@Nullable BlockPos pos) {
         this.bh_home = pos;
+    }
+
+    @Override
+    public @Nullable BlockPos bh_getWanderCenter() {
+        return bh_wanderCenter;
+    }
+
+    @Override
+    public void bh_setWanderCenter(@Nullable BlockPos pos) {
+        this.bh_wanderCenter = pos == null ? null : pos.immutable();
     }
 
     @Override
@@ -322,6 +334,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         if (bh_home != null) {
             output.store("BH_Home", BlockPos.CODEC, bh_home);
         }
+        if (bh_wanderCenter != null) {
+            output.store("BH_WanderCenter", BlockPos.CODEC, bh_wanderCenter);
+        }
         if (bh_hitchpostPos != null) {
             output.store("BH_Hitchpost", BlockPos.CODEC, bh_hitchpostPos);
         }
@@ -347,9 +362,13 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         // doesn't reopen the exploit. Brand-new horses (bond == 0) start with it unconsumed.
         bh_nameTagBondReceived = input.getIntOr("BH_NameTagBondGiven", bh_bond > 0 ? 1 : 0) != 0;
         bh_home = input.read("BH_Home", BlockPos.CODEC).orElse(null);
+        bh_wanderCenter = input.read("BH_WanderCenter", BlockPos.CODEC).orElse(null);
         bh_hitchpostPos = input.read("BH_Hitchpost", BlockPos.CODEC).orElse(null);
         if (bh_home == null) {
             bh_home = bh_readLegacyBlockPos(input, "BH_Home");
+        }
+        if (bh_wanderCenter == null) {
+            bh_wanderCenter = bh_readLegacyBlockPos(input, "BH_WanderCenter");
         }
         if (bh_hitchpostPos == null) {
             bh_hitchpostPos = bh_readLegacyBlockPos(input, "BH_Hitchpost");
@@ -894,6 +913,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         goalSelector.addGoal(3, new HorseStayGoal(self));
         goalSelector.addGoal(3, new HorseFollowOwnerGoal(self));
         goalSelector.addGoal(3, new HorseReturnHomeGoal(self));
+        goalSelector.addGoal(3, new HorseWanderBoundsGoal(self));
     }
 
     @Inject(method = "getPassengerAttachmentPoint", at = @At("RETURN"), cancellable = true)

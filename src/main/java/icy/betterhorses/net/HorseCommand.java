@@ -4,7 +4,8 @@ public enum HorseCommand {
     FOLLOW,
     STAY,
     RETURN_HOME,
-    SET_HOME;
+    SET_HOME,
+    WANDER;
 
     public static HorseCommand fromId(int id) {
         HorseCommand[] values = values();

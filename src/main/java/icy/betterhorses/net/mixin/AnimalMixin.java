@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseSpawnRules;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.HorseGender;
 import icy.betterhorses.net.IHorseData;
@@ -44,30 +45,9 @@ public abstract class AnimalMixin {
                                                  BlockPos pos,
                                                  RandomSource random,
                                                  CallbackInfoReturnable<Boolean> cir) {
-        if (!AbstractHorse.class.isAssignableFrom(type.getBaseClass())) return;
-
-        // Inline brightness check (vanilla isBrightEnoughToSpawn is protected so we can't call it from here):
-        // animal spawning normally requires raw brightness > 8.
-        boolean brightEnough = EntitySpawnReason.ignoresLightRequirements(reason)
-                || level.getRawBrightness(pos, 0) > 8;
-        if (!brightEnough) {
-            cir.setReturnValue(false);
-            return;
+        if (BhHorseSpawnRules.appliesTo(type)) {
+            cir.setReturnValue(BhHorseSpawnRules.checkHorseLikeGroundRules(type, level, reason, pos));
         }
-
-        BlockState below = level.getBlockState(pos.below());
-        boolean groundOk = below.is(BlockTags.ANIMALS_SPAWNABLE_ON)
-                || below.is(BlockTags.SAND)
-                || below.is(BlockTags.DIRT)
-                || below.is(BlockTags.TERRACOTTA)
-                || below.is(BlockTags.SNOW)
-                || below.is(Blocks.GRAVEL)
-                || below.is(Blocks.PACKED_ICE)
-                || below.is(Blocks.ICE)
-                || below.is(Blocks.STONE)
-                || below.is(Blocks.SNOW_BLOCK)
-                || below.is(Blocks.POWDER_SNOW);
-        cir.setReturnValue(groundOk);
     }
 
     @Inject(method = "canMate", at = @At("HEAD"), cancellable = true)

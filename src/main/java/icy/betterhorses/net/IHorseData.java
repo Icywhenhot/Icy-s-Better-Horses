@@ -18,6 +18,9 @@ public interface IHorseData {
     @Nullable BlockPos bh_getHome();
     void bh_setHome(@Nullable BlockPos pos);
 
+    @Nullable BlockPos bh_getWanderCenter();
+    void bh_setWanderCenter(@Nullable BlockPos pos);
+
     @Nullable BlockPos bh_getHitchpostPos();
     void bh_setHitchpostPos(@Nullable BlockPos pos);
 
