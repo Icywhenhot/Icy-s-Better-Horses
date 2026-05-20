@@ -146,7 +146,7 @@ public class HitchpostBlock extends BaseEntityBlock {
         if (!BhConfig.hitchpostEnabled()) {
             return false;
         }
-        if (!level.getBlockState(pos).is(ModBlocks.HITCHPOST)) {
+        if (!level.getBlockState(pos).is(ModBlocks.HITCHPOST.get())) {
             return false;
         }
 

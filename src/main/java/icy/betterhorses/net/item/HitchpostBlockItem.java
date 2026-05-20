@@ -11,6 +11,6 @@ import net.minecraft.world.item.BlockItem;
 public class HitchpostBlockItem extends BlockItem {
 
     public HitchpostBlockItem(Properties properties) {
-        super(ModBlocks.HITCHPOST, properties);
+        super(ModBlocks.HITCHPOST.get(), properties);
     }
 }

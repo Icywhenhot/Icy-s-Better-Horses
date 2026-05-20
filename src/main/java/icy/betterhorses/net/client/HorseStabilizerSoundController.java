@@ -147,7 +147,7 @@ public final class HorseStabilizerSoundController {
         }
 
         private void startIntro(SoundManager soundManager) {
-            this.introSound = new StabilizerSoundInstance(this.horse, ModSounds.STABILIZER_INTRO, false);
+            this.introSound = new StabilizerSoundInstance(this.horse, ModSounds.STABILIZER_INTRO.get(), false);
             soundManager.play(this.introSound);
         }
 
@@ -156,7 +156,7 @@ public final class HorseStabilizerSoundController {
                 return;
             }
 
-            this.loopSound = new StabilizerSoundInstance(this.horse, ModSounds.STABILIZER_LOOP, true);
+            this.loopSound = new StabilizerSoundInstance(this.horse, ModSounds.STABILIZER_LOOP.get(), true);
             soundManager.play(this.loopSound);
         }
 

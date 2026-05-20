@@ -18,6 +18,7 @@ import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractMountInventoryMenu;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
@@ -278,7 +279,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
      * the icon so it reads as a placeholder rather than a real equipped item.
      */
     @Unique
-    private void bh_drawGearHint(GuiGraphicsExtractor gfx, int x, int y, GearSlot slot, Item item) {
+    private void bh_drawGearHint(GuiGraphicsExtractor gfx, int x, int y, GearSlot slot, ItemLike item) {
         int slotIndex = this.bh_getGearSlotIndex(slot.ordinal());
         if (slotIndex < 0 || this.menu.getSlot(slotIndex).hasItem()) {
             return;

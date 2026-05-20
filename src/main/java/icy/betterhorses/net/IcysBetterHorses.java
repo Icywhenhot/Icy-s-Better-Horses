@@ -50,48 +50,16 @@ public final class IcysBetterHorses {
     private static final int WILD_HORSE_GROUP_MAX = 3;
 
     public IcysBetterHorses(IEventBus modEventBus) {
-        bhInitStep("BhConfig.load", BhConfig::load);
-        bhInitStep("force-init ModBlocks", () -> Class.forName(ModBlocks.class.getName(), true, ModBlocks.class.getClassLoader()));
-        bhInitStep("force-init ModBlockEntities", () -> Class.forName(ModBlockEntities.class.getName(), true, ModBlockEntities.class.getClassLoader()));
-        bhInitStep("force-init ModItems", () -> Class.forName(ModItems.class.getName(), true, ModItems.class.getClassLoader()));
-        bhInitStep("force-init ModSounds", () -> Class.forName(ModSounds.class.getName(), true, ModSounds.class.getClassLoader()));
-        bhInitStep("ModBlocks.register", () -> ModBlocks.register(modEventBus));
-        bhInitStep("ModBlockEntities.register", () -> ModBlockEntities.register(modEventBus));
-        bhInitStep("ModItems.register", () -> ModItems.register(modEventBus));
-        bhInitStep("ModSounds.register", () -> ModSounds.register(modEventBus));
-        bhInitStep("network/spawn listeners", () -> {
-            modEventBus.addListener(BhNetworking::register);
-            modEventBus.addListener(this::registerSpawnPlacements);
-            NeoForge.EVENT_BUS.register(this);
-        });
-        System.err.println("[BH][INIT] Icy's Better Horses constructor finished cleanly.");
+        BhConfig.load();
+        ModBlocks.register(modEventBus);
+        ModBlockEntities.register(modEventBus);
+        ModItems.register(modEventBus);
+        ModSounds.register(modEventBus);
+        ModAttachments.register(modEventBus);
+        modEventBus.addListener(BhNetworking::register);
+        modEventBus.addListener(this::registerSpawnPlacements);
+        NeoForge.EVENT_BUS.register(this);
         LOGGER.info("Icy's Better Horses initialized.");
-    }
-
-    @FunctionalInterface
-    private interface BhInitTask {
-        void run() throws Throwable;
-    }
-
-    private static void bhInitStep(String name, BhInitTask task) {
-        try {
-            task.run();
-        } catch (Throwable t) {
-            try (java.io.PrintWriter pw = new java.io.PrintWriter(
-                    new java.io.FileWriter("bh-init-error.txt", false))) {
-                pw.println("[BH][INIT] FAILED at: " + name);
-                pw.println();
-                t.printStackTrace(pw);
-                Throwable cause = t.getCause();
-                while (cause != null) {
-                    pw.println();
-                    pw.println("--- caused by ---");
-                    cause.printStackTrace(pw);
-                    cause = cause.getCause();
-                }
-            } catch (java.io.IOException ignored) {}
-            throw new RuntimeException("[BH][INIT] failed at: " + name + " (see bh-init-error.txt)", t);
-        }
     }
 
     private void registerSpawnPlacements(RegisterSpawnPlacementsEvent event) {
@@ -173,7 +141,7 @@ public final class IcysBetterHorses {
                     player.getX(),
                     player.getY(),
                     player.getZ(),
-                    ModSounds.CALL_WHISTLE,
+                    ModSounds.CALL_WHISTLE.get(),
                     SoundSource.PLAYERS,
                     1.0F,
                     1.0F);
@@ -411,4 +379,3 @@ public final class IcysBetterHorses {
         return horse;
     }
 }
-
