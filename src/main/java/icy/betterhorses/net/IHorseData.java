@@ -21,6 +21,11 @@ public interface IHorseData {
     @Nullable BlockPos bh_getWanderCenter();
     void bh_setWanderCenter(@Nullable BlockPos pos);
 
+    default void bh_setWanderCommand(BlockPos pos) {
+        bh_setWanderCenter(pos);
+        bh_setCommand(HorseCommand.WANDER);
+    }
+
     @Nullable BlockPos bh_getHitchpostPos();
     void bh_setHitchpostPos(@Nullable BlockPos pos);
 

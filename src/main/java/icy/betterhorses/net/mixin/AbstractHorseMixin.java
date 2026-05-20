@@ -646,6 +646,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
 
         this.bh_setOwner(player.getUUID());
+        this.bh_setWanderCommand(self.blockPosition());
         if (player instanceof ServerPlayer serverPlayer) {
             serverPlayer.sendSystemMessage(Component.translatable("message.icys_better_horses.claimed"));
         }

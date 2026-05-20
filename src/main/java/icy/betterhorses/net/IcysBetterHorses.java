@@ -129,7 +129,8 @@ public final class IcysBetterHorses {
         }
 
         if (command == HorseCommand.WANDER) {
-            data.bh_setWanderCenter(horse.blockPosition());
+            data.bh_setWanderCommand(horse.blockPosition());
+            return;
         }
         data.bh_setCommand(command);
     }
@@ -158,12 +159,14 @@ public final class IcysBetterHorses {
             return;
         }
 
-        data.bh_setCommand(HorseCommand.FOLLOW);
-
         BlockPos target = player.blockPosition();
         if (horse.distanceToSqr(player) > 400.0) {
             horse.teleportTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
+            data.bh_setWanderCommand(target);
+            return;
         }
+
+        data.bh_setCommand(HorseCommand.FOLLOW);
     }
 
     private static AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {

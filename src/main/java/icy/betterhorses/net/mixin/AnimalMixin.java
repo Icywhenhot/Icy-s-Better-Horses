@@ -80,9 +80,13 @@ public abstract class AnimalMixin {
         childData.bh_setGender(self.getRandom().nextBoolean() ? HorseGender.MALE : HorseGender.FEMALE);
 
         // Breed inheritance — only meaningful if both parents are real horses (not donkey/mule mixes).
-        HorseBreed selfBreed = selfData.bh_getBreed();
-        HorseBreed partnerBreed = partnerData.bh_getBreed();
-        if (selfBreed.isRealBreed() && partnerBreed.isRealBreed()) {
+        // If a parent is a real Horse but its stored breed is UNKNOWN (e.g. spawned through a path
+        // that bypassed our finalizeSpawn injection), derive a real breed from its coat so the
+        // child doesn't fall into the cross-species branch and end up UNKNOWN itself.
+        HorseBreed selfBreed = bh_resolveBreed(selfHorse, selfData);
+        HorseBreed partnerBreed = bh_resolveBreed(partnerHorse, partnerData);
+
+        if (childHorse instanceof Horse && selfBreed.isRealBreed() && partnerBreed.isRealBreed()) {
             if (selfBreed == partnerBreed) {
                 childData.bh_setBreed(selfBreed);
                 childData.bh_setMixedBreed(false);
@@ -132,6 +136,26 @@ public abstract class AnimalMixin {
     // Variance is uniform in display units: at worst 0.5 worse than the better parent, at best 1.0 better.
     private static final double VARIANCE_DISPLAY_MIN = -0.5D;
     private static final double VARIANCE_DISPLAY_MAX = 1.0D;
+
+    /**
+     * Resolve a parent's effective breed for inheritance. Normally this is the stored breed; but
+     * if the parent is a real Horse with an UNKNOWN_SPECIES tag (spawned through a path that
+     * bypassed our breed assignment), fall back to matching its current coat to a known breed so
+     * the child still inherits a real breed instead of dropping to the cross-species branch.
+     */
+    private static HorseBreed bh_resolveBreed(AbstractHorse parent, IHorseData parentData) {
+        HorseBreed stored = parentData.bh_getBreed();
+        if (stored.isRealBreed() || !(parent instanceof Horse horseParent)) {
+            return stored;
+        }
+        java.util.List<HorseBreed> matches = HorseBreed.breedsMatchingCoat(
+                horseParent.getVariant(), horseParent.getMarkings());
+        HorseBreed picked = matches.isEmpty()
+                ? HorseBreed.MUSTANG
+                : matches.get(parent.getRandom().nextInt(matches.size()));
+        parentData.bh_setBreed(picked);
+        return picked;
+    }
 
     private static void bh_inheritBetterStat(AbstractHorse p1, AbstractHorse p2, AbstractHorse child,
                                              Holder<Attribute> attr, double cap, double displayPerRaw) {

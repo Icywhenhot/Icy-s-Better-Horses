@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.IHorseData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -26,6 +27,8 @@ public abstract class EntityMixin {
             Identifier.fromNamespaceAndPath("icys_better_horses", "mounted_break_speed");
     @Unique private static final double BH_MOUNTED_STEP_HEIGHT_BONUS = 0.1D;
     @Unique private static final double BH_MOUNTED_BREAK_SPEED_BONUS = 5.0D;
+    @Unique private @Nullable AbstractHorse bh_dismountHorse = null;
+    @Unique private boolean bh_shouldSetHorseToWanderOnDismount = false;
 
     @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;ZZ)Z", at = @At("TAIL"))
     private void bh_applyMountedHorseBonuses(
@@ -63,17 +66,41 @@ public abstract class EntityMixin {
             return;
         }
 
+        this.bh_dismountHorse = null;
+        this.bh_shouldSetHorseToWanderOnDismount = false;
         Entity vehicle = player.getVehicle();
-        if (vehicle instanceof AbstractHorse horse && horse.getPassengers().size() == 1) {
-            @Nullable AttributeInstance stepHeight = horse.getAttribute(Attributes.STEP_HEIGHT);
-            if (stepHeight != null) {
-                stepHeight.removeModifier(BH_MOUNTED_STEP_HEIGHT_ID);
+        if (vehicle instanceof AbstractHorse horse) {
+            if (horse.getPassengers().size() == 1) {
+                @Nullable AttributeInstance stepHeight = horse.getAttribute(Attributes.STEP_HEIGHT);
+                if (stepHeight != null) {
+                    stepHeight.removeModifier(BH_MOUNTED_STEP_HEIGHT_ID);
+                }
             }
+            this.bh_dismountHorse = horse;
+            this.bh_shouldSetHorseToWanderOnDismount = player.getUUID().equals(((IHorseData) horse).bh_getOwner());
         }
 
         @Nullable AttributeInstance breakSpeed = player.getAttribute(Attributes.BLOCK_BREAK_SPEED);
         if (breakSpeed != null) {
             breakSpeed.removeModifier(BH_MOUNTED_BREAK_SPEED_ID);
         }
+    }
+
+    @Inject(method = "removeVehicle", at = @At("TAIL"))
+    private void bh_setHorseToWanderAfterOwnerDismount(CallbackInfo ci) {
+        Entity self = (Entity) (Object) this;
+        if (!(self instanceof ServerPlayer player)) {
+            return;
+        }
+
+        AbstractHorse horse = this.bh_dismountHorse;
+        boolean shouldSetWander = this.bh_shouldSetHorseToWanderOnDismount;
+        this.bh_dismountHorse = null;
+        this.bh_shouldSetHorseToWanderOnDismount = false;
+        if (!shouldSetWander || horse == null || horse.level().isClientSide()) {
+            return;
+        }
+
+        ((IHorseData) horse).bh_setWanderCommand(player.blockPosition());
     }
 }

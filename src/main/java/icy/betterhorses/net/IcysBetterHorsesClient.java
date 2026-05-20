@@ -41,7 +41,7 @@ public final class IcysBetterHorsesClient {
         modEventBus.addListener(this::registerKeyMappings);
         modEventBus.addListener(this::registerClientPayloads);
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
-        NeoForge.EVENT_BUS.addListener(this::onEntityInteractSpecific);
+        NeoForge.EVENT_BUS.addListener(this::onEntityInteract);
         LOGGER.info("[RADIAL][0] Client init complete.");
     }
 
@@ -65,7 +65,7 @@ public final class IcysBetterHorsesClient {
         });
     }
 
-    private void onEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event) {
+    private void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         if (!event.getLevel().isClientSide() || event.getHand() != InteractionHand.MAIN_HAND) {
             return;
         }
