@@ -15,6 +15,7 @@ import icy.betterhorses.net.goal.HorseFollowOwnerGoal;
 import icy.betterhorses.net.goal.HorseReturnHomeGoal;
 import icy.betterhorses.net.goal.HorseStayGoal;
 import icy.betterhorses.net.goal.HorseWanderBoundsGoal;
+import icy.betterhorses.net.inventory.BhSlotEntry;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
@@ -452,16 +453,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
 
         return new BlockPos(x.get(), y.get(), z.get());
-    }
-
-    /** Codec-friendly slot/stack pair used for {@code BH_Gear}/{@code BH_Chest} list entries. */
-    @Unique
-    public record BhSlotEntry(int slot, ItemStack stack) {
-        public static final com.mojang.serialization.Codec<BhSlotEntry> CODEC =
-                com.mojang.serialization.codecs.RecordCodecBuilder.create(instance -> instance.group(
-                        com.mojang.serialization.Codec.INT.fieldOf("Slot").forGetter(BhSlotEntry::slot),
-                        ItemStack.CODEC.fieldOf("Item").forGetter(BhSlotEntry::stack)
-                ).apply(instance, BhSlotEntry::new));
     }
 
     @Inject(method = "createInventory", at = @At("TAIL"))

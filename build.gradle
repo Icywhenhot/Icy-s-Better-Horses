@@ -30,6 +30,18 @@ repositories {
     exclusiveContent {
         forRepository {
             maven {
+                name = 'GeckoLib'
+                url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+            }
+        }
+        filter {
+            includeGroupAndSubgroups 'com.geckolib'
+            includeGroupAndSubgroups 'software.bernie.geckolib'
+        }
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
                 name = 'Modrinth'
                 url = 'https://api.modrinth.com/maven'
             }
@@ -55,12 +67,17 @@ repositories.configureEach {
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(25)
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
     withSourcesJar()
 }
 
 neoForge {
     version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
 
     runs {
         client {
@@ -102,7 +119,9 @@ configurations {
 }
 
 dependencies {
-    implementation "maven.modrinth:geckolib:${geckolib_version_id}"
+    implementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+    compileOnly "org.jetbrains:annotations:26.0.2"
+    runtimeOnly "org.jetbrains:annotations:26.0.2"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"

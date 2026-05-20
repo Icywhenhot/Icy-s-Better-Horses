@@ -2,7 +2,7 @@ package icy.betterhorses.net.client;
 
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -54,8 +54,8 @@ public class HorseInfoScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(gfx, mouseX, mouseY, delta);
+    public void render(GuiGraphics gfx, int mouseX, int mouseY, float delta) {
+        super.render(gfx, mouseX, mouseY, delta);
 
         int left = (this.width - PANEL_WIDTH) / 2;
         int top = (this.height - PANEL_HEIGHT) / 2;
@@ -65,7 +65,7 @@ public class HorseInfoScreen extends Screen {
 
         Font font = this.font;
         Component title = horse.hasCustomName() ? horse.getCustomName() : getTitle();
-        gfx.centeredText(font, title, left + PANEL_WIDTH / 2, top + PADDING, VALUE_COLOR);
+        gfx.drawCenteredString(font, title, left + PANEL_WIDTH / 2, top + PADDING, VALUE_COLOR);
 
         IHorseData data = (IHorseData) horse;
         int y = top + PADDING + 18;
@@ -128,13 +128,13 @@ public class HorseInfoScreen extends Screen {
         return Component.translatable("coat.icys_better_horses.combined", colorComponent, markingsComponent);
     }
 
-    private void drawLabel(GuiGraphicsExtractor gfx, Font font, int x, int y, Component label, Component value) {
-        gfx.text(font, label, x, y, LABEL_COLOR, false);
-        gfx.text(font, value, x + LABEL_WIDTH, y, VALUE_COLOR, false);
+    private void drawLabel(GuiGraphics gfx, Font font, int x, int y, Component label, Component value) {
+        gfx.drawString(font, label, x, y, LABEL_COLOR, false);
+        gfx.drawString(font, value, x + LABEL_WIDTH, y, VALUE_COLOR, false);
     }
 
-    private void drawStatRow(GuiGraphicsExtractor gfx, Font font, int x, int y, Component label, String value, double normalized) {
-        gfx.text(font, label, x, y, LABEL_COLOR, false);
+    private void drawStatRow(GuiGraphics gfx, Font font, int x, int y, Component label, String value, double normalized) {
+        gfx.drawString(font, label, x, y, LABEL_COLOR, false);
         int barX = x + LABEL_WIDTH;
         int barY = y + 3;
         gfx.fill(barX, barY, barX + BAR_WIDTH, barY + BAR_HEIGHT, BAR_BG_COLOR);
@@ -142,7 +142,7 @@ public class HorseInfoScreen extends Screen {
         if (fillWidth > 0) {
             gfx.fill(barX, barY, barX + fillWidth, barY + BAR_HEIGHT, BAR_FILL_COLOR);
         }
-        gfx.text(font, Component.literal(value), barX + BAR_WIDTH + BAR_VALUE_GAP, y, VALUE_COLOR, false);
+        gfx.drawString(font, Component.literal(value), barX + BAR_WIDTH + BAR_VALUE_GAP, y, VALUE_COLOR, false);
     }
 
 }

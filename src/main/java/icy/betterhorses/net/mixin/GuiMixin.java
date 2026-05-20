@@ -5,7 +5,7 @@ import icy.betterhorses.net.ModItems;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
@@ -31,8 +31,8 @@ public abstract class GuiMixin {
     @Unique private static final int BH_STATS_HUD_BACKGROUND = 0xA0101010;
     @Unique private static final int BH_STATS_HUD_ACCENT = 0xD06E5324;
 
-    @Inject(method = "extractRenderState", at = @At("TAIL"))
-    private void bh_renderHorseStatsHud(GuiGraphicsExtractor gfx, DeltaTracker deltaTracker, CallbackInfo ci) {
+    @Inject(method = "render", at = @At("TAIL"))
+    private void bh_renderHorseStatsHud(GuiGraphics gfx, DeltaTracker deltaTracker, CallbackInfo ci) {
         if (this.minecraft.player == null || this.minecraft.level == null || this.minecraft.screen != null) {
             return;
         }
@@ -71,9 +71,9 @@ public abstract class GuiMixin {
 
         int textX = left + BH_STATS_HUD_PADDING;
         int textY = top + BH_STATS_HUD_PADDING;
-        gfx.text(this.minecraft.font, title, textX, textY, BH_STATS_HUD_TITLE_COLOR, false);
+        gfx.drawString(this.minecraft.font, title, textX, textY, BH_STATS_HUD_TITLE_COLOR, false);
         for (int i = 0; i < lines.length; i++) {
-            gfx.text(this.minecraft.font, lines[i], textX, textY + lineHeight * (i + 1), BH_STATS_HUD_TEXT_COLOR, false);
+            gfx.drawString(this.minecraft.font, lines[i], textX, textY + lineHeight * (i + 1), BH_STATS_HUD_TEXT_COLOR, false);
         }
     }
 

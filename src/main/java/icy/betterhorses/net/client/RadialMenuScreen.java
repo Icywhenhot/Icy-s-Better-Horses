@@ -3,7 +3,7 @@ package icy.betterhorses.net.client;
 import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.network.RadialCommandPayload;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -59,7 +59,8 @@ public class RadialMenuScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics gfx, int mouseX, int mouseY, float delta) {
+        super.render(gfx, mouseX, mouseY, delta);
         int cx = width / 2;
         int cy = height / 2;
 
@@ -98,7 +99,7 @@ public class RadialMenuScreen extends Screen {
             int ly = cy + (int) Math.round(Math.sin(labelAngle) * LABEL_RADIUS);
             String text = Component.translatable(commandKey(COMMANDS[i])).getString();
             int textColor = (i == hoveredIndex) ? 0xFFFFFFFF : 0xFFD4DAE6;
-            gfx.centeredText(font, text, lx, ly - font.lineHeight / 2, textColor);
+            gfx.drawCenteredString(font, text, lx, ly - font.lineHeight / 2, textColor);
         }
 
         // Center dot
@@ -107,7 +108,7 @@ public class RadialMenuScreen extends Screen {
     }
 
     /** Filled disc using horizontal scanlines — produces a perfectly clean circle at any radius. */
-    private void bh_drawDisc(GuiGraphicsExtractor gfx, int cx, int cy, int radius, int color) {
+    private void bh_drawDisc(GuiGraphics gfx, int cx, int cy, int radius, int color) {
         int r2 = radius * radius;
         for (int dy = -radius; dy <= radius; dy++) {
             int xExtent = (int) Math.sqrt(r2 - dy * dy);
@@ -120,7 +121,7 @@ public class RadialMenuScreen extends Screen {
      * [startAngle, endAngle]. Pass startAngle=0, endAngle=2π for a full ring.
      */
     private void bh_drawAnnulus(
-            GuiGraphicsExtractor gfx,
+            GuiGraphics gfx,
             int cx,
             int cy,
             int innerRadius,
@@ -164,7 +165,7 @@ public class RadialMenuScreen extends Screen {
      * angle from (cx, cy+dy) falls inside [startAngle, endAngle].
      */
     private void bh_emitClippedRun(
-            GuiGraphicsExtractor gfx,
+            GuiGraphics gfx,
             int xStart,
             int xEnd,
             int yPx,
