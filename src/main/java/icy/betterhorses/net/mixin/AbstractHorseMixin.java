@@ -1091,6 +1091,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                 }
 
                 level.setBlock(waterPos, frostedIce, 3);
+                level.scheduleTick(waterPos, Blocks.FROSTED_ICE, Mth.nextInt(level.getRandom(), 60, 120));
             }
         }
     }
