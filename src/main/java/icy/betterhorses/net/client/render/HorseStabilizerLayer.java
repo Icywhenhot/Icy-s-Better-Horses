@@ -2,7 +2,6 @@ package icy.betterhorses.net.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import icy.betterhorses.net.IcysBetterHorsesClient;
 import icy.betterhorses.net.mixin.HorseModelAccessor;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
@@ -41,27 +40,6 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
     private static final double TORSO_Z_OFFSET = -1.0D / 16.0D;
     private static final float MODEL_ROLL_DEGREES = 180.0F;
 
-    private static long bh_submitLastLogMs = 0L;
-    private static String bh_submitLastReason = "";
-    private static int bh_submitLastHorseId = Integer.MIN_VALUE;
-    private static int bh_submitLastStateId = -1;
-
-    private static void bh_logSubmit(int horseId, String reason, int stateId) {
-        long now = System.currentTimeMillis();
-        boolean changed = horseId != bh_submitLastHorseId
-                || stateId != bh_submitLastStateId
-                || !reason.equals(bh_submitLastReason);
-        if (changed || now - bh_submitLastLogMs > 1000L) {
-            bh_submitLastHorseId = horseId;
-            bh_submitLastStateId = stateId;
-            bh_submitLastReason = reason;
-            bh_submitLastLogMs = now;
-            IcysBetterHorsesClient.LOGGER.info(
-                    "[STAB-DEBUG][LAYER] submit horse={} state={} -> {}",
-                    horseId, stateId, reason);
-        }
-    }
-
     public HorseStabilizerLayer(RenderLayerParent<S, M> renderer) {
         super(renderer);
     }
@@ -76,17 +54,14 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
             float xRot) {
         IBhEquineStabilizerState bhState = (IBhEquineStabilizerState) (Object) state;
         int horseId = bhState.bh_getHorseId();
-        int stateId = bhState.bh_getStabilizerState() == null ? -2 : bhState.bh_getStabilizerState().ordinal();
 
         if (!bhState.bh_hasStabilizer()) {
-            bh_logSubmit(horseId, "SKIP no-stabilizer-gear", stateId);
             return;
         }
         // Previously: skipped whenever the horse was even slightly faded (e.g. mounted-view fade).
         // That made wings invisible the entire time the player was riding. Only skip when the horse
         // is essentially invisible (camera clipped through it).
         if (BhRenderContext.currentOpacity() < 0.05F) {
-            bh_logSubmit(horseId, "SKIP opacity<0.05 (=" + BhRenderContext.currentOpacity() + ")", stateId);
             return;
         }
 
@@ -94,17 +69,13 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
         if (camera == null) {
             // Outside a LivingEntityRenderer.submit scope (shouldn't happen for a horse layer,
             // but defensively skip rather than NPE).
-            bh_logSubmit(horseId, "SKIP camera==null", stateId);
             return;
         }
 
         HorseStabilizerAnimatable animatable = HorseStabilizerAnimatable.getById(horseId);
         if (animatable == null) {
-            bh_logSubmit(horseId, "SKIP animatable==null (getById failed)", stateId);
             return;
         }
-
-        bh_logSubmit(horseId, "RENDER (animatable.active=" + animatable.isActive() + ")", stateId);
 
         ModelPart body = ((HorseModelAccessor) this.getParentModel()).bh_getBody();
 

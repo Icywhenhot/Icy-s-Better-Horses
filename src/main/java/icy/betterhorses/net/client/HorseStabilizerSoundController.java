@@ -3,7 +3,6 @@ package icy.betterhorses.net.client;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.HorseStabilizerLogic;
 import icy.betterhorses.net.IHorseData;
-import icy.betterhorses.net.IcysBetterHorsesClient;
 import icy.betterhorses.net.ModSounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
@@ -101,7 +100,6 @@ public final class HorseStabilizerSoundController {
         }
 
         private void setActive(boolean stabilizerActive) {
-            boolean prev = this.active;
             if (stabilizerActive && !this.active) {
                 this.introComplete = false;
             } else if (!stabilizerActive && this.active) {
@@ -109,12 +107,6 @@ public final class HorseStabilizerSoundController {
             }
 
             this.active = stabilizerActive;
-
-            if (prev != stabilizerActive) {
-                IcysBetterHorsesClient.LOGGER.info(
-                        "[STAB-DEBUG][SOUND] horse={} setActive {} -> {} (introComplete reset={})",
-                        this.horseId, prev, stabilizerActive, !this.introComplete);
-            }
         }
 
         private void tick(SoundManager soundManager) {
@@ -124,26 +116,17 @@ public final class HorseStabilizerSoundController {
             }
 
             if (this.introSound != null && this.introSound.isStopped()) {
-                IcysBetterHorsesClient.LOGGER.info(
-                        "[STAB-DEBUG][SOUND] horse={} intro detected stopped -> clearing, introComplete=true",
-                        this.horseId);
                 this.introSound = null;
                 this.introComplete = true;
             }
 
             if (this.loopSound != null && this.loopSound.isStopped()) {
-                IcysBetterHorsesClient.LOGGER.info(
-                        "[STAB-DEBUG][SOUND] horse={} loop detected stopped -> clearing",
-                        this.horseId);
                 this.loopSound = null;
             }
 
             if (this.active) {
                 if ((this.introSound != null && this.introSound.isFadingOut())
                         || (this.loopSound != null && this.loopSound.isFadingOut())) {
-                    IcysBetterHorsesClient.LOGGER.info(
-                            "[STAB-DEBUG][SOUND] horse={} active=true but a sound is fading out -> stopImmediately+reset introComplete",
-                            this.horseId);
                     this.stopImmediately();
                     this.introComplete = false;
                 }
@@ -166,9 +149,6 @@ public final class HorseStabilizerSoundController {
         private void startIntro(SoundManager soundManager) {
             this.introSound = new StabilizerSoundInstance(this.horse, ModSounds.STABILIZER_INTRO.get(), false);
             soundManager.play(this.introSound);
-            IcysBetterHorsesClient.LOGGER.info(
-                    "[STAB-DEBUG][SOUND] horse={} >>> startIntro (new instance played)",
-                    this.horseId);
         }
 
         private void startLoop(SoundManager soundManager) {
@@ -178,9 +158,6 @@ public final class HorseStabilizerSoundController {
 
             this.loopSound = new StabilizerSoundInstance(this.horse, ModSounds.STABILIZER_LOOP.get(), true);
             soundManager.play(this.loopSound);
-            IcysBetterHorsesClient.LOGGER.info(
-                    "[STAB-DEBUG][SOUND] horse={} >>> startLoop (looping instance played)",
-                    this.horseId);
         }
 
         private void stopImmediately() {

@@ -2,7 +2,6 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.HorseStabilizerState;
-import icy.betterhorses.net.IcysBetterHorsesClient;
 import icy.betterhorses.net.client.render.BhMountedHorseVisibility;
 import icy.betterhorses.net.client.render.HorseStabilizerAnimatable;
 import icy.betterhorses.net.client.render.HorseStabilizerLayer;
@@ -73,42 +72,12 @@ public abstract class AbstractHorseRendererMixin<
 
         boolean hasStabilizer = data.bh_hasGear(GearSlot.STABILIZER);
         HorseStabilizerState clientState = data.bh_getStabilizerState();
-        HorseStabilizerState prevExtracted = extState.bh_getStabilizerState();
         extState.bh_setStabilizerData(
                 hasStabilizer, clientState, entity.getId(), partialTick);
 
         if (hasStabilizer) {
             HorseStabilizerAnimatable animatable = HorseStabilizerAnimatable.get(entity);
             animatable.syncFromHorse(entity, clientState);
-            // Unconditional (throttled) — so we can see what value `data.bh_getStabilizerState()`
-            // returns on EVERY extractRenderState call. The render-state identity-hashcode lets us
-            // detect whether vanilla is calling us with multiple render-state instances per tick.
-            bh_logExtract(entity.getId(), clientState, prevExtracted, extState.bh_getOpacity(),
-                    System.identityHashCode(state));
-        }
-    }
-
-    @org.spongepowered.asm.mixin.Unique
-    private static long bh_extractLastLogMs = 0L;
-    @org.spongepowered.asm.mixin.Unique
-    private static int bh_extractLastClientStateOrdinal = -1;
-    @org.spongepowered.asm.mixin.Unique
-    private static int bh_extractLastRenderStateHash = 0;
-
-    @org.spongepowered.asm.mixin.Unique
-    private static void bh_logExtract(int horseId, HorseStabilizerState clientState,
-                                      HorseStabilizerState prevExtracted, float opacity,
-                                      int renderStateIdHash) {
-        long now = System.currentTimeMillis();
-        boolean changed = clientState.ordinal() != bh_extractLastClientStateOrdinal
-                || renderStateIdHash != bh_extractLastRenderStateHash;
-        if (changed || now - bh_extractLastLogMs > 1000L) {
-            bh_extractLastClientStateOrdinal = clientState.ordinal();
-            bh_extractLastRenderStateHash = renderStateIdHash;
-            bh_extractLastLogMs = now;
-            IcysBetterHorsesClient.LOGGER.info(
-                    "[STAB-DEBUG][EXTRACT] horse={} clientState={} prevOnRenderState={} renderStateHash={} opacity={}",
-                    horseId, clientState, prevExtracted, renderStateIdHash, opacity);
         }
     }
 }

@@ -1,7 +1,6 @@
 package icy.betterhorses.net.client.render;
 
 import icy.betterhorses.net.HorseStabilizerState;
-import icy.betterhorses.net.IcysBetterHorsesClient;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoAnimatable;
@@ -45,8 +44,6 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
     private HorseStabilizerState state = HorseStabilizerState.CLOSED;
     private boolean active;
     private boolean deploySequenceRequested;
-    private int predicateCallCount;
-    private long lastPredicateLogTick = -1L;
 
     public static HorseStabilizerAnimatable get(AbstractHorse horse) {
         return INSTANCES.computeIfAbsent(horse, ignored -> new HorseStabilizerAnimatable());
@@ -70,14 +67,11 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
         this.horse = horse;
 
         boolean nextActive = state != HorseStabilizerState.CLOSED;
-        HorseStabilizerState prevState = this.state;
-        boolean prevActive = this.active;
 
         // GeckoLib 5: forceAnimationReset() and stop() were unified into reset().
         if (nextActive && !this.active) {
             this.deploySequenceRequested = true;
             this.controller.reset();
-            this.predicateCallCount = 0;
         } else if (!nextActive && this.active) {
             this.deploySequenceRequested = false;
             this.controller.reset();
@@ -85,12 +79,6 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
 
         this.active = nextActive;
         this.state = state;
-
-        if (prevState != state || prevActive != nextActive) {
-            IcysBetterHorsesClient.LOGGER.info(
-                    "[STAB-DEBUG][ANIMATABLE] horse={} syncFromHorse state {}->{} active {}->{} deployRequested={}",
-                    horse.getId(), prevState, state, prevActive, nextActive, this.deploySequenceRequested);
-        }
     }
 
     public boolean isActive() {
@@ -112,42 +100,17 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
     }
 
     private PlayState animationPredicate(AnimationTest<HorseStabilizerAnimatable> test) {
-        this.predicateCallCount++;
-        int horseId = this.horse == null ? -1 : this.horse.getId();
-        long nowTick = (long) test.renderState().getAnimatableAge();
-
         if (!this.active) {
-            if (nowTick != this.lastPredicateLogTick && this.predicateCallCount <= 3) {
-                this.lastPredicateLogTick = nowTick;
-                IcysBetterHorsesClient.LOGGER.info(
-                        "[STAB-DEBUG][PREDICATE] horse={} predicate#{} active=false -> STOP (state={})",
-                        horseId, this.predicateCallCount, this.state);
-            }
             return PlayState.STOP;
         }
 
         if (this.deploySequenceRequested) {
             this.deploySequenceRequested = false;
-            IcysBetterHorsesClient.LOGGER.info(
-                    "[STAB-DEBUG][PREDICATE] horse={} predicate#{} -> setAndContinue(DEPLOY_AND_GLIDE)",
-                    horseId, this.predicateCallCount);
             return test.setAndContinue(DEPLOY_AND_GLIDE);
         }
 
         if (!test.isCurrentAnimation(DEPLOY_AND_GLIDE) && !test.isCurrentAnimation(GLIDE_LOOP)) {
-            IcysBetterHorsesClient.LOGGER.info(
-                    "[STAB-DEBUG][PREDICATE] horse={} predicate#{} -> setAndContinue(GLIDE_LOOP) (no current animation matched)",
-                    horseId, this.predicateCallCount);
             return test.setAndContinue(GLIDE_LOOP);
-        }
-
-        if (nowTick != this.lastPredicateLogTick && this.predicateCallCount % 20 == 0) {
-            this.lastPredicateLogTick = nowTick;
-            IcysBetterHorsesClient.LOGGER.info(
-                    "[STAB-DEBUG][PREDICATE] horse={} predicate#{} CONTINUE (deployCurrent={} glideCurrent={})",
-                    horseId, this.predicateCallCount,
-                    test.isCurrentAnimation(DEPLOY_AND_GLIDE),
-                    test.isCurrentAnimation(GLIDE_LOOP));
         }
 
         return PlayState.CONTINUE;

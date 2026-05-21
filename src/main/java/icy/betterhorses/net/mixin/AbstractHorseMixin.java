@@ -90,7 +90,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private boolean bh_hadUpgradedSaddle = false;
     @Unique private boolean bh_fedGoldenAppleThisTick = false;
     @Unique private @Nullable Vec3 bh_lastFrostWalkerPos = null;
-    @Unique private long bh_stabDebugLastTickLog = 0L;
 
     @Unique
     private static final Identifier BH_SPEED_ID =
@@ -716,7 +715,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_tickStabilizer(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        HorseStabilizerState prevState = this.bh_getStabilizerState();
         HorseStabilizerState state = this.bh_computeStabilizerState(self);
 
         if (state == HorseStabilizerState.OPEN || state == HorseStabilizerState.HALF_OPEN) {
@@ -742,21 +740,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
 
         this.bh_setStabilizerState(state);
-
-        if (!self.level().isClientSide() && this.bh_hasStabilizerGear()) {
-            long now = self.level().getGameTime();
-            boolean changed = prevState != state;
-            // Log every state change immediately, OR every 5 ticks for steady-state observation.
-            if (changed || now - this.bh_stabDebugLastTickLog >= 5L) {
-                this.bh_stabDebugLastTickLog = now;
-                icy.betterhorses.net.IcysBetterHorses.LOGGER.info(
-                        "[STAB-DEBUG][SERVER-TICK] horse={} tick={} prev={} -> computed={} (onGround={} inWater={} inLava={} isPassenger={} hasPassengers={} vy={} fallDist={})",
-                        self.getId(), now, prevState, state,
-                        self.onGround(), self.isInWater(), self.isInLava(), self.isPassenger(),
-                        !self.getPassengers().isEmpty(),
-                        self.getDeltaMovement().y, this.fallDistance);
-            }
-        }
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
