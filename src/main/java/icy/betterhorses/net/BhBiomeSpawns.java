@@ -49,7 +49,7 @@ public final class BhBiomeSpawns {
                 .add(ModificationPhase.ADDITIONS, BiomeSelectors.includeByKey(HORSE_BIOMES), (selectionContext, context) -> {
                     MobSpawnSettings mobSettings = selectionContext.getBiome().getMobSettings();
                     boolean alreadyHasHorse = mobSettings.getMobs(MobCategory.CREATURE).unwrap().stream()
-                            .anyMatch(weighted -> weighted.value().type() == EntityType.HORSE);
+                            .anyMatch(data -> data.type == EntityType.HORSE);
                     float originalProbability = mobSettings.getCreatureProbability();
                     boolean boostedProbability = !alreadyHasHorse
                             && originalProbability < HORSE_CREATURE_PROBABILITY_FLOOR;
@@ -57,8 +57,8 @@ public final class BhBiomeSpawns {
                     if (!alreadyHasHorse) {
                         context.getSpawnSettings().addSpawn(
                                 MobCategory.CREATURE,
-                                new MobSpawnSettings.SpawnerData(EntityType.HORSE, HORSE_MIN_GROUP, HORSE_MAX_GROUP),
-                                HORSE_SPAWN_WEIGHT);
+                                new MobSpawnSettings.SpawnerData(
+                                        EntityType.HORSE, HORSE_SPAWN_WEIGHT, HORSE_MIN_GROUP, HORSE_MAX_GROUP));
                     }
 
                     if (boostedProbability) {

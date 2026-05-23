@@ -17,8 +17,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -334,23 +334,23 @@ public class IcysBetterHorses implements ModInitializer {
             if (!SpawnPlacements.isSpawnPositionOk(EntityType.HORSE, level, surface)) {
                 continue;
             }
-            if (!BhHorseSpawnRules.checkHorseSpawnRules(EntityType.HORSE, level, EntitySpawnReason.NATURAL, surface, level.getRandom())) {
+            if (!BhHorseSpawnRules.checkHorseSpawnRules(EntityType.HORSE, level, MobSpawnType.NATURAL, surface, level.getRandom())) {
                 continue;
             }
 
-            Horse horse = EntityType.HORSE.create(level, EntitySpawnReason.NATURAL);
+            Horse horse = EntityType.HORSE.create(level, MobSpawnType.NATURAL);
             if (horse == null) {
                 continue;
             }
 
-            horse.snapTo(surface.getX() + 0.5D, surface.getY(), surface.getZ() + 0.5D,
+            horse.moveTo(surface.getX() + 0.5D, surface.getY(), surface.getZ() + 0.5D,
                     level.getRandom().nextFloat() * 360.0F, 0.0F);
             if (!horse.checkSpawnObstruction(level)) {
                 horse.discard();
                 continue;
             }
 
-            groupData = horse.finalizeSpawn(level, level.getCurrentDifficultyAt(surface), EntitySpawnReason.NATURAL, groupData);
+            groupData = horse.finalizeSpawn(level, level.getCurrentDifficultyAt(surface), MobSpawnType.NATURAL, groupData);
             if (!level.addFreshEntity(horse)) {
                 horse.discard();
                 continue;

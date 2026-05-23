@@ -10,8 +10,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -41,7 +41,7 @@ public abstract class AnimalMixin {
     @Inject(method = "checkAnimalSpawnRules", at = @At("HEAD"), cancellable = true)
     private static void bh_relaxHorseGroundCheck(EntityType<? extends Animal> type,
                                                  LevelAccessor level,
-                                                 EntitySpawnReason reason,
+                                                 MobSpawnType reason,
                                                  BlockPos pos,
                                                  RandomSource random,
                                                  CallbackInfoReturnable<Boolean> cir) {

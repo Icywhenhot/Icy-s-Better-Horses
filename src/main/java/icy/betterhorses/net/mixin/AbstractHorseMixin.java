@@ -16,7 +16,10 @@ import icy.betterhorses.net.goal.HorseStayGoal;
 import icy.betterhorses.net.goal.HorseWanderBoundsGoal;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -30,9 +33,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -46,8 +47,6 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -276,8 +275,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public boolean bh_hasUpgradedSaddle() {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        return self.getItemBySlot(EquipmentSlot.SADDLE).is(ModItems.UPGRADED_SADDLE);
+        return inventory != null && inventory.getItem(0).is(ModItems.UPGRADED_SADDLE);
+    }
+
+    @Override
+    public void bh_equipUpgradedSaddle(ItemStack saddle) {
+        if (inventory != null) {
+            inventory.setItem(0, saddle);
+        }
     }
 
     @Override
@@ -324,74 +329,75 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
-    private void bh_onWrite(ValueOutput output, CallbackInfo ci) {
+    private void bh_onWrite(CompoundTag tag, CallbackInfo ci) {
+        HolderLookup.Provider registries = ((AbstractHorse) (Object) this).registryAccess();
         if (bh_owner != null) {
-            output.store("BH_Owner", UUIDUtil.CODEC, bh_owner);
+            tag.putUUID("BH_Owner", bh_owner);
         }
-        output.putInt("BH_Command", bh_command.ordinal());
-        output.putInt("BH_Bond", bh_bond);
-        output.putInt("BH_NameTagBondGiven", bh_nameTagBondReceived ? 1 : 0);
+        tag.putInt("BH_Command", bh_command.ordinal());
+        tag.putInt("BH_Bond", bh_bond);
+        tag.putInt("BH_NameTagBondGiven", bh_nameTagBondReceived ? 1 : 0);
         if (bh_home != null) {
-            output.store("BH_Home", BlockPos.CODEC, bh_home);
+            tag.putLong("BH_Home", bh_home.asLong());
         }
         if (bh_wanderCenter != null) {
-            output.store("BH_WanderCenter", BlockPos.CODEC, bh_wanderCenter);
+            tag.putLong("BH_WanderCenter", bh_wanderCenter.asLong());
         }
         if (bh_hitchpostPos != null) {
-            output.store("BH_Hitchpost", BlockPos.CODEC, bh_hitchpostPos);
+            tag.putLong("BH_Hitchpost", bh_hitchpostPos.asLong());
         }
-        bh_writeContainer(output.list("BH_Gear", BhSlotEntry.CODEC), bh_gearContainer);
-        bh_writeContainer(output.list("BH_Chest", BhSlotEntry.CODEC), bh_chestContainer);
-        output.putInt("BH_Gender", this.entityData.get(BH_GENDER_SYNCED));
-        output.putInt("BH_Breed", this.entityData.get(BH_BREED_SYNCED));
-        output.putBoolean("BH_BreedMixed", this.entityData.get(BH_BREED_MIXED_SYNCED));
+        tag.put("BH_Gear", bh_writeContainer(bh_gearContainer, registries));
+        tag.put("BH_Chest", bh_writeContainer(bh_chestContainer, registries));
+        tag.putInt("BH_Gender", this.entityData.get(BH_GENDER_SYNCED));
+        tag.putInt("BH_Breed", this.entityData.get(BH_BREED_SYNCED));
+        tag.putBoolean("BH_BreedMixed", this.entityData.get(BH_BREED_MIXED_SYNCED));
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
-    private void bh_onRead(ValueInput input, CallbackInfo ci) {
-        bh_owner = input.read("BH_Owner", UUIDUtil.CODEC).orElse(null);
+    private void bh_onRead(CompoundTag tag, CallbackInfo ci) {
+        HolderLookup.Provider registries = ((AbstractHorse) (Object) this).registryAccess();
+        bh_owner = tag.hasUUID("BH_Owner") ? tag.getUUID("BH_Owner") : null;
         if (bh_owner == null) {
-            EntityReference<LivingEntity> ownerRef = ((AbstractHorse) (Object) this).getOwnerReference();
-            bh_owner = ownerRef == null ? null : ownerRef.getUUID();
+            bh_owner = ((AbstractHorse) (Object) this).getOwnerUUID();
         }
-        bh_command = HorseCommand.fromId(input.getIntOr("BH_Command", HorseCommand.FOLLOW.ordinal()));
-        bh_bond = input.getIntOr("BH_Bond", 0);
+        bh_command = HorseCommand.fromId(tag.contains("BH_Command", Tag.TAG_INT)
+                ? tag.getInt("BH_Command") : HorseCommand.FOLLOW.ordinal());
+        bh_bond = tag.getInt("BH_Bond");
         this.entityData.set(BH_BOND_SYNCED, bh_bond);
         // Pre-existing horses (saved before this flag existed) that already have bond should
         // be treated as having received their first-rename bond, so reloading and renaming
         // doesn't reopen the exploit. Brand-new horses (bond == 0) start with it unconsumed.
-        bh_nameTagBondReceived = input.getIntOr("BH_NameTagBondGiven", bh_bond > 0 ? 1 : 0) != 0;
-        bh_home = input.read("BH_Home", BlockPos.CODEC).orElse(null);
-        bh_wanderCenter = input.read("BH_WanderCenter", BlockPos.CODEC).orElse(null);
-        bh_hitchpostPos = input.read("BH_Hitchpost", BlockPos.CODEC).orElse(null);
+        bh_nameTagBondReceived = (tag.contains("BH_NameTagBondGiven", Tag.TAG_INT)
+                ? tag.getInt("BH_NameTagBondGiven") : (bh_bond > 0 ? 1 : 0)) != 0;
+        bh_home = tag.contains("BH_Home", Tag.TAG_LONG) ? BlockPos.of(tag.getLong("BH_Home")) : null;
+        bh_wanderCenter = tag.contains("BH_WanderCenter", Tag.TAG_LONG) ? BlockPos.of(tag.getLong("BH_WanderCenter")) : null;
+        bh_hitchpostPos = tag.contains("BH_Hitchpost", Tag.TAG_LONG) ? BlockPos.of(tag.getLong("BH_Hitchpost")) : null;
         if (bh_home == null) {
-            bh_home = bh_readLegacyBlockPos(input, "BH_Home");
+            bh_home = bh_readLegacyBlockPos(tag, "BH_Home");
         }
         if (bh_wanderCenter == null) {
-            bh_wanderCenter = bh_readLegacyBlockPos(input, "BH_WanderCenter");
+            bh_wanderCenter = bh_readLegacyBlockPos(tag, "BH_WanderCenter");
         }
         if (bh_hitchpostPos == null) {
-            bh_hitchpostPos = bh_readLegacyBlockPos(input, "BH_Hitchpost");
+            bh_hitchpostPos = bh_readLegacyBlockPos(tag, "BH_Hitchpost");
         }
         bh_hitchAnchor = null;
         this.entityData.set(BH_HITCHPOST_POS_SYNCED, Optional.ofNullable(bh_hitchpostPos));
         bh_applyBondAttributes();
-        bh_readContainer(input.listOrEmpty("BH_Gear", BhSlotEntry.CODEC), bh_gearContainer);
-        bh_readContainer(input.listOrEmpty("BH_Chest", BhSlotEntry.CODEC), bh_chestContainer);
-        bh_restoreUpgradedSaddle(input);
+        bh_readContainer(tag.getList("BH_Gear", Tag.TAG_COMPOUND), bh_gearContainer, registries);
+        bh_readContainer(tag.getList("BH_Chest", Tag.TAG_COMPOUND), bh_chestContainer, registries);
+        bh_restoreUpgradedSaddle(tag, registries);
         bh_syncGearFlags();
         bh_hadUpgradedSaddle = this.bh_hasUpgradedSaddle();
 
-        Optional<Integer> savedGender = input.getInt("BH_Gender");
-        if (savedGender.isPresent()) {
-            this.entityData.set(BH_GENDER_SYNCED, savedGender.get());
+        if (tag.contains("BH_Gender", Tag.TAG_INT)) {
+            this.entityData.set(BH_GENDER_SYNCED, tag.getInt("BH_Gender"));
         } else {
             this.entityData.set(BH_GENDER_SYNCED, this.random.nextBoolean() ? 0 : 1);
         }
-        Optional<Integer> savedBreed = input.getInt("BH_Breed");
-        if (savedBreed.isPresent()) {
-            this.entityData.set(BH_BREED_SYNCED, savedBreed.get());
-            this.entityData.set(BH_BREED_MIXED_SYNCED, input.getBooleanOr("BH_BreedMixed", false));
+        if (tag.contains("BH_Breed", Tag.TAG_INT)) {
+            this.entityData.set(BH_BREED_SYNCED, tag.getInt("BH_Breed"));
+            this.entityData.set(BH_BREED_MIXED_SYNCED, tag.getBoolean("BH_BreedMixed"));
         } else {
             // Pre-existing horse from before this feature existed — infer the breed from the coat
             // the horse already wears (preserve appearance) instead of randomizing.
@@ -402,7 +408,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Inject(method = "finalizeSpawn", at = @At("TAIL"))
     private void bh_assignTraitsOnSpawn(net.minecraft.world.level.ServerLevelAccessor level,
                                         net.minecraft.world.DifficultyInstance difficulty,
-                                        net.minecraft.world.entity.EntitySpawnReason reason,
+                                        net.minecraft.world.entity.MobSpawnType reason,
                                         @Nullable net.minecraft.world.entity.SpawnGroupData groupData,
                                         CallbackInfoReturnable<net.minecraft.world.entity.SpawnGroupData> cir) {
         // Always randomize gender on fresh spawn — default int 0 doesn't distinguish "unset" from MALE.
@@ -445,55 +451,53 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Unique
-    private void bh_writeContainer(ValueOutput.TypedOutputList<BhSlotEntry> list, SimpleContainer container) {
+    private ListTag bh_writeContainer(SimpleContainer container, HolderLookup.Provider registries) {
+        ListTag list = new ListTag();
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack stack = container.getItem(i);
             if (stack.isEmpty()) continue;
-            list.add(new BhSlotEntry(i, stack));
+            CompoundTag entry = new CompoundTag();
+            entry.putInt("Slot", i);
+            entry.put("Item", stack.save(registries));
+            list.add(entry);
         }
+        return list;
     }
 
     @Unique
-    private void bh_readContainer(ValueInput.TypedInputList<BhSlotEntry> list, SimpleContainer container) {
+    private void bh_readContainer(ListTag list, SimpleContainer container, HolderLookup.Provider registries) {
         container.clearContent();
-        for (BhSlotEntry entry : list) {
-            int slot = entry.slot();
+        for (int i = 0; i < list.size(); i++) {
+            CompoundTag entry = list.getCompound(i);
+            int slot = entry.getInt("Slot");
             if (slot < 0 || slot >= container.getContainerSize()) continue;
-            container.setItem(slot, entry.stack());
+            ItemStack stack = ItemStack.parse(registries, entry.getCompound("Item")).orElse(ItemStack.EMPTY);
+            container.setItem(slot, stack);
         }
     }
 
     @Unique
-    private void bh_restoreUpgradedSaddle(ValueInput input) {
+    private void bh_restoreUpgradedSaddle(CompoundTag tag, HolderLookup.Provider registries) {
         if (inventory == null || !inventory.getItem(0).isEmpty()) {
             return;
         }
-        ItemStack saddle = input.read("SaddleItem", ItemStack.CODEC).orElse(ItemStack.EMPTY);
+        if (!tag.contains("SaddleItem", Tag.TAG_COMPOUND)) {
+            return;
+        }
+        ItemStack saddle = ItemStack.parse(registries, tag.getCompound("SaddleItem")).orElse(ItemStack.EMPTY);
         if (saddle.is(ModItems.UPGRADED_SADDLE)) {
             inventory.setItem(0, saddle);
         }
     }
 
     @Unique
-    private static @Nullable BlockPos bh_readLegacyBlockPos(ValueInput input, String keyPrefix) {
-        Optional<Integer> x = input.getInt(keyPrefix + "X");
-        Optional<Integer> y = input.getInt(keyPrefix + "Y");
-        Optional<Integer> z = input.getInt(keyPrefix + "Z");
-        if (x.isEmpty() || y.isEmpty() || z.isEmpty()) {
+    private static @Nullable BlockPos bh_readLegacyBlockPos(CompoundTag tag, String keyPrefix) {
+        if (!tag.contains(keyPrefix + "X", Tag.TAG_INT)
+                || !tag.contains(keyPrefix + "Y", Tag.TAG_INT)
+                || !tag.contains(keyPrefix + "Z", Tag.TAG_INT)) {
             return null;
         }
-
-        return new BlockPos(x.get(), y.get(), z.get());
-    }
-
-    /** Codec-friendly slot/stack pair used for {@code BH_Gear}/{@code BH_Chest} list entries. */
-    @Unique
-    public record BhSlotEntry(int slot, ItemStack stack) {
-        public static final com.mojang.serialization.Codec<BhSlotEntry> CODEC =
-                com.mojang.serialization.codecs.RecordCodecBuilder.create(instance -> instance.group(
-                        com.mojang.serialization.Codec.INT.fieldOf("Slot").forGetter(BhSlotEntry::slot),
-                        ItemStack.CODEC.fieldOf("Item").forGetter(BhSlotEntry::stack)
-                ).apply(instance, BhSlotEntry::new));
+        return new BlockPos(tag.getInt(keyPrefix + "X"), tag.getInt(keyPrefix + "Y"), tag.getInt(keyPrefix + "Z"));
     }
 
     @Inject(method = "createInventory", at = @At("TAIL"))
@@ -771,7 +775,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                 self.hurtMarked = true;
             }
             if (state == HorseStabilizerState.OPEN) {
-                this.fallDistance = 0.0D;
+                this.fallDistance = 0.0F;
             }
         }
 
@@ -862,22 +866,22 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Inject(method = "causeFallDamage", at = @At("HEAD"), cancellable = true)
-    private void bh_adjustFallDamage(double distance, float damageMultiplier, DamageSource source, CallbackInfoReturnable<Boolean> cir) {
+    private void bh_adjustFallDamage(float distance, float damageMultiplier, DamageSource source, CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (this.bh_hasStabilizerGear()) {
             HorseStabilizerState landingState = HorseStabilizerLogic.resolveLandingState(
                     true,
-                    (float) distance,
+                    distance,
                     this.bh_getStabilizerState());
             if (landingState == HorseStabilizerState.CLOSED) {
                 return;
             }
 
-            if (distance > 1.0D) {
+            if (distance > 1.0F) {
                 self.playSound(SoundEvents.HORSE_LAND, 0.4F, 1.0F);
             }
             this.bh_setStabilizerState(landingState);
-            this.fallDistance = 0.0D;
+            this.fallDistance = 0.0F;
             cir.setReturnValue(false);
             return;
         }
@@ -908,9 +912,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Inject(method = "dropEquipment", at = @At("TAIL"))
-    private void bh_dropGearAndChest(ServerLevel level, CallbackInfo ci) {
+    private void bh_dropGearAndChest(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self.level().isClientSide()) return;
+        if (!(self.level() instanceof ServerLevel level)) return;
         if (this.bh_hitchpostPos != null) {
             HitchpostBlock.releaseHorse(level, self, false);
         }
@@ -1160,7 +1164,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack stack = container.removeItemNoUpdate(i);
             if (!stack.isEmpty()) {
-                horse.spawnAtLocation(level, stack);
+                horse.spawnAtLocation(stack);
             }
         }
     }

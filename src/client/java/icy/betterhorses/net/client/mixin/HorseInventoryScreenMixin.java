@@ -5,7 +5,6 @@ import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
 import net.minecraft.network.chat.Component;
@@ -94,7 +93,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int y = this.topPos;
 
         // Draw background: top section, optional middle chest panel, bottom (player inv) section.
-        gfx.blit(RenderPipelines.GUI_TEXTURED, BH_HORSE_TEXTURE,
+        gfx.blit(BH_HORSE_TEXTURE,
                 x, y, 0.0F, 0.0F, this.imageWidth, BH_TOP_SECTION_HEIGHT, 256, 256);
 
         int bottomY = y + BH_TOP_SECTION_HEIGHT;
@@ -102,13 +101,13 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
             bh_drawMiddlePanel(gfx, x, bottomY, this.imageWidth, BH_CHEST_PANEL_HEIGHT);
             bottomY += BH_CHEST_PANEL_HEIGHT;
         }
-        gfx.blit(RenderPipelines.GUI_TEXTURED, BH_HORSE_TEXTURE,
+        gfx.blit(BH_HORSE_TEXTURE,
                 x, bottomY, 0.0F, (float) BH_TOP_SECTION_HEIGHT,
                 this.imageWidth, BH_VANILLA_IMAGE_HEIGHT - BH_TOP_SECTION_HEIGHT, 256, 256);
 
         // Empty slot sprites for saddle + armor (vanilla draws these at runtime, not in horse.png).
-        gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SLOT_SPRITE, x + 7, y + 17, 18, 18);
-        gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SLOT_SPRITE, x + 7, y + 35, 18, 18);
+        gfx.blitSprite(BH_SLOT_SPRITE, x + 7, y + 17, 18, 18);
+        gfx.blitSprite(BH_SLOT_SPRITE, x + 7, y + 35, 18, 18);
 
         bh_drawGearPanel(gfx, x, y);
         if (chest) {
@@ -156,7 +155,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int x = left + BH_GEAR_PANEL_X;
         int y = top + BH_GEAR_PANEL_Y;
         for (int i = 0; i < GearSlot.COUNT; i++) {
-            gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SLOT_SPRITE, x + i * 18, y, 18, 18);
+            gfx.blitSprite(BH_SLOT_SPRITE, x + i * 18, y, 18, 18);
         }
         bh_drawGearHint(gfx, x, y, GearSlot.CHEST, Items.CHEST);
         bh_drawGearHint(gfx, x, y, GearSlot.HOOVES, ModItems.HORSE_HOOVES);
@@ -183,7 +182,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int y = top + BH_CHEST_PANEL_Y + 1;
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SLOT_SPRITE, x + col * 18, y + row * 18, 18, 18);
+                gfx.blitSprite(BH_SLOT_SPRITE, x + col * 18, y + row * 18, 18, 18);
             }
         }
     }
@@ -209,9 +208,9 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     private void bh_drawMiddlePanel(GuiGraphics gfx, int x, int y, int width, int height) {
         final int border = 7;
         // Side bevels copied from horse.png upper section so the menu frame stays continuous.
-        gfx.blit(RenderPipelines.GUI_TEXTURED, BH_HORSE_TEXTURE,
+        gfx.blit(BH_HORSE_TEXTURE,
                 x, y, 0.0F, 18.0F, border, height, 256, 256);
-        gfx.blit(RenderPipelines.GUI_TEXTURED, BH_HORSE_TEXTURE,
+        gfx.blit(BH_HORSE_TEXTURE,
                 x + width - border, y, (float) (this.imageWidth - border), 18.0F, border, height, 256, 256);
         // Plain gray fill between the bevels.
         gfx.fill(x + border, y, x + width - border, y + height, BH_PANEL_FILL);

@@ -2,21 +2,15 @@ package icy.betterhorses.net;
 
 import icy.betterhorses.net.item.UpgradedSaddleItem;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.equipment.EquipmentAssets;
-import net.minecraft.world.item.equipment.Equippable;
 
 import java.util.function.Function;
 
@@ -24,16 +18,16 @@ public final class ModItems {
 
     public static final Item UPGRADED_SADDLE = register("upgraded_saddle",
             UpgradedSaddleItem::new,
-            new Item.Properties()
-                    .stacksTo(1)
-                    .component(DataComponents.EQUIPPABLE,
-                            Equippable.builder(EquipmentSlot.SADDLE)
-                                    .setAsset(EquipmentAssets.SADDLE)
-                                    .build()));
+            new Item.Properties().stacksTo(1));
 
     public static final Item HORSE_HOOVES = register("horse_hooves_gear",
-            Item::new,
-            new Item.Properties().stacksTo(1).enchantable(15));
+            properties -> new Item(properties) {
+                @Override
+                public int getEnchantmentValue() {
+                    return 15;
+                }
+            },
+            new Item.Properties().stacksTo(1));
 
     // Keep the original medkit id so existing worlds keep their saved item stacks.
     public static final Item HORSE_MEDKIT = register("horse_medkit_gear",
@@ -59,7 +53,7 @@ public final class ModItems {
                     .title(Component.translatable("itemGroup.icys-better-horses.stable_supplies"))
                     .icon(() -> new ItemStack(UPGRADED_SADDLE))
                     .displayItems((parameters, entries) -> {
-                        Item handbook = BuiltInRegistries.ITEM.getValue(
+                        Item handbook = BuiltInRegistries.ITEM.get(
                                 ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "stable_handbook"));
                         if (handbook != Items.AIR) {
                             entries.accept(handbook);
@@ -78,8 +72,7 @@ public final class ModItems {
 
     private static Item register(String path, Function<Item.Properties, Item> factory, Item.Properties properties) {
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
-        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
-        return Registry.register(BuiltInRegistries.ITEM, key, factory.apply(properties.setId(key)));
+        return Registry.register(BuiltInRegistries.ITEM, id, factory.apply(properties));
     }
 
     private ModItems() {}

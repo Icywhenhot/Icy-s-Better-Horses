@@ -6,7 +6,7 @@ import icy.betterhorses.net.IHorseData;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -46,7 +46,7 @@ public abstract class HorseFinalizeSpawnMixin {
     @Inject(method = "finalizeSpawn", at = @At("HEAD"))
     private void bh_captureGroupBreed(ServerLevelAccessor level,
                                       DifficultyInstance difficulty,
-                                      EntitySpawnReason reason,
+                                      MobSpawnType reason,
                                       @Nullable SpawnGroupData groupData,
                                       CallbackInfoReturnable<SpawnGroupData> cir) {
         if (groupData instanceof BhHorseGroupData existing) {
@@ -59,7 +59,7 @@ public abstract class HorseFinalizeSpawnMixin {
     @Inject(method = "finalizeSpawn", at = @At("TAIL"), cancellable = true)
     private void bh_applyBreedAndCoat(ServerLevelAccessor level,
                                       DifficultyInstance difficulty,
-                                      EntitySpawnReason reason,
+                                      MobSpawnType reason,
                                       @Nullable SpawnGroupData groupData,
                                       CallbackInfoReturnable<SpawnGroupData> cir) {
         Horse self = (Horse) (Object) this;

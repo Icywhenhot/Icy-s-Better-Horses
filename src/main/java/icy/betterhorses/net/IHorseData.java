@@ -61,6 +61,9 @@ public interface IHorseData {
     /** True when the upgraded saddle item occupies the horse saddle slot. */
     boolean bh_hasUpgradedSaddle();
 
+    /** Place the upgraded saddle into the horse's vanilla saddle inventory slot (1.21.1 path). */
+    void bh_equipUpgradedSaddle(ItemStack saddle);
+
     /** 5-slot container for the CHEST, HOOVES, MEDKIT, STABILIZER, HITCHPOST gear items. */
     SimpleContainer bh_getGearContainer();
 

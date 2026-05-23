@@ -4,10 +4,9 @@ import icy.betterhorses.net.mixin.SpawnPlacementsAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnPlacementTypes;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -30,28 +29,32 @@ public final class BhHorseSpawnRules {
     }
 
     public static boolean appliesTo(EntityType<?> type) {
-        return AbstractHorse.class.isAssignableFrom(type.getBaseClass());
+        return type == EntityType.HORSE
+                || type == EntityType.DONKEY
+                || type == EntityType.MULE
+                || type == EntityType.SKELETON_HORSE
+                || type == EntityType.ZOMBIE_HORSE;
     }
 
     public static boolean checkHorseLikeGroundRules(EntityType<?> type,
                                                     LevelAccessor level,
-                                                    EntitySpawnReason reason,
+                                                    MobSpawnType reason,
                                                     BlockPos pos) {
         return appliesTo(type) && checkHorseGroundRules(level, reason, pos);
     }
 
     public static boolean checkHorseSpawnRules(EntityType<Horse> type,
                                                ServerLevelAccessor level,
-                                               EntitySpawnReason reason,
+                                               MobSpawnType reason,
                                                BlockPos pos,
                                                RandomSource random) {
         return checkHorseGroundRules(level, reason, pos);
     }
 
     public static boolean checkHorseGroundRules(LevelAccessor level,
-                                                EntitySpawnReason reason,
+                                                MobSpawnType reason,
                                                 BlockPos pos) {
-        if (!EntitySpawnReason.ignoresLightRequirements(reason) && level.getRawBrightness(pos, 0) <= 8) {
+        if (!MobSpawnType.ignoresLightRequirements(reason) && level.getRawBrightness(pos, 0) <= 8) {
             return false;
         }
 
