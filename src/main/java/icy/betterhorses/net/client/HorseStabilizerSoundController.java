@@ -1,5 +1,6 @@
 package icy.betterhorses.net.client;
 
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.HorseStabilizerLogic;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModSounds;
@@ -25,6 +26,10 @@ public final class HorseStabilizerSoundController {
     private static final Map<Integer, ActiveStabilizerSound> ACTIVE_SOUNDS = new HashMap<>();
 
     public static void tick(Minecraft client) {
+        if (!BhConfig.stabilizerEnabled()) {
+            stopAll();
+            return;
+        }
         if (client.level == null) {
             stopAll();
             return;

@@ -24,7 +24,7 @@ public final class ModItems {
                     .component(DataComponents.EQUIPPABLE, Equippable.saddle())));
 
     public static final Item HORSE_HOOVES = register("horse_hooves_gear",
-            new Item(itemProperties("horse_hooves_gear").stacksTo(1)));
+            new Item(itemProperties("horse_hooves_gear").stacksTo(1).enchantable(15)));
 
     // Keep the original medkit id so existing worlds keep their saved item stacks.
     public static final Item HORSE_MEDKIT = register("horse_medkit_gear",

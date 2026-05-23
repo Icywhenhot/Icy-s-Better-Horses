@@ -3,6 +3,7 @@ package icy.betterhorses.net.mixin;
 import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.client.render.IBhEquineStabilizerState;
 import net.minecraft.client.renderer.entity.state.EquineRenderState;
+import net.minecraft.util.Mth;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -21,6 +22,8 @@ public abstract class EquineRenderStateMixin implements IBhEquineStabilizerState
     @Unique private HorseStabilizerState bh_stabilizerState = HorseStabilizerState.CLOSED;
     @Unique private int bh_horseId = -1;
     @Unique private float bh_partialTick;
+    @Unique private boolean bh_riddenByPlayerInFirstPerson;
+    @Unique private float bh_opacity = 1.0F;
 
     @Override
     public void bh_setStabilizerData(boolean hasStabilizer, HorseStabilizerState state, int horseId, float partialTick) {
@@ -48,5 +51,21 @@ public abstract class EquineRenderStateMixin implements IBhEquineStabilizerState
     @Override
     public float bh_getPartialTick() {
         return this.bh_partialTick;
+    }
+
+    @Override
+    public void bh_setMountedViewData(boolean riddenByPlayerInFirstPerson, float opacity) {
+        this.bh_riddenByPlayerInFirstPerson = riddenByPlayerInFirstPerson;
+        this.bh_opacity = Mth.clamp(opacity, 0.0F, 1.0F);
+    }
+
+    @Override
+    public boolean bh_isRiddenByPlayerInFirstPerson() {
+        return this.bh_riddenByPlayerInFirstPerson;
+    }
+
+    @Override
+    public float bh_getOpacity() {
+        return this.bh_opacity;
     }
 }

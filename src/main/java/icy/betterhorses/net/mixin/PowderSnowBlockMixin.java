@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
@@ -23,6 +24,9 @@ public abstract class PowderSnowBlockMixin {
 
     @Inject(method = "canEntityWalkOnPowderSnow", at = @At("HEAD"), cancellable = true)
     private static void bh_allowHorseWithHoovesGear(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+        if (!BhConfig.hoovesEnabled()) {
+            return;
+        }
         if (!(entity instanceof AbstractHorse horse) || !(horse instanceof IHorseData data)) {
             return;
         }

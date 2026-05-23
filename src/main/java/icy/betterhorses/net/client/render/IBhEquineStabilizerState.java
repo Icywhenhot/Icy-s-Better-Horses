@@ -21,4 +21,10 @@ public interface IBhEquineStabilizerState {
 
     /** Sub-tick interpolation captured during {@code extractRenderState}. */
     float bh_getPartialTick();
+
+    void bh_setMountedViewData(boolean riddenByPlayerInFirstPerson, float opacity);
+
+    boolean bh_isRiddenByPlayerInFirstPerson();
+
+    float bh_getOpacity();
 }

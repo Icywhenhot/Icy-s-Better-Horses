@@ -20,6 +20,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
@@ -34,6 +35,13 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
 
     protected AbstractMountInventoryMenuMixin(MenuType<?> type, int id) {
         super(type, id);
+    }
+
+    @Inject(method = "removed", at = @At("HEAD"))
+    private void bh_onMenuRemoved(Player player, CallbackInfo ci) {
+        if (this instanceof HorseInventoryLayoutAccess layoutAccess) {
+            layoutAccess.bh_onMenuRemoved(player);
+        }
     }
 
     @Inject(method = "quickMoveStack", at = @At("HEAD"), cancellable = true)
@@ -146,6 +154,7 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
             return false;
         }
 
-        return this.slots.get(chestGearSlotIndex).getItem().is(Items.CHEST);
+        ItemStack chestStack = this.slots.get(chestGearSlotIndex).getItem();
+        return chestStack.is(Items.CHEST) || chestStack.is(Items.ENDER_CHEST);
     }
 }

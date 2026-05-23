@@ -1,6 +1,7 @@
 package icy.betterhorses.net.item;
 
 import com.mojang.serialization.MapCodec;
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.ModBlocks;
@@ -115,6 +116,9 @@ public class HitchpostBlock extends BaseEntityBlock {
         if (level.isClientSide() || !(level instanceof ServerLevel serverLevel) || !(placer instanceof Player player)) {
             return;
         }
+        if (!BhConfig.hitchpostEnabled()) {
+            return;
+        }
 
         AbstractHorse horse = findHorseToTether(serverLevel, pos, player);
         if (horse == null) {
@@ -139,6 +143,9 @@ public class HitchpostBlock extends BaseEntityBlock {
     }
 
     public static boolean isValidTether(ServerLevel level, AbstractHorse horse, BlockPos pos) {
+        if (!BhConfig.hitchpostEnabled()) {
+            return false;
+        }
         if (!level.getBlockState(pos).is(ModBlocks.HITCHPOST)) {
             return false;
         }
@@ -189,6 +196,9 @@ public class HitchpostBlock extends BaseEntityBlock {
             BlockState state,
             AbstractHorse horse,
             @Nullable Player player) {
+        if (!BhConfig.hitchpostEnabled()) {
+            return false;
+        }
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof HitchpostBlockEntity hitchpost)) {
             return false;
