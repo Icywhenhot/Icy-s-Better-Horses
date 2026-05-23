@@ -106,7 +106,7 @@ public class HitchpostBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected VoxelShape getOcclusionShape(BlockState state) {
+    protected VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
         return Shapes.empty();
     }
 
@@ -131,15 +131,12 @@ public class HitchpostBlock extends BaseEntityBlock {
         }
     }
 
-    /**
-     * 1.21.5+ replaces {@code onRemove} with {@link #affectNeighborsAfterRemoval}, which is only
-     * invoked when the block is actually removed (not for in-place state changes), so we no longer
-     * need the {@code !state.is(newState.getBlock())} guard.
-     */
     @Override
-    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
-        releaseHorseAtPost(level, pos);
-        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock()) && level instanceof ServerLevel serverLevel) {
+            releaseHorseAtPost(serverLevel, pos);
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     public static boolean isValidTether(ServerLevel level, AbstractHorse horse, BlockPos pos) {
@@ -223,8 +220,7 @@ public class HitchpostBlock extends BaseEntityBlock {
         horse.hurtMarked = true;
 
         if (player != null && data.bh_getOwner() == null) {
-            net.minecraft.world.entity.EntityReference<net.minecraft.world.entity.LivingEntity> ownerRef = horse.getOwnerReference();
-            UUID horseOwner = ownerRef == null ? null : ownerRef.getUUID();
+            UUID horseOwner = horse.getOwnerUUID();
             if (player.getUUID().equals(horseOwner)) {
                 data.bh_setOwner(player.getUUID());
             }
@@ -257,8 +253,7 @@ public class HitchpostBlock extends BaseEntityBlock {
         }
 
         UUID playerId = player.getUUID();
-        net.minecraft.world.entity.EntityReference<net.minecraft.world.entity.LivingEntity> ownerRef = horse.getOwnerReference();
-        UUID ownerId = ownerRef == null ? null : ownerRef.getUUID();
+        UUID ownerId = horse.getOwnerUUID();
         UUID modOwnerId = ((IHorseData) horse).bh_getOwner();
         return playerId.equals(ownerId) || playerId.equals(modOwnerId);
     }

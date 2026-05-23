@@ -311,7 +311,7 @@ public enum HorseBreed {
         ));
         // Friesian — Dutch lowland and forest origin.
         map.put(FRIESIAN, List.of(
-                Biomes.DARK_FOREST, Biomes.FOREST, Biomes.PALE_GARDEN,
+                Biomes.DARK_FOREST, Biomes.FOREST,
                 Biomes.OLD_GROWTH_SPRUCE_TAIGA, Biomes.TAIGA
         ));
         // Andalusian — Iberian peninsula: open meadows + light woodland.

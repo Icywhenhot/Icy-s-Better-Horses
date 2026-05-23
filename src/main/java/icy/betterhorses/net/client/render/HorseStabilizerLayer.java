@@ -2,36 +2,23 @@ package icy.betterhorses.net.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import icy.betterhorses.net.HorseStabilizerState;
+import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.inventory.GearSlot;
 import icy.betterhorses.net.mixin.HorseModelAccessor;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.entity.state.EquineRenderState;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 /**
- * Stabilizer wing layer for 1.21.11 + GeckoLib 5.
- *
- * The 1.21.5+ render pipeline split entity rendering into "extract → submit" phases:
- * by the time {@code RenderLayer.submit} runs, the live {@code AbstractHorse} is no longer
- * reachable, only the {@code RenderState}. We work around that with three pieces of plumbing:
- * <ol>
- *   <li>{@link IBhEquineStabilizerState} carries the gear flag, stabilizer state, entity id
- *       and partial tick on the render state — populated by
- *       {@code AbstractHorseRendererMixin.bh_captureStabilizerState}.</li>
- *   <li>{@link BhRenderContext} captures the {@code CameraRenderState} from the enclosing
- *       {@code LivingEntityRenderer.submit} call (via {@code LivingEntityRendererSubmitMixin}).
- *       GeckoLib 5 needs it for {@code submit}; the vanilla layer signature
- *       doesn't carry it.</li>
- *   <li>This class consumes both, positions the pose stack to anchor the wings to the horse's
- *       body bone (same offsets as the 1.21.0 implementation), then hands off to
- *       {@code GeoObjectRenderer.submit}.</li>
- * </ol>
+ * Stabilizer wing render layer for 1.21.1.
+ * 1.21.1 has no separate render-state phase, so we read the live entity directly inside render(),
+ * sync the GeckoLib animatable, and delegate to the GeoObjectRenderer anchored to the horse body bone.
  */
-public final class HorseStabilizerLayer<S extends EquineRenderState, M extends EntityModel<? super S>>
-        extends RenderLayer<S, M> {
+public final class HorseStabilizerLayer<T extends AbstractHorse, M extends EntityModel<T>> extends RenderLayer<T, M> {
 
     private static final HorseStabilizerGeoRenderer GEO_RENDERER = new HorseStabilizerGeoRenderer();
 
@@ -40,44 +27,27 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
     private static final double TORSO_Z_OFFSET = -8.3D / 16.0D;
     private static final float MODEL_ROLL_DEGREES = 180.0F;
 
-    public HorseStabilizerLayer(RenderLayerParent<S, M> renderer) {
+    public HorseStabilizerLayer(RenderLayerParent<T, M> renderer) {
         super(renderer);
     }
 
     @Override
-    public void submit(
-            PoseStack poseStack,
-            SubmitNodeCollector collector,
-            int packedLight,
-            S state,
-            float yRot,
-            float xRot) {
-        IBhEquineStabilizerState bhState = (IBhEquineStabilizerState) (Object) state;
-        int horseId = bhState.bh_getHorseId();
-
-        if (!bhState.bh_hasStabilizer()) {
-            return;
-        }
-        // Previously: skipped whenever the horse was even slightly faded (e.g. mounted-view fade).
-        // That made wings invisible the entire time the player was riding. Only skip when the horse
-        // is essentially invisible (camera clipped through it).
-        if (BhRenderContext.currentOpacity() < 0.05F) {
+    public void render(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, T entity,
+                       float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks,
+                       float netHeadYaw, float headPitch) {
+        if (!(entity instanceof IHorseData data) || !data.bh_hasGear(GearSlot.STABILIZER)) {
             return;
         }
 
-        CameraRenderState camera = BhRenderContext.currentCamera();
-        if (camera == null) {
-            // Outside a LivingEntityRenderer.submit scope (shouldn't happen for a horse layer,
-            // but defensively skip rather than NPE).
+        HorseStabilizerState state = data.bh_getStabilizerState();
+        HorseStabilizerAnimatable animatable = HorseStabilizerAnimatable.get(entity);
+        animatable.syncFromHorse(entity, state, ageInTicks);
+
+        M model = this.getParentModel();
+        if (!(model instanceof HorseModelAccessor accessor)) {
             return;
         }
-
-        HorseStabilizerAnimatable animatable = HorseStabilizerAnimatable.getById(horseId);
-        if (animatable == null) {
-            return;
-        }
-
-        ModelPart body = ((HorseModelAccessor) this.getParentModel()).bh_getBody();
+        ModelPart body = accessor.bh_getBody();
 
         poseStack.pushPose();
         body.translateAndRotate(poseStack);
@@ -87,21 +57,7 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
                 -body.z / 16.0F + TORSO_Z_OFFSET);
         poseStack.mulPose(Axis.ZP.rotationDegrees(MODEL_ROLL_DEGREES));
 
-        // GeckoLib 5.3 entry point. The renderer creates and fills its own GeoRenderState
-        // internally; we hand it the camera + collector + light. Unlike 5.4 (which introduced an
-        // adjustRenderPose hook with a default +0.5/+0.51/+0.5 standalone-object centering that we
-        // had to suppress), 5.3's submit applies no extra translation, so the body-anchored pose
-        // above is used as-is. Animation timing is driven by the animatable's getTick clock; the
-        // partialTick captured at extract time supplies sub-tick interpolation.
-        GEO_RENDERER.submit(
-                poseStack,
-                animatable,
-                null,
-                collector,
-                camera,
-                packedLight,
-                bhState.bh_getPartialTick(),
-                null);
+        GEO_RENDERER.renderAt(poseStack, animatable, bufferSource, partialTicks, packedLight);
 
         poseStack.popPose();
     }

@@ -2,37 +2,29 @@ package icy.betterhorses.net.client.render;
 
 import icy.betterhorses.net.IcysBetterHorses;
 import net.minecraft.resources.ResourceLocation;
-import software.bernie.geckolib.animatable.processing.AnimationState;
-import software.bernie.geckolib.constant.dataticket.DataTicket;
+import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.model.GeoModel;
-import software.bernie.geckolib.renderer.base.GeoRenderState;
 
 /**
- * GeoModel for the stabilizer wings.
- *
- * GeckoLib 5.3 (1.21.10): {@code getModelResource}/{@code getTextureResource} take a
- * {@link GeoRenderState}, and per-frame bone visibility is driven through
- * {@code setCustomAnimations(AnimationState)} reading a {@link DataTicket} populated by
- * {@link HorseStabilizerGeoRenderer#addRenderData}.
+ * GeoModel for the stabilizer wings. GeckoLib 4.7 (1.21.1): resource getters take the animatable
+ * directly (no GeoRenderState); per-frame state via {@code setCustomAnimations(animatable, id, state)}.
  */
 public final class HorseStabilizerGeoModel extends GeoModel<HorseStabilizerAnimatable> {
-    public static final DataTicket<Boolean> WINGS_VISIBLE =
-            DataTicket.create("icys_better_horses_stabilizer_wings_active", Boolean.class);
 
     private static final ResourceLocation MODEL =
-            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "st");
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "geo/st.geo.json");
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "textures/entity/horse_stabilizer.png");
     private static final ResourceLocation ANIMATION =
-            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "st");
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "animations/st.animation.json");
 
     @Override
-    public ResourceLocation getModelResource(GeoRenderState renderState) {
+    public ResourceLocation getModelResource(HorseStabilizerAnimatable animatable) {
         return MODEL;
     }
 
     @Override
-    public ResourceLocation getTextureResource(GeoRenderState renderState) {
+    public ResourceLocation getTextureResource(HorseStabilizerAnimatable animatable) {
         return TEXTURE;
     }
 
@@ -42,10 +34,10 @@ public final class HorseStabilizerGeoModel extends GeoModel<HorseStabilizerAnima
     }
 
     @Override
-    public void setCustomAnimations(AnimationState<HorseStabilizerAnimatable> state) {
-        super.setCustomAnimations(state);
-        boolean showWings = Boolean.TRUE.equals(
-                state.renderState().getOrDefaultGeckolibData(WINGS_VISIBLE, Boolean.FALSE));
+    public void setCustomAnimations(HorseStabilizerAnimatable animatable, long instanceId,
+                                    AnimationState<HorseStabilizerAnimatable> state) {
+        super.setCustomAnimations(animatable, instanceId, state);
+        boolean showWings = animatable.isActive();
         getBone("wingsL").ifPresent(bone -> bone.setHidden(!showWings));
         getBone("wingsL2").ifPresent(bone -> bone.setHidden(!showWings));
     }

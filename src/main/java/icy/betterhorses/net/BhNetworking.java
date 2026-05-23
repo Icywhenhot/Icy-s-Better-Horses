@@ -1,6 +1,7 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.network.CallHorsePayload;
+import icy.betterhorses.net.network.ClientPayloadHandlers;
 import icy.betterhorses.net.network.OpenRadialPayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
 import icy.betterhorses.net.network.RequestOpenRadialPayload;
@@ -18,7 +19,7 @@ public final class BhNetworking {
         registrar.playToServer(RadialCommandPayload.TYPE, RadialCommandPayload.STREAM_CODEC, BhNetworking::handleRadialCommand);
         registrar.playToServer(CallHorsePayload.TYPE, CallHorsePayload.STREAM_CODEC, BhNetworking::handleCallHorse);
         registrar.playToServer(RequestOpenRadialPayload.TYPE, RequestOpenRadialPayload.STREAM_CODEC, BhNetworking::handleOpenRadialRequest);
-        registrar.playToClient(OpenRadialPayload.TYPE, OpenRadialPayload.STREAM_CODEC);
+        registrar.playToClient(OpenRadialPayload.TYPE, OpenRadialPayload.STREAM_CODEC, ClientPayloadHandlers::handleOpenRadial);
     }
 
     private static void handleRadialCommand(RadialCommandPayload payload, IPayloadContext context) {

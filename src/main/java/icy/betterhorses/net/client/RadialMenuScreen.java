@@ -2,11 +2,9 @@ package icy.betterhorses.net.client;
 
 import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.network.RadialCommandPayload;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 public class RadialMenuScreen extends Screen {
@@ -212,23 +210,23 @@ public class RadialMenuScreen extends Screen {
     }
 
     @Override
-    public boolean mouseReleased(MouseButtonEvent event) {
-        if (event.button() == 0 && hoveredIndex >= 0) {
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0 && hoveredIndex >= 0) {
             sendCommand(COMMANDS[hoveredIndex]);
             onClose();
             return true;
         }
-        return super.mouseReleased(event);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean keyPressed(KeyEvent event) {
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         onClose();
         return true;
     }
 
     private void sendCommand(HorseCommand command) {
-        ClientPacketDistributor.sendToServer(new RadialCommandPayload(this.horseId, command.ordinal()));
+        PacketDistributor.sendToServer(new RadialCommandPayload(this.horseId, command.ordinal()));
     }
 
     private String commandKey(HorseCommand command) {

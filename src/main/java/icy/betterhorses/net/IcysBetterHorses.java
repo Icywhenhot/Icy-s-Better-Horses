@@ -9,7 +9,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.SpawnPlacementTypes;
@@ -291,7 +291,7 @@ public final class IcysBetterHorses {
                 }
                 continue;
             }
-            if (!BhHorseSpawnRules.checkHorseSpawnRules(EntityType.HORSE, level, EntitySpawnReason.NATURAL, surface, level.getRandom())) {
+            if (!BhHorseSpawnRules.checkHorseSpawnRules(EntityType.HORSE, level, MobSpawnType.NATURAL, surface, level.getRandom())) {
                 spawnRuleSkips++;
                 if (spawnRuleSample == null) {
                     spawnRuleSample = surface
@@ -301,13 +301,13 @@ public final class IcysBetterHorses {
                 continue;
             }
 
-            Horse horse = EntityType.HORSE.create(level, EntitySpawnReason.NATURAL);
+            Horse horse = EntityType.HORSE.create(level);
             if (horse == null) {
                 addFailureSkips++;
                 continue;
             }
 
-            horse.snapTo(surface.getX() + 0.5D, surface.getY(), surface.getZ() + 0.5D,
+            horse.moveTo(surface.getX() + 0.5D, surface.getY(), surface.getZ() + 0.5D,
                     level.getRandom().nextFloat() * 360.0F, 0.0F);
             if (!horse.checkSpawnObstruction(level)) {
                 obstructionSkips++;
@@ -315,7 +315,7 @@ public final class IcysBetterHorses {
                 continue;
             }
 
-            groupData = horse.finalizeSpawn(level, level.getCurrentDifficultyAt(surface), EntitySpawnReason.NATURAL, groupData);
+            groupData = horse.finalizeSpawn(level, level.getCurrentDifficultyAt(surface), MobSpawnType.NATURAL, groupData);
             if (!level.addFreshEntity(horse)) {
                 addFailureSkips++;
                 horse.discard();

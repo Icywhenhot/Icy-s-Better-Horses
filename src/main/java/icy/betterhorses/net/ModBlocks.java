@@ -14,9 +14,8 @@ public final class ModBlocks {
 
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(IcysBetterHorses.MOD_ID);
 
-    public static final DeferredBlock<HitchpostBlock> HITCHPOST = BLOCKS.register("hitchpost", key ->
+    public static final DeferredBlock<HitchpostBlock> HITCHPOST = BLOCKS.register("hitchpost", () ->
             new HitchpostBlock(BlockBehaviour.Properties.of()
-                    .setId(net.minecraft.resources.ResourceKey.create(Registries.BLOCK, key))
                     .mapColor(MapColor.WOOD)
                     .strength(2.0f, 3.0f)
                     .sound(SoundType.WOOD)

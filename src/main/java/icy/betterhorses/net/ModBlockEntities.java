@@ -15,7 +15,7 @@ public final class ModBlockEntities {
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HitchpostBlockEntity>> HITCHPOST =
             BLOCK_ENTITY_TYPES.register("hitchpost",
-                    () -> new BlockEntityType<>(HitchpostBlockEntity::new, Set.of(ModBlocks.HITCHPOST.get())));
+                    () -> BlockEntityType.Builder.of(HitchpostBlockEntity::new, ModBlocks.HITCHPOST.get()).build(null));
 
     public static void register(IEventBus modEventBus) {
         BLOCK_ENTITY_TYPES.register(modEventBus);

@@ -1,68 +1,78 @@
 package icy.betterhorses.net.mixin;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import icy.betterhorses.net.client.render.BhMountedHorseVisibility;
-import icy.betterhorses.net.client.render.BhRenderContext;
-import icy.betterhorses.net.client.render.IBhEquineStabilizerState;
-import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+/**
+ * Fades the horse out when the rider looks down. 1.21.1 implementation:
+ *   - HEAD of render(): push opacity onto BhMountedHorseVisibility's thread-local.
+ *   - Swap render type to entityTranslucent when faded so alpha blending is enabled.
+ *   - ModifyArg on EntityModel.renderToBuffer() index=4 (the int packed color/alpha): scale
+ *     the alpha component by the pushed opacity.
+ *   - RETURN of render(): pop the thread-local back to 1.0.
+ */
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityRendererMixin {
 
-    @Redirect(
-            method = "getRenderType",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/model/EntityModel;renderType(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/client/renderer/RenderType;"))
-    private RenderType bh_useTranslucentHorseRenderType(
-            EntityModel<?> model,
-            ResourceLocation texture,
-            LivingEntityRenderState renderState,
-            boolean visible,
-            boolean translucent,
-            boolean glowing) {
-        if (renderState instanceof IBhEquineStabilizerState bhState) {
-            float opacity = bhState.bh_getOpacity();
-            if (opacity > 0.0F && opacity < 1.0F) {
-                return RenderType.entityTranslucent(texture);
-            }
+    @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+            at = @At("HEAD"))
+    private void bh_pushHorseOpacity(LivingEntity entity, float yaw, float partialTicks,
+                                     PoseStack poseStack, MultiBufferSource bufferSource, int packedLight,
+                                     CallbackInfo ci) {
+        if (entity instanceof AbstractHorse horse) {
+            BhMountedHorseVisibility.pushOpacity(BhMountedHorseVisibility.getOpacity(horse));
         }
-
-        return model.renderType(texture);
     }
 
-    @ModifyArg(
-            method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/RenderType;IIILnet/minecraft/client/renderer/texture/TextureAtlasSprite;ILnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"),
-            index = 6)
-    private int bh_applyHorseOpacityToMainModel(int colorArgb) {
-        return BhMountedHorseVisibility.applyOpacity(colorArgb, BhRenderContext.currentOpacity());
+    @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+            at = @At("RETURN"))
+    private void bh_popHorseOpacity(LivingEntity entity, float yaw, float partialTicks,
+                                    PoseStack poseStack, MultiBufferSource bufferSource, int packedLight,
+                                    CallbackInfo ci) {
+        if (entity instanceof AbstractHorse) {
+            BhMountedHorseVisibility.popOpacity();
+        }
     }
 
-    @Inject(
-            method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
-            at = @At("HEAD"),
+    @ModifyArg(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+               at = @At(value = "INVOKE",
+                        target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V"),
+               index = 4)
+    private int bh_applyOpacityToColor(int color) {
+        float opacity = BhMountedHorseVisibility.currentOpacity();
+        if (opacity >= 1.0F || opacity <= 0.0F) {
+            return color;
+        }
+        int origAlpha = (color >>> 24) & 0xFF;
+        int newAlpha = Math.round(origAlpha * opacity) & 0xFF;
+        return (color & 0x00FFFFFF) | (newAlpha << 24);
+    }
+
+    @Inject(method = "getRenderType(Lnet/minecraft/world/entity/LivingEntity;ZZZ)Lnet/minecraft/client/renderer/RenderType;",
+            at = @At("RETURN"),
             cancellable = true)
-    private void bh_skipFullyTransparentHorse(
-            LivingEntityRenderState renderState,
-            com.mojang.blaze3d.vertex.PoseStack poseStack,
-            SubmitNodeCollector collector,
-            net.minecraft.client.renderer.state.CameraRenderState camera,
-            CallbackInfo ci) {
-        if (renderState instanceof IBhEquineStabilizerState bhState && bhState.bh_getOpacity() <= 0.01F) {
-            ci.cancel();
+    private void bh_translucentForFadedHorse(LivingEntity entity, boolean bodyVisible, boolean translucent, boolean glowing,
+                                             CallbackInfoReturnable<RenderType> cir) {
+        if (!(entity instanceof AbstractHorse horse)) {
+            return;
         }
+        float opacity = BhMountedHorseVisibility.getOpacity(horse);
+        if (opacity >= 1.0F || opacity <= 0.0F) {
+            return;
+        }
+        @SuppressWarnings("unchecked")
+        LivingEntityRenderer<LivingEntity, ?> self = (LivingEntityRenderer<LivingEntity, ?>) (Object) this;
+        cir.setReturnValue(RenderType.entityTranslucent(self.getTextureLocation(entity)));
     }
 }

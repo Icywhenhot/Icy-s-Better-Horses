@@ -16,21 +16,18 @@
 		"MobNameTagBondMixin",
 		"PowderSnowBlockMixin",
 		"SpawnPlacementsAccessor",
-		"SlotAccessor"
+		"SlotAccessor",
+		"HorseSaddleSlotMixin"
 	],
 	"client": [
 		"AbstractContainerScreenAccessor",
-		"AbstractEquineModelMixin",
 		"AbstractHorseRendererMixin",
-		"EquipmentLayerRendererMixin",
-		"EquineRenderStateMixin",
 		"GuiMixin",
-		"HorseMarkingLayerMixin",
 		"HorseInventoryScreenMixin",
 		"HorseModelAccessor",
+		"HorseModelMixin",
 		"KeyboardInputMixin",
-		"LivingEntityRendererMixin",
-		"LivingEntityRendererSubmitMixin"
+		"LivingEntityRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
