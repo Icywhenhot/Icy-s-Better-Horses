@@ -6,22 +6,22 @@ import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.AbstractMountInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.AbstractMountInventoryMenu;
+import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -29,17 +29,17 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(AbstractMountInventoryScreen.class)
-public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<AbstractMountInventoryMenu> {
+@Mixin(HorseInventoryScreen.class)
+public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<HorseInventoryMenu> {
 
-    @Shadow protected LivingEntity mount;
+    @Shadow @Final private AbstractHorse horse;
     @Shadow private float xMouse;
     @Shadow private float yMouse;
 
-    @Unique private static final Identifier BH_SLOT_SPRITE =
-            Identifier.withDefaultNamespace("container/slot");
-    @Unique private static final Identifier BH_HORSE_TEXTURE =
-            Identifier.withDefaultNamespace("textures/gui/container/horse.png");
+    @Unique private static final ResourceLocation BH_SLOT_SPRITE =
+            ResourceLocation.withDefaultNamespace("container/slot");
+    @Unique private static final ResourceLocation BH_HORSE_TEXTURE =
+            ResourceLocation.withDefaultNamespace("textures/gui/container/horse.png");
 
     @Unique private static final int BH_VANILLA_IMAGE_HEIGHT = 166;
     @Unique private static final int BH_TOP_SECTION_HEIGHT = 77;
@@ -64,19 +64,18 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final int BH_TEXT_COLOR = 0xFF404040;
 
     // Pseudo-constructor required for compilation — never actually called at runtime
-    protected HorseInventoryScreenMixin(AbstractMountInventoryMenu menu, Inventory inventory, Component title) {
+    protected HorseInventoryScreenMixin(HorseInventoryMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void bh_configureInitialLayout(
-            AbstractMountInventoryMenu menu,
+            HorseInventoryMenu menu,
             Inventory inventory,
-            Component title,
+            AbstractHorse horse,
             int inventoryColumns,
-            LivingEntity mount,
             CallbackInfo ci) {
-        if (!(menu instanceof HorseInventoryLayoutAccess layoutAccess) || !(mount instanceof AbstractHorse)) {
+        if (!(menu instanceof HorseInventoryLayoutAccess layoutAccess)) {
             return;
         }
         // Pre-size the screen so AbstractContainerScreen.init() centers topPos against the right
@@ -298,7 +297,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
      * The vanilla horse GUI texture is the standard 256×256 sheet.
      */
     @Unique
-    private static void bh_blitGui(GuiGraphics gfx, Identifier texture,
+    private static void bh_blitGui(GuiGraphics gfx, ResourceLocation texture,
                                    int x, int y, int u, int v, int width, int height) {
         gfx.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, (float) u, (float) v, width, height, 256, 256);
     }
@@ -346,6 +345,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
     @Unique
     private @Nullable AbstractHorse bh_getHorseOrNull() {
-        return this.mount instanceof AbstractHorse horse ? horse : null;
+        return this.horse;
     }
 }

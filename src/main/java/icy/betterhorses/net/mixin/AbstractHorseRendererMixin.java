@@ -14,7 +14,7 @@ import net.minecraft.client.renderer.entity.AbstractHorseRenderer;
 import net.minecraft.client.renderer.entity.AgeableMobRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EquineRenderState;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -77,7 +77,7 @@ public abstract class AbstractHorseRendererMixin<
 
         if (hasStabilizer) {
             HorseStabilizerAnimatable animatable = HorseStabilizerAnimatable.get(entity);
-            animatable.syncFromHorse(entity, clientState);
+            animatable.syncFromHorse(entity, clientState, state.ageInTicks);
         }
     }
 }

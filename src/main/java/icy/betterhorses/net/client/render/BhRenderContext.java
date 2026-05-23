@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
  * enclosing {@code LivingEntityRenderer.submit(...)} does. {@code LivingEntityRendererSubmitMixin}
  * pushes the value here at HEAD and clears it at TAIL, so any layer running inside that scope
  * (notably {@link HorseStabilizerLayer}) can grab it for GeckoLib's
- * {@code GeoObjectRenderer.performRenderPass} call.
+ * {@code GeoObjectRenderer.submit} call.
  *
  * Render runs on a single thread, but using {@link ThreadLocal} keeps us safe against future
  * threading and against Fabric Loader's loading thread that triggers static init.

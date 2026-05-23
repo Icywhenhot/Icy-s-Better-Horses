@@ -2,12 +2,12 @@ package icy.betterhorses.net.network;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public record RadialCommandPayload(int horseId, int commandOrdinal) implements CustomPacketPayload {
 
     public static final Type<RadialCommandPayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath("icys_better_horses", "radial_cmd"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath("icys_better_horses", "radial_cmd"));
 
     public static final StreamCodec STREAM_CODEC = new StreamCodec();
 

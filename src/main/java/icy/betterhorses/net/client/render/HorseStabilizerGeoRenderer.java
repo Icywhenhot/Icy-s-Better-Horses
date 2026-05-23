@@ -1,23 +1,26 @@
 package icy.betterhorses.net.client.render;
 
-import software.bernie.geckolib.constant.dataticket.DataTicket;
 import software.bernie.geckolib.renderer.GeoObjectRenderer;
-import software.bernie.geckolib.renderer.base.BoneSnapshots;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
-import software.bernie.geckolib.renderer.base.RenderPassInfo;
 
 /**
- * GeckoLib 5 widened {@link GeoObjectRenderer} from one type parameter to three:
- * {@code <T animatable, O relatedObject, R renderState>}. We don't need a related object,
- * so we use {@link Void}, and the default {@link GeoRenderState.Impl} suffices for the state.
+ * GeckoLib 5.3 (1.21.10) object renderer for the stabilizer wings.
+ *
+ * {@link GeoObjectRenderer} takes three type parameters {@code <T animatable, O relatedObject, R
+ * renderState>}; we have no related object so we use {@link Void} and the default
+ * {@link GeoRenderState.Impl}. Wing visibility is pushed onto the render state here and consumed by
+ * {@link HorseStabilizerGeoModel#setCustomAnimations} (the 5.3 bone-hiding hook).
  */
 public final class HorseStabilizerGeoRenderer
         extends GeoObjectRenderer<HorseStabilizerAnimatable, Void, GeoRenderState.Impl> {
-    private static final DataTicket<Boolean> WINGS_ACTIVE =
-            DataTicket.create("icys_better_horses_stabilizer_wings_active", Boolean.class);
 
     public HorseStabilizerGeoRenderer() {
         super(new HorseStabilizerGeoModel());
+    }
+
+    @Override
+    public GeoRenderState.Impl createRenderState(HorseStabilizerAnimatable animatable, Void relatedObject) {
+        return new GeoRenderState.Impl();
     }
 
     @Override
@@ -26,23 +29,6 @@ public final class HorseStabilizerGeoRenderer
             Void relatedObject,
             GeoRenderState.Impl renderState,
             float partialTick) {
-        renderState.addGeckolibData(WINGS_ACTIVE, animatable.isActive());
-    }
-
-    @Override
-    public void adjustRenderPose(RenderPassInfo<GeoRenderState.Impl> renderPassInfo) {
-        // The layer already anchors the stabilizer to the horse body. GeoObjectRenderer's default
-        // +0.5/+0.51/+0.5 translation is for standalone objects and pushes the rig off the horse.
-    }
-
-    @Override
-    public void adjustModelBonesForRender(
-            RenderPassInfo<GeoRenderState.Impl> renderPassInfo,
-            BoneSnapshots snapshots) {
-        boolean showWings = Boolean.TRUE.equals(renderPassInfo.getGeckolibData(WINGS_ACTIVE));
-        snapshots.ifPresent("wingsL", snapshot ->
-                snapshot.skipRender(!showWings).skipChildrenRender(!showWings));
-        snapshots.ifPresent("wingsL2", snapshot ->
-                snapshot.skipRender(!showWings).skipChildrenRender(!showWings));
+        renderState.addGeckolibData(HorseStabilizerGeoModel.WINGS_VISIBLE, animatable.isActive());
     }
 }

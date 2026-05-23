@@ -23,11 +23,11 @@ import net.minecraft.client.renderer.state.CameraRenderState;
  *       {@code AbstractHorseRendererMixin.bh_captureStabilizerState}.</li>
  *   <li>{@link BhRenderContext} captures the {@code CameraRenderState} from the enclosing
  *       {@code LivingEntityRenderer.submit} call (via {@code LivingEntityRendererSubmitMixin}).
- *       GeckoLib 5 needs it for {@code performRenderPass}; the vanilla layer signature
+ *       GeckoLib 5 needs it for {@code submit}; the vanilla layer signature
  *       doesn't carry it.</li>
  *   <li>This class consumes both, positions the pose stack to anchor the wings to the horse's
  *       body bone (same offsets as the 1.21.0 implementation), then hands off to
- *       {@code GeoObjectRenderer.performRenderPass}.</li>
+ *       {@code GeoObjectRenderer.submit}.</li>
  * </ol>
  */
 public final class HorseStabilizerLayer<S extends EquineRenderState, M extends EntityModel<? super S>>
@@ -87,18 +87,21 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
                 -body.z / 16.0F + TORSO_Z_OFFSET);
         poseStack.mulPose(Axis.ZP.rotationDegrees(MODEL_ROLL_DEGREES));
 
-        // GeckoLib 5 entry point. The renderer creates and fills its own GeoRenderState
-        // internally; we just hand it the camera + collector + light. The {@code partialTick}
-        // parameter on this overload is typed {@code int} in GeckoLib 5 — animation timing is
-        // driven by the AnimationController's own tick clock, so 0 is a safe value here.
-        GEO_RENDERER.performRenderPass(
+        // GeckoLib 5.3 entry point. The renderer creates and fills its own GeoRenderState
+        // internally; we hand it the camera + collector + light. Unlike 5.4 (which introduced an
+        // adjustRenderPose hook with a default +0.5/+0.51/+0.5 standalone-object centering that we
+        // had to suppress), 5.3's submit applies no extra translation, so the body-anchored pose
+        // above is used as-is. Animation timing is driven by the animatable's getTick clock; the
+        // partialTick captured at extract time supplies sub-tick interpolation.
+        GEO_RENDERER.submit(
+                poseStack,
                 animatable,
                 null,
-                poseStack,
                 collector,
                 camera,
                 packedLight,
-                0);
+                bhState.bh_getPartialTick(),
+                null);
 
         poseStack.popPose();
     }

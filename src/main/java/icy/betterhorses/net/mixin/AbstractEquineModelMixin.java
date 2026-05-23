@@ -3,7 +3,7 @@ package icy.betterhorses.net.mixin;
 import icy.betterhorses.net.client.render.BhMountedHorseVisibility;
 import icy.betterhorses.net.client.render.IBhEquineStabilizerState;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.animal.equine.AbstractEquineModel;
+import net.minecraft.client.model.AbstractEquineModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.state.EquineRenderState;
 import org.spongepowered.asm.mixin.Final;

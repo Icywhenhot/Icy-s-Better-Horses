@@ -3,7 +3,7 @@ package icy.betterhorses.net.client.render;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 public final class BhMountedHorseVisibility {
     public static final float HEAD_PITCH_OFFSET = 0.2F;

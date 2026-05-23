@@ -14,8 +14,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.SpawnPlacements;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
-import net.minecraft.world.entity.animal.equine.Horse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -278,7 +278,7 @@ public final class IcysBetterHorses {
                 biomeMismatchSkips++;
                 if (biomeMismatchSample == null) {
                     biomeMismatchSample = surface + " -> " + surfaceBiome
-                            .map(key -> key.identifier().toString())
+                            .map(key -> key.location().toString())
                             .orElse("<unregistered>");
                 }
                 continue;
@@ -327,14 +327,14 @@ public final class IcysBetterHorses {
         if (spawned > 0) {
             LOGGER.info("[HORSE_REPOP] spawned={} biome={} nearPlayer={} playerPos={}",
                     spawned,
-                    targetBiome.identifier(),
+                    targetBiome.location(),
                     player.getName().getString(),
                     player.blockPosition());
             return;
         }
 
         LOGGER.info("[HORSE_REPOP_SKIP] biome={} nearPlayer={} playerPos={} attempts={} unloaded={} biomeMismatch={} invalidSurface={} spawnRules={} obstruction={} addFailed={} mismatchSample={} invalidSample={} ruleSample={}",
-                targetBiome.identifier(),
+                targetBiome.location(),
                 player.getName().getString(),
                 player.blockPosition(),
                 WILD_HORSE_GROUP_ATTEMPTS,

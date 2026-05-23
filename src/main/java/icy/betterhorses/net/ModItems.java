@@ -5,12 +5,14 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.equipment.Equippable;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -24,7 +26,8 @@ public final class ModItems {
     public static final DeferredItem<UpgradedSaddleItem> UPGRADED_SADDLE = ITEMS.registerItem(
             "upgraded_saddle",
             UpgradedSaddleItem::new,
-            properties -> properties.stacksTo(1).component(DataComponents.EQUIPPABLE, Equippable.saddle()));
+            properties -> properties.stacksTo(1).component(DataComponents.EQUIPPABLE,
+                    Equippable.builder(EquipmentSlot.SADDLE).setAsset(EquipmentAssets.SADDLE).build()));
     public static final DeferredItem<net.minecraft.world.item.Item> HORSE_HOOVES = ITEMS.registerSimpleItem(
             "horse_hooves_gear",
             properties -> properties.stacksTo(1).enchantable(15));
@@ -44,7 +47,7 @@ public final class ModItems {
                     .title(Component.translatable("itemGroup.icys_better_horses.stable_supplies"))
                     .icon(UPGRADED_SADDLE::toStack)
                     .displayItems((parameters, entries) -> {
-                        BuiltInRegistries.ITEM.getOptional(Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "stable_handbook"))
+                        BuiltInRegistries.ITEM.getOptional(ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "stable_handbook"))
                                 .filter(item -> item != Items.AIR)
                                 .ifPresent(entries::accept);
                         entries.accept(UPGRADED_SADDLE);

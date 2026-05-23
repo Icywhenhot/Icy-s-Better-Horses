@@ -1,13 +1,13 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.IHorseData;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -20,11 +20,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class EntityMixin {
 
     @Unique
-    private static final Identifier BH_MOUNTED_STEP_HEIGHT_ID =
-            Identifier.fromNamespaceAndPath("icys_better_horses", "mounted_step_height");
+    private static final ResourceLocation BH_MOUNTED_STEP_HEIGHT_ID =
+            ResourceLocation.fromNamespaceAndPath("icys_better_horses", "mounted_step_height");
     @Unique
-    private static final Identifier BH_MOUNTED_BREAK_SPEED_ID =
-            Identifier.fromNamespaceAndPath("icys_better_horses", "mounted_break_speed");
+    private static final ResourceLocation BH_MOUNTED_BREAK_SPEED_ID =
+            ResourceLocation.fromNamespaceAndPath("icys_better_horses", "mounted_break_speed");
     @Unique private static final double BH_MOUNTED_STEP_HEIGHT_BONUS = 0.1D;
     @Unique private static final double BH_MOUNTED_BREAK_SPEED_BONUS = 5.0D;
     @Unique private @Nullable AbstractHorse bh_dismountHorse = null;

@@ -20,7 +20,7 @@ import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -36,8 +36,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
-import net.minecraft.world.entity.animal.equine.Horse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -92,11 +92,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private @Nullable Vec3 bh_lastFrostWalkerPos = null;
 
     @Unique
-    private static final Identifier BH_SPEED_ID =
-            Identifier.fromNamespaceAndPath("icys_better_horses", "bond_speed");
+    private static final ResourceLocation BH_SPEED_ID =
+            ResourceLocation.fromNamespaceAndPath("icys_better_horses", "bond_speed");
     @Unique
-    private static final Identifier BH_JUMP_ID =
-            Identifier.fromNamespaceAndPath("icys_better_horses", "bond_jump");
+    private static final ResourceLocation BH_JUMP_ID =
+            ResourceLocation.fromNamespaceAndPath("icys_better_horses", "bond_jump");
     @Unique private static final float BH_HOOVES_FALL_DAMAGE_MULTIPLIER = 0.5F;
     @Unique private static final double BH_STABILIZER_HALF_OPEN_DESCENT_SPEED = -0.35D;
     @Unique private static final double BH_STABILIZER_MAX_DESCENT_SPEED = -0.125D;

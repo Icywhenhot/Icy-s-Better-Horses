@@ -12,7 +12,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
@@ -102,7 +102,6 @@ public abstract class LivingEntityMixin extends Entity {
         gear.setItem(GearSlot.MEDKIT.ordinal(), ItemStack.EMPTY);
         gear.setChanged();
 
-        // 1.21.11 MobEffects rename: HEAL → INSTANT_HEALTH, DAMAGE_RESISTANCE → RESISTANCE.
         self.addEffect(new MobEffectInstance(MobEffects.REGENERATION, BH_MEDKIT_EFFECT_DURATION, 0));
         self.addEffect(new MobEffectInstance(MobEffects.INSTANT_HEALTH, 1, 0));
         self.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, BH_MEDKIT_EFFECT_DURATION, 0));
