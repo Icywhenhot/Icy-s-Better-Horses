@@ -24,6 +24,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -111,10 +112,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private static final double BH_FRONT_PASSENGER_Z_OFFSET = 0.35D;
     @Unique private static final double BH_REAR_PASSENGER_Z_OFFSET = -0.35D;
     @Unique private static final float BH_FREE_CAMERA_ANGLE_THRESHOLD = 90.0F;
-    // Vanilla water drag scales horizontal velocity by ~0.8 per tick on ridden horses.
-    // 1.125 ≈ 0.9 / 0.8 — leaves the horse with half of vanilla's water slowdown rather
-    // than overriding it entirely (1.6 produced a net speed-up, which felt unnatural).
-    @Unique private static final double BH_WATER_HORIZONTAL_BOOST = 1.125D;
+    @Unique private static final float BH_WATER_SPEED_MULTIPLIER = 1.5F;
+    @Unique private static final double BH_WATER_RISE_SPEED = 0.006D;
+    @Unique private static final double BH_WATER_SURFACE_SPEED = 0.001D;
+    @Unique private static final double BH_WATER_MAX_RISE_SPEED = 0.015D;
     @Unique private static final double BH_FROST_WALKER_SAMPLE_STEP = 0.75D;
     @Unique private static final double BH_FROST_WALKER_RESET_DISTANCE = 8.0D;
 
@@ -742,20 +743,36 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.bh_setStabilizerState(state);
     }
 
-    @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_boostWaterMovement(CallbackInfo ci) {
+    @Override
+    protected float getWaterSlowDown() {
+        float vanillaSlowDown = super.getWaterSlowDown();
+        float vanillaSpeedRatio = vanillaSlowDown / (1.0F - vanillaSlowDown);
+        float boostedSpeedRatio = vanillaSpeedRatio * BH_WATER_SPEED_MULTIPLIER;
+        return boostedSpeedRatio / (1.0F + boostedSpeedRatio);
+    }
+
+    @Override
+    public Vec3 getFluidFallingAdjustedMovement(double gravity, boolean falling, Vec3 movement) {
+        Vec3 adjustedMovement = super.getFluidFallingAdjustedMovement(gravity, falling, movement);
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (!self.isInWater() || !self.isVehicle()) {
-            return;
+        if (!self.isInWater()) {
+            return adjustedMovement;
         }
-        Vec3 motion = self.getDeltaMovement();
-        if (motion.x * motion.x + motion.z * motion.z < 1.0E-6D) {
-            return;
+        return bh_applyWaterBuoyancy(adjustedMovement);
+    }
+
+    @Unique
+    private Vec3 bh_applyWaterBuoyancy(Vec3 movement) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        double waterHeight = self.getFluidHeight(FluidTags.WATER);
+        if (waterHeight <= 0.0D) {
+            return movement;
         }
-        self.setDeltaMovement(
-                motion.x * BH_WATER_HORIZONTAL_BOOST,
-                motion.y,
-                motion.z * BH_WATER_HORIZONTAL_BOOST);
+
+        double minVerticalSpeed =
+                waterHeight > self.getFluidJumpThreshold() ? BH_WATER_RISE_SPEED : BH_WATER_SURFACE_SPEED;
+        double verticalSpeed = Math.max(movement.y, minVerticalSpeed);
+        return new Vec3(movement.x, Math.min(verticalSpeed, BH_WATER_MAX_RISE_SPEED), movement.z);
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
