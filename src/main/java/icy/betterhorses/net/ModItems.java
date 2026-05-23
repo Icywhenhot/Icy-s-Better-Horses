@@ -25,7 +25,7 @@ public final class ModItems {
 
     public static final Item HORSE_HOOVES = register("horse_hooves_gear",
             Item::new,
-            new Item.Properties().stacksTo(1));
+            new Item.Properties().stacksTo(1).enchantable(15));
 
     // Keep the original medkit id so existing worlds keep their saved item stacks.
     public static final Item HORSE_MEDKIT = register("horse_medkit_gear",

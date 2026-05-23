@@ -1,8 +1,10 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -12,7 +14,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -38,8 +39,12 @@ public abstract class LivingEntityMixin extends Entity {
     @Shadow
     protected abstract float getDamageAfterMagicAbsorb(DamageSource source, float amount);
 
+    /**
+     * 1.21.5+ widened {@code actuallyHurt} to take a {@link ServerLevel} as its first parameter,
+     * so all {@code @Inject}s into it must mirror the new descriptor.
+     */
     @Inject(method = "actuallyHurt", at = @At("HEAD"))
-    private void bh_queueHorseMedkit(ServerLevel serverLevel, DamageSource source, float amount, CallbackInfo ci) {
+    private void bh_queueHorseMedkit(ServerLevel level, DamageSource source, float amount, CallbackInfo ci) {
         this.bh_triggerHorseMedkitAfterDamage = false;
 
         LivingEntity self = (LivingEntity) (Object) this;
@@ -47,7 +52,7 @@ public abstract class LivingEntityMixin extends Entity {
             return;
         }
 
-        if (self.isInvulnerableTo(serverLevel, source) || !this.bh_hasEquippedMedkit(data)) {
+        if (self.isInvulnerableTo(level, source) || !this.bh_hasEquippedMedkit(data)) {
             return;
         }
 
@@ -59,7 +64,7 @@ public abstract class LivingEntityMixin extends Entity {
     }
 
     @Inject(method = "actuallyHurt", at = @At("TAIL"))
-    private void bh_useHorseMedkit(ServerLevel serverLevel, DamageSource source, float amount, CallbackInfo ci) {
+    private void bh_useHorseMedkit(ServerLevel level, DamageSource source, float amount, CallbackInfo ci) {
         if (!this.bh_triggerHorseMedkitAfterDamage) {
             return;
         }
@@ -76,7 +81,8 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Unique
     private boolean bh_hasEquippedMedkit(IHorseData data) {
-        return data.bh_getGearContainer().getItem(GearSlot.MEDKIT.ordinal()).is(ModItems.HORSE_MEDKIT);
+        return BhConfig.medkitEnabled()
+                && data.bh_getGearContainer().getItem(GearSlot.MEDKIT.ordinal()).is(ModItems.HORSE_MEDKIT);
     }
 
     @Unique
@@ -96,6 +102,7 @@ public abstract class LivingEntityMixin extends Entity {
         gear.setItem(GearSlot.MEDKIT.ordinal(), ItemStack.EMPTY);
         gear.setChanged();
 
+        // 1.21.11 MobEffects rename: HEAL → INSTANT_HEALTH, DAMAGE_RESISTANCE → RESISTANCE.
         self.addEffect(new MobEffectInstance(MobEffects.REGENERATION, BH_MEDKIT_EFFECT_DURATION, 0));
         self.addEffect(new MobEffectInstance(MobEffects.INSTANT_HEALTH, 1, 0));
         self.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, BH_MEDKIT_EFFECT_DURATION, 0));

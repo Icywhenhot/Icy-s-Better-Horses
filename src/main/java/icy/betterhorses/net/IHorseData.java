@@ -21,8 +21,24 @@ public interface IHorseData {
     @Nullable BlockPos bh_getHitchpostPos();
     void bh_setHitchpostPos(@Nullable BlockPos pos);
 
+    @Nullable BlockPos bh_getWanderCenter();
+    void bh_setWanderCenter(@Nullable BlockPos pos);
+
     int bh_getBond();
     void bh_setBond(int level);
+
+    /** True once this horse has already been awarded the one-time name-tag bond. */
+    boolean bh_hasReceivedNameTagBond();
+    void bh_setReceivedNameTagBond(boolean received);
+
+    HorseGender bh_getGender();
+    void bh_setGender(HorseGender gender);
+
+    HorseBreed bh_getBreed();
+    void bh_setBreed(HorseBreed breed);
+
+    boolean bh_isMixedBreed();
+    void bh_setMixedBreed(boolean mixed);
 
     HorseStabilizerState bh_getStabilizerState();
     void bh_setStabilizerState(HorseStabilizerState state);

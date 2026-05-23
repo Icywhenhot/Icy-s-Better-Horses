@@ -1,6 +1,7 @@
 package icy.betterhorses.net.item;
 
 import com.mojang.serialization.MapCodec;
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.ModBlocks;
@@ -15,7 +16,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
@@ -116,6 +116,9 @@ public class HitchpostBlock extends BaseEntityBlock {
         if (level.isClientSide() || !(level instanceof ServerLevel serverLevel) || !(placer instanceof Player player)) {
             return;
         }
+        if (!BhConfig.hitchpostEnabled()) {
+            return;
+        }
 
         AbstractHorse horse = findHorseToTether(serverLevel, pos, player);
         if (horse == null) {
@@ -128,16 +131,21 @@ public class HitchpostBlock extends BaseEntityBlock {
         }
     }
 
+    /**
+     * 1.21.5+ replaces {@code onRemove} with {@link #affectNeighborsAfterRemoval}, which is only
+     * invoked when the block is actually removed (not for in-place state changes), so we no longer
+     * need the {@code !state.is(newState.getBlock())} guard.
+     */
     @Override
-    public void destroy(LevelAccessor level, BlockPos pos, BlockState state) {
-        if (level instanceof ServerLevel serverLevel) {
-            releaseHorseAtPost(serverLevel, pos);
-        }
-
-        super.destroy(level, pos, state);
+    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+        releaseHorseAtPost(level, pos);
+        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
     }
 
     public static boolean isValidTether(ServerLevel level, AbstractHorse horse, BlockPos pos) {
+        if (!BhConfig.hitchpostEnabled()) {
+            return false;
+        }
         if (!level.getBlockState(pos).is(ModBlocks.HITCHPOST)) {
             return false;
         }
@@ -188,6 +196,9 @@ public class HitchpostBlock extends BaseEntityBlock {
             BlockState state,
             AbstractHorse horse,
             @Nullable Player player) {
+        if (!BhConfig.hitchpostEnabled()) {
+            return false;
+        }
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof HitchpostBlockEntity hitchpost)) {
             return false;
@@ -211,8 +222,12 @@ public class HitchpostBlock extends BaseEntityBlock {
         horse.setDeltaMovement(Vec3.ZERO);
         horse.hurtMarked = true;
 
-        if (player != null && data.bh_getOwner() == null && player.getUUID().equals(getVanillaOwnerId(horse))) {
-            data.bh_setOwner(player.getUUID());
+        if (player != null && data.bh_getOwner() == null) {
+            net.minecraft.world.entity.EntityReference<net.minecraft.world.entity.LivingEntity> ownerRef = horse.getOwnerReference();
+            UUID horseOwner = ownerRef == null ? null : ownerRef.getUUID();
+            if (player.getUUID().equals(horseOwner)) {
+                data.bh_setOwner(player.getUUID());
+            }
         }
 
         data.bh_setHitchpostPos(pos);
@@ -242,14 +257,10 @@ public class HitchpostBlock extends BaseEntityBlock {
         }
 
         UUID playerId = player.getUUID();
-        UUID ownerId = getVanillaOwnerId(horse);
+        net.minecraft.world.entity.EntityReference<net.minecraft.world.entity.LivingEntity> ownerRef = horse.getOwnerReference();
+        UUID ownerId = ownerRef == null ? null : ownerRef.getUUID();
         UUID modOwnerId = ((IHorseData) horse).bh_getOwner();
         return playerId.equals(ownerId) || playerId.equals(modOwnerId);
-    }
-
-    private static @Nullable UUID getVanillaOwnerId(AbstractHorse horse) {
-        var ownerReference = horse.getOwnerReference();
-        return ownerReference != null ? ownerReference.getUUID() : null;
     }
 
     private static Vec3 chooseAnchor(BlockPos pos, BlockState state, AbstractHorse horse) {

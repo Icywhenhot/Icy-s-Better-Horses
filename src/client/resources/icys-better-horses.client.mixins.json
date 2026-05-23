@@ -6,6 +6,7 @@
 		"AbstractEquineModelAccessor",
 		"AbstractHorseRendererMixin",
 		"EquineRenderStateMixin",
+		"GuiMixin",
 		"HorseInventoryScreenMixin",
 		"KeyboardInputMixin"
 	],

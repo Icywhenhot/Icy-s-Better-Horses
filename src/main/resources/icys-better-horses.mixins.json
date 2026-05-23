@@ -4,10 +4,17 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"AbstractHorseMixin",
+		"AnimalMixin",
+		"AbstractChestedHorseCreativeTamingMixin",
+		"EntityMixin",
+		"HorseAccessor",
+		"HorseCreativeTamingMixin",
+		"HorseFinalizeSpawnMixin",
 		"HorseInventoryMenuMixin",
 		"LeafPassthroughMixin",
 		"LivingEntityMixin",
 		"PowderSnowBlockMixin",
+		"SpawnPlacementsAccessor",
 		"SlotAccessor"
 	],
 	"injectors": {
