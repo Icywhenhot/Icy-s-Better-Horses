@@ -112,7 +112,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     };
     @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(27);
     @Unique private boolean bh_hadUpgradedSaddle = false;
-    @Unique private boolean bh_fedGoldenAppleThisTick = false;
     @Unique private @Nullable Vec3 bh_lastFrostWalkerPos = null;
 
     @Unique
@@ -520,38 +519,34 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.bh_hadUpgradedSaddle = hasUpgradedSaddle;
     }
 
-    @Inject(method = "fedFood", at = @At("HEAD"))
-    private void bh_markGoldenAppleFeed(net.minecraft.world.entity.player.Player player, ItemStack stack, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
-        this.bh_fedGoldenAppleThisTick = stack.is(Items.GOLDEN_APPLE);
-    }
+    /**
+     * Hook handleEating (rather than fedFood) because it's the authoritative signal that the
+     * food was actually accepted — fedFood can return PASS even when a feed succeeded, depending
+     * on subclass paths, which made the bond reward unreliable.
+     */
+    @Inject(method = "handleEating", at = @At("RETURN"))
+    private void bh_rewardGoldenAppleBond(net.minecraft.world.entity.player.Player player, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.level().isClientSide()) return;
+        if (!cir.getReturnValueZ()) return;
+        if (!stack.is(Items.GOLDEN_APPLE) && !stack.is(Items.ENCHANTED_GOLDEN_APPLE)) return;
 
-    @Inject(method = "fedFood", at = @At("RETURN"))
-    private void bh_rewardGoldenAppleBond(net.minecraft.world.entity.player.Player player, ItemStack stack, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
-        try {
-            AbstractHorse self = (AbstractHorse) (Object) this;
-            if (!this.bh_fedGoldenAppleThisTick || self.level().isClientSide() || !cir.getReturnValue().consumesAction()) {
-                return;
-            }
+        this.bh_setBond(this.bh_getBond() + 2);
 
-            this.bh_setBond(this.bh_getBond() + 2);
-
-            // If horse just entered love mode and a same-gender horse is already in love nearby, cancel and warn.
-            if (self.isInLove()) {
-                HorseGender myGender = this.bh_getGender();
-                java.util.List<AbstractHorse> nearby = self.level().getEntitiesOfClass(
-                        AbstractHorse.class,
-                        self.getBoundingBox().inflate(8.0D),
-                        h -> h != self && h.isInLove() && ((IHorseData) h).bh_getGender() == myGender);
-                if (!nearby.isEmpty()) {
-                    self.resetLove();
-                    if (player instanceof ServerPlayer serverPlayer) {
-                        serverPlayer.sendSystemMessage(Component.translatable(
-                                "message.icys-better-horses.same_gender_breed"));
-                    }
+        // If horse just entered love mode and a same-gender horse is already in love nearby, cancel and warn.
+        if (self.isInLove()) {
+            HorseGender myGender = this.bh_getGender();
+            java.util.List<AbstractHorse> nearby = self.level().getEntitiesOfClass(
+                    AbstractHorse.class,
+                    self.getBoundingBox().inflate(8.0D),
+                    h -> h != self && h.isInLove() && ((IHorseData) h).bh_getGender() == myGender);
+            if (!nearby.isEmpty()) {
+                self.resetLove();
+                if (player instanceof ServerPlayer serverPlayer) {
+                    serverPlayer.sendSystemMessage(Component.translatable(
+                            "message.icys-better-horses.same_gender_breed"));
                 }
             }
-        } finally {
-            this.bh_fedGoldenAppleThisTick = false;
         }
     }
 

@@ -13,6 +13,7 @@
 		"HorseInventoryMenuMixin",
 		"LeafPassthroughMixin",
 		"LivingEntityMixin",
+		"NameTagItemMixin",
 		"PowderSnowBlockMixin",
 		"SpawnPlacementsAccessor",
 		"SlotAccessor"

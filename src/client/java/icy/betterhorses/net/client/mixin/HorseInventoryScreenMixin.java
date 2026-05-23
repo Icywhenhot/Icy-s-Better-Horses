@@ -48,8 +48,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final int BH_STATS_TEXT_Y = 38;
     @Unique private static final int BH_STATS_LINE_SPACING = 10;
 
-    @Unique private static final int BH_CHEST_PANEL_X = 7;
-    @Unique private static final int BH_CHEST_PANEL_Y = 78;
+    @Unique private static final int BH_CHEST_PANEL_X = 6;
+    @Unique private static final int BH_CHEST_PANEL_Y = 77;
 
     @Unique private static final int BH_PANEL_FILL = 0xFFC6C6C6;
     @Unique private static final int BH_HINT_TINT = 0xA06B5A46;

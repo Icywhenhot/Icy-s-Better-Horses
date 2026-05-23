@@ -2,6 +2,7 @@ package icy.betterhorses.net;
 
 import icy.betterhorses.net.item.UpgradedSaddleItem;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -14,6 +15,8 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.equipment.EquipmentAssets;
+import net.minecraft.world.item.equipment.Equippable;
 
 import java.util.function.Function;
 
@@ -21,7 +24,12 @@ public final class ModItems {
 
     public static final Item UPGRADED_SADDLE = register("upgraded_saddle",
             UpgradedSaddleItem::new,
-            new Item.Properties().stacksTo(1).equippable(EquipmentSlot.SADDLE));
+            new Item.Properties()
+                    .stacksTo(1)
+                    .component(DataComponents.EQUIPPABLE,
+                            Equippable.builder(EquipmentSlot.SADDLE)
+                                    .setAsset(EquipmentAssets.SADDLE)
+                                    .build()));
 
     public static final Item HORSE_HOOVES = register("horse_hooves_gear",
             Item::new,
