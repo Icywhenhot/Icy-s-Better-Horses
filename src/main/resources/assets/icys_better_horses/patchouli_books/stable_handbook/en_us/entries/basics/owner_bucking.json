@@ -1,0 +1,17 @@
+{
+  "name": "Owner-Only Riding",
+  "category": "icys_better_horses:basics",
+  "icon": "minecraft:iron_sword",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "An owned horse is your horse. Anyone else who tries to climb on as the primary rider gets $(thing)bucked off$() immediately.$(br2)The horse will still tolerate a second rider — provided you, the owner, are already in the saddle. Co-op trips work; mount theft does not."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Toggle It Off",
+      "text": "Multiplayer servers can opt out by editing the mod's $(thing)config file$(), $(item)betterhorses-common.json$(). Set $(thing)horseExclusivityEnabled$() to $(item)false$() and any player can mount any owned horse — handy for ranches and shared stables.$(br2)The same config also exposes toggles for stabilizers, medkits, hitchposts, hooves, and multi-riding."
+    }
+  ]
+}

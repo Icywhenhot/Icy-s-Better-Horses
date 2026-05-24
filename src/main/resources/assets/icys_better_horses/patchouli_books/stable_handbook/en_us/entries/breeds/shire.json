@@ -1,0 +1,25 @@
+{
+  "name": "Shire",
+  "category": "icys_better_horses:breeds",
+  "icon": "minecraft:saddle",
+  "sortnum": 7,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "minecraft:horse{Variant:516}",
+      "name": "Shire",
+      "text": "England's largest draft horse \u2014 taller than a Clydesdale and just as patient. Black or brown with bold white field markings is the classic look.",
+      "scale": 0.6
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Coat",
+      "text": "Always with $(thing)Field$() markings:$(br2)$(li)Black + White Field$()$(li)Brown + White Field$()$(li)Gray + White Field$()$(li)Dark Brown + White Field$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where They Live",
+      "text": "Old-world forests:$(br2)$(li)Forest$()$(li)Birch Forest$()$(li)Old Growth Birch Forest$()$(li)Windswept Forest$()$(li)Dark Forest$()"
+    }
+  ]
+}

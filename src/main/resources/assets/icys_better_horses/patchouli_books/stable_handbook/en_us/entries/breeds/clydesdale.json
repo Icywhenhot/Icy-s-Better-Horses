@@ -1,0 +1,25 @@
+{
+  "name": "Clydesdale",
+  "category": "icys_better_horses:breeds",
+  "icon": "minecraft:saddle",
+  "sortnum": 6,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "minecraft:horse{Variant:515}",
+      "name": "Clydesdale",
+      "text": "Scotland's gentle giant. Recognizable from a mile off thanks to the white-feathered legs and big bold $(thing)field$() markings on the coat.",
+      "scale": 0.6
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Coat",
+      "text": "Always with $(thing)Field$() markings:$(br2)$(li)Brown + White Field$()$(li)Black + White Field$()$(li)Dark Brown + White Field$()$(li)Chestnut + White Field$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where They Live",
+      "text": "Rough hill country:$(br2)$(li)Windswept Hills$()$(li)Windswept Gravelly Hills$()$(li)Windswept Forest$()$(li)Old Growth Pine Taiga$()"
+    }
+  ]
+}

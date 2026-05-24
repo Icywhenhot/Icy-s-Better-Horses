@@ -1,0 +1,25 @@
+{
+  "name": "Quarter Horse",
+  "category": "icys_better_horses:breeds",
+  "icon": "minecraft:saddle",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "minecraft:horse{Variant:2}",
+      "name": "Quarter Horse",
+      "text": "Stocky, broad-chested, and famously fast over a short distance. The all-purpose ranch horse \u2014 a reliable everyday mount.",
+      "scale": 0.6
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Coat",
+      "text": "$(li)Chestnut$()$(li)Chestnut + White$()$(li)Brown$()$(li)Brown + White$()$(li)Black + White$()$(li)Creamy + White$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where They Live",
+      "text": "Wide North-American-style grasslands:$(br2)$(li)Plains$()$(li)Sunflower Plains$()$(li)Savanna$()$(li)Savanna Plateau$()$(li)Windswept Savanna$()"
+    }
+  ]
+}

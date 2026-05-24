@@ -1,0 +1,25 @@
+{
+  "name": "Mustang",
+  "category": "icys_better_horses:breeds",
+  "icon": "minecraft:saddle",
+  "sortnum": 10,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "minecraft:horse{Variant:6}",
+      "name": "Mustang",
+      "text": "Free-roaming North American horse \u2014 the iconic feral breed of the western frontier. Tough, weatherproof, and never quite the same coat twice.",
+      "scale": 0.6
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Coat",
+      "text": "$(li)Dark Brown$()$(li)Brown$()$(li)Chestnut$()$(li)Black$()$(li)Dark Brown + White$()$(li)Chestnut + White Field$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where They Live",
+      "text": "Open frontier country:$(br2)$(li)Plains$()$(li)Savanna$()$(li)Windswept Hills$()$(li)Badlands$()$(li)Wooded Badlands$()$(li)Sparse Jungle$()"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "Haflinger",
+  "category": "icys_better_horses:breeds",
+  "icon": "minecraft:saddle",
+  "sortnum": 11,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "minecraft:horse{Variant:258}",
+      "name": "Haflinger",
+      "text": "A small Tyrolean mountain breed with a chestnut body and bright flaxen mane. Tough, sure-footed, and made for slopes.",
+      "scale": 0.6
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Coat",
+      "text": "$(li)Chestnut + White$()$(li)Chestnut$()$(li)Creamy + White$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where They Live",
+      "text": "Alpine and high-altitude country:$(br2)$(li)Snowy Slopes$()$(li)Grove$()$(li)Meadow$()$(li)Frozen Peaks$()$(li)Jagged Peaks$()$(li)Stony Peaks$()"
+    }
+  ]
+}

@@ -34,3 +34,10 @@ type="required"
 versionRange="[${geckolib_version},)"
 ordering="NONE"
 side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="patchouli"
+type="optional"
+versionRange="[1.21.1-87,)"
+ordering="NONE"
+side="BOTH"

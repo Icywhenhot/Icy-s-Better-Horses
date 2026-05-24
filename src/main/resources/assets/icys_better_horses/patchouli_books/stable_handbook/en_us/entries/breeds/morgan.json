@@ -1,0 +1,25 @@
+{
+  "name": "Morgan",
+  "category": "icys_better_horses:breeds",
+  "icon": "minecraft:saddle",
+  "sortnum": 12,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "minecraft:horse{Variant:3}",
+      "name": "Morgan",
+      "text": "An American foundation breed \u2014 compact, hardworking, and famously versatile. The horse you can ride to town in the morning and plow a field with in the afternoon.",
+      "scale": 0.6
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Coat",
+      "text": "$(li)Brown$()$(li)Chestnut$()$(li)Black$()$(li)Dark Brown$()$(li)Brown + White$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where They Live",
+      "text": "Settled grasslands and woodland:$(br2)$(li)Plains$()$(li)Sunflower Plains$()$(li)Forest$()$(li)Birch Forest$()$(li)Meadow$()"
+    }
+  ]
+}

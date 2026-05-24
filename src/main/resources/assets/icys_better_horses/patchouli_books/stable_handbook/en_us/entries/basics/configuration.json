@@ -1,0 +1,22 @@
+{
+  "name": "Tuning the Mod",
+  "category": "icys_better_horses:basics",
+  "icon": "minecraft:redstone",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A JSON config file at $(thing)config/betterhorses-common.json$() lets you toggle whole subsystems without removing the mod. Server admins use this to shape what's available on a given world."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "What You Can Toggle",
+      "text": "$(li)$(thing)Stabilizers$() — wing-deployed gliding.$(li)$(thing)Medkits$() — auto-heal on low health.$(li)$(thing)Hitchposts$() — tethering blocks.$(li)$(thing)Hooves$() — frost-walker + step-up + fall damage perks.$(li)$(thing)Horse Exclusivity$() — owner-only riding.$(li)$(thing)Multi-riding$() — two passengers on one horse."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Dummy Mode",
+      "text": "Items disabled in the config don't disappear — they switch to $(thing)dummy mode$() and stay craftable as $(thing)decorative models$() only. Build a ghost-stable for show without anything actually firing off in the world."
+    }
+  ]
+}

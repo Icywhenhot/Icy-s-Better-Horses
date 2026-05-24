@@ -23,7 +23,7 @@ public final class HorseStabilizerLayer<T extends AbstractHorse, M extends Entit
     private static final HorseStabilizerGeoRenderer GEO_RENDERER = new HorseStabilizerGeoRenderer();
 
     private static final double TORSO_X_OFFSET = 8.0D / 16.0D;
-    private static final double FEET_Y_IN_FLIPPED_FRAME = 1.85D;
+    private static final double FEET_Y_IN_FLIPPED_FRAME = 2D;
     private static final double TORSO_Z_OFFSET = -8.3D / 16.0D;
     private static final float MODEL_ROLL_DEGREES = 180.0F;
 

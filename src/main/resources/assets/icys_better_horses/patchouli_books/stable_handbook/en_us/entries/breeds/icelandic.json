@@ -1,0 +1,25 @@
+{
+  "name": "Icelandic",
+  "category": "icys_better_horses:breeds",
+  "icon": "minecraft:saddle",
+  "sortnum": 9,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "minecraft:horse{Variant:514}",
+      "name": "Icelandic",
+      "text": "A short, shaggy, cold-hardy pony from \u2014 yes \u2014 Iceland. Known for an unusually smooth fifth gait called the $(thing)t\u00f6lt$().",
+      "scale": 0.6
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Coat",
+      "text": "$(li)Chestnut + White Field$()$(li)Brown + White Field$()$(li)Black + White$()$(li)Gray + White Field$()$(li)Creamy + White Field$()$(li)Dark Brown + White$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where They Live",
+      "text": "Snow and ice biomes:$(br2)$(li)Snowy Plains$()$(li)Snowy Taiga$()$(li)Ice Spikes$()$(li)Frozen Peaks$()$(li)Jagged Peaks$()$(li)Snowy Slopes$()$(li)Grove$()"
+    }
+  ]
+}

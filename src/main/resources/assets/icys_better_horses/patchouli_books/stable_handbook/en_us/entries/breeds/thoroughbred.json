@@ -1,0 +1,25 @@
+{
+  "name": "Thoroughbred",
+  "category": "icys_better_horses:breeds",
+  "icon": "minecraft:saddle",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "minecraft:horse{Variant:3}",
+      "name": "Thoroughbred",
+      "text": "The classic racing horse. Tall, lean, and built for speed \u2014 Thoroughbreds are the easy choice for a first long ride.",
+      "scale": 0.6
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Coat",
+      "text": "$(li)Brown$()$(li)Chestnut$()$(li)Black$()$(li)Dark Brown$()$(li)Brown + White$()$(li)Chestnut + White$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where They Live",
+      "text": "Open grasslands and light woodland:$(br2)$(li)Plains$()$(li)Sunflower Plains$()$(li)Meadow$()$(li)Forest$()$(li)Birch Forest$()"
+    }
+  ]
+}

@@ -19,6 +19,16 @@
       "title": "Sure-Footed Travel",
       "link_recipe": true,
       "text": "Horse Hooves let a mount walk on powdered snow instead of plunging through it. They also soften fall damage, which makes them good everyday tack for mountain trails and cold biomes."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Frost Walker Enchant",
+      "text": "Horse Hooves can be enchanted with $(item)Frost Walker$() at the $(thing)Anvil$() from an enchanted book.$(br2)With Frost Walker shoes on, a horse running across water leaves a trail of $(thing)frosted ice$() behind it — the same effect a player gets with frost-walker boots, but tuned for horse-scale movement."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Built for Speed",
+      "text": "The ice trail is optimized for high movement: when a bonded horse hits $(thing)15+ blocks per second$(), the freeze radius keeps pace, so you can sprint across lakes and oceans without leaving gaps.$(br2)Lava is still lava. Frost Walker won't save you there."
     }
   ]
 }

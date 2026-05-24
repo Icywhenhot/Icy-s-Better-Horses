@@ -23,6 +23,17 @@
       "item": "minecraft:chest",
       "title": "Chest Storage",
       "text": "Slide a plain $(item)Chest$() into the chest slot to unlock 27 storage spaces on the horse screen. Empty it before removal unless you want your trail supplies tumbling into the dirt."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "minecraft:ender_chest",
+      "title": "Ender Chest Option",
+      "text": "Slot a plain $(item)Ender Chest$() into the chest slot instead and the 27 slots become a window into your personal $(item)Ender Inventory$(). Anything you stash here is shared with every ender chest you own.$(br2)Swapping back to a regular chest or pulling the ender chest out preserves whatever you put in it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Stats Overlay",
+      "text": "Hold the $(item)Upgraded Saddle$() and look at any horse and a $(thing)Horse Stats$() panel appears above your hotbar.$(br2)$(li)$(thing)Gender$() — m or f.$(li)$(thing)Breed$().$(li)$(thing)Speed$() — blocks per second.$(li)$(thing)Jump$() — block height.$(br2)Useful for comparing wild stock before you commit to taming."
     }
   ]
 }

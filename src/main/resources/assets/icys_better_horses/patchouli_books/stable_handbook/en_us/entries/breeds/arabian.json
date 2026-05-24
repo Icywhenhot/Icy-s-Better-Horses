@@ -1,0 +1,25 @@
+{
+  "name": "Arabian",
+  "category": "icys_better_horses:breeds",
+  "icon": "minecraft:saddle",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "minecraft:horse{Variant:5}",
+      "name": "Arabian",
+      "text": "Compact, hot-blooded, and built for hard country. Arabians are the breed you want for desert crossings and badlands runs.",
+      "scale": 0.6
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Coat",
+      "text": "$(li)Gray$()$(li)Gray + White$()$(li)White$()$(li)Chestnut$()$(li)Brown$()$(li)Black$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where They Live",
+      "text": "Hot and arid biomes:$(br2)$(li)Desert$()$(li)Badlands$()$(li)Eroded Badlands$()$(li)Savanna$()$(li)Savanna Plateau$()$(li)Windswept Savanna$()"
+    }
+  ]
+}
