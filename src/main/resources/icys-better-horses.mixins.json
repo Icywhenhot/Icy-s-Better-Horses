@@ -11,6 +11,7 @@
 		"HorseCreativeTamingMixin",
 		"HorseFinalizeSpawnMixin",
 		"HorseInventoryMenuMixin",
+		"HorseSaddleSlotMixin",
 		"LeafPassthroughMixin",
 		"LivingEntityMixin",
 		"NameTagItemMixin",

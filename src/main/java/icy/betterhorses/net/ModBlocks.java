@@ -9,29 +9,23 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 
-import java.util.function.Function;
-
 public final class ModBlocks {
 
     public static final Block HITCHPOST = register("hitchpost",
-            HitchpostBlock::new,
-            BlockBehaviour.Properties.of()
+            new HitchpostBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.WOOD)
                     .strength(2.0f, 3.0f)
                     .sound(SoundType.WOOD)
-                    .noOcclusion());
+                    .noOcclusion()));
 
-    /**
-     * Called from {@link IcysBetterHorses#onInitialize()} before block entity and item setup so
-     * that the rest of the registries can reference the registered blocks.
-     */
     public static void init() {
         // Registering happens via static initializer; touching the class triggers it.
     }
 
-    private static Block register(String path, Function<BlockBehaviour.Properties, Block> factory, BlockBehaviour.Properties properties) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
-        return Registry.register(BuiltInRegistries.BLOCK, id, factory.apply(properties));
+    private static Block register(String path, Block block) {
+        return Registry.register(BuiltInRegistries.BLOCK,
+                ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path),
+                block);
     }
 
     private ModBlocks() {}

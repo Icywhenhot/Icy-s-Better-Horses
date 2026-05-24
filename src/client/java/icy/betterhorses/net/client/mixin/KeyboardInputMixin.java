@@ -27,7 +27,7 @@ public abstract class KeyboardInputMixin extends Input {
         long tick = 0L;
 
         if (screen == null && client.level != null && player != null) {
-            Entity vehicle = player.getVehicle();
+            Entity vehicle = player.getControlledVehicle();
             if (vehicle instanceof AbstractHorse horse && horse.getControllingPassenger() == player) {
                 eligible = true;
                 horseId = horse.getId();

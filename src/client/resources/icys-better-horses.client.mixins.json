@@ -3,11 +3,10 @@
 	"package": "icy.betterhorses.net.client.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"AbstractEquineModelAccessor",
 		"AbstractHorseRendererMixin",
-		"EquineRenderStateMixin",
 		"GuiMixin",
 		"HorseInventoryScreenMixin",
+		"HorseModelAccessor",
 		"KeyboardInputMixin"
 	],
 	"injectors": {

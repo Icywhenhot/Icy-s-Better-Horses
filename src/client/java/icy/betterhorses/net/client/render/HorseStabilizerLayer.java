@@ -1,53 +1,46 @@
 package icy.betterhorses.net.client.render;
 
+import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.inventory.GearSlot;
+import icy.betterhorses.net.client.mixin.HorseModelAccessor;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import icy.betterhorses.net.HorseStabilizerState;
-import icy.betterhorses.net.client.mixin.AbstractEquineModelAccessor;
-import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.AbstractEquineModel;
-import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.HorseModel;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.entity.state.EquineRenderState;
-import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionf;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
-public final class HorseStabilizerLayer<S extends EquineRenderState, M extends EntityModel<? super S>>
-        extends RenderLayer<S, M> {
+public final class HorseStabilizerLayer<T extends AbstractHorse, M extends HorseModel<T>> extends RenderLayer<T, M> {
     private static final HorseStabilizerGeoRenderer GEO_RENDERER = new HorseStabilizerGeoRenderer();
     private static final double TORSO_X_OFFSET = 8.0D / 16.0D;
-    private static final double FEET_Y_IN_FLIPPED_FRAME = 1.85D;
+    private static final double FEET_Y_IN_FLIPPED_FRAME = 2.0D;
     private static final double TORSO_Z_OFFSET = -8.0D / 16.0D;
     private static final float MODEL_ROLL_DEGREES = 180.0F;
 
-    public HorseStabilizerLayer(RenderLayerParent<S, M> renderer) {
+    public HorseStabilizerLayer(RenderLayerParent<T, M> renderer) {
         super(renderer);
     }
 
     @Override
-    public void submit(PoseStack poseStack, SubmitNodeCollector collector, int packedLight,
-                       S state, float yRot, float xRot) {
-        if (state.isInvisible || state.isBaby) {
-            return;
-        }
-        if (!(state instanceof BhStabilizerStateAccess access) || !access.bh_hasStabilizer()) {
+    public void render(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, T horse,
+                       float limbSwing, float limbSwingAmount, float partialTick, float ageInTicks,
+                       float netHeadYaw, float headPitch) {
+        if (horse.isInvisible() || horse.isBaby() || !(horse instanceof IHorseData data)) {
             return;
         }
 
-        HorseStabilizerState stabilizerState = access.bh_getStabilizerState();
-        HorseStabilizerAnimatable animatable = HorseStabilizerAnimatable.get(access.bh_getHorseId());
-        animatable.syncFromState(stabilizerState, state.ageInTicks);
-
-        EntityModel<? super S> parent = this.getParentModel();
-        if (!(parent instanceof AbstractEquineModel)) {
+        if (!data.bh_hasGear(GearSlot.STABILIZER)) {
             return;
         }
-        ModelPart body = ((AbstractEquineModelAccessor) parent).bh_getBody();
+
+        HorseStabilizerAnimatable animatable = HorseStabilizerAnimatable.get(horse);
+        animatable.syncFromHorse(horse, data.bh_getStabilizerState());
+
+        ModelPart body = ((HorseModelAccessor) this.getParentModel()).bh_getBody();
 
         poseStack.pushPose();
         body.translateAndRotate(poseStack);
@@ -57,34 +50,13 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
                 -body.z / 16.0F + TORSO_Z_OFFSET);
         poseStack.mulPose(Axis.ZP.rotationDegrees(MODEL_ROLL_DEGREES));
 
-        float partialTick = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
-        GEO_RENDERER.submit(
-                poseStack,
+        RenderType renderType = GEO_RENDERER.getRenderType(
                 animatable,
-                null,
-                collector,
-                bh_getCameraState(),
-                packedLight,
-                partialTick,
-                null);
-
+                GEO_RENDERER.getTextureLocation(animatable),
+                bufferSource,
+                partialTick);
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(renderType);
+        GEO_RENDERER.render(poseStack, animatable, bufferSource, renderType, vertexConsumer, packedLight, partialTick);
         poseStack.popPose();
-    }
-
-    private static CameraRenderState bh_getCameraState() {
-        Minecraft minecraft = Minecraft.getInstance();
-
-        if (minecraft.level != null) {
-            return minecraft.gameRenderer.getLevelRenderState().cameraRenderState;
-        }
-
-        Camera camera = minecraft.gameRenderer.getMainCamera();
-        CameraRenderState cameraState = new CameraRenderState();
-        cameraState.blockPos = camera.getBlockPosition();
-        cameraState.pos = camera.getPosition();
-        cameraState.initialized = camera.isInitialized();
-        cameraState.entityPos = camera.getEntity() != null ? camera.getEntity().position() : cameraState.pos;
-        cameraState.orientation = new Quaternionf(camera.rotation());
-        return cameraState;
     }
 }

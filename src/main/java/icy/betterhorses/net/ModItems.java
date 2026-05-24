@@ -12,39 +12,26 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
-import java.util.function.Function;
-
 public final class ModItems {
 
     public static final Item UPGRADED_SADDLE = register("upgraded_saddle",
-            UpgradedSaddleItem::new,
-            new Item.Properties().stacksTo(1));
+            new UpgradedSaddleItem(new Item.Properties().stacksTo(1)));
 
     public static final Item HORSE_HOOVES = register("horse_hooves_gear",
-            properties -> new Item(properties) {
-                @Override
-                public int getEnchantmentValue() {
-                    return 15;
-                }
-            },
-            new Item.Properties().stacksTo(1));
+            new Item(new Item.Properties().stacksTo(1)));
 
     // Keep the original medkit id so existing worlds keep their saved item stacks.
     public static final Item HORSE_MEDKIT = register("horse_medkit_gear",
-            Item::new,
-            new Item.Properties().stacksTo(1));
+            new Item(new Item.Properties().stacksTo(1)));
 
     public static final Item CANISTER = register("canister",
-            Item::new,
-            new Item.Properties());
+            new Item(new Item.Properties()));
 
     public static final Item HITCHPOST = register("hitchpost",
-            properties -> new BlockItem(ModBlocks.HITCHPOST, properties),
-            new Item.Properties().stacksTo(16));
+            new BlockItem(ModBlocks.HITCHPOST, new Item.Properties().stacksTo(16)));
 
     public static final Item HORSE_STABILIZER = register("horse_stabilizer_gear",
-            Item::new,
-            new Item.Properties().stacksTo(1));
+            new Item(new Item.Properties().stacksTo(1)));
 
     public static final CreativeModeTab STABLE_SUPPLIES_TAB = Registry.register(
             BuiltInRegistries.CREATIVE_MODE_TAB,
@@ -70,9 +57,10 @@ public final class ModItems {
     public static void init() {
     }
 
-    private static Item register(String path, Function<Item.Properties, Item> factory, Item.Properties properties) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
-        return Registry.register(BuiltInRegistries.ITEM, id, factory.apply(properties));
+    private static Item register(String path, Item item) {
+        return Registry.register(BuiltInRegistries.ITEM,
+                ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path),
+                item);
     }
 
     private ModItems() {}

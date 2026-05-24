@@ -94,7 +94,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
         // Draw background: top section, optional middle chest panel, bottom (player inv) section.
         gfx.blit(BH_HORSE_TEXTURE,
-                x, y, 0.0F, 0.0F, this.imageWidth, BH_TOP_SECTION_HEIGHT, 256, 256);
+                x, y, 0, 0, this.imageWidth, BH_TOP_SECTION_HEIGHT);
 
         int bottomY = y + BH_TOP_SECTION_HEIGHT;
         if (chest) {
@@ -102,8 +102,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
             bottomY += BH_CHEST_PANEL_HEIGHT;
         }
         gfx.blit(BH_HORSE_TEXTURE,
-                x, bottomY, 0.0F, (float) BH_TOP_SECTION_HEIGHT,
-                this.imageWidth, BH_VANILLA_IMAGE_HEIGHT - BH_TOP_SECTION_HEIGHT, 256, 256);
+                x, bottomY, 0, BH_TOP_SECTION_HEIGHT,
+                this.imageWidth, BH_VANILLA_IMAGE_HEIGHT - BH_TOP_SECTION_HEIGHT);
 
         // Empty slot sprites for saddle + armor (vanilla draws these at runtime, not in horse.png).
         gfx.blitSprite(BH_SLOT_SPRITE, x + 7, y + 17, 18, 18);
@@ -209,9 +209,9 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         final int border = 7;
         // Side bevels copied from horse.png upper section so the menu frame stays continuous.
         gfx.blit(BH_HORSE_TEXTURE,
-                x, y, 0.0F, 18.0F, border, height, 256, 256);
+                x, y, 0, 18, border, height);
         gfx.blit(BH_HORSE_TEXTURE,
-                x + width - border, y, (float) (this.imageWidth - border), 18.0F, border, height, 256, 256);
+                x + width - border, y, this.imageWidth - border, 18, border, height);
         // Plain gray fill between the bevels.
         gfx.fill(x + border, y, x + width - border, y + height, BH_PANEL_FILL);
     }

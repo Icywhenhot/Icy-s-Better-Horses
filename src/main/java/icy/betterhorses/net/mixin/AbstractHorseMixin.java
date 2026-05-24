@@ -279,13 +279,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Override
-    public void bh_equipUpgradedSaddle(ItemStack saddle) {
-        if (inventory != null) {
-            inventory.setItem(0, saddle);
-        }
-    }
-
-    @Override
     public SimpleContainer bh_getGearContainer() {
         return bh_gearContainer;
     }
@@ -524,15 +517,15 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     /**
-     * Hook handleEating (rather than fedFood) because it's the authoritative signal that the
-     * food was actually accepted — fedFood can return PASS even when a feed succeeded, depending
-     * on subclass paths, which made the bond reward unreliable.
+     * Hook {@code fedFood} RETURN and only reward when the result consumed the action, so the
+     * golden-apple bond is granted exactly once per successful feed. (1.21.1 uses {@code fedFood};
+     * the {@code handleEating} variant is a later-version rename.)
      */
-    @Inject(method = "handleEating", at = @At("RETURN"))
-    private void bh_rewardGoldenAppleBond(net.minecraft.world.entity.player.Player player, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "fedFood", at = @At("RETURN"))
+    private void bh_rewardGoldenAppleBond(net.minecraft.world.entity.player.Player player, ItemStack stack, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (self.level().isClientSide()) return;
-        if (!cir.getReturnValueZ()) return;
+        if (!cir.getReturnValue().consumesAction()) return;
         if (!stack.is(Items.GOLDEN_APPLE) && !stack.is(Items.ENCHANTED_GOLDEN_APPLE)) return;
 
         this.bh_setBond(this.bh_getBond() + 2);

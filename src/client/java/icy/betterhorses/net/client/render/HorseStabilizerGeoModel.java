@@ -2,29 +2,24 @@ package icy.betterhorses.net.client.render;
 
 import icy.betterhorses.net.IcysBetterHorses;
 import net.minecraft.resources.ResourceLocation;
-import software.bernie.geckolib.animatable.processing.AnimationState;
-import software.bernie.geckolib.constant.dataticket.DataTicket;
+import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.model.GeoModel;
-import software.bernie.geckolib.renderer.base.GeoRenderState;
 
 public final class HorseStabilizerGeoModel extends GeoModel<HorseStabilizerAnimatable> {
-    public static final DataTicket<Boolean> WINGS_VISIBLE =
-            DataTicket.create("bh_stabilizer_wings_visible", Boolean.class);
-
     private static final ResourceLocation MODEL =
-            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "st");
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "geo/st.geo.json");
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "textures/entity/horse_stabilizer.png");
     private static final ResourceLocation ANIMATION =
-            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "st");
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "animations/st.animation.json");
 
     @Override
-    public ResourceLocation getModelResource(GeoRenderState state) {
+    public ResourceLocation getModelResource(HorseStabilizerAnimatable animatable) {
         return MODEL;
     }
 
     @Override
-    public ResourceLocation getTextureResource(GeoRenderState state) {
+    public ResourceLocation getTextureResource(HorseStabilizerAnimatable animatable) {
         return TEXTURE;
     }
 
@@ -34,11 +29,16 @@ public final class HorseStabilizerGeoModel extends GeoModel<HorseStabilizerAnima
     }
 
     @Override
-    public void setCustomAnimations(AnimationState<HorseStabilizerAnimatable> state) {
-        super.setCustomAnimations(state);
-        boolean showWings = Boolean.TRUE.equals(
-                state.renderState().getOrDefaultGeckolibData(WINGS_VISIBLE, Boolean.FALSE));
-        getBone("wingsL").ifPresent(bone -> bone.setHidden(!showWings));
-        getBone("wingsL2").ifPresent(bone -> bone.setHidden(!showWings));
+    public void setCustomAnimations(HorseStabilizerAnimatable animatable, long instanceId,
+                                    AnimationState<HorseStabilizerAnimatable> animationState) {
+        super.setCustomAnimations(animatable, instanceId, animationState);
+
+        boolean showWings = animatable.isActive();
+        hideBone("wingsL", !showWings);
+        hideBone("wingsL2", !showWings);
+    }
+
+    private void hideBone(String boneName, boolean hidden) {
+        getBone(boneName).ifPresent(bone -> bone.setHidden(hidden));
     }
 }

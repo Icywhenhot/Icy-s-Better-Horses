@@ -95,7 +95,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
     }
 
     private boolean bh_isControlDown() {
-        var window = Minecraft.getInstance().getWindow();
+        long window = Minecraft.getInstance().getWindow().getWindow();
         return InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT_CONTROL)
                 || InputConstants.isKeyDown(window, GLFW.GLFW_KEY_RIGHT_CONTROL);
     }
