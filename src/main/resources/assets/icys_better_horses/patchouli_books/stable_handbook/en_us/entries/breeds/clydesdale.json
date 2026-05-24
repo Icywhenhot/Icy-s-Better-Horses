@@ -9,7 +9,8 @@
       "entity": "minecraft:horse{Variant:515}",
       "name": "Clydesdale",
       "text": "Scotland's gentle giant. Recognizable from a mile off thanks to the white-feathered legs and big bold $(thing)field$() markings on the coat.",
-      "scale": 0.6
+      "scale": 0.6,
+      "offset": 0.25
     },
     {
       "type": "patchouli:text",

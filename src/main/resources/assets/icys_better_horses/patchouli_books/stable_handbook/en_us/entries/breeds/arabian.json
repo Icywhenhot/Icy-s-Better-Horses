@@ -9,7 +9,8 @@
       "entity": "minecraft:horse{Variant:5}",
       "name": "Arabian",
       "text": "Compact, hot-blooded, and built for hard country. Arabians are the breed you want for desert crossings and badlands runs.",
-      "scale": 0.6
+      "scale": 0.6,
+      "offset": 0.25
     },
     {
       "type": "patchouli:text",

@@ -7,9 +7,15 @@
     "CCC"
   ],
   "key": {
-    "D": "minecraft:diamond",
-    "S": "minecraft:saddle",
-    "C": "minecraft:copper_ingot"
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "S": {
+      "item": "minecraft:saddle"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    }
   },
   "result": {
     "id": "icys_better_horses:upgraded_saddle",

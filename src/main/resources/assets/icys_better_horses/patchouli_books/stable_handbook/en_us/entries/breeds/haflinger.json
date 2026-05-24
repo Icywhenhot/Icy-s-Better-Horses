@@ -9,7 +9,8 @@
       "entity": "minecraft:horse{Variant:258}",
       "name": "Haflinger",
       "text": "A small Tyrolean mountain breed with a chestnut body and bright flaxen mane. Tough, sure-footed, and made for slopes.",
-      "scale": 0.6
+      "scale": 0.6,
+      "offset": 0.25
     },
     {
       "type": "patchouli:text",

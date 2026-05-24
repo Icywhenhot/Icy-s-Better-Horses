@@ -9,7 +9,8 @@
       "entity": "minecraft:horse{Variant:2}",
       "name": "Belgian",
       "text": "Belgium's powerful draft breed \u2014 most famous for the creamy chestnut color with a flaxen mane. The strongest horse pound-for-pound in this guide.",
-      "scale": 0.6
+      "scale": 0.6,
+      "offset": 0.25
     },
     {
       "type": "patchouli:text",

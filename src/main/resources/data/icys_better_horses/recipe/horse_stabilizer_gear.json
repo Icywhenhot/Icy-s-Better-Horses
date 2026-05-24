@@ -7,9 +7,15 @@
     "CCC"
   ],
   "key": {
-    "C": "minecraft:copper_ingot",
-    "N": "icys_better_horses:canister",
-    "L": "minecraft:leather"
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "N": {
+      "item": "icys_better_horses:canister"
+    },
+    "L": {
+      "item": "minecraft:leather"
+    }
   },
   "result": {
     "id": "icys_better_horses:horse_stabilizer_gear",

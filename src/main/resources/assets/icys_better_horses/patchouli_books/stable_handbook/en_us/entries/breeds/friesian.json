@@ -9,7 +9,8 @@
       "entity": "minecraft:horse{Variant:4}",
       "name": "Friesian",
       "text": "The dramatic all-black horse of the Dutch lowlands. Tall, powerful, and almost always show-ready \u2014 there's no mistaking one for any other breed.",
-      "scale": 0.6
+      "scale": 0.6,
+      "offset": 0.25
     },
     {
       "type": "patchouli:text",

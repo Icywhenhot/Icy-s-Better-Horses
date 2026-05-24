@@ -7,8 +7,12 @@
     "AAA"
   ],
   "key": {
-    "W": "#minecraft:wool",
-    "G": "minecraft:golden_carrot",
+    "W": {
+      "tag": "minecraft:wool"
+    },
+    "G": {
+      "item": "minecraft:golden_carrot"
+    },
     "R": {
       "neoforge:ingredient_type": "neoforge:components",
       "items": [
@@ -20,7 +24,9 @@
         }
       }
     },
-    "A": "minecraft:golden_apple"
+    "A": {
+      "item": "minecraft:golden_apple"
+    }
   },
   "result": {
     "id": "icys_better_horses:horse_medkit_gear",

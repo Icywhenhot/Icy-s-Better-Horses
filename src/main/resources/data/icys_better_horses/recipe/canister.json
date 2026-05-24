@@ -7,8 +7,12 @@
     "CGC"
   ],
   "key": {
-    "C": "minecraft:copper_ingot",
-    "G": "minecraft:gold_ingot"
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    }
   },
   "result": {
     "id": "icys_better_horses:canister",

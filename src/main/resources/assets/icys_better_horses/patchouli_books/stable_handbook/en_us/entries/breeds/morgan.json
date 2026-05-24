@@ -9,7 +9,8 @@
       "entity": "minecraft:horse{Variant:3}",
       "name": "Morgan",
       "text": "An American foundation breed \u2014 compact, hardworking, and famously versatile. The horse you can ride to town in the morning and plow a field with in the afternoon.",
-      "scale": 0.6
+      "scale": 0.6,
+      "offset": 0.25
     },
     {
       "type": "patchouli:text",

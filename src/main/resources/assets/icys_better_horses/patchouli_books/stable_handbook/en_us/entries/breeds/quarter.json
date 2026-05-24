@@ -9,7 +9,8 @@
       "entity": "minecraft:horse{Variant:2}",
       "name": "Quarter Horse",
       "text": "Stocky, broad-chested, and famously fast over a short distance. The all-purpose ranch horse \u2014 a reliable everyday mount.",
-      "scale": 0.6
+      "scale": 0.6,
+      "offset": 0.25
     },
     {
       "type": "patchouli:text",

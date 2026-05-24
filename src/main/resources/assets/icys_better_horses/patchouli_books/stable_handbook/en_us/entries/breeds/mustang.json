@@ -9,7 +9,8 @@
       "entity": "minecraft:horse{Variant:6}",
       "name": "Mustang",
       "text": "Free-roaming North American horse \u2014 the iconic feral breed of the western frontier. Tough, weatherproof, and never quite the same coat twice.",
-      "scale": 0.6
+      "scale": 0.6,
+      "offset": 0.25
     },
     {
       "type": "patchouli:text",

@@ -9,7 +9,8 @@
       "entity": "minecraft:horse{Variant:3}",
       "name": "Thoroughbred",
       "text": "The classic racing horse. Tall, lean, and built for speed \u2014 Thoroughbreds are the easy choice for a first long ride.",
-      "scale": 0.6
+      "scale": 0.6,
+      "offset": 0.25
     },
     {
       "type": "patchouli:text",

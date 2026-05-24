@@ -9,7 +9,8 @@
       "entity": "minecraft:horse{Variant:515}",
       "name": "American Paint",
       "text": "Bold patchwork coats are the signature. American Paints carry the same all-purpose build as the Quarter Horse, but the dramatic $(thing)white field$() pattern makes every individual unmistakable.",
-      "scale": 0.6
+      "scale": 0.6,
+      "offset": 0.25
     },
     {
       "type": "patchouli:text",

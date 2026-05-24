@@ -9,7 +9,8 @@
       "entity": "minecraft:horse{Variant:514}",
       "name": "Icelandic",
       "text": "A short, shaggy, cold-hardy pony from \u2014 yes \u2014 Iceland. Known for an unusually smooth fifth gait called the $(thing)t\u00f6lt$().",
-      "scale": 0.6
+      "scale": 0.6,
+      "offset": 0.25
     },
     {
       "type": "patchouli:text",
