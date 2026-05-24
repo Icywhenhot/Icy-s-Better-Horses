@@ -628,7 +628,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Inject(
             method = "doPlayerRide",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;isClientSide()Z"),
+            at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/Level;isClientSide:Z"),
             cancellable = true)
     private void bh_rotateHorseInsteadOfPlayer(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;

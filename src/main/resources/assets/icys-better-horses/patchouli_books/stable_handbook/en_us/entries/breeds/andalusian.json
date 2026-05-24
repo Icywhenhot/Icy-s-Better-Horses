@@ -1,0 +1,26 @@
+{
+  "name": "Andalusian",
+  "category": "icys-better-horses:breeds",
+  "icon": "minecraft:saddle",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "minecraft:horse{Variant:5}",
+      "name": "Andalusian",
+      "text": "Iberian baroque elegance \u2014 a strong, agile horse with a thick mane. Common across Spain and Portugal's open meadows.",
+      "scale": 0.6,
+      "offset": 0.25
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Coat",
+      "text": "$(li)Gray$()$(li)White$()$(li)Black$()$(li)Chestnut$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where They Live",
+      "text": "Open meadows and light woodland:$(br2)$(li)Meadow$()$(li)Cherry Grove$()$(li)Flower Forest$()$(li)Plains$()$(li)Forest$()"
+    }
+  ]
+}

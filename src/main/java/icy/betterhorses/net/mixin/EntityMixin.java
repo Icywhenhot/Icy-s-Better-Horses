@@ -27,11 +27,10 @@ public abstract class EntityMixin {
     @Unique private static final double BH_MOUNTED_STEP_HEIGHT_BONUS = 0.1D;
     @Unique private static final double BH_MOUNTED_BREAK_SPEED_BONUS = 5.0D;
 
-    @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;ZZ)Z", at = @At("TAIL"))
+    @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;Z)Z", at = @At("TAIL"))
     private void bh_applyMountedHorseBonuses(
             Entity vehicle,
             boolean force,
-            boolean sendGameEvent,
             CallbackInfoReturnable<Boolean> cir) {
         Entity self = (Entity) (Object) this;
         if (!cir.getReturnValueZ() || !(self instanceof ServerPlayer player) || !(vehicle instanceof AbstractHorse horse)) {

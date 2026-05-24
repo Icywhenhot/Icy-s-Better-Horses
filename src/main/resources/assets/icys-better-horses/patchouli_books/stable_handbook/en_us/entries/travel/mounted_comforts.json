@@ -1,0 +1,32 @@
+{
+  "name": "Mounted Comforts",
+  "category": "icys-better-horses:travel",
+  "icon": "minecraft:feather",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A ridden horse should feel responsive, not stubborn. Better Horses smooths out a long list of small frictions that vanilla horses used to throw at you."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Step Up & Mine Through",
+      "text": "$(li)Step height is raised by 10% so a galloping horse no longer trips over slabs, paths, or full blocks at speed.$(li)Mounted block-breaking now matches on-foot speed for most blocks — mining from horseback is finally practical.$(li)The remaining penalty is cut by 80% to keep the feel light."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Look Around Freely",
+      "text": "Mounting a horse no longer snaps your camera to its facing. The $(thing)horse rotates to match you$(), so the view stays still and natural.$(br2)While the horse is standing still, you get up to $(thing)90°$() of free look before the horse follows along — perfect for scanning the horizon at a hitchpost without dismounting."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Out of Your Way",
+      "text": "Look down and the horse fades nearly invisible so it can't block your work or your aim.$(br2)While ridden, the horse's head also drops and tilts forward to clear your forward view — small touches that add up on long trips."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Creative Convenience",
+      "text": "Using a $(item)Saddle$() (vanilla or upgraded) on a horse in $(thing)Creative Mode$() instantly tames the horse — no nibbling sugar cubes and waiting for hearts. Fast iteration when you're testing builds."
+    }
+  ]
+}

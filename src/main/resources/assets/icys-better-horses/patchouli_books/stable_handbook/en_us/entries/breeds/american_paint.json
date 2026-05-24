@@ -1,0 +1,26 @@
+{
+  "name": "American Paint",
+  "category": "icys-better-horses:breeds",
+  "icon": "minecraft:saddle",
+  "sortnum": 13,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "minecraft:horse{Variant:515}",
+      "name": "American Paint",
+      "text": "Bold patchwork coats are the signature. American Paints carry the same all-purpose build as the Quarter Horse, but the dramatic $(thing)white field$() pattern makes every individual unmistakable.",
+      "scale": 0.6,
+      "offset": 0.25
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Coat",
+      "text": "Always with $(thing)White Field$() markings:$(br2)$(li)Brown + White Field$()$(li)Black + White Field$()$(li)Chestnut + White Field$()$(li)Dark Brown + White Field$()$(li)White + White Field$()$(li)Creamy + White Field$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where They Live",
+      "text": "$(li)Plains$()$(li)Sunflower Plains$()$(li)Savanna$()$(li)Sparse Jungle$()"
+    }
+  ]
+}

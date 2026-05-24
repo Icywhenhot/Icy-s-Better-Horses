@@ -1,0 +1,26 @@
+{
+  "name": "Percheron",
+  "category": "icys-better-horses:breeds",
+  "icon": "minecraft:saddle",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "minecraft:horse{Variant:5}",
+      "name": "Percheron",
+      "text": "A French draft breed \u2014 heavy, muscular, and surprisingly graceful for its size. Built to pull a plow all day and still trot home.",
+      "scale": 0.6,
+      "offset": 0.25
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Coat",
+      "text": "$(li)Gray$()$(li)Black$()$(li)White$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where They Live",
+      "text": "Old farmland and temperate forest:$(br2)$(li)Old Growth Spruce Taiga$()$(li)Forest$()$(li)Meadow$()$(li)Plains$()"
+    }
+  ]
+}

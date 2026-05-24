@@ -338,7 +338,7 @@ public class IcysBetterHorses implements ModInitializer {
                 continue;
             }
 
-            Horse horse = EntityType.HORSE.create(level, MobSpawnType.NATURAL);
+            Horse horse = EntityType.HORSE.create(level);
             if (horse == null) {
                 continue;
             }

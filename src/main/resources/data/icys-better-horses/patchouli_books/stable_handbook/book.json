@@ -6,5 +6,6 @@
   "use_blocky_font": true,
   "creative_tab": "tools_and_utilities",
   "use_resource_pack": true,
+  "text_overflow_mode": "resize",
   "index_icon": "icys-better-horses:upgraded_saddle"
 }

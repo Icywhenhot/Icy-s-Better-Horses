@@ -11,6 +11,13 @@ repositories {
 		name = 'GeckoLib'
 		url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
 	}
+	maven {
+		name = 'Modrinth'
+		url = 'https://api.modrinth.com/maven'
+		content {
+			includeGroup 'maven.modrinth'
+		}
+	}
 }
 
 loom {
@@ -34,6 +41,17 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
 	modImplementation "software.bernie.geckolib:geckolib-fabric-${project.minecraft_version}:${project.geckolib_version}"
+
+	// Patchouli — optional integration. Present only in the dev runtime so the Stable Handbook
+	// book loads when you launch runClient; it is NOT a compile dependency (the book is fully
+	// data-driven) and is NOT bundled into the shipped jar. Players install Patchouli themselves.
+	modLocalRuntime "maven.modrinth:patchouli:${project.patchouli_version}"
+
+	// Patchouli's config library. It ships inside Patchouli as a jar-in-jar, but loom does not add
+	// that nested jar to the dev runtime classpath for modLocalRuntime deps, so the dev launch
+	// crashes with NoClassDefFoundError on fiber's ConfigType. Vendor it from the bundled copy and
+	// add it directly. Dev-only, like Patchouli itself — never shipped (players get it via JiJ).
+	modLocalRuntime files("libs/fiber-0.23.0-2.jar")
 
 	testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
 	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"

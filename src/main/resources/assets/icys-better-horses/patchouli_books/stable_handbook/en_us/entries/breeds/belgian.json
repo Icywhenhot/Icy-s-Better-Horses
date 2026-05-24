@@ -1,0 +1,26 @@
+{
+  "name": "Belgian",
+  "category": "icys-better-horses:breeds",
+  "icon": "minecraft:saddle",
+  "sortnum": 8,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "minecraft:horse{Variant:2}",
+      "name": "Belgian",
+      "text": "Belgium's powerful draft breed \u2014 most famous for the creamy chestnut color with a flaxen mane. The strongest horse pound-for-pound in this guide.",
+      "scale": 0.6,
+      "offset": 0.25
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Coat",
+      "text": "$(li)Chestnut$()$(li)Chestnut + White$()$(li)Creamy$()$(li)Creamy + White$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where They Live",
+      "text": "Cool northern forests:$(br2)$(li)Taiga$()$(li)Old Growth Spruce Taiga$()$(li)Old Growth Pine Taiga$()$(li)Forest$()"
+    }
+  ]
+}

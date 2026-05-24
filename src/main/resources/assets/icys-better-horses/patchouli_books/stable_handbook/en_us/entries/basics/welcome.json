@@ -14,7 +14,9 @@
       "type": "patchouli:entity",
       "entity": "minecraft:horse",
       "name": "A Good Horse",
-      "text": "Once a horse is fully tamed, this mod marks it as yours right away. From there you can turn an ordinary mount into a proper road companion."
+      "text": "Once a horse is fully tamed, this mod marks it as yours right away. From there you can turn an ordinary mount into a proper road companion.",
+      "scale": 0.6,
+      "offset": 0.25
     },
     {
       "type": "patchouli:text",
