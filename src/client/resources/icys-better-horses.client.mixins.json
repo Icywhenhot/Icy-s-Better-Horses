@@ -7,7 +7,9 @@
 		"GuiMixin",
 		"HorseInventoryScreenMixin",
 		"HorseModelAccessor",
-		"KeyboardInputMixin"
+		"HorseModelMixin",
+		"KeyboardInputMixin",
+		"LivingEntityRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
