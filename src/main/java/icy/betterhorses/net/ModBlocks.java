@@ -1,20 +1,21 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.item.HitchpostBlock;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.world.level.block.Block;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 public final class ModBlocks {
 
-    private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(IcysBetterHorses.MOD_ID);
+    private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, IcysBetterHorses.MOD_ID);
 
-    public static final DeferredBlock<HitchpostBlock> HITCHPOST = BLOCKS.register("hitchpost", () ->
+    public static final RegistryObject<HitchpostBlock> HITCHPOST = BLOCKS.register("hitchpost", () ->
             new HitchpostBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.WOOD)
                     .strength(2.0f, 3.0f)

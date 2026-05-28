@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.example.mymod.mixins",
+  "compatibilityLevel": "JAVA_${java_version}",
+  "mixins": [
+    "MinecraftMixin"
+  ]
+}

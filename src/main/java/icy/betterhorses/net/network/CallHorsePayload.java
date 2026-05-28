@@ -1,32 +1,13 @@
-package icy.betterhorses.net.network;
+﻿package icy.betterhorses.net.network;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 
-public record CallHorsePayload() implements CustomPacketPayload {
+public record CallHorsePayload() {
 
-    public static final Type<CallHorsePayload> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath("icys_better_horses", "call_horse"));
-
-    public static final StreamCodec STREAM_CODEC = new StreamCodec();
-
-    @Override
-    public Type<CallHorsePayload> type() {
-        return TYPE;
+    public static void encode(CallHorsePayload payload, FriendlyByteBuf buf) {
     }
 
-    public static class StreamCodec implements net.minecraft.network.codec.StreamCodec<FriendlyByteBuf, CallHorsePayload> {
-        @Override
-        public CallHorsePayload decode(FriendlyByteBuf buf) {
-            return new CallHorsePayload();
-        }
-
-        @Override
-        public void encode(FriendlyByteBuf buf, CallHorsePayload value) {
-            // no data
-        }
+    public static CallHorsePayload decode(FriendlyByteBuf buf) {
+        return new CallHorsePayload();
     }
 }
-
-

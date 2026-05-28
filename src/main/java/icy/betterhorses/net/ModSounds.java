@@ -2,19 +2,19 @@ package icy.betterhorses.net;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.RegistryObject;
 
 public final class ModSounds {
 
     private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, IcysBetterHorses.MOD_ID);
 
-    public static final DeferredHolder<SoundEvent, SoundEvent> CALL_WHISTLE =
+    public static final RegistryObject<SoundEvent> CALL_WHISTLE =
             SOUNDS.register("call_whistle", SoundEvent::createVariableRangeEvent);
-    public static final DeferredHolder<SoundEvent, SoundEvent> STABILIZER_INTRO =
+    public static final RegistryObject<SoundEvent> STABILIZER_INTRO =
             SOUNDS.register("stabilizer_intro", SoundEvent::createVariableRangeEvent);
-    public static final DeferredHolder<SoundEvent, SoundEvent> STABILIZER_LOOP =
+    public static final RegistryObject<SoundEvent> STABILIZER_LOOP =
             SOUNDS.register("stabilizer_loop", SoundEvent::createVariableRangeEvent);
 
     public static void register(IEventBus modEventBus) {

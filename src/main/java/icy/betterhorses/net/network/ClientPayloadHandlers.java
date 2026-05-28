@@ -1,15 +1,17 @@
-package icy.betterhorses.net.network;
+﻿package icy.betterhorses.net.network;
 
 import icy.betterhorses.net.client.RadialMenuScreen;
 import net.minecraft.client.Minecraft;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.minecraftforge.network.NetworkEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.function.Supplier;
+
 /**
- * Client-side payload handlers. Lives in common dist but its method bodies are only
- * invoked on the client; the class itself loads safely on dedicated servers because
- * client-only references are confined to method bodies, which the JVM resolves lazily.
+ * Client-side payload handlers. The method bodies are only invoked on the client;
+ * the class itself stays common-safe because the client-only references are inside
+ * the handler body.
  */
 public final class ClientPayloadHandlers {
 
@@ -17,7 +19,8 @@ public final class ClientPayloadHandlers {
 
     private ClientPayloadHandlers() {}
 
-    public static void handleOpenRadial(OpenRadialPayload payload, IPayloadContext context) {
+    public static void handleOpenRadial(OpenRadialPayload payload, Supplier<NetworkEvent.Context> contextSupplier) {
+        NetworkEvent.Context context = contextSupplier.get();
         LOGGER.info("[RADIAL][5] S2C received OpenRadialPayload(horseId={})", payload.horseId());
         context.enqueueWork(() -> {
             Minecraft client = Minecraft.getInstance();
@@ -27,5 +30,6 @@ public final class ClientPayloadHandlers {
             LOGGER.info("[RADIAL][6] Opening RadialMenuScreen for horse {}", payload.horseId());
             client.setScreen(new RadialMenuScreen(payload.horseId()));
         });
+        context.setPacketHandled(true);
     }
 }

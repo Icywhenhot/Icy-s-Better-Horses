@@ -1,31 +1,16 @@
-package icy.betterhorses.net;
+﻿package icy.betterhorses.net;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import icy.betterhorses.net.client.HorseInfoScreen;
-import icy.betterhorses.net.client.HorseStabilizerSoundController;
-import icy.betterhorses.net.network.CallHorsePayload;
-import icy.betterhorses.net.network.RequestOpenRadialPayload;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-@Mod(value = IcysBetterHorses.MOD_ID, dist = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = IcysBetterHorses.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class IcysBetterHorsesClient {
-
-    public static final Logger LOGGER = LoggerFactory.getLogger("icys_better_horses/client");
 
     public static final KeyMapping CALL_KEY = new KeyMapping(
             "key.icys_better_horses.call",
@@ -33,52 +18,15 @@ public final class IcysBetterHorsesClient {
             80,
             "key.categories.gameplay");
 
-    public IcysBetterHorsesClient(IEventBus modEventBus) {
-        modEventBus.addListener(this::registerKeyMappings);
-        NeoForge.EVENT_BUS.addListener(this::onClientTick);
-        NeoForge.EVENT_BUS.addListener(this::onEntityInteract);
-        LOGGER.info("[RADIAL][0] Client init complete.");
-    }
+    private IcysBetterHorsesClient() {}
 
-    private void registerKeyMappings(RegisterKeyMappingsEvent event) {
+    @SubscribeEvent
+    public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
         event.register(CALL_KEY);
     }
 
-    private void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
-        if (!event.getLevel().isClientSide() || event.getHand() != InteractionHand.MAIN_HAND) {
-            return;
-        }
-        if (!(event.getTarget() instanceof AbstractHorse horse)) {
-            return;
-        }
-        if (!bh_isControlDown()) {
-            return;
-        }
-
-        LOGGER.info("[RADIAL][2] Sending RequestOpenRadialPayload(horseId={})", horse.getId());
-        PacketDistributor.sendToServer(new RequestOpenRadialPayload(horse.getId()));
-        event.setCancellationResult(InteractionResult.SUCCESS);
-        event.setCanceled(true);
-    }
-
-    private void onClientTick(ClientTickEvent.Post event) {
-        Minecraft client = Minecraft.getInstance();
-        HorseStabilizerSoundController.tick(client);
-        if (client.player == null || client.level == null) {
-            return;
-        }
-
-        while (CALL_KEY.consumeClick()) {
-            if (client.player.getVehicle() instanceof AbstractHorse mount) {
-                client.setScreen(new HorseInfoScreen(mount));
-            } else {
-                PacketDistributor.sendToServer(new CallHorsePayload());
-            }
-        }
-    }
-
-    private static boolean bh_isControlDown() {
-        return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(),GLFW.GLFW_KEY_LEFT_CONTROL)
-                || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(),GLFW.GLFW_KEY_RIGHT_CONTROL);
+    public static boolean bh_isControlDown() {
+        return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL)
+                || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_RIGHT_CONTROL);
     }
 }

@@ -1,4 +1,4 @@
-package icy.betterhorses.net;
+﻿package icy.betterhorses.net;
 
 import icy.betterhorses.net.network.OpenRadialPayload;
 import net.minecraft.core.BlockPos;
@@ -9,8 +9,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.SpawnPlacements;
@@ -20,15 +20,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
-import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
+import net.minecraftforge.event.entity.RegisterSpawnPlacementsEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.common.MinecraftForge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,16 +49,17 @@ public final class IcysBetterHorses {
     private static final int WILD_HORSE_GROUP_MIN = 1;
     private static final int WILD_HORSE_GROUP_MAX = 3;
 
-    public IcysBetterHorses(IEventBus modEventBus) {
+    public IcysBetterHorses() {
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         BhConfig.load();
         ModBlocks.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModItems.register(modEventBus);
         ModSounds.register(modEventBus);
         ModAttachments.register(modEventBus);
-        modEventBus.addListener(BhNetworking::register);
+        BhNetworking.register();
         modEventBus.addListener(this::registerSpawnPlacements);
-        NeoForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.register(this);
         LOGGER.info("Icy's Better Horses initialized.");
     }
 
@@ -89,7 +90,11 @@ public final class IcysBetterHorses {
     }
 
     @SubscribeEvent
-    public void onServerTick(ServerTickEvent.Post event) {
+    public void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) {
+            return;
+        }
+
         MinecraftServer server = event.getServer();
         if (server.getTickCount() % PASSIVE_BOND_INTERVAL_TICKS == 0) {
             growHorseBond(server);
@@ -111,7 +116,7 @@ public final class IcysBetterHorses {
         LOGGER.info("[RADIAL][4] Validation passed, sending OpenRadialPayload(horseId={}) back to player {}",
                 horse.getId(), player.getName().getString());
         HorseTracker.armInteractSuppression(player.getUUID(), horse.getId());
-        PacketDistributor.sendToPlayer(player, new OpenRadialPayload(horse.getId()));
+        BhNetworking.sendToPlayer(player, new OpenRadialPayload(horse.getId()));
     }
 
     public static void handleRadialCommand(ServerPlayer player, int horseId, HorseCommand command) {

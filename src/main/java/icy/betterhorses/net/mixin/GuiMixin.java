@@ -2,7 +2,6 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
@@ -32,7 +31,7 @@ public abstract class GuiMixin {
     @Unique private static final int BH_STATS_HUD_ACCENT = 0xD06E5324;
 
     @Inject(method = "render", at = @At("TAIL"))
-    private void bh_renderHorseStatsHud(GuiGraphics gfx, DeltaTracker deltaTracker, CallbackInfo ci) {
+    private void bh_renderHorseStatsHud(GuiGraphics gfx, float partialTick, CallbackInfo ci) {
         if (this.minecraft.player == null || this.minecraft.level == null || this.minecraft.screen != null) {
             return;
         }

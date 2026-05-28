@@ -1,8 +1,8 @@
 package icy.betterhorses.net.client;
 
 import icy.betterhorses.net.HorseCommand;
+import icy.betterhorses.net.BhNetworking;
 import icy.betterhorses.net.network.RadialCommandPayload;
-import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -226,7 +226,7 @@ public class RadialMenuScreen extends Screen {
     }
 
     private void sendCommand(HorseCommand command) {
-        PacketDistributor.sendToServer(new RadialCommandPayload(this.horseId, command.ordinal()));
+        BhNetworking.sendToServer(new RadialCommandPayload(this.horseId, command.ordinal()));
     }
 
     private String commandKey(HorseCommand command) {

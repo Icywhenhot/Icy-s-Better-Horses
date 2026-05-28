@@ -37,6 +37,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -78,8 +81,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private @Nullable BlockPos bh_wanderCenter = null;
     @Unique private @Nullable BlockPos bh_hitchpostPos = null;
     @Unique private @Nullable Vec3 bh_hitchAnchor = null;
-    @Unique private int bh_bond = 0;
     @Unique private boolean bh_nameTagBondReceived = false;
+    @Unique private final ModAttachments.BhHorseSyncState bh_syncState = new ModAttachments.BhHorseSyncState();
     @Unique
     private final SimpleContainer bh_gearContainer = new SimpleContainer(GearSlot.COUNT) {
         @Override
@@ -95,10 +98,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Unique
     private static final ResourceLocation BH_SPEED_ID =
-            ResourceLocation.fromNamespaceAndPath("icys_better_horses", "bond_speed");
+            new ResourceLocation("icys_better_horses", "bond_speed");
     @Unique
     private static final ResourceLocation BH_JUMP_ID =
-            ResourceLocation.fromNamespaceAndPath("icys_better_horses", "bond_jump");
+            new ResourceLocation("icys_better_horses", "bond_jump");
     @Unique private static final float BH_HOOVES_FALL_DAMAGE_MULTIPLIER = 0.5F;
     @Unique private static final double BH_STABILIZER_HALF_OPEN_DESCENT_SPEED = -0.35D;
     @Unique private static final double BH_STABILIZER_MAX_DESCENT_SPEED = -0.125D;
@@ -119,9 +122,31 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private static final double BH_WATER_MAX_RISE_SPEED = 0.015D;
     @Unique private static final double BH_FROST_WALKER_SAMPLE_STEP = 0.75D;
     @Unique private static final double BH_FROST_WALKER_RESET_DISTANCE = 8.0D;
+    @Unique private static final EntityDataAccessor<Integer> BH_BOND =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
+    @Unique private static final EntityDataAccessor<Integer> BH_STABILIZER_STATE =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
+    @Unique private static final EntityDataAccessor<Integer> BH_GEAR_FLAGS =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
+    @Unique private static final EntityDataAccessor<Integer> BH_GENDER_ID =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
+    @Unique private static final EntityDataAccessor<Integer> BH_BREED_ID =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
+    @Unique private static final EntityDataAccessor<Boolean> BH_BREED_MIXED =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
 
     protected AbstractHorseMixin(EntityType<? extends Animal> type, Level level) {
         super(type, level);
+    }
+
+    @Inject(method = "defineSynchedData", at = @At("TAIL"))
+    private void bh_defineSynchedData(CallbackInfo ci) {
+        this.entityData.define(BH_BOND, this.bh_syncState.bond);
+        this.entityData.define(BH_STABILIZER_STATE, this.bh_syncState.stabilizerStateId);
+        this.entityData.define(BH_GEAR_FLAGS, this.bh_syncState.gearFlags);
+        this.entityData.define(BH_GENDER_ID, this.bh_syncState.genderId);
+        this.entityData.define(BH_BREED_ID, this.bh_syncState.breedId);
+        this.entityData.define(BH_BREED_MIXED, this.bh_syncState.breedMixed);
     }
 
     @Override
@@ -187,13 +212,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public int bh_getBond() {
-        return this.bh_syncState().bond;
+        return this.entityData.get(BH_BOND);
     }
 
     @Override
     public void bh_setBond(int level) {
-        this.bh_bond = Math.max(0, Math.min(100, level));
-        this.bh_syncState().bond = this.bh_bond;
+        this.bh_syncState.bond = Math.max(0, Math.min(100, level));
         this.bh_syncHorseData();
         bh_applyBondAttributes();
     }
@@ -210,51 +234,51 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public HorseGender bh_getGender() {
-        return HorseGender.fromId(this.bh_syncState().genderId);
+        return HorseGender.fromId(this.entityData.get(BH_GENDER_ID));
     }
 
     @Override
     public void bh_setGender(HorseGender gender) {
-        this.bh_syncState().genderId = gender.ordinal();
+        this.bh_syncState.genderId = gender.ordinal();
         this.bh_syncHorseData();
     }
 
     @Override
     public HorseBreed bh_getBreed() {
-        return HorseBreed.fromId(this.bh_syncState().breedId);
+        return HorseBreed.fromId(this.entityData.get(BH_BREED_ID));
     }
 
     @Override
     public void bh_setBreed(HorseBreed breed) {
-        this.bh_syncState().breedId = breed.ordinal();
+        this.bh_syncState.breedId = breed.ordinal();
         this.bh_syncHorseData();
     }
 
     @Override
     public boolean bh_isMixedBreed() {
-        return this.bh_syncState().breedMixed;
+        return this.entityData.get(BH_BREED_MIXED);
     }
 
     @Override
     public void bh_setMixedBreed(boolean mixed) {
-        this.bh_syncState().breedMixed = mixed;
+        this.bh_syncState.breedMixed = mixed;
         this.bh_syncHorseData();
     }
 
     @Override
     public HorseStabilizerState bh_getStabilizerState() {
-        return HorseStabilizerState.fromId(this.bh_syncState().stabilizerStateId);
+        return HorseStabilizerState.fromId(this.entityData.get(BH_STABILIZER_STATE));
     }
 
     @Override
     public void bh_setStabilizerState(HorseStabilizerState state) {
-        this.bh_syncState().stabilizerStateId = state.ordinal();
+        this.bh_syncState.stabilizerStateId = state.ordinal();
         this.bh_syncHorseData();
     }
 
     @Override
     public int bh_getGearFlags() {
-        return this.bh_syncState().gearFlags;
+        return this.entityData.get(BH_GEAR_FLAGS);
     }
 
     @Override
@@ -321,9 +345,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             bh_owner = self.getOwnerUUID();
         }
         bh_command = HorseCommand.fromId(input.contains("BH_Command") ? input.getInt("BH_Command") : HorseCommand.FOLLOW.ordinal());
-        bh_bond = Math.max(0, Math.min(100, input.contains("BH_Bond") ? input.getInt("BH_Bond") : 0));
-        this.bh_syncState().bond = bh_bond;
-        bh_nameTagBondReceived = (input.contains("BH_NameTagBondGiven") ? input.getInt("BH_NameTagBondGiven") : (bh_bond > 0 ? 1 : 0)) != 0;
+        this.bh_syncState().bond = Math.max(0, Math.min(100, input.contains("BH_Bond") ? input.getInt("BH_Bond") : 0));
+        bh_nameTagBondReceived = (input.contains("BH_NameTagBondGiven") ? input.getInt("BH_NameTagBondGiven") : (this.bh_syncState().bond > 0 ? 1 : 0)) != 0;
         bh_home = bh_readBlockPos(input, "BH_Home");
         bh_wanderCenter = bh_readBlockPos(input, "BH_WanderCenter");
         bh_hitchpostPos = bh_readBlockPos(input, "BH_Hitchpost");
@@ -349,6 +372,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         } else {
             bh_assignBreedPreservingCoat();
         }
+        this.bh_syncHorseData();
     }
 
     @Inject(method = "finalizeSpawn", at = @At("TAIL"))
@@ -373,6 +397,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             this.bh_syncState().breedId = species.ordinal();
             this.bh_syncState().breedMixed = false;
         }
+        this.bh_syncHorseData();
     }
 
     @Unique
@@ -1154,14 +1179,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Unique
     private ModAttachments.BhHorseSyncState bh_syncState() {
-        return this.getData(ModAttachments.HORSE_SYNC.get());
+        return this.bh_syncState;
     }
 
     @Unique
     private void bh_syncHorseData() {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (!self.level().isClientSide() && self.isAddedToLevel()) {
-            self.syncData(ModAttachments.HORSE_SYNC.get());
-        }
+        this.entityData.set(BH_BOND, this.bh_syncState.bond);
+        this.entityData.set(BH_STABILIZER_STATE, this.bh_syncState.stabilizerStateId);
+        this.entityData.set(BH_GEAR_FLAGS, this.bh_syncState.gearFlags);
+        this.entityData.set(BH_GENDER_ID, this.bh_syncState.genderId);
+        this.entityData.set(BH_BREED_ID, this.bh_syncState.breedId);
+        this.entityData.set(BH_BREED_MIXED, this.bh_syncState.breedMixed);
     }
 }
