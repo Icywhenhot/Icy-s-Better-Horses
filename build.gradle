@@ -53,6 +53,15 @@ tasks.withType(JavaCompile).configureEach {
 	it.options.release = 25
 }
 
+tasks.named("runClient", JavaExec).configure {
+	if (System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("windows")) {
+		// Minecraft 26.x can hang indefinitely in OSHI's WMI hardware probe on some
+		// Windows setups before the client window appears. Bound the query so dev
+		// launches continue instead of stalling inside CrashReport.preload().
+		jvmArgs "-Doshi.util.wmi.timeout=5000"
+	}
+}
+
 test {
 	useJUnitPlatform()
 }
