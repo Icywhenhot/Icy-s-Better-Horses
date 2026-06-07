@@ -30,6 +30,7 @@
   "message.icys_better_horses.hitchpost_tethered": "Horse is now tethered to hitch post.",
   "message.icys_better_horses.not_owner": "This horse doesn't trust you enough to ride.",
   "message.icys_better_horses.not_inventory_owner": "This horse won't let you access its gear.",
+  "message.icys_better_horses.not_shear_owner": "This horse refuses to let you remove its saddle.",
   "message.icys_better_horses.same_gender_breed": "These horses are the same gender and can't breed.",
 
   "gender.icys_better_horses.male": "Male",

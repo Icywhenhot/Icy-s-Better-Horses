@@ -477,7 +477,17 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
      */
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_pollUpgradedSaddleRemoval(CallbackInfo ci) {
-        if (((AbstractHorse) (Object) this).level().isClientSide()) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.level().isClientSide()) {
+            return;
+        }
+        // Skip when the horse is being removed for a dimension change. The portal teleport runs
+        // inside this same tick (baseTick -> handlePortal), and Mob.removeAfterChangingDimensions
+        // zeroes every equipment slot — including the saddle — on the OLD entity. Without this
+        // guard the poll would see the now-empty saddle slot, mistake it for a player removing the
+        // saddle, and dump the gear + chest containers onto the ground in the old dimension. The
+        // new entity already received copies via restoreFrom, so that produced duplicate drops.
+        if (self.isRemoved()) {
             return;
         }
         boolean hasUpgradedSaddle = this.bh_hasUpgradedSaddle();

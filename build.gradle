@@ -86,6 +86,10 @@ neoForge {
 
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
+            if (System.getProperty('os.name').toLowerCase(java.util.Locale.ROOT).contains('windows')) {
+                // Prevent Windows WMI hardware probing from stalling client startup on some systems.
+                systemProperty 'oshi.util.wmi.timeout', '5000'
+            }
             logLevel = org.slf4j.event.Level.DEBUG
         }
     }

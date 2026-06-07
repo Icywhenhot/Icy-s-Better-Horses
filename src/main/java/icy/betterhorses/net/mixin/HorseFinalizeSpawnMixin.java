@@ -86,12 +86,14 @@ public abstract class HorseFinalizeSpawnMixin {
             ((HorseAccessor) self).bh_setVariantAndMarkings(coat.color(), coat.markings());
         }
 
-        String biomeId = level.getBiome(self.blockPosition())
-                .unwrapKey()
-                .map(key -> key.identifier().toString())
-                .orElse("<unregistered>");
-        BH_LOGGER.info("[HORSE_SPAWN] reason={} pos={} biome={} breed={} coat={}",
-                reason, self.blockPosition(), biomeId, breed, coat);
+        if (bh_isNaturalHorseSpawn(reason)) {
+            String biomeId = level.getBiome(self.blockPosition())
+                    .unwrapKey()
+                    .map(key -> key.identifier().toString())
+                    .orElse("<unregistered>");
+            BH_LOGGER.info("[HORSE_NATURAL_SPAWN] reason={} pos={} biome={} breed={} coat={}",
+                    reason, self.blockPosition(), biomeId, breed, coat);
+        }
 
         // Propagate breed to the next sibling in this spawn group. The vanilla return value
         // (HorseGroupData) is preserved inside the wrapper so any downstream code that looked
@@ -110,5 +112,10 @@ public abstract class HorseFinalizeSpawnMixin {
             }
         }
         return HorseBreed.fromId(self.getRandom().nextInt(HorseBreed.HORSE_BREED_COUNT));
+    }
+
+    @Unique
+    private boolean bh_isNaturalHorseSpawn(EntitySpawnReason reason) {
+        return reason == EntitySpawnReason.NATURAL || reason == EntitySpawnReason.CHUNK_GENERATION;
     }
 }
