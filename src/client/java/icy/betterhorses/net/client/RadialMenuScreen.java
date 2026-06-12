@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import org.lwjgl.glfw.GLFW;
 
 public class RadialMenuScreen extends Screen {
 
@@ -220,8 +221,15 @@ public class RadialMenuScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        onClose();
-        return true;
+        // Only ESC closes the radial. The menu is opened by Ctrl+right-click, so the player is
+        // still holding Ctrl when it appears; GLFW's key-repeat for the held Ctrl — and any
+        // movement key (WASD) pressed out of habit once you're moving around — used to fire here
+        // and instantly dismiss the menu ("opens for a split second but won't stay open").
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            onClose();
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     private void sendCommand(HorseCommand command) {

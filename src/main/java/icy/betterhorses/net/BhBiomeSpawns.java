@@ -8,10 +8,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -31,14 +29,6 @@ public final class BhBiomeSpawns {
     private static final int HORSE_MAX_GROUP = 6;
     private static final float HORSE_CREATURE_PROBABILITY_FLOOR = 0.10F;
     private static final Set<ResourceKey<Biome>> HORSE_BIOMES = HorseBreed.allBreedBiomes();
-    private static final Set<ResourceKey<Biome>> VANILLA_HORSE_BIOMES = Set.of(
-            Biomes.PLAINS,
-            Biomes.SUNFLOWER_PLAINS,
-            Biomes.SAVANNA,
-            Biomes.SAVANNA_PLATEAU,
-            Biomes.WINDSWEPT_SAVANNA
-    );
-    private static final Set<ResourceKey<Biome>> EXTRA_HORSE_BIOMES = buildExtraHorseBiomes();
 
     private BhBiomeSpawns() {}
 
@@ -78,15 +68,5 @@ public final class BhBiomeSpawns {
 
     public static boolean isHorseBiome(ResourceKey<Biome> biomeKey) {
         return HORSE_BIOMES.contains(biomeKey);
-    }
-
-    public static boolean isExtraHorseBiome(ResourceKey<Biome> biomeKey) {
-        return EXTRA_HORSE_BIOMES.contains(biomeKey);
-    }
-
-    private static Set<ResourceKey<Biome>> buildExtraHorseBiomes() {
-        LinkedHashSet<ResourceKey<Biome>> extra = new LinkedHashSet<>(HORSE_BIOMES);
-        extra.removeAll(VANILLA_HORSE_BIOMES);
-        return Set.copyOf(extra);
     }
 }

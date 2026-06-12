@@ -10,30 +10,18 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraft.world.entity.animal.horse.Horse;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.phys.AABB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import java.util.UUID;
 
 public class IcysBetterHorses implements ModInitializer {
@@ -44,13 +32,6 @@ public class IcysBetterHorses implements ModInitializer {
     private static final ResourceLocation WATER_SPEED_ID =
             ResourceLocation.fromNamespaceAndPath(MOD_ID, "water_speed");
     private static final int PASSIVE_BOND_INTERVAL_TICKS = 60 * 20;
-
-    private static final int WILD_HORSE_REPOP_INTERVAL_TICKS = 10 * 20;
-    private static final int WILD_HORSE_SEARCH_RADIUS = 64;
-    private static final int WILD_HORSE_NEARBY_RADIUS = 64;
-    private static final int WILD_HORSE_GROUP_ATTEMPTS = 24;
-    private static final int WILD_HORSE_GROUP_MIN = 1;
-    private static final int WILD_HORSE_GROUP_MAX = 3;
 
     @Override
     public void onInitialize() {
@@ -208,9 +189,6 @@ public class IcysBetterHorses implements ModInitializer {
             if (server.getTickCount() % PASSIVE_BOND_INTERVAL_TICKS == 0) {
                 growHorseBond(server);
             }
-            if (server.getTickCount() % WILD_HORSE_REPOP_INTERVAL_TICKS == 0) {
-                tryRepopulateWildHorses(server);
-            }
         });
     }
 
@@ -282,88 +260,5 @@ public class IcysBetterHorses implements ModInitializer {
         LOGGER.info("[RADIAL][V5] OK: horse {} passed all validation (tamed={}, distSq={}, owner={})",
                 horseId, horse.isTamed(), distSq, owner);
         return horse;
-    }
-
-    private void tryRepopulateWildHorses(net.minecraft.server.MinecraftServer server) {
-        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            if (player.isSpectator()) continue;
-            if (!(player.level() instanceof ServerLevel level) || !level.dimension().equals(Level.OVERWORLD)) {
-                continue;
-            }
-
-            BlockPos playerPos = player.blockPosition();
-            Optional<ResourceKey<Biome>> biomeKey = level.getBiome(playerPos).unwrapKey();
-            if (biomeKey.isEmpty() || !BhBiomeSpawns.isExtraHorseBiome(biomeKey.get())) {
-                continue;
-            }
-            if (hasNearbyWildHorse(level, playerPos)) {
-                continue;
-            }
-
-            spawnWildHorseGroup(level, player, biomeKey.get());
-        }
-    }
-
-    private boolean hasNearbyWildHorse(ServerLevel level, BlockPos center) {
-        return !level.getEntitiesOfClass(Horse.class, new AABB(center).inflate(WILD_HORSE_NEARBY_RADIUS), horse -> {
-            IHorseData data = (IHorseData) horse;
-            return !data.bh_isOwned() && !horse.isPersistenceRequired();
-        }).isEmpty();
-    }
-
-    private void spawnWildHorseGroup(ServerLevel level, ServerPlayer player, ResourceKey<Biome> targetBiome) {
-        int targetCount = WILD_HORSE_GROUP_MIN
-                + level.getRandom().nextInt(WILD_HORSE_GROUP_MAX - WILD_HORSE_GROUP_MIN + 1);
-        int spawned = 0;
-        SpawnGroupData groupData = null;
-
-        for (int attempt = 0; attempt < WILD_HORSE_GROUP_ATTEMPTS && spawned < targetCount; attempt++) {
-            int x = player.getBlockX() + level.getRandom().nextInt(WILD_HORSE_SEARCH_RADIUS * 2 + 1) - WILD_HORSE_SEARCH_RADIUS;
-            int z = player.getBlockZ() + level.getRandom().nextInt(WILD_HORSE_SEARCH_RADIUS * 2 + 1) - WILD_HORSE_SEARCH_RADIUS;
-            BlockPos surface = level.getHeightmapPos(
-                    Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                    new BlockPos(x, player.getBlockY(), z));
-            if (!level.isLoaded(surface)) {
-                continue;
-            }
-
-            Optional<ResourceKey<Biome>> surfaceBiome = level.getBiome(surface).unwrapKey();
-            if (surfaceBiome.isEmpty() || !surfaceBiome.get().equals(targetBiome)) {
-                continue;
-            }
-            if (!SpawnPlacements.isSpawnPositionOk(EntityType.HORSE, level, surface)) {
-                continue;
-            }
-            if (!BhHorseSpawnRules.checkHorseSpawnRules(EntityType.HORSE, level, MobSpawnType.NATURAL, surface, level.getRandom())) {
-                continue;
-            }
-
-            Horse horse = EntityType.HORSE.create(level);
-            if (horse == null) {
-                continue;
-            }
-
-            horse.moveTo(surface.getX() + 0.5D, surface.getY(), surface.getZ() + 0.5D,
-                    level.getRandom().nextFloat() * 360.0F, 0.0F);
-            if (!horse.checkSpawnObstruction(level)) {
-                horse.discard();
-                continue;
-            }
-
-            groupData = horse.finalizeSpawn(level, level.getCurrentDifficultyAt(surface), MobSpawnType.NATURAL, groupData);
-            if (!level.addFreshEntity(horse)) {
-                horse.discard();
-                continue;
-            }
-            spawned++;
-        }
-
-        if (spawned > 0) {
-            LOGGER.info("[HORSE_REPOP] spawned={} biome={} nearPlayer={} playerPos={}",
-                    spawned,
-                    targetBiome.location(),
-                    player.getName().getString(),
-                    player.blockPosition());
-        }
     }
 }

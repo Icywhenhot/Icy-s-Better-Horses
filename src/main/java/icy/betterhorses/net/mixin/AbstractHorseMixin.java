@@ -506,7 +506,18 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
      */
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_pollUpgradedSaddleRemoval(CallbackInfo ci) {
-        if (((AbstractHorse) (Object) this).level().isClientSide()) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.level().isClientSide()) {
+            return;
+        }
+        // Never react to a "saddle disappeared" reading on an entity that is mid-removal. On a
+        // dimension change the destination copy is populated via restoreFrom (it already carries
+        // the gear + chest), then this old entity is removed; reacting here would dump a second
+        // copy of the gear + chest on the ground in the old dimension. (In 1.21.1 the saddle lives
+        // in the horse inventory rather than an equipment slot, so the removed entity's saddle
+        // isn't actually cleared — but this guard mirrors the upstream Portal Patch and is correct
+        // defensive hardening against ever drop-duplicating from a removed horse.)
+        if (self.isRemoved()) {
             return;
         }
         boolean hasUpgradedSaddle = this.bh_hasUpgradedSaddle();
