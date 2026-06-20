@@ -9,20 +9,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Server-side registry of all loaded, owned horses.
- * Populated via entity load/unload events and bh_setOwner hooks.
- * All access is on the server main thread — no synchronization needed.
- */
+// Server-side registry of loaded owned horses. All access is on the server thread.
 public final class HorseTracker {
 
     private static final Map<UUID, AbstractHorse> ownedHorses = new HashMap<>();
     private static final Map<UUID, UUID> lastRiddenByPlayer = new HashMap<>();
-    // When a player Ctrl+rightclicks a horse, the client sends RequestOpenRadialPayload AND
-    // vanilla sends a ServerboundInteractPacket. The radial packet wins the race (it's sent
-    // from inside Fabric's UseEntityCallback, which fires before vanilla's interact-packet
-    // send) and arms this map; the subsequent mobInteract on the server then short-circuits
-    // instead of mounting the player. Map is keyed by player UUID → horse entity id.
+    // player UUID -> horse id armed on radial-open so the racing vanilla interact is suppressed.
     private static final Map<UUID, Integer> pendingInteractSuppression = new HashMap<>();
 
     private HorseTracker() {}
@@ -37,10 +29,6 @@ public final class HorseTracker {
 
     public static Collection<AbstractHorse> getAll() {
         return ownedHorses.values();
-    }
-
-    public static @Nullable AbstractHorse getOwned(UUID horseId) {
-        return ownedHorses.get(horseId);
     }
 
     public static void setLastRidden(UUID playerId, AbstractHorse horse) {

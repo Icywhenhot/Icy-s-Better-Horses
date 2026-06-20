@@ -2,7 +2,6 @@ package icy.betterhorses.net;
 
 import icy.betterhorses.net.network.OpenRadialPayload;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -100,16 +99,10 @@ public final class IcysBetterHorses {
     }
 
     public static void handleOpenRadialRequest(ServerPlayer player, int horseId) {
-        LOGGER.info("[RADIAL][3a] handleOpenRadialRequest on main thread: player={}, horseId={}",
-                player.getName().getString(), horseId);
         AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
         if (horse == null) {
-            LOGGER.info("[RADIAL][3z] Aborting: findCommandHorse returned null");
             return;
         }
-
-        LOGGER.info("[RADIAL][4] Validation passed, sending OpenRadialPayload(horseId={}) back to player {}",
-                horse.getId(), player.getName().getString());
         HorseTracker.armInteractSuppression(player.getUUID(), horse.getId());
         PacketDistributor.sendToPlayer(player, new OpenRadialPayload(horse.getId()));
     }
@@ -252,15 +245,6 @@ public final class IcysBetterHorses {
                 + level.getRandom().nextInt(WILD_HORSE_GROUP_MAX - WILD_HORSE_GROUP_MIN + 1);
         int spawned = 0;
         SpawnGroupData groupData = null;
-        int unloadedSkips = 0;
-        int biomeMismatchSkips = 0;
-        int invalidSurfaceSkips = 0;
-        int spawnRuleSkips = 0;
-        int obstructionSkips = 0;
-        int addFailureSkips = 0;
-        String biomeMismatchSample = null;
-        String invalidSurfaceSample = null;
-        String spawnRuleSample = null;
 
         for (int attempt = 0; attempt < WILD_HORSE_GROUP_ATTEMPTS && spawned < targetCount; attempt++) {
             int x = player.getBlockX() + level.getRandom().nextInt(WILD_HORSE_SEARCH_RADIUS * 2 + 1) - WILD_HORSE_SEARCH_RADIUS;
@@ -269,116 +253,54 @@ public final class IcysBetterHorses {
                     Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                     new BlockPos(x, player.getBlockY(), z));
             if (!level.isLoaded(surface)) {
-                unloadedSkips++;
                 continue;
             }
 
             Optional<ResourceKey<Biome>> surfaceBiome = level.getBiome(surface).unwrapKey();
             if (surfaceBiome.isEmpty() || !surfaceBiome.get().equals(targetBiome)) {
-                biomeMismatchSkips++;
-                if (biomeMismatchSample == null) {
-                    biomeMismatchSample = surface + " -> " + surfaceBiome
-                            .map(key -> key.location().toString())
-                            .orElse("<unregistered>");
-                }
                 continue;
             }
             if (!SpawnPlacements.isSpawnPositionOk(EntityType.HORSE, level, surface)) {
-                invalidSurfaceSkips++;
-                if (invalidSurfaceSample == null) {
-                    invalidSurfaceSample = surface + " below="
-                            + BuiltInRegistries.BLOCK.getKey(level.getBlockState(surface.below()).getBlock());
-                }
                 continue;
             }
             if (!BhHorseSpawnRules.checkHorseSpawnRules(EntityType.HORSE, level, MobSpawnType.NATURAL, surface, level.getRandom())) {
-                spawnRuleSkips++;
-                if (spawnRuleSample == null) {
-                    spawnRuleSample = surface
-                            + " below=" + BuiltInRegistries.BLOCK.getKey(level.getBlockState(surface.below()).getBlock())
-                            + " light=" + level.getRawBrightness(surface, 0);
-                }
                 continue;
             }
 
             Horse horse = EntityType.HORSE.create(level);
             if (horse == null) {
-                addFailureSkips++;
                 continue;
             }
 
             horse.moveTo(surface.getX() + 0.5D, surface.getY(), surface.getZ() + 0.5D,
                     level.getRandom().nextFloat() * 360.0F, 0.0F);
             if (!horse.checkSpawnObstruction(level)) {
-                obstructionSkips++;
                 horse.discard();
                 continue;
             }
 
             groupData = horse.finalizeSpawn(level, level.getCurrentDifficultyAt(surface), MobSpawnType.NATURAL, groupData);
             if (!level.addFreshEntity(horse)) {
-                addFailureSkips++;
                 horse.discard();
                 continue;
             }
             spawned++;
         }
-
-        if (spawned > 0) {
-            LOGGER.info("[HORSE_REPOP] spawned={} biome={} nearPlayer={} playerPos={}",
-                    spawned,
-                    targetBiome.location(),
-                    player.getName().getString(),
-                    player.blockPosition());
-            return;
-        }
-
-        LOGGER.info("[HORSE_REPOP_SKIP] biome={} nearPlayer={} playerPos={} attempts={} unloaded={} biomeMismatch={} invalidSurface={} spawnRules={} obstruction={} addFailed={} mismatchSample={} invalidSample={} ruleSample={}",
-                targetBiome.location(),
-                player.getName().getString(),
-                player.blockPosition(),
-                WILD_HORSE_GROUP_ATTEMPTS,
-                unloadedSkips,
-                biomeMismatchSkips,
-                invalidSurfaceSkips,
-                spawnRuleSkips,
-                obstructionSkips,
-                addFailureSkips,
-                biomeMismatchSample,
-                invalidSurfaceSample,
-                spawnRuleSample);
     }
 
     private static AbstractHorse findCommandHorse(ServerPlayer player, int horseId, double radius) {
         ServerLevel serverLevel = (ServerLevel) player.level();
-        if (!(serverLevel.getEntity(horseId) instanceof AbstractHorse horse)) {
-            LOGGER.info("[RADIAL][V1] Fail: entity id {} is not an AbstractHorse in player's level (got {})",
-                    horseId,
-                    serverLevel.getEntity(horseId) == null
-                            ? "null"
-                            : serverLevel.getEntity(horseId).getClass().getSimpleName());
+        if (!(serverLevel.getEntity(horseId) instanceof AbstractHorse horse) || !horse.isTamed()) {
             return null;
         }
-        if (!horse.isTamed()) {
-            LOGGER.info("[RADIAL][V2] Fail: horse {} is not tamed", horseId);
-            return null;
-        }
-        double distSq = horse.distanceToSqr(player);
-        if (distSq > radius * radius) {
-            LOGGER.info("[RADIAL][V3] Fail: horse {} out of range (distSq={}, maxSq={})",
-                    horseId, distSq, radius * radius);
+        if (horse.distanceToSqr(player) > radius * radius) {
             return null;
         }
 
         UUID owner = ((IHorseData) horse).bh_getOwner();
         if (owner != null && !owner.equals(player.getUUID())) {
-            LOGGER.info("[RADIAL][V4] Fail: horse {} is owned by {}, not by caller {}",
-                    horseId, owner, player.getUUID());
             return null;
         }
-
-        LOGGER.info("[RADIAL][V5] OK: horse {} passed all validation (tamed={}, distSq={}, owner={})",
-                horseId, horse.isTamed(), distSq, owner);
         return horse;
     }
 }

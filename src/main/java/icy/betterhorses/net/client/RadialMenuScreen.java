@@ -105,7 +105,7 @@ public class RadialMenuScreen extends Screen {
         gfx.fill(cx - 2, cy - 2, cx + 2, cy + 2, hoveredIndex >= 0 ? CENTER_DOT_HOVER_COLOR : CENTER_DOT_COLOR);
     }
 
-    /** Filled disc using horizontal scanlines — produces a perfectly clean circle at any radius. */
+    // Filled disc via horizontal scanlines.
     private void bh_drawDisc(GuiGraphics gfx, int cx, int cy, int radius, int color) {
         int r2 = radius * radius;
         for (int dy = -radius; dy <= radius; dy++) {
@@ -114,10 +114,7 @@ public class RadialMenuScreen extends Screen {
         }
     }
 
-    /**
-     * Filled annular arc using horizontal scanlines, clipped to the angular range
-     * [startAngle, endAngle]. Pass startAngle=0, endAngle=2π for a full ring.
-     */
+    // Filled annular arc clipped to [startAngle, endAngle]; pass 0..2pi for a full ring.
     private void bh_drawAnnulus(
             GuiGraphics gfx,
             int cx,
@@ -158,10 +155,7 @@ public class RadialMenuScreen extends Screen {
         }
     }
 
-    /**
-     * Walks x from xStart..xEnd inclusive, emitting horizontal rect fills covering pixels whose
-     * angle from (cx, cy+dy) falls inside [startAngle, endAngle].
-     */
+    // Emits horizontal fills over the x-span whose pixel angle falls inside [startAngle, endAngle].
     private void bh_emitClippedRun(
             GuiGraphics gfx,
             int xStart,
@@ -196,11 +190,7 @@ public class RadialMenuScreen extends Screen {
         return diff <= (end - start);
     }
 
-    /**
-     * Maps a mouse angle to a segment index. Segments are centered on the cardinal directions
-     * (top=0, right=1, bottom=2, left=3), so we shift by π/2 to put "up" at angle 0 and by an
-     * additional half-segment so each segment's center lands at the integer index.
-     */
+    // Maps a mouse angle to a segment index (segment 0 centered on "up").
     private int bh_angleToIndex(double angle) {
         double segAngle = Math.PI * 2.0D / SEGMENT_COUNT;
         double adjusted = angle + Math.PI / 2.0D + segAngle / 2.0D;

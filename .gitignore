@@ -9,5 +9,8 @@ out/
 .DS_Store
 Thumbs.db
 
+# Run/debug logs
+*.log
+
 # Optional
 .claude/

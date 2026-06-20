@@ -13,11 +13,7 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
-/**
- * Stabilizer wing render layer for 1.21.1.
- * 1.21.1 has no separate render-state phase, so we read the live entity directly inside render(),
- * sync the GeckoLib animatable, and delegate to the GeoObjectRenderer anchored to the horse body bone.
- */
+// Stabilizer wing render layer: syncs the GeckoLib animatable and renders it on the horse body bone.
 public final class HorseStabilizerLayer<T extends AbstractHorse, M extends EntityModel<T>> extends RenderLayer<T, M> {
 
     private static final HorseStabilizerGeoRenderer GEO_RENDERER = new HorseStabilizerGeoRenderer();

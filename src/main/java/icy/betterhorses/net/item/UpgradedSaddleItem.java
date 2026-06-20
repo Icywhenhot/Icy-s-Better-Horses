@@ -9,9 +9,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-/**
- * 1.21.1 saddle plumbing: AbstractHorse implements Saddleable, equip via equipSaddle(stack, source).
- */
 public class UpgradedSaddleItem extends Item {
     public UpgradedSaddleItem(Properties properties) {
         super(properties);

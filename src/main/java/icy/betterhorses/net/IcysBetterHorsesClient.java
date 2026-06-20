@@ -19,13 +19,9 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Mod(value = IcysBetterHorses.MOD_ID, dist = Dist.CLIENT)
 public final class IcysBetterHorsesClient {
-
-    public static final Logger LOGGER = LoggerFactory.getLogger("icys_better_horses/client");
 
     public static final KeyMapping CALL_KEY = new KeyMapping(
             "key.icys_better_horses.call",
@@ -37,7 +33,6 @@ public final class IcysBetterHorsesClient {
         modEventBus.addListener(this::registerKeyMappings);
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         NeoForge.EVENT_BUS.addListener(this::onEntityInteract);
-        LOGGER.info("[RADIAL][0] Client init complete.");
     }
 
     private void registerKeyMappings(RegisterKeyMappingsEvent event) {
@@ -55,7 +50,6 @@ public final class IcysBetterHorsesClient {
             return;
         }
 
-        LOGGER.info("[RADIAL][2] Sending RequestOpenRadialPayload(horseId={})", horse.getId());
         PacketDistributor.sendToServer(new RequestOpenRadialPayload(horse.getId()));
         event.setCancellationResult(InteractionResult.SUCCESS);
         event.setCanceled(true);

@@ -11,10 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Adds the stabilizer wing layer to every {@link AbstractHorseRenderer} in 1.21.1.
- * 1.21.1 AbstractHorseRenderer ctor signature: (Context, HorseModel, float).
- */
+// Adds the stabilizer wing layer to every AbstractHorseRenderer.
 @Mixin(AbstractHorseRenderer.class)
 public abstract class AbstractHorseRendererMixin<T extends AbstractHorse, M extends HorseModel<T>>
         extends MobRenderer<T, M> {

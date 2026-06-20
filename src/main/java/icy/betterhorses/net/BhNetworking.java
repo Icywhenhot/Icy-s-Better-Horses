@@ -35,8 +35,6 @@ public final class BhNetworking {
 
     private static void handleOpenRadialRequest(RequestOpenRadialPayload payload, IPayloadContext context) {
         ServerPlayer player = (ServerPlayer) context.player();
-        IcysBetterHorses.LOGGER.info("[RADIAL][3] C2S received RequestOpenRadialPayload(horseId={}) from player {}",
-                payload.horseId(), player.getName().getString());
         context.enqueueWork(() -> IcysBetterHorses.handleOpenRadialRequest(player, payload.horseId()));
     }
 }

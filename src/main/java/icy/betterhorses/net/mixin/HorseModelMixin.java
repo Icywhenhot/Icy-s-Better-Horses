@@ -13,10 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * 1.21.1 head-lowering for first-person horse rider visibility. Mixin into HorseModel.setupAnim,
- * tilt the head down + back when the player is in first-person aboard this horse.
- */
+// Tilts the head down/back when the rider is in first-person, so it doesn't block the view.
 @Mixin(HorseModel.class)
 public abstract class HorseModelMixin<T extends AbstractHorse> extends AgeableListModel<T> {
 

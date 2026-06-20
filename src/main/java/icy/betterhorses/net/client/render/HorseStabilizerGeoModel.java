@@ -5,10 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.model.GeoModel;
 
-/**
- * GeoModel for the stabilizer wings. GeckoLib 4.7 (1.21.1): resource getters take the animatable
- * directly (no GeoRenderState); per-frame state via {@code setCustomAnimations(animatable, id, state)}.
- */
+// GeoModel for the stabilizer wings.
 public final class HorseStabilizerGeoModel extends GeoModel<HorseStabilizerAnimatable> {
 
     private static final ResourceLocation MODEL =

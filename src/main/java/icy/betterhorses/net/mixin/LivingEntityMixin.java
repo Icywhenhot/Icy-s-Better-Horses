@@ -39,9 +39,6 @@ public abstract class LivingEntityMixin extends Entity {
     @Shadow
     protected abstract float getDamageAfterMagicAbsorb(DamageSource source, float amount);
 
-    /**
-     * 1.21.1 actuallyHurt signature: (DamageSource, float).
-     */
     @Inject(method = "actuallyHurt", at = @At("HEAD"))
     private void bh_queueHorseMedkit(DamageSource source, float amount, CallbackInfo ci) {
         this.bh_triggerHorseMedkitAfterDamage = false;

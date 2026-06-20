@@ -16,11 +16,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-/**
- * GeckoLib-driven animation state holder for the stabilizer wings.
- * GeckoLib 4.7 (1.21.1): controllers live under {@code core.animation}, {@code PlayState} under
- * {@code core.object}; AnimationController constructor takes the animatable directly.
- */
+// GeckoLib animation state holder for the stabilizer wings.
 public final class HorseStabilizerAnimatable implements GeoAnimatable {
 
     private static final RawAnimation DEPLOY_AND_GLIDE = RawAnimation.begin()

@@ -104,12 +104,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private static final double BH_STABILIZER_MAX_DESCENT_SPEED = -0.125D;
     @Unique private static final double BH_STABILIZER_SMOOTHING = 0.35D;
     @Unique private static final double BH_STABILIZER_HALF_OPEN_SMOOTHING = 0.2D;
-    // Horse bbox is 1.39625 wide (±0.698 from center). The 2nd-passenger player hitbox is
-    // ±0.3 around their attachment point, so any rear offset more negative than -0.398 pushes
-    // the rear of their hitbox past the horse's bbox — when the horse backs into a wall, the
-    // rider clips into the block and takes in-wall (suffocation) damage. -0.35 keeps the rear
-    // edge at -0.65, leaving ~0.05 of buffer against the horse's rear edge. Front offset is
-    // mirrored for visual balance and to keep the 1st passenger symmetric with the 2nd.
+    // -0.35 keeps the rear rider's hitbox inside the horse bbox so it doesn't clip walls; front mirrors it.
     @Unique private static final double BH_FRONT_PASSENGER_Z_OFFSET = 0.35D;
     @Unique private static final double BH_REAR_PASSENGER_Z_OFFSET = -0.35D;
     @Unique private static final float BH_FREE_CAMERA_ANGLE_THRESHOLD = 90.0F;
@@ -364,9 +359,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             return;
         }
 
-        // Real horses are handled by HorseFinalizeSpawnMixin so we can read the original
-        // BhHorseGroupData passed from sibling spawns (vanilla Horse.finalizeSpawn clobbers
-        // its groupData arg before super, so we can't see the wrapper from here).
+        // Real horses are handled by HorseFinalizeSpawnMixin; here we only tag non-horse species.
         AbstractHorse self = (AbstractHorse) (Object) this;
         HorseBreed species = HorseBreed.speciesFor(self);
         if (species != null) {
@@ -471,11 +464,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.bh_syncGearFlags();
     }
 
-    /**
-     * 1.21.11 dropped {@code AbstractHorse.containerChanged(Container)} (the old
-     * {@code ContainerListener} hook). Watch for upgraded-saddle removal from a tick poll instead.
-     * Cheap: one item-slot check per horse per tick on the server.
-     */
+    // Poll for upgraded-saddle removal each server tick (no containerChanged hook in this version).
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_pollUpgradedSaddleRemoval(CallbackInfo ci) {
         if (((AbstractHorse) (Object) this).level().isClientSide()) {
@@ -523,14 +512,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     }
 
-    /**
-     * Block non-owners from becoming the primary rider of an owned horse. A non-owner is allowed
-     * to mount only when the owner is already the primary rider (the 2-rider scenario the
-     * second-passenger feature enables). Wild/untamed horses fall through to vanilla so taming
-     * still works. We hook {@code doPlayerRide} rather than {@code mobInteract} because vanilla,
-     * commands like {@code /ride}, and some other mods all funnel through this method — gating
-     * here covers every path. Server-side only: clients don't have authoritative owner state.
-     */
+    // Block non-owners from being the primary rider of an owned horse (unless the owner already is).
     @Inject(method = "doPlayerRide", at = @At("HEAD"), cancellable = true)
     private void bh_gateOwnerOnlyMount(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -542,21 +524,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         if (player instanceof ServerPlayer serverPlayer) {
             serverPlayer.sendSystemMessage(Component.translatable("message.icys_better_horses.not_owner"));
         }
-        // Belt-and-suspenders force-eject — covers the case where another mod/path already
-        // attached the player as a passenger before our gate ran, or where the client
-        // optimistically predicted a mount. Idempotent if they aren't actually riding.
+        // Force-eject in case another path already attached the player before this gate ran.
         if (player.getVehicle() == self) {
             player.stopRiding();
         }
         ci.cancel();
     }
 
-    /**
-     * Catch-all: if at any tick the primary rider isn't the owner of an owned horse, eject
-     * every passenger. Covers owner-dismount-while-friend-was-secondary (friend slides into the
-     * primary slot), forced mounts from plugins/datapacks, and any future path we don't gate
-     * explicitly at mount time. Cheap — only runs when the horse is being ridden.
-     */
+    // Catch-all: each tick, eject all passengers if the primary rider isn't the owner.
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_enforceOwnerPrimaryRider(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -613,8 +588,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             return;
         }
 
-        // Defense in depth: even if HEAD-cancel from bh_gateOwnerOnlyMount didn't suppress
-        // this injector for some mixin-ordering reason, never mount a non-owner here.
+        // Defense in depth: never mount a non-owner here even if the HEAD gate didn't fire.
         UUID owner = this.bh_getOwner();
         if (BhConfig.horseExclusivityEnabled()
                 && owner != null
@@ -675,9 +649,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             net.minecraft.world.InteractionHand hand,
             CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        // Ctrl+rightclick fires both our radial-open packet AND vanilla's interact packet.
-        // The radial packet arrives first and arms a suppression flag; consume it here so the
-        // mount/inventory/heldItem branches below never run for that click.
+        // Consume the radial-open suppression flag so a Ctrl+rightclick doesn't also mount.
         if (!self.level().isClientSide()
                 && HorseTracker.consumeInteractSuppression(player.getUUID(), self.getId())) {
             cir.setReturnValue(net.minecraft.world.InteractionResult.CONSUME);

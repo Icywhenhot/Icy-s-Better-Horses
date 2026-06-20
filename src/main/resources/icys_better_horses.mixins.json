@@ -20,7 +20,6 @@
 		"HorseSaddleSlotMixin"
 	],
 	"client": [
-		"AbstractContainerScreenAccessor",
 		"AbstractHorseRendererMixin",
 		"GuiMixin",
 		"HorseInventoryScreenMixin",
