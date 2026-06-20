@@ -1,6 +1,5 @@
 package icy.betterhorses.net;
 
-import icy.betterhorses.net.network.OpenRadialPayload;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -27,7 +26,6 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,15 +94,6 @@ public final class IcysBetterHorses {
         if (server.getTickCount() % WILD_HORSE_REPOP_INTERVAL_TICKS == 0) {
             tryRepopulateWildHorses(server);
         }
-    }
-
-    public static void handleOpenRadialRequest(ServerPlayer player, int horseId) {
-        AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
-        if (horse == null) {
-            return;
-        }
-        HorseTracker.armInteractSuppression(player.getUUID(), horse.getId());
-        PacketDistributor.sendToPlayer(player, new OpenRadialPayload(horse.getId()));
     }
 
     public static void handleRadialCommand(ServerPlayer player, int horseId, HorseCommand command) {

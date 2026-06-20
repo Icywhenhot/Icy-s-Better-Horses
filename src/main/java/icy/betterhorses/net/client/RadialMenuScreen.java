@@ -3,9 +3,13 @@ package icy.betterhorses.net.client;
 import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.network.RadialCommandPayload;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RadialMenuScreen extends Screen {
 
@@ -45,6 +49,7 @@ public class RadialMenuScreen extends Screen {
 
     private final int horseId;
     private int hoveredIndex = -1;
+    private List<int[]>[] segmentRuns;
 
     public RadialMenuScreen(int horseId) {
         super(Component.translatable("screen.icys_better_horses.radial"));
@@ -57,8 +62,20 @@ public class RadialMenuScreen extends Screen {
     }
 
     @Override
+    protected void init() {
+        bh_rebuildGeometry();
+    }
+
+    @Override
     public void render(GuiGraphics gfx, int mouseX, int mouseY, float delta) {
+        if (minecraft == null || minecraft.level == null || minecraft.level.getEntity(horseId) == null) {
+            onClose();
+            return;
+        }
         super.render(gfx, mouseX, mouseY, delta);
+        if (segmentRuns == null) {
+            bh_rebuildGeometry();
+        }
         int cx = width / 2;
         int cy = height / 2;
 
@@ -68,29 +85,22 @@ public class RadialMenuScreen extends Screen {
         double angle = Math.atan2(dy, dx);
         hoveredIndex = (dist >= RING_INNER && dist <= RING_OUTER) ? bh_angleToIndex(angle) : -1;
 
-        // Dim background
         gfx.fill(0, 0, width, height, BASE_BACKGROUND_COLOR);
 
-        // Drop shadow ring (offset down/right)
-        bh_drawAnnulus(gfx, cx + 2, cy + 3, RING_BACKDROP_INNER, RING_BACKDROP_OUTER,
-                0.0D, Math.PI * 2.0D, RING_BACKDROP_SHADOW_COLOR);
-        // Backdrop ring
-        bh_drawAnnulus(gfx, cx, cy, RING_BACKDROP_INNER, RING_BACKDROP_OUTER,
-                0.0D, Math.PI * 2.0D, RING_BACKDROP_COLOR);
+        bh_drawFullRing(gfx, cx + 2, cy + 3, RING_BACKDROP_INNER, RING_BACKDROP_OUTER, RING_BACKDROP_SHADOW_COLOR);
+        bh_drawFullRing(gfx, cx, cy, RING_BACKDROP_INNER, RING_BACKDROP_OUTER, RING_BACKDROP_COLOR);
 
-        double segAngle = Math.PI * 2.0D / SEGMENT_COUNT;
         for (int i = 0; i < SEGMENT_COUNT; i++) {
-            double startAngle = segAngle * i - Math.PI / 2.0D - segAngle / 2.0D + SEGMENT_GAP_RADIANS;
-            double endAngle = startAngle + segAngle - SEGMENT_GAP_RADIANS * 2.0D;
             int color = (i == hoveredIndex) ? HOVERED_SEGMENT_COLOR : SEGMENT_COLORS[i % SEGMENT_COLORS.length];
-            bh_drawAnnulus(gfx, cx, cy, RING_INNER, RING_OUTER, startAngle, endAngle, color);
+            for (int[] run : segmentRuns[i]) {
+                gfx.fill(run[0], run[1], run[2], run[1] + 1, color);
+            }
         }
 
-        // Center disc shadow + disc
         bh_drawDisc(gfx, cx, cy + 2, CENTER_RADIUS + 2, INNER_DISC_SHADOW_COLOR);
         bh_drawDisc(gfx, cx, cy, CENTER_RADIUS, INNER_DISC_COLOR);
 
-        // Labels
+        double segAngle = Math.PI * 2.0D / SEGMENT_COUNT;
         for (int i = 0; i < SEGMENT_COUNT; i++) {
             double labelAngle = segAngle * i - Math.PI / 2.0D;
             int lx = cx + (int) Math.round(Math.cos(labelAngle) * LABEL_RADIUS);
@@ -100,9 +110,22 @@ public class RadialMenuScreen extends Screen {
             gfx.drawCenteredString(font, text, lx, ly - font.lineHeight / 2, textColor);
         }
 
-        // Center dot
         gfx.fill(cx - 5, cy - 5, cx + 5, cy + 5, CENTER_DOT_SHADOW_COLOR);
         gfx.fill(cx - 2, cy - 2, cx + 2, cy + 2, hoveredIndex >= 0 ? CENTER_DOT_HOVER_COLOR : CENTER_DOT_COLOR);
+    }
+
+    // Precompute each wedge's horizontal fill runs once, so render() never re-runs atan2.
+    @SuppressWarnings("unchecked")
+    private void bh_rebuildGeometry() {
+        int cx = width / 2;
+        int cy = height / 2;
+        double segAngle = Math.PI * 2.0D / SEGMENT_COUNT;
+        segmentRuns = new List[SEGMENT_COUNT];
+        for (int i = 0; i < SEGMENT_COUNT; i++) {
+            double startAngle = segAngle * i - Math.PI / 2.0D - segAngle / 2.0D + SEGMENT_GAP_RADIANS;
+            double endAngle = startAngle + segAngle - SEGMENT_GAP_RADIANS * 2.0D;
+            segmentRuns[i] = bh_collectAnnulusRuns(cx, cy, RING_INNER, RING_OUTER, startAngle, endAngle);
+        }
     }
 
     // Filled disc via horizontal scanlines.
@@ -114,72 +137,63 @@ public class RadialMenuScreen extends Screen {
         }
     }
 
-    // Filled annular arc clipped to [startAngle, endAngle]; pass 0..2pi for a full ring.
-    private void bh_drawAnnulus(
-            GuiGraphics gfx,
-            int cx,
-            int cy,
-            int innerRadius,
-            int outerRadius,
-            double startAngle,
-            double endAngle,
-            int color) {
+    // Full ring via horizontal scanlines (no angular clipping needed).
+    private void bh_drawFullRing(GuiGraphics gfx, int cx, int cy, int innerRadius, int outerRadius, int color) {
         int outerR2 = outerRadius * outerRadius;
         int innerR2 = innerRadius * innerRadius;
-        boolean fullCircle = (endAngle - startAngle) >= Math.PI * 2.0D - 1.0e-6D;
-
         for (int dy = -outerRadius; dy <= outerRadius; dy++) {
             int dy2 = dy * dy;
             if (dy2 > outerR2) continue;
             int outerX = (int) Math.sqrt(outerR2 - dy2);
             int yPx = cy + dy;
-
             if (dy2 >= innerR2) {
-                // Single horizontal run from -outerX to +outerX
-                if (fullCircle) {
-                    gfx.fill(cx - outerX, yPx, cx + outerX + 1, yPx + 1, color);
-                } else {
-                    bh_emitClippedRun(gfx, cx - outerX, cx + outerX, yPx, dy, cx, startAngle, endAngle, color);
-                }
+                gfx.fill(cx - outerX, yPx, cx + outerX + 1, yPx + 1, color);
             } else {
                 int innerX = (int) Math.sqrt(innerR2 - dy2);
-                // Two horizontal runs: left and right of the inner cutout
-                if (fullCircle) {
-                    gfx.fill(cx - outerX, yPx, cx - innerX, yPx + 1, color);
-                    gfx.fill(cx + innerX + 1, yPx, cx + outerX + 1, yPx + 1, color);
-                } else {
-                    bh_emitClippedRun(gfx, cx - outerX, cx - innerX - 1, yPx, dy, cx, startAngle, endAngle, color);
-                    bh_emitClippedRun(gfx, cx + innerX + 1, cx + outerX, yPx, dy, cx, startAngle, endAngle, color);
-                }
+                gfx.fill(cx - outerX, yPx, cx - innerX, yPx + 1, color);
+                gfx.fill(cx + innerX + 1, yPx, cx + outerX + 1, yPx + 1, color);
             }
         }
     }
 
-    // Emits horizontal fills over the x-span whose pixel angle falls inside [startAngle, endAngle].
-    private void bh_emitClippedRun(
-            GuiGraphics gfx,
-            int xStart,
-            int xEnd,
-            int yPx,
-            int dy,
-            int cx,
-            double startAngle,
-            double endAngle,
-            int color) {
+    // Collect the horizontal fill runs of an annular arc clipped to [startAngle, endAngle].
+    private List<int[]> bh_collectAnnulusRuns(int cx, int cy, int innerRadius, int outerRadius,
+                                              double startAngle, double endAngle) {
+        List<int[]> runs = new ArrayList<>();
+        int outerR2 = outerRadius * outerRadius;
+        int innerR2 = innerRadius * innerRadius;
+        for (int dy = -outerRadius; dy <= outerRadius; dy++) {
+            int dy2 = dy * dy;
+            if (dy2 > outerR2) continue;
+            int outerX = (int) Math.sqrt(outerR2 - dy2);
+            int yPx = cy + dy;
+            if (dy2 >= innerR2) {
+                bh_collectClippedRun(runs, cx - outerX, cx + outerX, yPx, dy, cx, startAngle, endAngle);
+            } else {
+                int innerX = (int) Math.sqrt(innerR2 - dy2);
+                bh_collectClippedRun(runs, cx - outerX, cx - innerX - 1, yPx, dy, cx, startAngle, endAngle);
+                bh_collectClippedRun(runs, cx + innerX + 1, cx + outerX, yPx, dy, cx, startAngle, endAngle);
+            }
+        }
+        return runs;
+    }
+
+    // Walk x over the span, emitting {x0, y, x1} runs for pixels whose angle is inside the arc.
+    private void bh_collectClippedRun(List<int[]> runs, int xStart, int xEnd, int yPx, int dy, int cx,
+                                      double startAngle, double endAngle) {
         if (xEnd < xStart) return;
         int runStart = -1;
         for (int x = xStart; x <= xEnd; x++) {
-            double a = Math.atan2(dy, x - cx);
-            boolean inside = bh_angleInRange(a, startAngle, endAngle);
+            boolean inside = bh_angleInRange(Math.atan2(dy, x - cx), startAngle, endAngle);
             if (inside && runStart == -1) {
                 runStart = x;
             } else if (!inside && runStart != -1) {
-                gfx.fill(runStart, yPx, x, yPx + 1, color);
+                runs.add(new int[]{runStart, yPx, x});
                 runStart = -1;
             }
         }
         if (runStart != -1) {
-            gfx.fill(runStart, yPx, xEnd + 1, yPx + 1, color);
+            runs.add(new int[]{runStart, yPx, xEnd + 1});
         }
     }
 
@@ -201,18 +215,17 @@ public class RadialMenuScreen extends Screen {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0 && hoveredIndex >= 0) {
-            sendCommand(COMMANDS[hoveredIndex]);
+        if (button == 0) {
+            double dx = mouseX - width / 2.0;
+            double dy = mouseY - height / 2.0;
+            double dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist >= RING_INNER && dist <= RING_OUTER) {
+                sendCommand(COMMANDS[bh_angleToIndex(Math.atan2(dy, dx))]);
+            }
             onClose();
             return true;
         }
         return super.mouseReleased(mouseX, mouseY, button);
-    }
-
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        onClose();
-        return true;
     }
 
     private void sendCommand(HorseCommand command) {
@@ -229,4 +242,3 @@ public class RadialMenuScreen extends Screen {
         };
     }
 }
-

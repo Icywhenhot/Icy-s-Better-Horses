@@ -32,6 +32,9 @@ public final class ModAttachments {
         public int genderId = HorseGender.MALE.ordinal();
         public int breedId = HorseBreed.UNKNOWN_SPECIES.ordinal();
         public boolean breedMixed = false;
+        public boolean hasOwner = false;
+        public long ownerMsb = 0L;
+        public long ownerLsb = 0L;
     }
 
     private static final class HorseSyncHandler implements AttachmentSyncHandler<BhHorseSyncState> {
@@ -43,6 +46,9 @@ public final class ModAttachments {
             buf.writeVarInt(value.genderId);
             buf.writeVarInt(value.breedId);
             buf.writeBoolean(value.breedMixed);
+            buf.writeBoolean(value.hasOwner);
+            buf.writeLong(value.ownerMsb);
+            buf.writeLong(value.ownerLsb);
         }
 
         @Override
@@ -55,6 +61,9 @@ public final class ModAttachments {
             value.genderId = buf.readVarInt();
             value.breedId = buf.readVarInt();
             value.breedMixed = buf.readBoolean();
+            value.hasOwner = buf.readBoolean();
+            value.ownerMsb = buf.readLong();
+            value.ownerLsb = buf.readLong();
             return value;
         }
     }

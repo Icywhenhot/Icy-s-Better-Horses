@@ -11,12 +11,12 @@
     {
       "type": "patchouli:text",
       "title": "Command Wheel",
-      "text": "Use $(item)Ctrl + Right Click$() on an owned horse to open the radial command wheel.$(br2)$(li)$(thing)Follow$(): the horse tails after you.$(li)$(thing)Wander$(): lets the horse graze and roam around a 32x32 area centered on where you gave the command.$(li)$(thing)Stay$(): it waits right where you leave it.$(li)$(thing)Set Home$(): marks the current spot as home and switches the horse to Stay.$(li)$(thing)Return Home$(): sends the horse trotting back to that saved spot."
+      "text": "Look at an owned horse and press $(k:key.icys_better_horses.radial)$() to open the radial command wheel. Pick a wedge to issue it, or click outside the wheel to cancel.$(br2)$(li)$(thing)Follow$(): the horse tails after you.$(li)$(thing)Wander$(): lets the horse graze and roam around a 32x32 area centered on where you gave the command.$(li)$(thing)Stay$(): it waits right where you leave it.$(li)$(thing)Set Home$(): marks the current spot as home and switches the horse to Stay.$(li)$(thing)Return Home$(): sends the horse trotting back to that saved spot."
     },
     {
       "type": "patchouli:text",
       "title": "Whistle and Bond",
-      "text": "Press $(item)P$() by default to whistle for your owned horse. Nearby mounts switch to $(thing)Follow$(), while distant ones get hauled closer to you.$(br2)Bond runs from $(item)0$() to $(item)100$(), and every 20 bond adds more speed and jump strength.$(br2)$(li)Stick close to your horse for slow, steady passive bond gain.$(li)Use a $(item)Name Tag$() for +10 bond.$(li)Feed a $(item)Golden Apple$() for +2 bond."
+      "text": "Press $(k:key.icys_better_horses.call)$() to whistle for your owned horse. Nearby mounts switch to $(thing)Follow$(), while distant ones get hauled closer to you. While you're riding, the same key opens that horse's info screen instead.$(br2)Bond runs from $(item)0$() to $(item)100$(), and every 20 bond adds more speed and jump strength.$(br2)$(li)Stick close to your horse for slow, steady passive bond gain.$(li)Use a $(item)Name Tag$() for +10 bond.$(li)Feed a $(item)Golden Apple$() for +2 bond."
     }
   ]
 }

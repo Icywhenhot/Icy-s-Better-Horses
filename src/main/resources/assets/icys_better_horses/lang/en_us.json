@@ -1,6 +1,7 @@
 {
   "key.categories.icys_better_horses": "Icy's Better Horses",
-  "key.icys_better_horses.call": "Call Horse",
+  "key.icys_better_horses.call": "Horse Whistle / Info",
+  "key.icys_better_horses.radial": "Horse Command Wheel",
 
   "screen.icys_better_horses.radial": "Horse Commands",
   "screen.icys_better_horses.info": "Horse Info",

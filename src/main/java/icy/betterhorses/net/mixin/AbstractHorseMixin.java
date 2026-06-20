@@ -121,12 +121,17 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public @Nullable UUID bh_getOwner() {
+        if (level().isClientSide()) {
+            ModAttachments.BhHorseSyncState sync = this.bh_syncState();
+            return sync.hasOwner ? new UUID(sync.ownerMsb, sync.ownerLsb) : null;
+        }
         return bh_owner;
     }
 
     @Override
     public void bh_setOwner(@Nullable UUID owner) {
         this.bh_owner = owner;
+        this.bh_mirrorOwnerToSync(owner);
         if (!level().isClientSide()) {
             AbstractHorse self = (AbstractHorse) (Object) this;
             if (owner != null) {
@@ -134,7 +139,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             } else {
                 HorseTracker.unregister(self);
             }
+            this.bh_syncHorseData();
         }
+    }
+
+    @Unique
+    private void bh_mirrorOwnerToSync(@Nullable UUID owner) {
+        ModAttachments.BhHorseSyncState sync = this.bh_syncState();
+        sync.hasOwner = owner != null;
+        sync.ownerMsb = owner == null ? 0L : owner.getMostSignificantBits();
+        sync.ownerLsb = owner == null ? 0L : owner.getLeastSignificantBits();
     }
 
     @Override
@@ -315,6 +329,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             AbstractHorse self = (AbstractHorse) (Object) this;
             bh_owner = self.getOwnerUUID();
         }
+        this.bh_mirrorOwnerToSync(bh_owner);
         bh_command = HorseCommand.fromId(input.contains("BH_Command") ? input.getInt("BH_Command") : HorseCommand.FOLLOW.ordinal());
         bh_bond = Math.max(0, Math.min(100, input.contains("BH_Bond") ? input.getInt("BH_Bond") : 0));
         this.bh_syncState().bond = bh_bond;
@@ -649,12 +664,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             net.minecraft.world.InteractionHand hand,
             CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        // Consume the radial-open suppression flag so a Ctrl+rightclick doesn't also mount.
-        if (!self.level().isClientSide()
-                && HorseTracker.consumeInteractSuppression(player.getUUID(), self.getId())) {
-            cir.setReturnValue(net.minecraft.world.InteractionResult.CONSUME);
-            return;
-        }
         if (!self.isVehicle()
                 || self.isBaby()
                 || self.hasPassenger(player)

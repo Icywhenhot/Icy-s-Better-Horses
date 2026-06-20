@@ -14,8 +14,6 @@ public final class HorseTracker {
 
     private static final Map<UUID, AbstractHorse> ownedHorses = new HashMap<>();
     private static final Map<UUID, UUID> lastRiddenByPlayer = new HashMap<>();
-    // player UUID -> horse id armed on radial-open so the racing vanilla interact is suppressed.
-    private static final Map<UUID, Integer> pendingInteractSuppression = new HashMap<>();
 
     private HorseTracker() {}
 
@@ -38,18 +36,5 @@ public final class HorseTracker {
     public static @Nullable AbstractHorse getLastRidden(UUID playerId) {
         UUID horseId = lastRiddenByPlayer.get(playerId);
         return horseId == null ? null : ownedHorses.get(horseId);
-    }
-
-    public static void armInteractSuppression(UUID playerId, int horseEntityId) {
-        pendingInteractSuppression.put(playerId, horseEntityId);
-    }
-
-    public static boolean consumeInteractSuppression(UUID playerId, int horseEntityId) {
-        Integer pending = pendingInteractSuppression.get(playerId);
-        if (pending != null && pending == horseEntityId) {
-            pendingInteractSuppression.remove(playerId);
-            return true;
-        }
-        return false;
     }
 }
