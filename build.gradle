@@ -11,6 +11,16 @@ repositories {
 		name = 'GeckoLib'
 		url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
 	}
+	maven {
+		name = 'TerraformersMC'
+		url = 'https://maven.terraformersmc.com/releases/'
+		content { includeGroup "com.terraformersmc" }
+	}
+	maven {
+		name = 'Shedaniel'
+		url = 'https://maven.shedaniel.me/'
+		content { includeGroup "me.shedaniel.cloth" }
+	}
 }
 
 loom {
@@ -34,6 +44,12 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
 	modImplementation "software.bernie.geckolib:geckolib-fabric-${project.minecraft_version}:${project.geckolib_version}"
+
+	// In-game config: ModMenu entry + Cloth Config screen. modImplementation = dev-only, not shipped.
+	modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+	modImplementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
+		exclude group: "net.fabricmc.fabric-api"
+	}
 
 	testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
 	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"

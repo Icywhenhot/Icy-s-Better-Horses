@@ -23,10 +23,7 @@ public final class ModBlocks {
                     .sound(SoundType.WOOD)
                     .noOcclusion());
 
-    /**
-     * Called from {@link IcysBetterHorses#onInitialize()} before block entity and item setup so
-     * that the rest of the registries can reference the registered blocks.
-     */
+    // Called from IcysBetterHorses.onInitialize() before block-entity and item setup so the rest of the registries can reference the registered blocks.
     public static void init() {
         // Registering happens via static initializer; touching the class triggers it.
     }

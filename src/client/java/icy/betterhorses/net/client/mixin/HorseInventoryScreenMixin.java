@@ -123,8 +123,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         ci.cancel();
     }
 
-    // HorseInventoryScreen doesn't override renderLabels in 1.21.10, so we hook the end of render()
-    // instead. TAIL fires after super.render and renderTooltip, so the text sits visibly on top.
+    // HorseInventoryScreen doesn't override renderLabels in 1.21.10, so we hook the end of render() instead — TAIL fires after super.render and renderTooltip, so the text sits visibly on top.
     @Inject(method = "render", at = @At("TAIL"))
     private void bh_renderTextOverlay(GuiGraphics gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
         HorseInventoryLayoutAccess layout = (HorseInventoryLayoutAccess) this.menu;

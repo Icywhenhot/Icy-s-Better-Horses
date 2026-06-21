@@ -22,11 +22,7 @@ public abstract class LeafPassthroughMixin {
     // getBlock() is directly on BlockBehaviour.BlockStateBase — safe to @Shadow
     @Shadow public abstract net.minecraft.world.level.block.Block getBlock();
 
-    /**
-     * Makes leaf blocks have no collision when the entity interacting is a horse
-     * or a player/entity riding a horse. Runs on both client and server so
-     * client-side movement prediction also skips leaves.
-     */
+    // Makes leaf blocks non-colliding for a horse or anything riding a horse. Runs on both sides so client movement prediction also skips leaves.
     @Inject(
         method = "getCollisionShape(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/shapes/CollisionContext;)Lnet/minecraft/world/phys/shapes/VoxelShape;",
         at = @At("HEAD"), cancellable = true
