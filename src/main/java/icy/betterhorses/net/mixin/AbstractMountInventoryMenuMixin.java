@@ -23,10 +23,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * 1.21.11 moved mount shift-click logic up from {@code HorseInventoryMenu} to
- * {@link AbstractMountInventoryMenu}. Keep the upgraded-saddle gear/chest routes wired in there.
- */
+// 1.21.11 moved mount shift-click logic up from HorseInventoryMenu to AbstractMountInventoryMenu; keep the upgraded-saddle gear/chest routes wired in there.
 @Mixin(AbstractMountInventoryMenu.class)
 public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerMenu {
 

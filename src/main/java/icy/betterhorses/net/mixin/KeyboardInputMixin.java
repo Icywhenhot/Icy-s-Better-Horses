@@ -15,13 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Mixin into KeyboardInput.tick() to drive the horse autodrive controller.
- *
- * 1.21.11 reshape: KeyboardInput now extends ClientInput, the keyboard state lives in an immutable
- * Input record at {@code keyPresses}, and movement impulse comes from {@code moveVector}.
- * We rebuild both at TAIL using the autodrive controller's output.
- */
+// Mixin into KeyboardInput.tick() to drive the horse autodrive controller. 1.21.11 reshape: KeyboardInput extends ClientInput, keyboard state is an immutable Input record at keyPresses, and movement impulse comes from moveVector — we rebuild both at TAIL from the controller's output.
 @Mixin(KeyboardInput.class)
 public abstract class KeyboardInputMixin extends ClientInput {
 

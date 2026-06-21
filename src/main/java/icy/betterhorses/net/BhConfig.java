@@ -104,6 +104,13 @@ public final class BhConfig {
         return state.multiRiding();
     }
 
+    // Replaces the live config and persists it; used by the in-game (Mod Menu) editor.
+    public static synchronized void apply(boolean stabilizer, boolean medkit, boolean hitchpost,
+                                          boolean hooves, boolean horseExclusivity, boolean multiRiding) {
+        state = new State(stabilizer, medkit, hitchpost, hooves, horseExclusivity, multiRiding);
+        save();
+    }
+
     private static boolean readToggle(JsonObject root, String key, boolean defaultValue) {
         if (!root.has(key)) {
             return defaultValue;

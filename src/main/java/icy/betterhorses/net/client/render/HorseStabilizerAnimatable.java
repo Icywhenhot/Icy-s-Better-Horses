@@ -16,14 +16,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-/**
- * GeckoLib-driven animation state holder for the stabilizer wings.
- *
- * Updated for GeckoLib 5: {@code Animation.LoopType} → {@link LoopType}, {@code AnimationState}
- * → {@link AnimationTest}, and {@code AnimatableManager} now lives under {@code animatable.manager}.
- * The actual rendering side (stabilizer model on the horse) is currently stubbed pending the
- * GeckoLib 5 GeoRenderState pipeline port — see {@link HorseStabilizerLayer}.
- */
+// GeckoLib-driven animation state holder for the stabilizer wings, updated for GeckoLib 5 (LoopType, AnimationTest, animatable.manager).
 public final class HorseStabilizerAnimatable implements GeoAnimatable {
     private static final RawAnimation DEPLOY_AND_GLIDE = RawAnimation.begin()
             .then("animation", LoopType.PLAY_ONCE)
@@ -32,11 +25,7 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
     private static final Map<AbstractHorse, HorseStabilizerAnimatable> INSTANCES = new WeakHashMap<>();
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
-    /**
-     * GeckoLib 5 changed the {@link AnimationController} ctor: there's no leading {@code this}
-     * animatable parameter, and the animatable is implicitly tied through registration. Signature
-     * is now {@code (String name, int transitionTicks, AnimationStateHandler<T>)}.
-     */
+    // GeckoLib 5 changed the AnimationController ctor to (String name, int transitionTicks, AnimationStateHandler<T>) — no leading animatable param.
     private final AnimationController<HorseStabilizerAnimatable> controller =
             new AnimationController<>("stabilizer", 0, this::animationPredicate);
 
@@ -49,11 +38,7 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
         return INSTANCES.computeIfAbsent(horse, ignored -> new HorseStabilizerAnimatable());
     }
 
-    /**
-     * Look up the animatable for a horse by its entity id. Used by the render layer in 1.21.11,
-     * which only has access to the {@code RenderState} (entity id captured at extract time)
-     * during {@code submit}.
-     */
+    // Look up the animatable for a horse by entity id — used by the render layer, which only has the RenderState (entity id captured at extract time) during submit.
     public static @Nullable HorseStabilizerAnimatable getById(int entityId) {
         for (Map.Entry<AbstractHorse, HorseStabilizerAnimatable> entry : INSTANCES.entrySet()) {
             if (entry.getKey().getId() == entityId) {

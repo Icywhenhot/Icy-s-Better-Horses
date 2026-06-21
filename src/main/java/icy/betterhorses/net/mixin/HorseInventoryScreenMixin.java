@@ -107,10 +107,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
                 this.imageWidth,
                 BH_VANILLA_IMAGE_HEIGHT - BH_TOP_SECTION_HEIGHT);
 
-        // 1.21.11 split horse slot rendering: vanilla draws an 18x18 "container/slot" sprite for
-        // the slot frame, and AbstractContainerScreen.renderSlot overlays the 16x16 empty-icon
-        // sprite (saddle / horse_armor / llama_armor) on top when the slot is empty. Replicate the
-        // frame here; the empty-icon overlay is drawn automatically by vanilla's slot rendering.
+        // 1.21.11 splits horse slot rendering: vanilla draws the 18x18 slot frame and renderSlot overlays the 16x16 empty-icon when empty. Replicate the frame here; vanilla draws the empty-icon overlay automatically.
         if (horse.canUseSlot(EquipmentSlot.SADDLE)) {
             gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SLOT_SPRITE, x + 7, y + 17, 18, 18);
         }
@@ -147,12 +144,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         this.bh_drawGearPanel(gfx);
     }
 
-    /**
-     * Bond label and speed/jump stat lines are drawn at the very end of {@code render()} so they
-     * sit on top of every layer (slots, hovered-slot highlight, vanilla labels) and aren't masked
-     * by anything drawn after {@code renderBg}. The vanilla label-rendering matrix is already
-     * popped by this point, so coordinates here are in absolute screen space.
-     */
+    // Bond label and speed/jump stat lines draw at the very end of render() so they sit on top of every layer; the vanilla label matrix is already popped, so coordinates here are absolute screen space.
     @Inject(method = "render", at = @At("TAIL"))
     private void bh_drawTextOverlay(GuiGraphics gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
         AbstractHorse horse = this.bh_getHorseOrNull();
@@ -261,12 +253,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         gfx.fill(innerLeft, y + height - 1, innerRight, y + height, BH_MIDDLE_SHADOW);
     }
 
-    /**
-     * 1.21.11 removed {@code gfx.setColor} (the old way to tint a {@code renderItem} call).
-     * To replicate the "ghost" feel of the old hint icons, we draw the item normally and then
-     * lay a translucent overlay rectangle on top of it: a milky-white wash dims & desaturates
-     * the icon so it reads as a placeholder rather than a real equipped item.
-     */
+    // 1.21.11 removed gfx.setColor, so for the "ghost" hint icons we draw the item normally then lay a translucent milky-white wash on top so it reads as a placeholder.
     @Unique
     private void bh_drawGearHint(GuiGraphics gfx, int x, int y, GearSlot slot, Item item) {
         int slotIndex = this.bh_getGearSlotIndex(slot.ordinal());
@@ -281,11 +268,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         gfx.fill(iconX, iconY, iconX + 16, iconY + 16, 0xA0B7AB99);
     }
 
-    /**
-     * Helper for the new 1.21.11 {@code blit} signature, which now requires an explicit
-     * {@link com.mojang.blaze3d.pipeline.RenderPipeline} and texture sheet dimensions.
-     * The vanilla horse GUI texture is the standard 256×256 sheet.
-     */
+    // Helper for the new 1.21.11 blit signature, which requires an explicit RenderPipeline and texture sheet dimensions; the vanilla horse GUI texture is the standard 256×256 sheet.
     @Unique
     private static void bh_blitGui(GuiGraphics gfx, Identifier texture,
                                    int x, int y, int u, int v, int width, int height) {

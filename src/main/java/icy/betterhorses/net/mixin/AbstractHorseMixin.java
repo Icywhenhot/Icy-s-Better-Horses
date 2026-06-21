@@ -93,6 +93,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique
     private static final EntityDataAccessor<Boolean> BH_BREED_MIXED_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
+    // 1.21.11 has no OPTIONAL_UUID serializer, so sync the owner UUID as a String ("" = unowned); the client only needs it to compare against the local player.
+    @Unique
+    private static final EntityDataAccessor<String> BH_OWNER_SYNCED =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.STRING);
 
     @Unique private @Nullable UUID bh_owner = null;
     @Unique private HorseCommand bh_command = HorseCommand.FOLLOW;
@@ -126,12 +130,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private static final double BH_STABILIZER_MAX_DESCENT_SPEED = -0.125D;
     @Unique private static final double BH_STABILIZER_SMOOTHING = 0.35D;
     @Unique private static final double BH_STABILIZER_HALF_OPEN_SMOOTHING = 0.2D;
-    // Horse bbox is 1.39625 wide (±0.698 from center). The 2nd-passenger player hitbox is
-    // ±0.3 around their attachment point, so any rear offset more negative than -0.398 pushes
-    // the rear of their hitbox past the horse's bbox — when the horse backs into a wall, the
-    // rider clips into the block and takes in-wall (suffocation) damage. -0.35 keeps the rear
-    // edge at -0.65, leaving ~0.05 of buffer against the horse's rear edge. Front offset is
-    // mirrored for visual balance and to keep the 1st passenger symmetric with the 2nd.
+    // -0.35 keeps the rear rider's hitbox inside the horse bbox so it doesn't clip walls (suffocation); front mirrors it.
     @Unique private static final double BH_FRONT_PASSENGER_Z_OFFSET = 0.35D;
     @Unique private static final double BH_REAR_PASSENGER_Z_OFFSET = -0.35D;
     @Unique private static final float BH_FREE_CAMERA_ANGLE_THRESHOLD = 90.0F;
@@ -148,12 +147,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public @Nullable UUID bh_getOwner() {
+        if (level().isClientSide()) {
+            return bh_parseOwner(this.entityData.get(BH_OWNER_SYNCED));
+        }
         return bh_owner;
     }
 
     @Override
     public void bh_setOwner(@Nullable UUID owner) {
         this.bh_owner = owner;
+        this.entityData.set(BH_OWNER_SYNCED, owner == null ? "" : owner.toString());
         if (!level().isClientSide()) {
             AbstractHorse self = (AbstractHorse) (Object) this;
             if (owner != null) {
@@ -161,6 +164,18 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             } else {
                 HorseTracker.unregister(self);
             }
+        }
+    }
+
+    @Unique
+    private static @Nullable UUID bh_parseOwner(String synced) {
+        if (synced == null || synced.isEmpty()) {
+            return null;
+        }
+        try {
+            return UUID.fromString(synced);
+        } catch (IllegalArgumentException ignored) {
+            return null;
         }
     }
 
@@ -322,6 +337,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         builder.define(BH_GENDER_SYNCED, 0);
         builder.define(BH_BREED_SYNCED, HorseBreed.UNKNOWN_SPECIES.ordinal());
         builder.define(BH_BREED_MIXED_SYNCED, false);
+        builder.define(BH_OWNER_SYNCED, "");
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
@@ -355,12 +371,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             EntityReference<LivingEntity> ownerRef = ((AbstractHorse) (Object) this).getOwnerReference();
             bh_owner = ownerRef == null ? null : ownerRef.getUUID();
         }
+        this.entityData.set(BH_OWNER_SYNCED, bh_owner == null ? "" : bh_owner.toString());
         bh_command = HorseCommand.fromId(input.getIntOr("BH_Command", HorseCommand.FOLLOW.ordinal()));
         bh_bond = input.getIntOr("BH_Bond", 0);
         this.entityData.set(BH_BOND_SYNCED, bh_bond);
-        // Pre-existing horses (saved before this flag existed) that already have bond should
-        // be treated as having received their first-rename bond, so reloading and renaming
-        // doesn't reopen the exploit. Brand-new horses (bond == 0) start with it unconsumed.
+        // Pre-existing horses that already have bond are treated as having received their first-rename bond so renaming can't reopen the exploit; brand-new horses (bond == 0) start with it unconsumed.
         bh_nameTagBondReceived = input.getIntOr("BH_NameTagBondGiven", bh_bond > 0 ? 1 : 0) != 0;
         bh_home = input.read("BH_Home", BlockPos.CODEC).orElse(null);
         bh_wanderCenter = input.read("BH_WanderCenter", BlockPos.CODEC).orElse(null);
@@ -394,8 +409,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             this.entityData.set(BH_BREED_SYNCED, savedBreed.get());
             this.entityData.set(BH_BREED_MIXED_SYNCED, input.getBooleanOr("BH_BreedMixed", false));
         } else {
-            // Pre-existing horse from before this feature existed — infer the breed from the coat
-            // the horse already wears (preserve appearance) instead of randomizing.
+            // Pre-existing horse from before this feature existed — infer the breed from its current coat (preserve appearance) instead of randomizing.
             bh_assignBreedPreservingCoat();
         }
     }
@@ -413,9 +427,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             return;
         }
 
-        // Real horses are handled by HorseFinalizeSpawnMixin so we can read the original
-        // BhHorseGroupData passed from sibling spawns (vanilla Horse.finalizeSpawn clobbers
-        // its groupData arg before super, so we can't see the wrapper from here).
+        // Real horses are handled by HorseFinalizeSpawnMixin, which can still read the sibling BhHorseGroupData that vanilla Horse.finalizeSpawn clobbers before super (invisible from here).
         AbstractHorse self = (AbstractHorse) (Object) this;
         HorseBreed species = HorseBreed.speciesFor(self);
         if (species != null) {
@@ -487,7 +499,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         return new BlockPos(x.get(), y.get(), z.get());
     }
 
-    /** Codec-friendly slot/stack pair used for {@code BH_Gear}/{@code BH_Chest} list entries. */
+    // Codec-friendly slot/stack pair used for BH_Gear/BH_Chest list entries.
     @Unique
     public record BhSlotEntry(int slot, ItemStack stack) {
         public static final com.mojang.serialization.Codec<BhSlotEntry> CODEC =
@@ -503,11 +515,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.bh_syncGearFlags();
     }
 
-    /**
-     * 1.21.11 dropped {@code AbstractHorse.containerChanged(Container)} (the old
-     * {@code ContainerListener} hook). Watch for upgraded-saddle removal from a tick poll instead.
-     * Cheap: one item-slot check per horse per tick on the server.
-     */
+    // 1.21.11 dropped AbstractHorse.containerChanged (the old ContainerListener hook), so poll for upgraded-saddle removal each tick instead — one item-slot check per horse per tick on the server.
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_pollUpgradedSaddleRemoval(CallbackInfo ci) {
         if (((AbstractHorse) (Object) this).level().isClientSide()) {
@@ -555,14 +563,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     }
 
-    /**
-     * Block non-owners from becoming the primary rider of an owned horse. A non-owner is allowed
-     * to mount only when the owner is already the primary rider (the 2-rider scenario the
-     * second-passenger feature enables). Wild/untamed horses fall through to vanilla so taming
-     * still works. We hook {@code doPlayerRide} rather than {@code mobInteract} because vanilla,
-     * commands like {@code /ride}, and some other mods all funnel through this method — gating
-     * here covers every path. Server-side only: clients don't have authoritative owner state.
-     */
+    // Block non-owners from being the primary rider of an owned horse (allowed only when the owner already rides primary). Hooks doPlayerRide so every mount path — vanilla, /ride, other mods — is gated. Server-side only.
     @Inject(method = "doPlayerRide", at = @At("HEAD"), cancellable = true)
     private void bh_gateOwnerOnlyMount(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -574,21 +575,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         if (player instanceof ServerPlayer serverPlayer) {
             serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_owner"));
         }
-        // Belt-and-suspenders force-eject — covers the case where another mod/path already
-        // attached the player as a passenger before our gate ran, or where the client
-        // optimistically predicted a mount. Idempotent if they aren't actually riding.
+        // Belt-and-suspenders force-eject in case another mod/path already attached the player or the client optimistically predicted a mount; idempotent if they aren't actually riding.
         if (player.getVehicle() == self) {
             player.stopRiding();
         }
         ci.cancel();
     }
 
-    /**
-     * Catch-all: if at any tick the primary rider isn't the owner of an owned horse, eject
-     * every passenger. Covers owner-dismount-while-friend-was-secondary (friend slides into the
-     * primary slot), forced mounts from plugins/datapacks, and any future path we don't gate
-     * explicitly at mount time. Cheap — only runs when the horse is being ridden.
-     */
+    // Catch-all: if the primary rider of an owned horse isn't the owner on any tick, eject every passenger. Covers owner-dismount-promotes-friend, forced mounts, and any path not gated at mount time.
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_enforceOwnerPrimaryRider(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -640,16 +634,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             cancellable = true)
     private void bh_rotateHorseInsteadOfPlayer(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        // Owner data only exists server-side. Let the client run vanilla's doPlayerRide body,
-        // which performs the usual non-authoritative rotation work but leaves the real mount
-        // decision to the server. Starting the ride here on the client caused the "message +
-        // angry sound, but still mounted" desync when the server rejected non-owners.
+        // Owner data only exists server-side, so let the client run vanilla's doPlayerRide body and leave the real mount decision to the server — starting the ride client-side caused a "message + angry sound but still mounted" desync on rejection.
         if (self.level().isClientSide()) {
             return;
         }
 
-        // Defense in depth: even if HEAD-cancel from bh_gateOwnerOnlyMount didn't suppress
-        // this injector for some mixin-ordering reason, never mount a non-owner here.
+        // Defense in depth: even if bh_gateOwnerOnlyMount's HEAD-cancel didn't suppress this injector, never mount a non-owner here.
         UUID owner = this.bh_getOwner();
         if (BhConfig.horseExclusivityEnabled()
                 && owner != null
@@ -709,14 +699,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             net.minecraft.world.InteractionHand hand,
             CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        // Ctrl+rightclick fires both our radial-open packet AND vanilla's interact packet.
-        // The radial packet arrives first and arms a suppression flag; consume it here so the
-        // mount/inventory/heldItem branches below never run for that click.
-        if (!self.level().isClientSide()
-                && HorseTracker.consumeInteractSuppression(player.getUUID(), self.getId())) {
-            cir.setReturnValue(net.minecraft.world.InteractionResult.CONSUME);
-            return;
-        }
         if (!self.isVehicle()
                 || self.isBaby()
                 || self.hasPassenger(player)

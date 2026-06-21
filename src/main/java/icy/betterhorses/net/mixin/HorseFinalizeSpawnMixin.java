@@ -12,8 +12,6 @@ import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,21 +21,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * 1.21.11 vanilla {@code Horse.finalizeSpawn} replaces its {@code groupData} parameter with a
- * freshly-built {@code HorseGroupData} before calling {@code super.finalizeSpawn}. That clobbers
- * any {@code BhHorseGroupData} a sibling spawn passed in, so an injection on
- * {@code AbstractHorse.finalizeSpawn} can never see the original wrapper.
- *
- * <p>This mixin targets {@code Horse.finalizeSpawn} directly. HEAD captures the original
- * group data (in particular: the shared breed, if any) into a {@link Unique} field; TAIL applies
- * the coat from that breed and propagates a fresh {@link BhHorseGroupData} to the next sibling.
- */
+// Targets Horse.finalizeSpawn directly: vanilla rebuilds groupData before super, clobbering any BhHorseGroupData a sibling passed in. HEAD captures the original group breed; TAIL applies the coat and propagates a fresh BhHorseGroupData to the next sibling.
 @Mixin(Horse.class)
 public abstract class HorseFinalizeSpawnMixin {
-
-    @Unique
-    private static final Logger BH_LOGGER = LoggerFactory.getLogger("icys-better-horses/spawn");
 
     @Unique
     @Nullable
@@ -79,23 +65,13 @@ public abstract class HorseFinalizeSpawnMixin {
         data.bh_setBreed(breed);
         data.bh_setMixedBreed(false);
 
-        // Re-roll the coat from the breed's allowed list. Vanilla already set a random
-        // Variant + Markings just above the super.finalizeSpawn call; we overwrite it here.
+        // Re-roll the coat from the breed's allowed list, overwriting the random variant/markings vanilla just set.
         HorseBreed.Coat coat = breed.rollCoat(self.getRandom());
         if (coat != null) {
             ((HorseAccessor) self).bh_setVariantAndMarkings(coat.color(), coat.markings());
         }
 
-        String biomeId = level.getBiome(self.blockPosition())
-                .unwrapKey()
-                .map(key -> key.identifier().toString())
-                .orElse("<unregistered>");
-        BH_LOGGER.info("[HORSE_SPAWN] reason={} pos={} biome={} breed={} coat={}",
-                reason, self.blockPosition(), biomeId, breed, coat);
-
-        // Propagate breed to the next sibling in this spawn group. The vanilla return value
-        // (HorseGroupData) is preserved inside the wrapper so any downstream code that looked
-        // at it is unaffected.
+        // Propagate breed to the next sibling; the vanilla return value is preserved inside the wrapper.
         cir.setReturnValue(new BhHorseGroupData(breed, cir.getReturnValue()));
     }
 

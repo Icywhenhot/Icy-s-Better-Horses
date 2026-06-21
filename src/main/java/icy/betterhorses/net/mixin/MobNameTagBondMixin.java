@@ -16,14 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * Grants +10 bond when a player names a tamed horse with a name tag.
- *
- * Vanilla {@code Mob.interact} calls {@code checkAndHandleImportantInteractions} first; that
- * method handles name-tag renames via {@code ItemStack.interactLivingEntity} and short-circuits
- * with a CONSUME result before {@code mobInteract} runs. So a {@code mobInteract} hook never
- * sees name-tag use — we have to attach to {@code interact} on Mob itself.
- */
+// Grants +10 bond when a player names a tamed horse with a name tag. Vanilla handles name-tag renames in checkAndHandleImportantInteractions (CONSUME) before mobInteract runs, so a mobInteract hook never sees it — we attach to Mob.interact itself.
 @Mixin(Mob.class)
 public abstract class MobNameTagBondMixin {
 
@@ -64,9 +57,7 @@ public abstract class MobNameTagBondMixin {
             if (now == null || now.equals(this.bh$nameBeforeInteract)) {
                 return;
             }
-            // Only the first nametag grants bond. Subsequent renames still apply (vanilla
-            // already changed the name in checkAndHandleImportantInteractions) but can't be
-            // farmed for bond.
+            // Only the first nametag grants bond; subsequent renames still apply but can't be farmed for bond.
             if (horseData.bh_hasReceivedNameTagBond()) {
                 return;
             }
