@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Press $(item)P$() while mounted to open a full profile of the horse you're riding. Pressing $(item)P$() $(thing)without$() a horse under you still whistles your nearby mount, same as before."
+      "text": "Press $(k:key.icys-better-horses.call)$() while mounted to open a full profile of the horse you're riding. Pressing it $(thing)without$() a horse under you still whistles your nearby mount, same as before."
     },
     {
       "type": "patchouli:text",

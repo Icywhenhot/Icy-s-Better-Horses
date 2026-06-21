@@ -13,12 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * Grants a one-time +10 bond when a player names a horse with a name tag.
- * Hooks the tail of {@link NameTagItem#interactLivingEntity} so we only fire when vanilla
- * actually applied the name. Guarded by {@code bh_hasReceivedNameTagBond} so re-naming the
- * same horse doesn't farm bond.
- */
+// Grants a one-time +10 bond the first time a player name-tags a horse.
 @Mixin(NameTagItem.class)
 public class NameTagItemMixin {
 

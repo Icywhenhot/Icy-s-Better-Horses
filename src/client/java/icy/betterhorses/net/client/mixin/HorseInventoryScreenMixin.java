@@ -169,10 +169,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         double speedAttr = this.horse.getAttributeValue(Attributes.MOVEMENT_SPEED);
         double jumpAttr = this.horse.getAttributeValue(Attributes.JUMP_STRENGTH);
 
-        // Approximate conversions so the numbers feel intuitive in-game.
-        // Horse base speed 0.225 * 43.2 ~= 9.7 blk/s (matches vanilla roughly).
+        // Display-unit conversions: ~9.7 blk/s at base speed, ~3.2 block jump height.
         double speedBps = speedAttr * 43.2;
-        // Base horse jump 0.7 gives ~3.2 block height; linear fit within vanilla jump range.
         double jumpHeight = Math.max(0.0, jumpAttr * 6.0 - 1.0);
 
         int x = this.leftPos + BH_GEAR_PANEL_X + BH_STATS_TEXT_X_OFFSET;

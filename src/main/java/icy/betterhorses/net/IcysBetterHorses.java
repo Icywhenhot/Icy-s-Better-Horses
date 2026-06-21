@@ -1,9 +1,7 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.network.CallHorsePayload;
-import icy.betterhorses.net.network.OpenRadialPayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
-import icy.betterhorses.net.network.RequestOpenRadialPayload;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -52,8 +50,6 @@ public class IcysBetterHorses implements ModInitializer {
     private void registerPackets() {
         PayloadTypeRegistry.playC2S().register(RadialCommandPayload.TYPE, new RadialCommandPayload.StreamCodec());
         PayloadTypeRegistry.playC2S().register(CallHorsePayload.TYPE, new CallHorsePayload.StreamCodec());
-        PayloadTypeRegistry.playC2S().register(RequestOpenRadialPayload.TYPE, new RequestOpenRadialPayload.StreamCodec());
-        PayloadTypeRegistry.playS2C().register(OpenRadialPayload.TYPE, new OpenRadialPayload.StreamCodec());
     }
 
     private void registerServerHandlers() {
@@ -67,31 +63,6 @@ public class IcysBetterHorses implements ModInitializer {
             ServerPlayer player = context.player();
             context.server().execute(() -> handleCallHorse(player));
         });
-
-        ServerPlayNetworking.registerGlobalReceiver(RequestOpenRadialPayload.TYPE, (payload, context) -> {
-            ServerPlayer player = context.player();
-            LOGGER.info("[RADIAL][3] C2S received RequestOpenRadialPayload(horseId={}) from player {}",
-                    payload.horseId(), player.getName().getString());
-            context.server().execute(() -> handleOpenRadialRequest(player, payload.horseId()));
-        });
-    }
-
-    private void handleOpenRadialRequest(ServerPlayer player, int horseId) {
-        LOGGER.info("[RADIAL][3a] handleOpenRadialRequest on main thread: player={}, horseId={}",
-                player.getName().getString(), horseId);
-        AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
-        if (horse == null) {
-            LOGGER.info("[RADIAL][3z] Aborting: findCommandHorse returned null");
-            return;
-        }
-
-        LOGGER.info("[RADIAL][4] Validation passed, sending OpenRadialPayload(horseId={}) back to player {}",
-                horse.getId(), player.getName().getString());
-        // Arm before the vanilla ServerboundInteractPacket arrives in this same tick, so the
-        // mount path in AbstractHorse#mobInteract gets short-circuited and the player doesn't
-        // end up riding the horse just because Ctrl+rightclick also fires the vanilla interact.
-        HorseTracker.armInteractSuppression(player.getUUID(), horse.getId());
-        ServerPlayNetworking.send(player, new OpenRadialPayload(horse.getId()));
     }
 
     private void handleRadialCommand(ServerPlayer player, int horseId, HorseCommand command) {
@@ -131,8 +102,7 @@ public class IcysBetterHorses implements ModInitializer {
         IHorseData data = (IHorseData) horse;
         if (data.bh_getBond() <= 0) return;
 
-        // Whistling always cancels whatever standing order the horse was on (STAY,
-        // RETURN_HOME, etc.) — the player explicitly wants the horse to come to them.
+        // Whistling cancels any standing order — the player wants the horse to come to them.
         data.bh_setCommand(HorseCommand.FOLLOW);
 
         BlockPos target = player.blockPosition();
@@ -141,11 +111,7 @@ public class IcysBetterHorses implements ModInitializer {
         }
     }
 
-    /**
-     * Resolve which horse the whistle should summon for {@code player}. Prefers the last horse
-     * this player rode, falling back to the nearest owned horse in the same level (the last-ridden
-     * map is process-static and empty on every server boot).
-     */
+    // Prefers the last-ridden horse, else the nearest owned horse in the same level.
     private AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {
         AbstractHorse lastRidden = HorseTracker.getLastRidden(playerId);
         if (lastRidden != null
@@ -231,34 +197,17 @@ public class IcysBetterHorses implements ModInitializer {
 
     private AbstractHorse findCommandHorse(ServerPlayer player, int horseId, double radius) {
         ServerLevel serverLevel = (ServerLevel) player.level();
-        if (!(serverLevel.getEntity(horseId) instanceof AbstractHorse horse)) {
-            LOGGER.info("[RADIAL][V1] Fail: entity id {} is not an AbstractHorse in player's level (got {})",
-                    horseId,
-                    serverLevel.getEntity(horseId) == null
-                            ? "null"
-                            : serverLevel.getEntity(horseId).getClass().getSimpleName());
+        if (!(serverLevel.getEntity(horseId) instanceof AbstractHorse horse) || !horse.isTamed()) {
             return null;
         }
-        if (!horse.isTamed()) {
-            LOGGER.info("[RADIAL][V2] Fail: horse {} is not tamed", horseId);
-            return null;
-        }
-        double distSq = horse.distanceToSqr(player);
-        if (distSq > radius * radius) {
-            LOGGER.info("[RADIAL][V3] Fail: horse {} out of range (distSq={}, maxSq={})",
-                    horseId, distSq, radius * radius);
+        if (horse.distanceToSqr(player) > radius * radius) {
             return null;
         }
 
         UUID owner = ((IHorseData) horse).bh_getOwner();
         if (owner != null && !owner.equals(player.getUUID())) {
-            LOGGER.info("[RADIAL][V4] Fail: horse {} is owned by {}, not by caller {}",
-                    horseId, owner, player.getUUID());
             return null;
         }
-
-        LOGGER.info("[RADIAL][V5] OK: horse {} passed all validation (tamed={}, distSq={}, owner={})",
-                horseId, horse.isTamed(), distSq, owner);
         return horse;
     }
 }

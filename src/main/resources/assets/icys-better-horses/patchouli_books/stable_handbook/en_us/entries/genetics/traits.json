@@ -11,7 +11,7 @@
     {
       "type": "patchouli:text",
       "title": "Where to See It",
-      "text": "Press $(item)P$() while mounted to open the $(thing)Horse Info Screen$() — gender, breed, coat, and every stat bar are listed there.$(br2)While holding the $(item)Upgraded Saddle$() and looking at any horse, the in-world stats overlay also calls out the gender and breed under the horse's name."
+      "text": "Press $(k:key.icys-better-horses.call)$() while mounted to open the $(thing)Horse Info Screen$() — gender, breed, coat, and every stat bar are listed there.$(br2)While holding the $(item)Upgraded Saddle$() and looking at any horse, the in-world stats overlay also calls out the gender and breed under the horse's name."
     },
     {
       "type": "patchouli:text",

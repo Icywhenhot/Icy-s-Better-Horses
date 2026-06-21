@@ -11,10 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * The anonymous saddle slot inside {@link net.minecraft.world.inventory.HorseInventoryMenu}
- * checks {@code stack.is(Items.SADDLE)}. Extend acceptance to also allow our upgraded saddle.
- */
+// Lets the upgraded saddle drop into vanilla's saddle slot, not just a plain saddle.
 @Mixin(targets = "net/minecraft/world/inventory/HorseInventoryMenu$1")
 public abstract class HorseSaddleSlotMixin extends Slot {
 

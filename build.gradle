@@ -18,6 +18,20 @@ repositories {
 			includeGroup 'maven.modrinth'
 		}
 	}
+	maven {
+		name = 'TerraformersMC'
+		url = 'https://maven.terraformersmc.com/releases/'
+		content {
+			includeGroup 'com.terraformersmc'
+		}
+	}
+	maven {
+		name = 'Shedaniel'
+		url = 'https://maven.shedaniel.me/'
+		content {
+			includeGroup 'me.shedaniel.cloth'
+		}
+	}
 }
 
 loom {
@@ -41,6 +55,13 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
 	modImplementation "software.bernie.geckolib:geckolib-fabric-${project.minecraft_version}:${project.geckolib_version}"
+
+	// Mod Menu + Cloth Config — optional in-game config editor. Present in dev so runClient shows
+	// the config screen; not bundled into the shipped jar (players install them to get the screen).
+	modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+	modImplementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
+		exclude(group: "net.fabricmc.fabric-api")
+	}
 
 	// Patchouli — optional integration. Present only in the dev runtime so the Stable Handbook
 	// book loads when you launch runClient; it is NOT a compile dependency (the book is fully

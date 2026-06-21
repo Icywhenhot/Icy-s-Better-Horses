@@ -20,6 +20,9 @@
 		],
 		"client": [
 			"icy.betterhorses.net.IcysBetterHorsesClient"
+		],
+		"modmenu": [
+			"icy.betterhorses.net.client.BhModMenuIntegration"
 		]
 	},
 	"mixins": [
@@ -37,6 +40,8 @@
 		"geckolib": "*"
 	},
 	"suggests": {
-		"patchouli": "*"
+		"patchouli": "*",
+		"modmenu": "*",
+		"cloth-config": "*"
 	}
 }

@@ -37,10 +37,7 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * Standalone hitch post block that keeps its own tethered-horse state instead of delegating to
- * vanilla fence/lead mechanics.
- */
+// Standalone hitch post that tracks its own tethered horse instead of using vanilla leads.
 public class HitchpostBlock extends BaseEntityBlock {
 
     public static final MapCodec<HitchpostBlock> CODEC = simpleCodec(HitchpostBlock::new);

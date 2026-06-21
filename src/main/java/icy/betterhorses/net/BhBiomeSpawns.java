@@ -12,16 +12,7 @@ import net.minecraft.world.level.biome.MobSpawnSettings;
 
 import java.util.Set;
 
-/**
- * Adds {@code EntityType.HORSE} natural-spawn entries to every biome listed in
- * any breed's spawn list. Without this, biomes like deserts and snowy plains
- * never host horses no matter what {@link HorseBreed} says, because the natural
- * spawner won't pick a position for an entity type that has no spawn entry in
- * that biome's {@code MobSpawnSettings}.
- *
- * <p>Spawn weight and group size are tuned to match vanilla plains horses so
- * the overall horse density across the world stays reasonable.
- */
+// Adds horse natural-spawn entries to every biome in any breed's spawn list (tuned to vanilla plains).
 public final class BhBiomeSpawns {
 
     private static final int HORSE_SPAWN_WEIGHT = 5;
@@ -53,15 +44,6 @@ public final class BhBiomeSpawns {
 
                     if (boostedProbability) {
                         context.getSpawnSettings().setCreatureSpawnProbability(HORSE_CREATURE_PROBABILITY_FLOOR);
-                    }
-
-                    if (!alreadyHasHorse || boostedProbability) {
-                        IcysBetterHorses.LOGGER.info(
-                                "[SPAWN_REG] biome={} addHorse={} creatureProb={} -> {}",
-                                selectionContext.getBiomeKey().location(),
-                                !alreadyHasHorse,
-                                originalProbability,
-                                boostedProbability ? HORSE_CREATURE_PROBABILITY_FLOOR : originalProbability);
                     }
                 });
     }

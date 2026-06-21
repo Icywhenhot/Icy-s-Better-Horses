@@ -14,11 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * Makes horses wearing the {@link ModItems#HORSE_HOOVES} gear walk on top of powdered snow
- * instead of sinking through it. Vanilla only allows entities in the
- * {@code minecraft:powder_snow_walkable_mobs} tag or entities wearing leather boots.
- */
+// Lets horses wearing the hooves gear walk on top of powder snow.
 @Mixin(PowderSnowBlock.class)
 public abstract class PowderSnowBlockMixin {
 

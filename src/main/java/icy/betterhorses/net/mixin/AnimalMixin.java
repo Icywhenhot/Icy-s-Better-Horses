@@ -30,14 +30,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Animal.class)
 public abstract class AnimalMixin {
 
-    /**
-     * Vanilla {@code checkAnimalSpawnRules} only allows spawning on blocks in
-     * {@code BlockTags.ANIMALS_SPAWNABLE_ON} (grass blocks). That blocks horses
-     * from ever spawning in deserts, snowy plains, badlands etc., even after we
-     * add a spawn entry to those biomes. Relax the ground check for horse-like
-     * entities specifically — sand, snow, dirt, gravel, terracotta, ice and
-     * stone all count as valid horse ground.
-     */
+    // Relax the grass-only ground check so horses can spawn on sand/snow/dirt/gravel/ice/stone.
     @Inject(method = "checkAnimalSpawnRules", at = @At("HEAD"), cancellable = true)
     private static void bh_relaxHorseGroundCheck(EntityType<? extends Animal> type,
                                                  LevelAccessor level,
@@ -98,9 +91,7 @@ public abstract class AnimalMixin {
             childData.bh_setMixedBreed(false);
         }
 
-        // Stat inheritance: child = max(parent1, parent2) + random delta in display units
-        // (blocks/sec for speed, blocks for jump, HP for health), clamped at the vanilla horse
-        // base ceiling so bond's +75% multiplier still tops out at the mod-attainable max.
+        // Stat inheritance: max(parents) + random delta, clamped at the vanilla base ceiling.
         bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.MAX_HEALTH, VANILLA_MAX_HEALTH, HEALTH_DISPLAY_PER_RAW);
         bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.MOVEMENT_SPEED, VANILLA_MAX_SPEED, SPEED_DISPLAY_PER_RAW);
         bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.JUMP_STRENGTH, VANILLA_MAX_JUMP, JUMP_DISPLAY_PER_RAW);
@@ -123,8 +114,7 @@ public abstract class AnimalMixin {
     private static final double VANILLA_MAX_SPEED = 0.3375D;
     private static final double VANILLA_MAX_JUMP = 1.0D;
 
-    // display_value = raw * factor. Used to convert the -0.5..+1.0 delta from display units back to raw.
-    // Speed: blocks/sec = raw * 43.2. Jump: blocks = raw * 6 - 1 (slope is 6). Health: HP = raw * 1.
+    // display_value = raw * factor (speed blocks/sec = raw*43.2, jump slope = 6, health = raw).
     private static final double SPEED_DISPLAY_PER_RAW = 43.2D;
     private static final double JUMP_DISPLAY_PER_RAW = 6.0D;
     private static final double HEALTH_DISPLAY_PER_RAW = 1.0D;

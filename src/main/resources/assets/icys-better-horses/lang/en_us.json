@@ -1,6 +1,27 @@
 {
   "key.categories.icys-better-horses": "Icy's Better Horses",
-  "key.icys-better-horses.call": "Call Horse",
+  "key.icys-better-horses.call": "Horse Whistle / Info",
+  "key.icys-better-horses.radial": "Horse Command Wheel",
+
+  "config.icys-better-horses.title": "Icy's Better Horses",
+  "config.icys-better-horses.category.general": "General",
+  "config.icys-better-horses.category.keybinds": "Keybinds",
+  "config.icys-better-horses.call_key": "Horse Whistle / Info Key",
+  "config.icys-better-horses.call_key.tooltip": "Whistles your horse, or opens its info screen while you're riding.",
+  "config.icys-better-horses.radial_key": "Horse Command Wheel Key",
+  "config.icys-better-horses.radial_key.tooltip": "Opens the command wheel while looking at an owned horse.",
+  "config.icys-better-horses.stabilizer": "Horse Stabilizer",
+  "config.icys-better-horses.stabilizer.tooltip": "Enable the stabilizer gear (gliding wings that slow a fall).",
+  "config.icys-better-horses.medkit": "Horse Medkit",
+  "config.icys-better-horses.medkit.tooltip": "Enable the medkit gear (auto-heals the horse when badly hurt).",
+  "config.icys-better-horses.hitchpost": "Hitch Post",
+  "config.icys-better-horses.hitchpost.tooltip": "Enable hitch post tethering.",
+  "config.icys-better-horses.hooves": "Horse Hooves",
+  "config.icys-better-horses.hooves.tooltip": "Enable the hooves gear (walk on top of powder snow).",
+  "config.icys-better-horses.horse_exclusivity": "Owner Exclusivity",
+  "config.icys-better-horses.horse_exclusivity.tooltip": "Only the owner can ride or open the inventory of an owned horse.",
+  "config.icys-better-horses.multiriding": "Multi-Riding",
+  "config.icys-better-horses.multiriding.tooltip": "Allow a second player to ride behind the owner.",
 
   "screen.icys-better-horses.radial": "Horse Commands",
 

@@ -47,8 +47,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Unique private int bh_playerInventoryEndIndex = -1;
     @Unique private boolean bh_playerInventoryShifted = false;
 
-    /** Snapshot view of the player's ender chest, shown in the horse's chest slots when an Ender
-     *  Chest is in the chest gear slot. Synced back to the real ender chest on close / removal. */
+    // Snapshot of the player's ender chest shown in the chest slots; synced back on close/removal.
     @Unique private final SimpleContainer bh_enderChestView = new SimpleContainer(BH_CHEST_SLOT_COUNT);
     @Unique private PlayerEnderChestContainer bh_playerEnderChest = null;
     @Unique private boolean bh_enderChestViewLoaded = false;
@@ -97,9 +96,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             @Override public void clearContent() { this.bh_active().clearContent(); }
         };
 
-        // 1.21.1 HorseInventoryMenu layout: saddle lives in horseContainer (size 1 for a plain
-        // horse, 1+chestCols*3 for a chested horse), body armor is a separate armorContainer slot
-        // added directly after — so player inventory starts at horseContainer.size() + 1.
+        // Player inventory starts after the horse container (+1 for the separate armor slot).
         this.bh_playerInventoryStartIndex = horseContainer.getContainerSize() + 1;
         this.bh_playerInventoryEndIndex = Math.min(this.bh_playerInventoryStartIndex + 36, this.slots.size());
 
