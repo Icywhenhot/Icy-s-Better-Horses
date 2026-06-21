@@ -92,6 +92,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique
     private static final EntityDataAccessor<Boolean> BH_BREED_MIXED_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
+    // 26.1.2 has no OPTIONAL_UUID serializer, so sync the owner UUID as a String ("" = unowned); the client only needs it to compare against the local player.
+    @Unique
+    private static final EntityDataAccessor<String> BH_OWNER_SYNCED =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.STRING);
 
     @Unique private @Nullable UUID bh_owner = null;
     @Unique private HorseCommand bh_command = HorseCommand.FOLLOW;
@@ -147,12 +151,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public @Nullable UUID bh_getOwner() {
+        if (level().isClientSide()) {
+            return bh_parseOwner(this.entityData.get(BH_OWNER_SYNCED));
+        }
         return bh_owner;
     }
 
     @Override
     public void bh_setOwner(@Nullable UUID owner) {
         this.bh_owner = owner;
+        this.entityData.set(BH_OWNER_SYNCED, owner == null ? "" : owner.toString());
         if (!level().isClientSide()) {
             AbstractHorse self = (AbstractHorse) (Object) this;
             if (owner != null) {
@@ -160,6 +168,18 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             } else {
                 HorseTracker.unregister(self);
             }
+        }
+    }
+
+    @Unique
+    private static @Nullable UUID bh_parseOwner(String synced) {
+        if (synced == null || synced.isEmpty()) {
+            return null;
+        }
+        try {
+            return UUID.fromString(synced);
+        } catch (IllegalArgumentException ignored) {
+            return null;
         }
     }
 
@@ -321,6 +341,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         builder.define(BH_GENDER_SYNCED, 0);
         builder.define(BH_BREED_SYNCED, HorseBreed.UNKNOWN_SPECIES.ordinal());
         builder.define(BH_BREED_MIXED_SYNCED, false);
+        builder.define(BH_OWNER_SYNCED, "");
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
@@ -354,6 +375,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             EntityReference<LivingEntity> ownerRef = ((AbstractHorse) (Object) this).getOwnerReference();
             bh_owner = ownerRef == null ? null : ownerRef.getUUID();
         }
+        this.entityData.set(BH_OWNER_SYNCED, bh_owner == null ? "" : bh_owner.toString());
         bh_command = HorseCommand.fromId(input.getIntOr("BH_Command", HorseCommand.FOLLOW.ordinal()));
         bh_bond = input.getIntOr("BH_Bond", 0);
         this.entityData.set(BH_BOND_SYNCED, bh_bond);
@@ -718,14 +740,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             net.minecraft.world.InteractionHand hand,
             CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        // Ctrl+rightclick fires both our radial-open packet AND vanilla's interact packet.
-        // The radial packet arrives first and arms a suppression flag; consume it here so the
-        // mount/inventory/heldItem branches below never run for that click.
-        if (!self.level().isClientSide()
-                && HorseTracker.consumeInteractSuppression(player.getUUID(), self.getId())) {
-            cir.setReturnValue(net.minecraft.world.InteractionResult.CONSUME);
-            return;
-        }
         if (!self.isVehicle()
                 || self.isBaby()
                 || self.hasPassenger(player)

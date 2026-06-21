@@ -22,6 +22,16 @@ repositories {
 			includeGroup 'maven.modrinth'
 		}
 	}
+	maven {
+		name = 'TerraformersMC'
+		url = 'https://maven.terraformersmc.com/releases/'
+		content { includeGroup "com.terraformersmc" }
+	}
+	maven {
+		name = 'Shedaniel'
+		url = 'https://maven.shedaniel.me/'
+		content { includeGroup "me.shedaniel.cloth" }
+	}
 }
 
 dependencies {
@@ -38,6 +48,12 @@ dependencies {
 	implementation "maven.modrinth:geckolib:${project.geckolib_version_id}"
 	// Patchouli has no 1.21.11 Fabric release yet (latest supports 1.21.1 only).
 	// Re-enable when upstream publishes a 1.21.11 build.
+
+	// In-game config: ModMenu entry + Cloth Config screen. Dev-only (matches this branch's non-remap loom convention), not shipped.
+	implementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+	implementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
+		exclude group: "net.fabricmc.fabric-api"
+	}
 }
 
 processResources {

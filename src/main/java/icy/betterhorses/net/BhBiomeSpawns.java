@@ -64,15 +64,6 @@ public final class BhBiomeSpawns {
                     if (boostedProbability) {
                         context.getMobSpawnSettings().setCreatureGenerationProbability(HORSE_CREATURE_PROBABILITY_FLOOR);
                     }
-
-                    if (!alreadyHasHorse || boostedProbability) {
-                        IcysBetterHorses.LOGGER.info(
-                                "[SPAWN_REG] biome={} addHorse={} creatureProb={} -> {}",
-                                selectionContext.getBiomeKey().identifier(),
-                                !alreadyHasHorse,
-                                originalProbability,
-                                boostedProbability ? HORSE_CREATURE_PROBABILITY_FLOOR : originalProbability);
-                    }
                 });
     }
 
