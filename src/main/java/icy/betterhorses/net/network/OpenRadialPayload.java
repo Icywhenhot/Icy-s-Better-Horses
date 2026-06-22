@@ -1,4 +1,4 @@
-﻿package icy.betterhorses.net.network;
+package icy.betterhorses.net.network;
 
 import net.minecraft.network.FriendlyByteBuf;
 

@@ -1,5 +1,7 @@
 package icy.betterhorses.net.item;
 
+import icy.betterhorses.net.IHorseData;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -10,7 +12,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * 1.21.1 saddle plumbing: AbstractHorse implements Saddleable, equip via equipSaddle(stack, source).
+ * 1.20.1 saddle plumbing: AbstractHorse has no equipSaddle(stack) overload, so the upgraded saddle
+ * stack is placed into the horse saddle slot through {@link IHorseData#bh_equipUpgradedSaddle}.
  */
 public class UpgradedSaddleItem extends Item {
     public UpgradedSaddleItem(Properties properties) {
@@ -25,7 +28,8 @@ public class UpgradedSaddleItem extends Item {
         }
 
         if (!player.level().isClientSide()) {
-            horse.equipSaddle(stack.copyWithCount(1), SoundSource.NEUTRAL);
+            ((IHorseData) horse).bh_equipUpgradedSaddle(stack.copyWithCount(1));
+            horse.level().playSound(null, horse.blockPosition(), SoundEvents.HORSE_SADDLE, SoundSource.NEUTRAL, 0.5F, 1.0F);
             if (!player.getAbilities().instabuild) {
                 stack.shrink(1);
             }

@@ -1,4 +1,4 @@
-﻿package icy.betterhorses.net;
+package icy.betterhorses.net;
 
 import icy.betterhorses.net.client.HorseInfoScreen;
 import icy.betterhorses.net.client.HorseStabilizerSoundController;

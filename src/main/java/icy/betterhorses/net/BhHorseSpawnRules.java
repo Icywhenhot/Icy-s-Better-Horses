@@ -6,7 +6,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.SpawnPlacementTypes;
+import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.level.LevelAccessor;
@@ -23,7 +23,7 @@ public final class BhHorseSpawnRules {
         Object previous = SpawnPlacementsAccessor.bh_getDataByType().remove(EntityType.HORSE);
         SpawnPlacementsAccessor.bh_callRegister(
                 EntityType.HORSE,
-                SpawnPlacementTypes.ON_GROUND,
+                SpawnPlacements.Type.ON_GROUND,
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 BhHorseSpawnRules::checkHorseSpawnRules);
         IcysBetterHorses.LOGGER.info("[SPAWN_RULE_PATCH] Replaced HORSE spawn predicate (hadPrevious={})", previous != null);
@@ -51,7 +51,12 @@ public final class BhHorseSpawnRules {
     public static boolean checkHorseGroundRules(LevelAccessor level,
                                                 MobSpawnType reason,
                                                 BlockPos pos) {
-        if (!MobSpawnType.ignoresLightRequirements(reason) && level.getRawBrightness(pos, 0) <= 8) {
+        boolean ignoresLight = reason == MobSpawnType.SPAWNER
+                || reason == MobSpawnType.SPAWN_EGG
+                || reason == MobSpawnType.COMMAND
+                || reason == MobSpawnType.DISPENSER
+                || reason == MobSpawnType.BUCKET;
+        if (!ignoresLight && level.getRawBrightness(pos, 0) <= 8) {
             return false;
         }
 

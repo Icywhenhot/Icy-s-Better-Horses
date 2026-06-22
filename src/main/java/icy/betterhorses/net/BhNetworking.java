@@ -1,4 +1,4 @@
-﻿package icy.betterhorses.net;
+package icy.betterhorses.net;
 
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.ClientPayloadHandlers;
@@ -7,6 +7,8 @@ import icy.betterhorses.net.network.RadialCommandPayload;
 import icy.betterhorses.net.network.RequestOpenRadialPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
@@ -49,10 +51,14 @@ public final class BhNetworking {
                 .consumerMainThread(BhNetworking::handleOpenRadialRequest)
                 .add();
 
+        // The client handler references client-only classes (Minecraft, Screen). Keep it out of the
+        // common method reference so the dedicated server never classloads ClientPayloadHandlers — the
+        // inner lambda is only linked/invoked when the handler actually runs, which is client-only.
         CHANNEL.messageBuilder(OpenRadialPayload.class, messageId++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(OpenRadialPayload::encode)
                 .decoder(OpenRadialPayload::decode)
-                .consumerMainThread(ClientPayloadHandlers::handleOpenRadial)
+                .consumerMainThread((payload, context) -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
+                        () -> () -> ClientPayloadHandlers.handleOpenRadial(payload, context)))
                 .add();
     }
 

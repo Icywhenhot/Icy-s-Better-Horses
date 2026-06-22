@@ -10,7 +10,6 @@ import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Llama;
@@ -34,16 +33,19 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Shadow private float xMouse;
     @Shadow private float yMouse;
 
-    @Unique private static final ResourceLocation BH_SLOT_SPRITE =
-            ResourceLocation.withDefaultNamespace("container/slot");
-    @Unique private static final ResourceLocation BH_SADDLE_SLOT_SPRITE =
-            ResourceLocation.withDefaultNamespace("container/horse/saddle_slot");
-    @Unique private static final ResourceLocation BH_LLAMA_ARMOR_SLOT_SPRITE =
-            ResourceLocation.withDefaultNamespace("container/horse/llama_armor_slot");
-    @Unique private static final ResourceLocation BH_ARMOR_SLOT_SPRITE =
-            ResourceLocation.withDefaultNamespace("container/horse/armor_slot");
     @Unique private static final ResourceLocation BH_HORSE_TEXTURE =
-            ResourceLocation.withDefaultNamespace("textures/gui/container/horse.png");
+            new ResourceLocation("textures/gui/container/horse.png");
+
+    // 1.20.1 has no GUI sprite atlas; empty-slot graphics are blitted by UV from horse.png.
+    // Plain slot lives in the chest-grid region (u=0,v=166); the saddle/armor empty slots sit
+    // in the row at v=220 (vanilla imageHeight 166 + 54).
+    @Unique private static final int BH_SLOT_U = 0;
+    @Unique private static final int BH_SLOT_V = 166;
+    @Unique private static final int BH_SADDLE_SLOT_U = 18;
+    @Unique private static final int BH_SADDLE_SLOT_V = 220;
+    @Unique private static final int BH_ARMOR_SLOT_U = 0;
+    @Unique private static final int BH_LLAMA_ARMOR_SLOT_U = 36;
+    @Unique private static final int BH_ARMOR_SLOT_V = 220;
 
     @Unique private static final int BH_VANILLA_IMAGE_HEIGHT = 166;
     @Unique private static final int BH_TOP_SECTION_HEIGHT = 77;
@@ -101,13 +103,12 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
                 BH_VANILLA_IMAGE_HEIGHT - BH_TOP_SECTION_HEIGHT);
 
         if (this.horse.isSaddleable()) {
-            gfx.blitSprite(BH_SADDLE_SLOT_SPRITE, x + 7, y + 17, 18, 18);
+            gfx.blit(BH_HORSE_TEXTURE, x + 7, y + 17, BH_SADDLE_SLOT_U, BH_SADDLE_SLOT_V, 18, 18);
         }
 
-        if (this.horse.canUseSlot(EquipmentSlot.BODY)) {
-            ResourceLocation armorSlotSprite =
-                    this.horse instanceof Llama ? BH_LLAMA_ARMOR_SLOT_SPRITE : BH_ARMOR_SLOT_SPRITE;
-            gfx.blitSprite(armorSlotSprite, x + 7, y + 35, 18, 18);
+        if (this.horse.canWearArmor()) {
+            int armorSlotU = this.horse instanceof Llama ? BH_LLAMA_ARMOR_SLOT_U : BH_ARMOR_SLOT_U;
+            gfx.blit(BH_HORSE_TEXTURE, x + 7, y + 35, armorSlotU, BH_ARMOR_SLOT_V, 18, 18);
         }
 
         this.bh_drawGearPanel(gfx);
@@ -115,14 +116,11 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         this.bh_drawChestPanel(gfx);
         InventoryScreen.renderEntityInInventoryFollowsMouse(
                 gfx,
-                x + 26,
-                y + 18,
-                x + 78,
+                x + 52,
                 y + 70,
                 17,
-                0.25F,
-                this.xMouse,
-                this.yMouse,
+                (float) (x + 52) - this.xMouse,
+                (float) (y + 20) - this.yMouse,
                 this.horse);
         this.bh_drawBondLabel(gfx);
         ci.cancel();
@@ -198,16 +196,16 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int x = this.leftPos + BH_GEAR_PANEL_X;
         int y = this.topPos + BH_GEAR_PANEL_Y;
         for (int i = 0; i < GearSlot.COUNT; i++) {
-            gfx.blitSprite(BH_SLOT_SPRITE, x + i * 18, y, 18, 18);
+            gfx.blit(BH_HORSE_TEXTURE, x + i * 18, y, BH_SLOT_U, BH_SLOT_V, 18, 18);
         }
         if (!this.bh_hasUpgradedSaddleInMenu()) {
             return;
         }
         this.bh_drawGearHint(gfx, x, y, GearSlot.CHEST, Items.CHEST);
-        this.bh_drawGearHint(gfx, x, y, GearSlot.HOOVES, ModItems.HORSE_HOOVES);
-        this.bh_drawGearHint(gfx, x, y, GearSlot.MEDKIT, ModItems.HORSE_MEDKIT);
-        this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, ModItems.HORSE_STABILIZER);
-        this.bh_drawGearHint(gfx, x, y, GearSlot.HITCHPOST, ModItems.HITCHPOST);
+        this.bh_drawGearHint(gfx, x, y, GearSlot.HOOVES, ModItems.HORSE_HOOVES.get());
+        this.bh_drawGearHint(gfx, x, y, GearSlot.MEDKIT, ModItems.HORSE_MEDKIT.get());
+        this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, ModItems.HORSE_STABILIZER.get());
+        this.bh_drawGearHint(gfx, x, y, GearSlot.HITCHPOST, ModItems.HITCHPOST.get());
     }
 
     @Unique
@@ -219,7 +217,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int y = this.topPos + BH_CHEST_PANEL_Y;
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                gfx.blitSprite(BH_SLOT_SPRITE, x + col * 18, y + row * 18, 18, 18);
+                gfx.blit(BH_HORSE_TEXTURE, x + col * 18, y + row * 18, BH_SLOT_U, BH_SLOT_V, 18, 18);
             }
         }
     }

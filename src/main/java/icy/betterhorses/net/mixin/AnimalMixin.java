@@ -5,7 +5,6 @@ import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.HorseGender;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -158,7 +157,7 @@ public abstract class AnimalMixin {
     }
 
     private static void bh_inheritBetterStat(AbstractHorse p1, AbstractHorse p2, AbstractHorse child,
-                                             Holder<Attribute> attr, double cap, double displayPerRaw) {
+                                             Attribute attr, double cap, double displayPerRaw) {
         AttributeInstance p1Attr = p1.getAttribute(attr);
         AttributeInstance p2Attr = p2.getAttribute(attr);
         AttributeInstance childAttr = child.getAttribute(attr);

@@ -1,4 +1,4 @@
-﻿package icy.betterhorses.net;
+package icy.betterhorses.net;
 
 import icy.betterhorses.net.network.OpenRadialPayload;
 import net.minecraft.core.BlockPos;
@@ -12,7 +12,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Horse;
@@ -23,7 +22,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
-import net.minecraftforge.event.entity.RegisterSpawnPlacementsEvent;
+import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -63,13 +63,13 @@ public final class IcysBetterHorses {
         LOGGER.info("Icy's Better Horses initialized.");
     }
 
-    private void registerSpawnPlacements(RegisterSpawnPlacementsEvent event) {
+    private void registerSpawnPlacements(SpawnPlacementRegisterEvent event) {
         event.register(
                 EntityType.HORSE,
-                SpawnPlacementTypes.ON_GROUND,
+                SpawnPlacements.Type.ON_GROUND,
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 BhHorseSpawnRules::checkHorseSpawnRules,
-                RegisterSpawnPlacementsEvent.Operation.REPLACE);
+                SpawnPlacementRegisterEvent.Operation.REPLACE);
     }
 
     @SubscribeEvent
@@ -101,6 +101,18 @@ public final class IcysBetterHorses {
         }
         if (server.getTickCount() % WILD_HORSE_REPOP_INTERVAL_TICKS == 0) {
             tryRepopulateWildHorses(server);
+        }
+    }
+
+    /**
+     * 1.20.1 has no {@code minecraft:block_break_speed} attribute (added in 1.20.5), so the
+     * mounted mining-speed bonus is applied through Forge's {@link PlayerEvent.BreakSpeed} event
+     * instead of an attribute modifier (matching the +500% multiply-base bonus used on newer versions).
+     */
+    @SubscribeEvent
+    public void onMountedBreakSpeed(PlayerEvent.BreakSpeed event) {
+        if (event.getEntity().getVehicle() instanceof AbstractHorse) {
+            event.setNewSpeed(event.getNewSpeed() * 6.0F);
         }
     }
 
@@ -288,7 +300,7 @@ public final class IcysBetterHorses {
                 }
                 continue;
             }
-            if (!SpawnPlacements.isSpawnPositionOk(EntityType.HORSE, level, surface)) {
+            if (!net.minecraft.world.level.NaturalSpawner.isSpawnPositionOk(SpawnPlacements.Type.ON_GROUND, level, surface, EntityType.HORSE)) {
                 invalidSurfaceSkips++;
                 if (invalidSurfaceSample == null) {
                     invalidSurfaceSample = surface + " below="
@@ -320,7 +332,7 @@ public final class IcysBetterHorses {
                 continue;
             }
 
-            groupData = horse.finalizeSpawn(level, level.getCurrentDifficultyAt(surface), MobSpawnType.NATURAL, groupData);
+            groupData = horse.finalizeSpawn(level, level.getCurrentDifficultyAt(surface), MobSpawnType.NATURAL, groupData, null);
             if (!level.addFreshEntity(horse)) {
                 addFailureSkips++;
                 horse.discard();

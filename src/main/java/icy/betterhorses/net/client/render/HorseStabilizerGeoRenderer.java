@@ -20,6 +20,6 @@ public final class HorseStabilizerGeoRenderer extends GeoObjectRenderer<HorseSta
                          MultiBufferSource bufferSource, float partialTick, int packedLight) {
         RenderType renderType = getRenderType(animatable, getTextureLocation(animatable), bufferSource, partialTick);
         VertexConsumer buffer = bufferSource.getBuffer(renderType);
-        render(poseStack, animatable, bufferSource, renderType, buffer, packedLight, partialTick);
+        render(poseStack, animatable, bufferSource, renderType, buffer, packedLight);
     }
 }

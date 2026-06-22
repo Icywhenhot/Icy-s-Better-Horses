@@ -1,10 +1,11 @@
 package icy.betterhorses.net.mixin;
 
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import icy.betterhorses.net.ModItems;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * Allows the upgraded saddle to be placed into the vanilla horse-inventory saddle slot
@@ -16,8 +17,10 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(targets = "net.minecraft.world.inventory.HorseInventoryMenu$1")
 public abstract class HorseSaddleSlotMixin {
 
-    @ModifyReturnValue(method = "mayPlace", at = @At("RETURN"))
-    private boolean bh_allowUpgradedSaddle(boolean original, ItemStack stack) {
-        return original || stack.is(ModItems.UPGRADED_SADDLE.get());
+    @Inject(method = "mayPlace", at = @At("RETURN"), cancellable = true)
+    private void bh_allowUpgradedSaddle(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+        if (!cir.getReturnValueZ() && stack.is(ModItems.UPGRADED_SADDLE.get())) {
+            cir.setReturnValue(true);
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿package icy.betterhorses.net.network;
+package icy.betterhorses.net.network;
 
 import icy.betterhorses.net.client.RadialMenuScreen;
 import net.minecraft.client.Minecraft;

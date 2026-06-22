@@ -60,6 +60,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -97,11 +98,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private @Nullable Vec3 bh_lastFrostWalkerPos = null;
 
     @Unique
-    private static final ResourceLocation BH_SPEED_ID =
-            new ResourceLocation("icys_better_horses", "bond_speed");
+    private static final java.util.UUID BH_SPEED_ID =
+            java.util.UUID.fromString("a1b2c3d4-0001-4a51-8b6f-1c2d3e4f5a6b");
     @Unique
-    private static final ResourceLocation BH_JUMP_ID =
-            new ResourceLocation("icys_better_horses", "bond_jump");
+    private static final java.util.UUID BH_JUMP_ID =
+            java.util.UUID.fromString("a1b2c3d4-0002-4a51-8b6f-1c2d3e4f5a6b");
     @Unique private static final float BH_HOOVES_FALL_DAMAGE_MULTIPLIER = 0.5F;
     @Unique private static final double BH_STABILIZER_HALF_OPEN_DESCENT_SPEED = -0.35D;
     @Unique private static final double BH_STABILIZER_MAX_DESCENT_SPEED = -0.125D;
@@ -283,7 +284,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public boolean bh_hasUpgradedSaddle() {
-        return inventory != null && inventory.getItem(0).is(ModItems.UPGRADED_SADDLE);
+        return inventory != null && inventory.getItem(0).is(ModItems.UPGRADED_SADDLE.get());
+    }
+
+    @Override
+    public void bh_equipUpgradedSaddle(ItemStack saddle) {
+        if (inventory != null) {
+            inventory.setItem(0, saddle);
+        }
     }
 
     @Override
@@ -380,6 +388,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                                         net.minecraft.world.DifficultyInstance difficulty,
                                         net.minecraft.world.entity.MobSpawnType reason,
                                         @Nullable net.minecraft.world.entity.SpawnGroupData groupData,
+                                        @Nullable net.minecraft.nbt.CompoundTag dataTag,
                                         CallbackInfoReturnable<net.minecraft.world.entity.SpawnGroupData> cir) {
         // Always randomize gender on fresh spawn — default int 0 doesn't distinguish "unset" from MALE.
         this.bh_syncState().genderId = this.random.nextBoolean() ? 0 : 1;
@@ -428,7 +437,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack stack = container.getItem(i);
             if (stack.isEmpty()) continue;
-            codec.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), new BhSlotEntry(i, stack))
+            codec.encodeStart(NbtOps.INSTANCE, new BhSlotEntry(i, stack))
                     .result().ifPresent(list::add);
         }
         return list;
@@ -441,7 +450,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         ListTag list = input.getList(key, Tag.TAG_COMPOUND);
         Codec<BhSlotEntry> codec = BhSlotEntry.CODEC;
         for (Tag t : list) {
-            codec.parse(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), t)
+            codec.parse(NbtOps.INSTANCE, t)
                     .result()
                     .ifPresent(entry -> {
                         int slot = entry.slot();
@@ -458,8 +467,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             return;
         }
         if (!input.contains("SaddleItem", Tag.TAG_COMPOUND)) return;
-        ItemStack saddle = ItemStack.parse(this.registryAccess(), input.getCompound("SaddleItem")).orElse(ItemStack.EMPTY);
-        if (saddle.is(ModItems.UPGRADED_SADDLE)) {
+        ItemStack saddle = ItemStack.of(input.getCompound("SaddleItem"));
+        if (saddle.is(ModItems.UPGRADED_SADDLE.get())) {
             inventory.setItem(0, saddle);
         }
     }
@@ -924,25 +933,30 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         goalSelector.addGoal(3, new HorseWanderBoundsGoal(self));
     }
 
-    @Inject(method = "getPassengerAttachmentPoint", at = @At("RETURN"), cancellable = true)
+    /**
+     * 1.20.1 has no {@code getPassengerAttachmentPoint}; passenger placement happens in
+     * {@code positionRider(Entity, MoveFunction)}, which forwards the rider position to
+     * {@code MoveFunction.accept}. Redirect that call so a second rider is shifted front/back
+     * horizontally for the multi-riding feature.
+     */
+    @Redirect(
+            method = "positionRider(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/Entity$MoveFunction;)V",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/world/entity/Entity$MoveFunction;accept(Lnet/minecraft/world/entity/Entity;DDD)V"))
     private void bh_offsetSecondPassenger(
-            Entity passenger,
-            net.minecraft.world.entity.EntityDimensions dimensions,
-            float scaleFactor,
-            CallbackInfoReturnable<Vec3> cir) {
+            net.minecraft.world.entity.Entity.MoveFunction moveFunction,
+            Entity passenger, double x, double y, double z) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (!BhConfig.multiRidingEnabled() || self.getPassengers().size() <= 1) {
-            return;
+        if (BhConfig.multiRidingEnabled() && self.getPassengers().size() > 1) {
+            int passengerIndex = self.getPassengers().indexOf(passenger);
+            if (passengerIndex >= 0) {
+                double zOffset = passengerIndex == 0 ? BH_FRONT_PASSENGER_Z_OFFSET : BH_REAR_PASSENGER_Z_OFFSET;
+                Vec3 offset = new Vec3(0.0D, 0.0D, zOffset).yRot(-self.getYRot() * ((float) Math.PI / 180.0F));
+                x += offset.x;
+                z += offset.z;
+            }
         }
-
-        int passengerIndex = self.getPassengers().indexOf(passenger);
-        if (passengerIndex < 0) {
-            return;
-        }
-
-        double zOffset = passengerIndex == 0 ? BH_FRONT_PASSENGER_Z_OFFSET : BH_REAR_PASSENGER_Z_OFFSET;
-        Vec3 offset = new Vec3(0.0D, 0.0D, zOffset).yRot(-self.getYRot() * ((float) Math.PI / 180.0F));
-        cir.setReturnValue(cir.getReturnValue().add(offset));
+        moveFunction.accept(passenger, x, y, z);
     }
 
     @Inject(method = "getRiddenRotation", at = @At("HEAD"), cancellable = true)
@@ -1017,7 +1031,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             speed.removeModifier(BH_SPEED_ID);
             if (bondLevel > 0) {
                 speed.addTransientModifier(new AttributeModifier(
-                        BH_SPEED_ID, bonus, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+                        BH_SPEED_ID, "bh_bond_speed", bonus, AttributeModifier.Operation.MULTIPLY_BASE));
             }
         }
 
@@ -1026,7 +1040,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             jump.removeModifier(BH_JUMP_ID);
             if (bondLevel > 0) {
                 jump.addTransientModifier(new AttributeModifier(
-                        BH_JUMP_ID, bonus, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+                        BH_JUMP_ID, "bh_bond_jump", bonus, AttributeModifier.Operation.MULTIPLY_BASE));
             }
         }
     }
@@ -1064,14 +1078,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             return 0;
         }
 
-        for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<net.minecraft.core.Holder<net.minecraft.world.item.enchantment.Enchantment>> entry
-                : hooves.getEnchantments().entrySet()) {
-            if (entry.getKey().is(Enchantments.FROST_WALKER)) {
-                return entry.getIntValue();
-            }
-        }
-
-        return 0;
+        return net.minecraft.world.item.enchantment.EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FROST_WALKER, hooves);
     }
 
     @Unique

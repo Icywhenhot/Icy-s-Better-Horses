@@ -2,7 +2,6 @@ package icy.betterhorses.net.item;
 
 import icy.betterhorses.net.ModBlockEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,14 +31,14 @@ public class HitchpostBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+    public void load(CompoundTag tag) {
+        super.load(tag);
         this.tetheredHorseId = tag.hasUUID("TetheredHorse") ? tag.getUUID("TetheredHorse") : null;
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         if (this.tetheredHorseId != null) {
             tag.putUUID("TetheredHorse", this.tetheredHorseId);
         }

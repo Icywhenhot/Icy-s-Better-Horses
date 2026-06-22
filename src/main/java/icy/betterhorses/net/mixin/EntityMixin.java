@@ -1,14 +1,15 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.IHorseData;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraftforge.common.ForgeMod;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.UUID;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,13 +21,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class EntityMixin {
 
     @Unique
-    private static final ResourceLocation BH_MOUNTED_STEP_HEIGHT_ID =
-            new ResourceLocation("icys_better_horses", "mounted_step_height");
-    @Unique
-    private static final ResourceLocation BH_MOUNTED_BREAK_SPEED_ID =
-            new ResourceLocation("icys_better_horses", "mounted_break_speed");
+    private static final UUID BH_MOUNTED_STEP_HEIGHT_ID =
+            UUID.fromString("4d2b1f3a-7c9e-4a51-8b6f-1c2d3e4f5a6b");
     @Unique private static final double BH_MOUNTED_STEP_HEIGHT_BONUS = 0.1D;
-    @Unique private static final double BH_MOUNTED_BREAK_SPEED_BONUS = 5.0D;
     @Unique private @Nullable AbstractHorse bh_dismountHorse = null;
     @Unique private boolean bh_shouldSetHorseToWanderOnDismount = false;
 
@@ -43,21 +40,13 @@ public abstract class EntityMixin {
             return;
         }
 
-        @Nullable AttributeInstance stepHeight = horse.getAttribute(Attributes.STEP_HEIGHT);
+        @Nullable AttributeInstance stepHeight = horse.getAttribute(ForgeMod.STEP_HEIGHT_ADDITION.get());
         if (stepHeight != null && stepHeight.getModifier(BH_MOUNTED_STEP_HEIGHT_ID) == null) {
             stepHeight.addTransientModifier(new AttributeModifier(
                     BH_MOUNTED_STEP_HEIGHT_ID,
+                    "bh_mounted_step_height",
                     BH_MOUNTED_STEP_HEIGHT_BONUS,
-                    AttributeModifier.Operation.ADD_VALUE));
-        }
-
-        @Nullable AttributeInstance breakSpeed = player.getAttribute(Attributes.BLOCK_BREAK_SPEED);
-        if (breakSpeed != null) {
-            breakSpeed.removeModifier(BH_MOUNTED_BREAK_SPEED_ID);
-            breakSpeed.addTransientModifier(new AttributeModifier(
-                    BH_MOUNTED_BREAK_SPEED_ID,
-                    BH_MOUNTED_BREAK_SPEED_BONUS,
-                    AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+                    AttributeModifier.Operation.ADDITION));
         }
     }
 
@@ -73,18 +62,13 @@ public abstract class EntityMixin {
         Entity vehicle = player.getVehicle();
         if (vehicle instanceof AbstractHorse horse) {
             if (horse.getPassengers().size() == 1) {
-                @Nullable AttributeInstance stepHeight = horse.getAttribute(Attributes.STEP_HEIGHT);
+                @Nullable AttributeInstance stepHeight = horse.getAttribute(ForgeMod.STEP_HEIGHT_ADDITION.get());
                 if (stepHeight != null) {
                     stepHeight.removeModifier(BH_MOUNTED_STEP_HEIGHT_ID);
                 }
             }
             this.bh_dismountHorse = horse;
             this.bh_shouldSetHorseToWanderOnDismount = player.getUUID().equals(((IHorseData) horse).bh_getOwner());
-        }
-
-        @Nullable AttributeInstance breakSpeed = player.getAttribute(Attributes.BLOCK_BREAK_SPEED);
-        if (breakSpeed != null) {
-            breakSpeed.removeModifier(BH_MOUNTED_BREAK_SPEED_ID);
         }
     }
 

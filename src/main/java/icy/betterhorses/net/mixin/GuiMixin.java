@@ -79,7 +79,7 @@ public abstract class GuiMixin {
     @Unique
     private boolean bh_isHoldingUpgradedSaddle() {
         return this.minecraft.player != null
-                && (this.minecraft.player.getMainHandItem().is(ModItems.UPGRADED_SADDLE)
-                || this.minecraft.player.getOffhandItem().is(ModItems.UPGRADED_SADDLE));
+                && (this.minecraft.player.getMainHandItem().is(ModItems.UPGRADED_SADDLE.get())
+                || this.minecraft.player.getOffhandItem().is(ModItems.UPGRADED_SADDLE.get()));
     }
 }

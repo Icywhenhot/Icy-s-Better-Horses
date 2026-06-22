@@ -4,6 +4,7 @@ import icy.betterhorses.net.BhHorseGroupData;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.core.Holder;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.MobSpawnType;
@@ -48,6 +49,7 @@ public abstract class HorseFinalizeSpawnMixin {
                                       DifficultyInstance difficulty,
                                       MobSpawnType reason,
                                       @Nullable SpawnGroupData groupData,
+                                      @Nullable CompoundTag dataTag,
                                       CallbackInfoReturnable<SpawnGroupData> cir) {
         if (groupData instanceof BhHorseGroupData existing) {
             this.bh_pendingGroupBreed = existing.breed();
@@ -61,6 +63,7 @@ public abstract class HorseFinalizeSpawnMixin {
                                       DifficultyInstance difficulty,
                                       MobSpawnType reason,
                                       @Nullable SpawnGroupData groupData,
+                                      @Nullable CompoundTag dataTag,
                                       CallbackInfoReturnable<SpawnGroupData> cir) {
         Horse self = (Horse) (Object) this;
         IHorseData data = (IHorseData) self;

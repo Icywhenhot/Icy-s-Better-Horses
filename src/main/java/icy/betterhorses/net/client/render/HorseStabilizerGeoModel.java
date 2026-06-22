@@ -2,7 +2,7 @@ package icy.betterhorses.net.client.render;
 
 import icy.betterhorses.net.IcysBetterHorses;
 import net.minecraft.resources.ResourceLocation;
-import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.model.GeoModel;
 
 /**

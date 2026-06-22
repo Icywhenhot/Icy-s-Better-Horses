@@ -18,8 +18,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * Fades the horse out when the rider looks down. 1.21.1 implementation:
  *   - HEAD of render(): push opacity onto BhMountedHorseVisibility's thread-local.
  *   - Swap render type to entityTranslucent when faded so alpha blending is enabled.
- *   - ModifyArg on EntityModel.renderToBuffer() index=4 (the int packed color/alpha): scale
- *     the alpha component by the pushed opacity.
+ *   - ModifyArg on EntityModel.renderToBuffer() index=7 (the float alpha; 1.20.1 passes separate
+ *     r,g,b,a floats rather than 1.21's packed int color): scale the alpha by the pushed opacity.
  *   - RETURN of render(): pop the thread-local back to 1.0.
  */
 @Mixin(LivingEntityRenderer.class)
@@ -47,16 +47,14 @@ public abstract class LivingEntityRendererMixin {
 
     @ModifyArg(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
                at = @At(value = "INVOKE",
-                        target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V"),
-               index = 4)
-    private int bh_applyOpacityToColor(int color) {
+                        target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V"),
+               index = 7)
+    private float bh_applyOpacityToColor(float alpha) {
         float opacity = BhMountedHorseVisibility.currentOpacity();
         if (opacity >= 1.0F || opacity <= 0.0F) {
-            return color;
+            return alpha;
         }
-        int origAlpha = (color >>> 24) & 0xFF;
-        int newAlpha = Math.round(origAlpha * opacity) & 0xFF;
-        return (color & 0x00FFFFFF) | (newAlpha << 24);
+        return alpha * opacity;
     }
 
     @Inject(method = "getRenderType(Lnet/minecraft/world/entity/LivingEntity;ZZZ)Lnet/minecraft/client/renderer/RenderType;",
