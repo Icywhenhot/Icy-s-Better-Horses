@@ -83,7 +83,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private @Nullable BlockPos bh_hitchpostPos = null;
     @Unique private @Nullable Vec3 bh_hitchAnchor = null;
     @Unique private boolean bh_nameTagBondReceived = false;
-    @Unique private final ModAttachments.BhHorseSyncState bh_syncState = new ModAttachments.BhHorseSyncState();
+    // Deliberately NO initializer: defineSynchedData() runs from the Entity super-constructor,
+    // before this subclass's @Unique field initializers would run. The lazy bh_syncState() getter
+    // constructs it on first access (during defineSynchedData); a "= null" initializer would run
+    // after super() and wipe that instance, so the field is left bare.
+    @Unique private ModAttachments.BhHorseSyncState bh_syncState;
     @Unique
     private final SimpleContainer bh_gearContainer = new SimpleContainer(GearSlot.COUNT) {
         @Override
@@ -142,12 +146,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Inject(method = "defineSynchedData", at = @At("TAIL"))
     private void bh_defineSynchedData(CallbackInfo ci) {
-        this.entityData.define(BH_BOND, this.bh_syncState.bond);
-        this.entityData.define(BH_STABILIZER_STATE, this.bh_syncState.stabilizerStateId);
-        this.entityData.define(BH_GEAR_FLAGS, this.bh_syncState.gearFlags);
-        this.entityData.define(BH_GENDER_ID, this.bh_syncState.genderId);
-        this.entityData.define(BH_BREED_ID, this.bh_syncState.breedId);
-        this.entityData.define(BH_BREED_MIXED, this.bh_syncState.breedMixed);
+        this.entityData.define(BH_BOND, this.bh_syncState().bond);
+        this.entityData.define(BH_STABILIZER_STATE, this.bh_syncState().stabilizerStateId);
+        this.entityData.define(BH_GEAR_FLAGS, this.bh_syncState().gearFlags);
+        this.entityData.define(BH_GENDER_ID, this.bh_syncState().genderId);
+        this.entityData.define(BH_BREED_ID, this.bh_syncState().breedId);
+        this.entityData.define(BH_BREED_MIXED, this.bh_syncState().breedMixed);
     }
 
     @Override
@@ -218,7 +222,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public void bh_setBond(int level) {
-        this.bh_syncState.bond = Math.max(0, Math.min(100, level));
+        this.bh_syncState().bond = Math.max(0, Math.min(100, level));
         this.bh_syncHorseData();
         bh_applyBondAttributes();
     }
@@ -240,7 +244,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public void bh_setGender(HorseGender gender) {
-        this.bh_syncState.genderId = gender.ordinal();
+        this.bh_syncState().genderId = gender.ordinal();
         this.bh_syncHorseData();
     }
 
@@ -251,7 +255,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public void bh_setBreed(HorseBreed breed) {
-        this.bh_syncState.breedId = breed.ordinal();
+        this.bh_syncState().breedId = breed.ordinal();
         this.bh_syncHorseData();
     }
 
@@ -262,7 +266,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public void bh_setMixedBreed(boolean mixed) {
-        this.bh_syncState.breedMixed = mixed;
+        this.bh_syncState().breedMixed = mixed;
         this.bh_syncHorseData();
     }
 
@@ -273,7 +277,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public void bh_setStabilizerState(HorseStabilizerState state) {
-        this.bh_syncState.stabilizerStateId = state.ordinal();
+        this.bh_syncState().stabilizerStateId = state.ordinal();
         this.bh_syncHorseData();
     }
 
@@ -709,14 +713,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             net.minecraft.world.InteractionHand hand,
             CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        // Ctrl+rightclick fires both our radial-open packet AND vanilla's interact packet.
-        // The radial packet arrives first and arms a suppression flag; consume it here so the
-        // mount/inventory/heldItem branches below never run for that click.
-        if (!self.level().isClientSide()
-                && HorseTracker.consumeInteractSuppression(player.getUUID(), self.getId())) {
-            cir.setReturnValue(net.minecraft.world.InteractionResult.CONSUME);
-            return;
-        }
         if (!self.isVehicle()
                 || self.isBaby()
                 || self.hasPassenger(player)
@@ -1186,16 +1182,26 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Unique
     private ModAttachments.BhHorseSyncState bh_syncState() {
+        if (this.bh_syncState == null) {
+            this.bh_syncState = new ModAttachments.BhHorseSyncState();
+        }
         return this.bh_syncState;
     }
 
     @Unique
     private void bh_syncHorseData() {
-        this.entityData.set(BH_BOND, this.bh_syncState.bond);
-        this.entityData.set(BH_STABILIZER_STATE, this.bh_syncState.stabilizerStateId);
-        this.entityData.set(BH_GEAR_FLAGS, this.bh_syncState.gearFlags);
-        this.entityData.set(BH_GENDER_ID, this.bh_syncState.genderId);
-        this.entityData.set(BH_BREED_ID, this.bh_syncState.breedId);
-        this.entityData.set(BH_BREED_MIXED, this.bh_syncState.breedMixed);
+        // SERVER ONLY. bh_syncState is a server-authoritative scratch copy; the client receives the
+        // real values through SynchedEntityData. Per-tick setters such as bh_setStabilizerState run on
+        // both sides, so writing entityData here on the client would clobber the just-synced bond /
+        // gender / breed back to this client-local copy's defaults (UNKNOWN/0/MALE) every tick.
+        if (((AbstractHorse) (Object) this).level().isClientSide()) {
+            return;
+        }
+        this.entityData.set(BH_BOND, this.bh_syncState().bond);
+        this.entityData.set(BH_STABILIZER_STATE, this.bh_syncState().stabilizerStateId);
+        this.entityData.set(BH_GEAR_FLAGS, this.bh_syncState().gearFlags);
+        this.entityData.set(BH_GENDER_ID, this.bh_syncState().genderId);
+        this.entityData.set(BH_BREED_ID, this.bh_syncState().breedId);
+        this.entityData.set(BH_BREED_MIXED, this.bh_syncState().breedMixed);
     }
 }

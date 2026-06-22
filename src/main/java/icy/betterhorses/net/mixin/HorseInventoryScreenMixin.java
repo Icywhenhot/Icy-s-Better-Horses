@@ -73,7 +73,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void bh_configureInitialLayout(
-            HorseInventoryMenu menu, Inventory inventory, AbstractHorse horse, int chestColumns,
+            HorseInventoryMenu menu, Inventory inventory, AbstractHorse horse,
             CallbackInfo ci) {
         HorseInventoryLayoutAccess layoutAccess = (HorseInventoryLayoutAccess) menu;
         this.imageHeight = layoutAccess.bh_hasChestStorageLayout() ? BH_EXTENDED_IMAGE_HEIGHT : BH_VANILLA_IMAGE_HEIGHT;

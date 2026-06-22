@@ -18,6 +18,6 @@
   "result": {
     "item": "patchouli:guide_book",
     "count": 1,
-    "nbt": "{patchouli:book:\"icys_better_horses:stable_handbook\"}"
+    "nbt": "{\"patchouli:book\":\"icys_better_horses:stable_handbook\"}"
   }
 }

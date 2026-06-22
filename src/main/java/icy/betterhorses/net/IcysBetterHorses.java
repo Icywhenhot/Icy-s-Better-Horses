@@ -1,6 +1,5 @@
 package icy.betterhorses.net;
 
-import icy.betterhorses.net.network.OpenRadialPayload;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -114,21 +113,6 @@ public final class IcysBetterHorses {
         if (event.getEntity().getVehicle() instanceof AbstractHorse) {
             event.setNewSpeed(event.getNewSpeed() * 6.0F);
         }
-    }
-
-    public static void handleOpenRadialRequest(ServerPlayer player, int horseId) {
-        LOGGER.info("[RADIAL][3a] handleOpenRadialRequest on main thread: player={}, horseId={}",
-                player.getName().getString(), horseId);
-        AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
-        if (horse == null) {
-            LOGGER.info("[RADIAL][3z] Aborting: findCommandHorse returned null");
-            return;
-        }
-
-        LOGGER.info("[RADIAL][4] Validation passed, sending OpenRadialPayload(horseId={}) back to player {}",
-                horse.getId(), player.getName().getString());
-        HorseTracker.armInteractSuppression(player.getUUID(), horse.getId());
-        BhNetworking.sendToPlayer(player, new OpenRadialPayload(horse.getId()));
     }
 
     public static void handleRadialCommand(ServerPlayer player, int horseId, HorseCommand command) {
@@ -368,34 +352,17 @@ public final class IcysBetterHorses {
 
     private static AbstractHorse findCommandHorse(ServerPlayer player, int horseId, double radius) {
         ServerLevel serverLevel = (ServerLevel) player.level();
-        if (!(serverLevel.getEntity(horseId) instanceof AbstractHorse horse)) {
-            LOGGER.info("[RADIAL][V1] Fail: entity id {} is not an AbstractHorse in player's level (got {})",
-                    horseId,
-                    serverLevel.getEntity(horseId) == null
-                            ? "null"
-                            : serverLevel.getEntity(horseId).getClass().getSimpleName());
+        if (!(serverLevel.getEntity(horseId) instanceof AbstractHorse horse) || !horse.isTamed()) {
             return null;
         }
-        if (!horse.isTamed()) {
-            LOGGER.info("[RADIAL][V2] Fail: horse {} is not tamed", horseId);
-            return null;
-        }
-        double distSq = horse.distanceToSqr(player);
-        if (distSq > radius * radius) {
-            LOGGER.info("[RADIAL][V3] Fail: horse {} out of range (distSq={}, maxSq={})",
-                    horseId, distSq, radius * radius);
+        if (horse.distanceToSqr(player) > radius * radius) {
             return null;
         }
 
         UUID owner = ((IHorseData) horse).bh_getOwner();
         if (owner != null && !owner.equals(player.getUUID())) {
-            LOGGER.info("[RADIAL][V4] Fail: horse {} is owned by {}, not by caller {}",
-                    horseId, owner, player.getUUID());
             return null;
         }
-
-        LOGGER.info("[RADIAL][V5] OK: horse {} passed all validation (tamed={}, distSq={}, owner={})",
-                horseId, horse.isTamed(), distSq, owner);
         return horse;
     }
 }

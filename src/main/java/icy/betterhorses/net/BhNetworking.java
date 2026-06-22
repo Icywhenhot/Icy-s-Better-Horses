@@ -1,18 +1,12 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.network.CallHorsePayload;
-import icy.betterhorses.net.network.ClientPayloadHandlers;
-import icy.betterhorses.net.network.OpenRadialPayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
-import icy.betterhorses.net.network.RequestOpenRadialPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 import java.util.function.Supplier;
@@ -44,38 +38,14 @@ public final class BhNetworking {
                 .decoder(CallHorsePayload::decode)
                 .consumerMainThread(BhNetworking::handleCallHorse)
                 .add();
-
-        CHANNEL.messageBuilder(RequestOpenRadialPayload.class, messageId++, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(RequestOpenRadialPayload::encode)
-                .decoder(RequestOpenRadialPayload::decode)
-                .consumerMainThread(BhNetworking::handleOpenRadialRequest)
-                .add();
-
-        // The client handler references client-only classes (Minecraft, Screen). Keep it out of the
-        // common method reference so the dedicated server never classloads ClientPayloadHandlers — the
-        // inner lambda is only linked/invoked when the handler actually runs, which is client-only.
-        CHANNEL.messageBuilder(OpenRadialPayload.class, messageId++, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(OpenRadialPayload::encode)
-                .decoder(OpenRadialPayload::decode)
-                .consumerMainThread((payload, context) -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                        () -> () -> ClientPayloadHandlers.handleOpenRadial(payload, context)))
-                .add();
     }
 
     public static void sendToServer(CallHorsePayload payload) {
         CHANNEL.sendToServer(payload);
     }
 
-    public static void sendToServer(RequestOpenRadialPayload payload) {
-        CHANNEL.sendToServer(payload);
-    }
-
     public static void sendToServer(RadialCommandPayload payload) {
         CHANNEL.sendToServer(payload);
-    }
-
-    public static void sendToPlayer(ServerPlayer player, OpenRadialPayload payload) {
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), payload);
     }
 
     private static void handleRadialCommand(RadialCommandPayload payload, Supplier<NetworkEvent.Context> contextSupplier) {
@@ -96,20 +66,6 @@ public final class BhNetworking {
         if (player != null) {
             context.enqueueWork(() -> IcysBetterHorses.handleCallHorse(player));
         }
-        context.setPacketHandled(true);
-    }
-
-    private static void handleOpenRadialRequest(RequestOpenRadialPayload payload, Supplier<NetworkEvent.Context> contextSupplier) {
-        NetworkEvent.Context context = contextSupplier.get();
-        ServerPlayer player = context.getSender();
-        if (player == null) {
-            context.setPacketHandled(true);
-            return;
-        }
-
-        IcysBetterHorses.LOGGER.info("[RADIAL][3] C2S received RequestOpenRadialPayload(horseId={}) from player {}",
-                payload.horseId(), player.getName().getString());
-        context.enqueueWork(() -> IcysBetterHorses.handleOpenRadialRequest(player, payload.horseId()));
         context.setPacketHandled(true);
     }
 }

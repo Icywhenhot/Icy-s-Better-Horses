@@ -65,7 +65,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             Inventory playerInventory,
             Container horseContainer,
             AbstractHorse horse,
-            int horseChestColumns,
             CallbackInfo ci) {
         final IHorseData data = (IHorseData) horse;
         final SimpleContainer gear = data.bh_getGearContainer();
@@ -101,11 +100,11 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             @Override public void clearContent() { this.bh_active().clearContent(); }
         };
 
-        // 1.21.1 HorseInventoryMenu layout: saddle lives in horseContainer (size 1 for a plain
-        // horse, 1+chestCols*3 for a chested horse), body armor is a separate armorContainer slot
-        // added directly after — so player inventory starts at horseContainer.size() + 1.
-        this.bh_playerInventoryStartIndex = horseContainer.getContainerSize() + 1;
-        this.bh_playerInventoryEndIndex = Math.min(this.bh_playerInventoryStartIndex + 36, this.slots.size());
+        // 1.20.1 HorseInventoryMenu adds saddle + armor + (chest) slots, then the 36 player-inventory
+        // slots last. We inject at TAIL (before adding our own slots), so the player inventory is
+        // exactly the final 36 vanilla slots — robust regardless of horse/chest slot count.
+        this.bh_playerInventoryStartIndex = this.slots.size() - 36;
+        this.bh_playerInventoryEndIndex = this.slots.size();
 
         this.bh_gearStartIndex = this.slots.size();
         for (GearSlot slot : GearSlot.values()) {
@@ -169,7 +168,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         ItemStack sourceStack = sourceSlot.getItem();
         ItemStack copiedStack = sourceStack.copy();
 
-        int horseSlotEnd = this.horseContainer.getContainerSize() + 1;
+        int horseSlotEnd = this.bh_playerInventoryStartIndex;
         int playerInventoryStart = horseSlotEnd;
         int playerInventoryEnd = playerInventoryStart + 27;
         int hotbarStart = playerInventoryEnd;
