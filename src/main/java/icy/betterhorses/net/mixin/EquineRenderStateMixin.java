@@ -7,14 +7,7 @@ import net.minecraft.util.Mth;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-/**
- * Adds stabilizer-related fields onto vanilla {@link EquineRenderState} so the data the live
- * entity carries (via {@code IHorseData}) is available at submit-time, when only the render
- * state is reachable in 1.21.11's split-extract/submit pipeline.
- *
- * Populated each frame by {@code AbstractHorseRendererMixin.bh_captureStabilizerState}; consumed
- * by {@code HorseStabilizerLayer.submit}.
- */
+// Adds stabilizer-related fields onto vanilla EquineRenderState so the data the live entity carries (via IHorseData) is available at submit-time, when only the render state is reachable in 1.21.11's split-extract/submit pipeline. Populated each frame by AbstractHorseRendererMixin.bh_captureStabilizerState; consumed by HorseStabilizerLayer.submit.
 @Mixin(EquineRenderState.class)
 public abstract class EquineRenderStateMixin implements IBhEquineStabilizerState {
 

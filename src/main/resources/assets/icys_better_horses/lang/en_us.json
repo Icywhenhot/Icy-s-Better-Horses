@@ -1,6 +1,7 @@
 {
-  "key.categories.icys_better_horses": "Icy's Better Horses",
-  "key.icys_better_horses.call": "Call Horse",
+  "key.category.icys_better_horses.general": "Icy's Better Horses",
+  "key.icys_better_horses.call": "Horse Whistle / Info",
+  "key.icys_better_horses.radial": "Horse Command Wheel",
 
   "screen.icys_better_horses.radial": "Horse Commands",
   "screen.icys_better_horses.info": "Horse Info",
@@ -30,6 +31,7 @@
   "message.icys_better_horses.hitchpost_tethered": "Horse is now tethered to hitch post.",
   "message.icys_better_horses.not_owner": "This horse doesn't trust you enough to ride.",
   "message.icys_better_horses.not_inventory_owner": "This horse won't let you access its gear.",
+  "message.icys_better_horses.not_shear_owner": "This horse refuses to let you remove its saddle.",
   "message.icys_better_horses.same_gender_breed": "These horses are the same gender and can't breed.",
 
   "gender.icys_better_horses.male": "Male",
@@ -70,6 +72,19 @@
   "coat.icys_better_horses.markings.white_field": "White Field",
   "coat.icys_better_horses.markings.white_dots": "White Spots",
   "coat.icys_better_horses.markings.black_dots": "Black Spots",
+
+  "config.icys_better_horses.stabilizer": "Horse Stabilizer",
+  "config.icys_better_horses.stabilizer.tooltip": "Enable the horse stabilizer gear (gliding descent and safe landings).",
+  "config.icys_better_horses.medkit": "Horse Medkit",
+  "config.icys_better_horses.medkit.tooltip": "Enable the horse medkit gear (auto-heals the horse when badly hurt).",
+  "config.icys_better_horses.hitchpost": "Hitchpost",
+  "config.icys_better_horses.hitchpost.tooltip": "Enable tethering horses to hitchposts.",
+  "config.icys_better_horses.hooves": "Horse Hooves",
+  "config.icys_better_horses.hooves.tooltip": "Enable the horse hooves gear (reduced fall damage and frost/snow walking).",
+  "config.icys_better_horses.horse_exclusivity": "Horse Exclusivity",
+  "config.icys_better_horses.horse_exclusivity.tooltip": "Only the owner may ride or open the inventory of an owned horse.",
+  "config.icys_better_horses.multiriding": "Multi-Riding",
+  "config.icys_better_horses.multiriding.tooltip": "Allow a second player to ride behind the owner.",
 
   "itemGroup.icys_better_horses.stable_supplies": "Stable Supplies",
 

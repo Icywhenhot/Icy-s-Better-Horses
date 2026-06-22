@@ -16,15 +16,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-/**
- * GeckoLib-driven animation state holder for the stabilizer wings.
- *
- * GeckoLib 5.3 (1.21.10): {@code AnimationController}/{@code AnimationTest} live under
- * {@code animatable.processing}, {@code LoopType} is {@code Animation.LoopType}, {@code PlayState}
- * is in {@code animation}, the controller exposes {@code forceAnimationReset()}/{@code stop()}
- * (not the unified {@code reset()}), animations are set via {@code test.setAnimation(...)} and the
- * animatable must supply {@code getTick(Object)}.
- */
+// GeckoLib-driven animation state holder for the stabilizer wings. GeckoLib 5.3 (1.21.10): AnimationController/AnimationTest live under animatable.processing, LoopType is Animation.LoopType, PlayState is in animation, the controller exposes forceAnimationReset()/stop() (not the unified reset()), animations are set via test.setAnimation(...) and the animatable must supply getTick(Object).
 public final class HorseStabilizerAnimatable implements GeoAnimatable {
     private static final RawAnimation DEPLOY_AND_GLIDE = RawAnimation.begin()
             .then("animation", Animation.LoopType.PLAY_ONCE)
@@ -46,10 +38,7 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
         return INSTANCES.computeIfAbsent(horse, ignored -> new HorseStabilizerAnimatable());
     }
 
-    /**
-     * Look up the animatable for a horse by its entity id. Used by the render layer, which only has
-     * access to the {@code RenderState} (entity id captured at extract time) during {@code submit}.
-     */
+    // Look up the animatable for a horse by its entity id. Used by the render layer, which only has access to the RenderState (entity id captured at extract time) during submit.
     public static @Nullable HorseStabilizerAnimatable getById(int entityId) {
         for (Map.Entry<AbstractHorse, HorseStabilizerAnimatable> entry : INSTANCES.entrySet()) {
             if (entry.getKey().getId() == entityId) {

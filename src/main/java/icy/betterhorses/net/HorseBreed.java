@@ -20,16 +20,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Horse breed identifier. The first 15 entries are real horse breeds eligible
- * for the breeding system. The trailing entries are species placeholders used
- * to label non-horse AbstractHorse subclasses on the info screen.
- *
- * <p>Each real breed declares a list of allowed vanilla coat combinations
- * ({@link Variant} colour × {@link Markings}). A horse's breed determines which
- * coats it can roll; conversely, a pre-existing horse's coat is used to infer
- * which breed it should be classified as.
- */
+// Horse breed identifier. The first 15 entries are real horse breeds eligible for the breeding system. The trailing entries are species placeholders used to label non-horse AbstractHorse subclasses on the info screen. <p>Each real breed declares a list of allowed vanilla coat combinations (Variant colour × Markings). A horse's breed determines which coats it can roll; conversely, a pre-existing horse's coat is used to infer which breed it should be classified as.
 public enum HorseBreed {
     THOROUGHBRED,
     ARABIAN,
@@ -84,24 +75,24 @@ public enum HorseBreed {
                 Component.translatable("breed.icys_better_horses." + name().toLowerCase()));
     }
 
-    /** Coat combinations allowed for this breed, or empty for species placeholders. */
+    // Coat combinations allowed for this breed, or empty for species placeholders.
     public List<Coat> allowedCoats() {
         return COAT_MAP.getOrDefault(this, List.of());
     }
 
-    /** Pick a random allowed coat for this breed, or null if the breed has no coat list. */
+    // Pick a random allowed coat for this breed, or null if the breed has no coat list.
     public Coat rollCoat(RandomSource random) {
         List<Coat> coats = allowedCoats();
         if (coats.isEmpty()) return null;
         return coats.get(random.nextInt(coats.size()));
     }
 
-    /** Biomes in which this breed naturally spawns, or empty for species placeholders. */
+    // Biomes in which this breed naturally spawns, or empty for species placeholders.
     public List<ResourceKey<Biome>> allowedBiomes() {
         return BIOME_MAP.getOrDefault(this, List.of());
     }
 
-    /** Every biome that appears in at least one breed's spawn list (used for BiomeModifications.addSpawn). */
+    // Every biome that appears in at least one breed's spawn list (used for BiomeModifications.addSpawn).
     public static java.util.Set<ResourceKey<Biome>> allBreedBiomes() {
         java.util.Set<ResourceKey<Biome>> out = new java.util.LinkedHashSet<>();
         for (HorseBreed breed : VALUES) {
@@ -111,7 +102,7 @@ public enum HorseBreed {
         return java.util.Collections.unmodifiableSet(out);
     }
 
-    /** All real-horse breeds that include {@code biome} in their allowed-biome list. */
+    // All real-horse breeds that include biome in their allowed-biome list.
     public static List<HorseBreed> breedsForBiome(ResourceKey<Biome> biome) {
         List<HorseBreed> matches = new ArrayList<>();
         for (HorseBreed breed : VALUES) {
@@ -123,10 +114,7 @@ public enum HorseBreed {
         return matches;
     }
 
-    /**
-     * Find real-horse breeds whose allowed-coat list contains the given coat.
-     * Used to classify pre-existing horses by their current appearance.
-     */
+    // Find real-horse breeds whose allowed-coat list contains the given coat. Used to classify pre-existing horses by their current appearance.
     public static List<HorseBreed> breedsMatchingCoat(Variant color, Markings markings) {
         List<HorseBreed> matches = new ArrayList<>();
         for (HorseBreed breed : VALUES) {
@@ -141,7 +129,7 @@ public enum HorseBreed {
         return matches;
     }
 
-    /** Returns the species placeholder for non-horse AbstractHorse subclasses, or null if it's a real horse. */
+    // Returns the species placeholder for non-horse AbstractHorse subclasses, or null if it's a real horse.
     public static HorseBreed speciesFor(AbstractHorse horse) {
         if (horse instanceof Horse) return null;
         if (horse instanceof Donkey) return DONKEY_SPECIES;

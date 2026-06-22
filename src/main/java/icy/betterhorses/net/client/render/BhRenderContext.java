@@ -3,17 +3,7 @@ package icy.betterhorses.net.client.render;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Per-thread holder for the active {@link CameraRenderState}. The vanilla
- * {@code RenderLayer.submit(...)} signature in 1.21.11 doesn't carry the camera state, but the
- * enclosing {@code LivingEntityRenderer.submit(...)} does. {@code LivingEntityRendererSubmitMixin}
- * pushes the value here at HEAD and clears it at TAIL, so any layer running inside that scope
- * (notably {@link HorseStabilizerLayer}) can grab it for GeckoLib's
- * {@code GeoObjectRenderer.submit} call.
- *
- * Render runs on a single thread, but using {@link ThreadLocal} keeps us safe against future
- * threading and against Fabric Loader's loading thread that triggers static init.
- */
+// Per-thread holder for the active CameraRenderState. The vanilla RenderLayer.submit(...) signature in 1.21.11 doesn't carry the camera state, but the enclosing LivingEntityRenderer.submit(...) does. LivingEntityRendererSubmitMixin pushes the value here at HEAD and clears it at TAIL, so any layer running inside that scope (notably HorseStabilizerLayer) can grab it for GeckoLib's GeoObjectRenderer.submit call. Render runs on a single thread, but using ThreadLocal keeps us safe against future threading and against Fabric Loader's loading thread that triggers static init.
 public final class BhRenderContext {
     private static final ThreadLocal<CameraRenderState> CAMERA = new ThreadLocal<>();
     private static final ThreadLocal<Float> OPACITY = ThreadLocal.withInitial(() -> 1.0F);

@@ -7,14 +7,7 @@ import software.bernie.geckolib.constant.dataticket.DataTicket;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
 
-/**
- * GeoModel for the stabilizer wings.
- *
- * GeckoLib 5.3 (1.21.10): {@code getModelResource}/{@code getTextureResource} take a
- * {@link GeoRenderState}, and per-frame bone visibility is driven through
- * {@code setCustomAnimations(AnimationState)} reading a {@link DataTicket} populated by
- * {@link HorseStabilizerGeoRenderer#addRenderData}.
- */
+// GeoModel for the stabilizer wings. GeckoLib 5.3 (1.21.10): getModelResource/getTextureResource take a GeoRenderState, and per-frame bone visibility is driven through setCustomAnimations(AnimationState) reading a DataTicket populated by HorseStabilizerGeoRenderer#addRenderData.
 public final class HorseStabilizerGeoModel extends GeoModel<HorseStabilizerAnimatable> {
     public static final DataTicket<Boolean> WINGS_VISIBLE =
             DataTicket.create("icys_better_horses_stabilizer_wings_active", Boolean.class);

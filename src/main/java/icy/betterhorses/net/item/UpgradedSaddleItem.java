@@ -11,12 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-/**
- * 1.21.5+ replaced {@code isSaddled()} / {@code isSaddleable()} / {@code equipSaddle(...)} with the
- * generic equipment-slot system: saddles now live in {@link EquipmentSlot#SADDLE} and are read/set
- * through {@code getItemBySlot}/{@code setItemSlot}. {@code canUseSlot(EquipmentSlot.SADDLE)}
- * replaces the old {@code isSaddleable()} gate.
- */
+// 1.21.5+ replaced isSaddled() / isSaddleable() / equipSaddle(...) with the generic equipment-slot system: saddles now live in EquipmentSlot#SADDLE and are read/set through getItemBySlot/setItemSlot. canUseSlot(EquipmentSlot.SADDLE) replaces the old isSaddleable() gate.
 public class UpgradedSaddleItem extends Item {
     public UpgradedSaddleItem(Properties properties) {
         super(properties);
