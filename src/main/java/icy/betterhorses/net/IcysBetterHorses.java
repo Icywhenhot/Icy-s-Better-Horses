@@ -1,6 +1,5 @@
 package icy.betterhorses.net;
 
-import icy.betterhorses.net.network.OpenRadialPayload;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -14,13 +13,14 @@ import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +34,8 @@ public final class IcysBetterHorses {
 
     private static final int PASSIVE_BOND_INTERVAL_TICKS = 60 * 20;
 
-    public IcysBetterHorses(IEventBus modEventBus) {
-        BhConfig.load();
+    public IcysBetterHorses(IEventBus modEventBus, ModContainer modContainer) {
+        modContainer.registerConfig(ModConfig.Type.COMMON, BhConfig.SPEC);
         ModBlocks.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModItems.register(modEventBus);
@@ -79,21 +79,6 @@ public final class IcysBetterHorses {
         if (server.getTickCount() % PASSIVE_BOND_INTERVAL_TICKS == 0) {
             growHorseBond(server);
         }
-    }
-
-    public static void handleOpenRadialRequest(ServerPlayer player, int horseId) {
-        LOGGER.info("[RADIAL][3a] handleOpenRadialRequest on main thread: player={}, horseId={}",
-                player.getName().getString(), horseId);
-        AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
-        if (horse == null) {
-            LOGGER.info("[RADIAL][3z] Aborting: findCommandHorse returned null");
-            return;
-        }
-
-        LOGGER.info("[RADIAL][4] Validation passed, sending OpenRadialPayload(horseId={}) back to player {}",
-                horse.getId(), player.getName().getString());
-        HorseTracker.armInteractSuppression(player.getUUID(), horse.getId());
-        PacketDistributor.sendToPlayer(player, new OpenRadialPayload(horse.getId()));
     }
 
     public static void handleRadialCommand(ServerPlayer player, int horseId, HorseCommand command) {
@@ -203,33 +188,20 @@ public final class IcysBetterHorses {
     private static AbstractHorse findCommandHorse(ServerPlayer player, int horseId, double radius) {
         ServerLevel serverLevel = (ServerLevel) player.level();
         if (!(serverLevel.getEntity(horseId) instanceof AbstractHorse horse)) {
-            LOGGER.info("[RADIAL][V1] Fail: entity id {} is not an AbstractHorse in player's level (got {})",
-                    horseId,
-                    serverLevel.getEntity(horseId) == null
-                            ? "null"
-                            : serverLevel.getEntity(horseId).getClass().getSimpleName());
             return null;
         }
         if (!horse.isTamed()) {
-            LOGGER.info("[RADIAL][V2] Fail: horse {} is not tamed", horseId);
             return null;
         }
-        double distSq = horse.distanceToSqr(player);
-        if (distSq > radius * radius) {
-            LOGGER.info("[RADIAL][V3] Fail: horse {} out of range (distSq={}, maxSq={})",
-                    horseId, distSq, radius * radius);
+        if (horse.distanceToSqr(player) > radius * radius) {
             return null;
         }
 
         UUID owner = ((IHorseData) horse).bh_getOwner();
         if (owner != null && !owner.equals(player.getUUID())) {
-            LOGGER.info("[RADIAL][V4] Fail: horse {} is owned by {}, not by caller {}",
-                    horseId, owner, player.getUUID());
             return null;
         }
 
-        LOGGER.info("[RADIAL][V5] OK: horse {} passed all validation (tamed={}, distSq={}, owner={})",
-                horseId, horse.isTamed(), distSq, owner);
         return horse;
     }
 }

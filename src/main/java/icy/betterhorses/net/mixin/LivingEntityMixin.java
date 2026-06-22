@@ -39,10 +39,7 @@ public abstract class LivingEntityMixin extends Entity {
     @Shadow
     protected abstract float getDamageAfterMagicAbsorb(DamageSource source, float amount);
 
-    /**
-     * 1.21.5+ widened {@code actuallyHurt} to take a {@link ServerLevel} as its first parameter,
-     * so all {@code @Inject}s into it must mirror the new descriptor.
-     */
+    // 1.21.5+ widened actuallyHurt to take a ServerLevel as its first parameter, so all @Injects into it must mirror the new descriptor.
     @Inject(method = "actuallyHurt", at = @At("HEAD"))
     private void bh_queueHorseMedkit(ServerLevel level, DamageSource source, float amount, CallbackInfo ci) {
         this.bh_triggerHorseMedkitAfterDamage = false;
