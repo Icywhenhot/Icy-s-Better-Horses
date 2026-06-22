@@ -13,10 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * 1.21.11 moved horse saddle acceptance into the shared package-private {@code ArmorSlot}.
- * Allow the upgraded saddle when that slot represents an {@link EquipmentSlot#SADDLE} on a horse.
- */
+// 1.21.11 moved horse saddle acceptance into the shared package-private ArmorSlot. Allow the upgraded saddle when that slot represents an EquipmentSlot#SADDLE on a horse.
 @Mixin(targets = "net/minecraft/world/inventory/ArmorSlot")
 public abstract class HorseSaddleSlotMixin extends Slot {
 

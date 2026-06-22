@@ -32,6 +32,8 @@ public final class ModAttachments {
         public int genderId = HorseGender.MALE.ordinal();
         public int breedId = HorseBreed.UNKNOWN_SPECIES.ordinal();
         public boolean breedMixed = false;
+        // Owner UUID as a String ("" = unowned), so the client can compare against the local player when opening the command wheel.
+        public String ownerUuid = "";
     }
 
     private static final class HorseSyncHandler implements AttachmentSyncHandler<BhHorseSyncState> {
@@ -43,6 +45,7 @@ public final class ModAttachments {
             buf.writeVarInt(value.genderId);
             buf.writeVarInt(value.breedId);
             buf.writeBoolean(value.breedMixed);
+            buf.writeUtf(value.ownerUuid);
         }
 
         @Override
@@ -55,6 +58,7 @@ public final class ModAttachments {
             value.genderId = buf.readVarInt();
             value.breedId = buf.readVarInt();
             value.breedMixed = buf.readBoolean();
+            value.ownerUuid = buf.readUtf();
             return value;
         }
     }

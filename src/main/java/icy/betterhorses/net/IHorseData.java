@@ -32,7 +32,7 @@ public interface IHorseData {
     int bh_getBond();
     void bh_setBond(int level);
 
-    /** True once this horse has already been awarded the one-time name-tag bond. */
+    // True once this horse has already been awarded the one-time name-tag bond.
     boolean bh_hasReceivedNameTagBond();
     void bh_setReceivedNameTagBond(boolean received);
 
@@ -63,21 +63,21 @@ public interface IHorseData {
 
     // --- Upgraded saddle gear + chest ---
 
-    /** True when the upgraded saddle item occupies the horse saddle slot. */
+    // True when the upgraded saddle item occupies the horse saddle slot.
     boolean bh_hasUpgradedSaddle();
 
-    /** 5-slot container for the CHEST, HOOVES, MEDKIT, STABILIZER, HITCHPOST gear items. */
+    // 5-slot container for the CHEST, HOOVES, MEDKIT, STABILIZER, HITCHPOST gear items.
     SimpleContainer bh_getGearContainer();
 
-    /** 27-slot sub-inventory, only usable when chest gear is equipped. */
+    // 27-slot sub-inventory, only usable when chest gear is equipped.
     SimpleContainer bh_getChestContainer();
 
-    /** True when the chest gear item is in its gear slot. */
+    // True when the chest gear item is in its gear slot.
     boolean bh_hasChestGear();
 
-    /** Called by the menu when the chest gear slot is cleared, so contents can be dropped. */
+    // Called by the menu when the chest gear slot is cleared, so contents can be dropped.
     void bh_onChestGearRemoved(ItemStack previousChestGear);
 
-    /** Called when the upgraded saddle is removed, so dependent gear and storage can be dropped. */
+    // Called when the upgraded saddle is removed, so dependent gear and storage can be dropped.
     void bh_onUpgradedSaddleRemoved(ItemStack previousSaddle);
 }

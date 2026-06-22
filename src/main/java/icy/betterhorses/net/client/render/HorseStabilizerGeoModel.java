@@ -5,14 +5,7 @@ import net.minecraft.resources.Identifier;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
 
-/**
- * GeoModel for the stabilizer wings.
- *
- * GeckoLib 5: {@code getModelResource}/{@code getTextureResource} now take a {@link GeoRenderState}
- * (not the animatable directly), and {@code setCustomAnimations} was removed in favour of
- * {@code addAdditionalStateData}. The wing-visibility logic that used to live here will need to be
- * reimplemented through the new render-state pipeline once the stabilizer layer is ported.
- */
+// GeoModel for the stabilizer wings. GeckoLib 5: getModelResource/getTextureResource now take a GeoRenderState (not the animatable directly), and setCustomAnimations was removed in favour of addAdditionalStateData. The wing-visibility logic that used to live here will need to be reimplemented through the new render-state pipeline once the stabilizer layer is ported.
 public final class HorseStabilizerGeoModel extends GeoModel<HorseStabilizerAnimatable> {
     private static final Identifier MODEL =
             Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "st");

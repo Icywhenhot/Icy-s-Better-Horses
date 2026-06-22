@@ -37,10 +37,7 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * Standalone hitch post block that keeps its own tethered-horse state instead of delegating to
- * vanilla fence/lead mechanics.
- */
+// Standalone hitch post block that keeps its own tethered-horse state instead of delegating to vanilla fence/lead mechanics.
 public class HitchpostBlock extends BaseEntityBlock {
 
     public static final MapCodec<HitchpostBlock> CODEC = simpleCodec(HitchpostBlock::new);
@@ -131,11 +128,7 @@ public class HitchpostBlock extends BaseEntityBlock {
         }
     }
 
-    /**
-     * 1.21.5+ replaces {@code onRemove} with {@link #affectNeighborsAfterRemoval}, which is only
-     * invoked when the block is actually removed (not for in-place state changes), so we no longer
-     * need the {@code !state.is(newState.getBlock())} guard.
-     */
+    // 1.21.5+ replaces onRemove with #affectNeighborsAfterRemoval, which is only invoked when the block is actually removed (not for in-place state changes), so we no longer need the !state.is(newState.getBlock()) guard.
     @Override
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         releaseHorseAtPost(level, pos);
