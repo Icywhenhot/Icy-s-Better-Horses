@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.biome.v1.ModificationPhase;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
@@ -49,7 +49,7 @@ public final class BhBiomeSpawns {
                 .add(ModificationPhase.ADDITIONS, BiomeSelectors.includeByKey(HORSE_BIOMES), (selectionContext, context) -> {
                     MobSpawnSettings mobSettings = selectionContext.getBiome().getMobSettings();
                     boolean alreadyHasHorse = mobSettings.getMobs(MobCategory.CREATURE).unwrap().stream()
-                            .anyMatch(weighted -> weighted.value().type() == EntityType.HORSE);
+                            .anyMatch(weighted -> weighted.value().type() == EntityTypes.HORSE);
                     float originalProbability = mobSettings.getCreatureProbability();
                     boolean boostedProbability = !alreadyHasHorse
                             && originalProbability < HORSE_CREATURE_PROBABILITY_FLOOR;
@@ -57,7 +57,7 @@ public final class BhBiomeSpawns {
                     if (!alreadyHasHorse) {
                         context.getMobSpawnSettings().addSpawn(
                                 MobCategory.CREATURE,
-                                new MobSpawnSettings.SpawnerData(EntityType.HORSE, HORSE_MIN_GROUP, HORSE_MAX_GROUP),
+                                new MobSpawnSettings.SpawnerData(EntityTypes.HORSE, HORSE_MIN_GROUP, HORSE_MAX_GROUP),
                                 HORSE_SPAWN_WEIGHT);
                     }
 

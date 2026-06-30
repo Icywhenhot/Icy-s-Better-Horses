@@ -6,6 +6,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
@@ -23,6 +24,7 @@ import java.util.Locale;
 public abstract class GuiMixin {
 
     @Shadow @Final private Minecraft minecraft;
+    @Shadow @Final private GuiRenderState guiRenderState;
 
     @Unique private static final int BH_STATS_HUD_TOP = 12;
     @Unique private static final int BH_STATS_HUD_PADDING = 6;
@@ -32,8 +34,8 @@ public abstract class GuiMixin {
     @Unique private static final int BH_STATS_HUD_ACCENT = 0xD06E5324;
 
     @Inject(method = "extractRenderState", at = @At("TAIL"))
-    private void bh_renderHorseStatsHud(GuiGraphicsExtractor gfx, DeltaTracker deltaTracker, CallbackInfo ci) {
-        if (this.minecraft.player == null || this.minecraft.level == null || this.minecraft.screen != null) {
+    private void bh_renderHorseStatsHud(DeltaTracker deltaTracker, boolean blurEnabled, boolean renderHud, CallbackInfo ci) {
+        if (this.minecraft.player == null || this.minecraft.level == null || this.minecraft.gui.screen() != null) {
             return;
         }
         if (!this.bh_isHoldingUpgradedSaddle()) {
@@ -63,8 +65,15 @@ public abstract class GuiMixin {
         }
         int boxWidth = contentWidth + BH_STATS_HUD_PADDING * 2;
         int boxHeight = BH_STATS_HUD_PADDING * 2 + lineHeight * (lines.length + 1);
-        int left = (this.minecraft.getWindow().getGuiScaledWidth() - boxWidth) / 2;
+        int scaledWidth = this.minecraft.getWindow().getGuiScaledWidth();
+        int scaledHeight = this.minecraft.getWindow().getGuiScaledHeight();
+        int left = (scaledWidth - boxWidth) / 2;
         int top = BH_STATS_HUD_TOP;
+
+        // 26.2 no longer passes a GuiGraphicsExtractor into extractRenderState; the HUD now
+        // appends draw commands to the Gui's GuiRenderState. Build an extractor bound to that
+        // same render state so our HUD layers on top of vanilla's, exactly as before.
+        GuiGraphicsExtractor gfx = new GuiGraphicsExtractor(this.minecraft, this.guiRenderState, scaledWidth, scaledHeight);
 
         gfx.fill(left, top, left + boxWidth, top + boxHeight, BH_STATS_HUD_BACKGROUND);
         gfx.fill(left, top, left + boxWidth, top + 2, BH_STATS_HUD_ACCENT);

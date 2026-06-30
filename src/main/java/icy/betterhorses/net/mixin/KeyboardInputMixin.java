@@ -29,7 +29,7 @@ public abstract class KeyboardInputMixin extends ClientInput {
     private void bh_applyHorseAutodrive(CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
         LocalPlayer player = client.player;
-        Screen screen = client.screen;
+        Screen screen = client.gui.screen();
 
         boolean eligible = false;
         int horseId = 0;

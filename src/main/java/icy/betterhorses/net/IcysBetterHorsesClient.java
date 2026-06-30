@@ -54,7 +54,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
 
         while (CALL_KEY.consumeClick()) {
             if (client.player.getVehicle() instanceof AbstractHorse mount) {
-                client.setScreen(new HorseInfoScreen(mount));
+                client.setScreenAndShow(new HorseInfoScreen(mount));
             } else {
                 ClientPlayNetworking.send(new CallHorsePayload());
             }
@@ -67,7 +67,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
 
     private static void bh_tryOpenRadial(Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.screen != null) {
+        if (player == null || client.gui.screen() != null) {
             return;
         }
         AbstractHorse horse = bh_lookedAtHorse(player);
@@ -78,7 +78,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         if (owner != null && !owner.equals(player.getUUID())) {
             return;
         }
-        client.setScreen(new RadialMenuScreen(horse.getId()));
+        client.setScreenAndShow(new RadialMenuScreen(horse.getId()));
     }
 
     private static AbstractHorse bh_lookedAtHorse(LocalPlayer player) {
