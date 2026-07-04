@@ -7,11 +7,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,57 +75,7 @@ public class IcysBetterHorses implements ModInitializer {
     }
 
     private void handleCallHorse(ServerPlayer player) {
-        if (!(player.getVehicle() instanceof AbstractHorse)) {
-            player.level().playSound(
-                    null,
-                    player.getX(),
-                    player.getY(),
-                    player.getZ(),
-                    ModSounds.CALL_WHISTLE,
-                    SoundSource.PLAYERS,
-                    1.0F,
-                    1.0F);
-        }
-
-        UUID playerId = player.getUUID();
-        AbstractHorse horse = findCallableHorse(player, playerId);
-        if (horse == null) return;
-
-        IHorseData data = (IHorseData) horse;
-        if (data.bh_getBond() <= 0) return;
-
-        // Whistling always cancels whatever standing order the horse was on — the player explicitly wants it to come to them.
-        data.bh_setCommand(HorseCommand.FOLLOW);
-
-        BlockPos target = player.blockPosition();
-        if (horse.distanceToSqr(player) > 400.0) {
-            horse.teleportTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
-        }
-    }
-
-    // Resolve which horse the whistle summons: prefer the last horse this player rode, else the nearest owned horse in the same level.
-    private AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {
-        AbstractHorse lastRidden = HorseTracker.getLastRidden(playerId);
-        if (lastRidden != null
-                && playerId.equals(((IHorseData) lastRidden).bh_getOwner())
-                && lastRidden.level() == player.level()
-                && lastRidden.isAlive()) {
-            return lastRidden;
-        }
-
-        AbstractHorse nearest = null;
-        double nearestDistSq = Double.MAX_VALUE;
-        for (AbstractHorse candidate : HorseTracker.getAll()) {
-            if (!candidate.isAlive() || candidate.level() != player.level()) continue;
-            UUID owner = ((IHorseData) candidate).bh_getOwner();
-            if (!playerId.equals(owner)) continue;
-            double distSq = candidate.distanceToSqr(player);
-            if (distSq < nearestDistSq) {
-                nearestDistSq = distSq;
-                nearest = candidate;
-            }
-        }
-        return nearest;
+        HorseWhistle.onWhistle(player);
     }
 
     private void registerEntityTracking() {

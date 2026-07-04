@@ -33,6 +33,8 @@
   "message.icys-better-horses.not_inventory_owner": "This horse won't let you access its gear.",
   "message.icys-better-horses.not_shear_owner": "This horse refuses to let you remove its saddle.",
   "message.icys-better-horses.same_gender_breed": "These horses are the same gender and can't breed.",
+  "message.icys-better-horses.whistle_summoned": "Your horse answers the whistle!",
+  "message.icys-better-horses.whistle_no_horse": "No horse answered your whistle.",
 
   "gender.icys-better-horses.male": "Male",
   "gender.icys-better-horses.female": "Female",
