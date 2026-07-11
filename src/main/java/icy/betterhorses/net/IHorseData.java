@@ -27,6 +27,14 @@ public interface IHorseData {
     int bh_getBond();
     void bh_setBond(int level);
 
+    /**
+     * Copy counter for the whistle's respawn system. When the whistle can't reach the real entity
+     * (unloaded chunk), a fresh copy is spawned from the stored snapshot with a higher generation;
+     * any copy with a lower generation than the world's current one is stale and gets discarded on load.
+     */
+    int bh_getGeneration();
+    void bh_setGeneration(int generation);
+
     /** True once this horse has already been awarded the one-time name-tag bond. */
     boolean bh_hasReceivedNameTagBond();
     void bh_setReceivedNameTagBond(boolean received);

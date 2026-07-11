@@ -1,5 +1,7 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.HorseCommand;
+import icy.betterhorses.net.HorseTracker;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -49,6 +51,11 @@ public abstract class EntityMixin {
             return;
         }
 
+        // Track the ride here rather than in doPlayerRide — this hook fires for every mount path in 26.2.
+        if (player.getUUID().equals(((IHorseData) horse).bh_getOwner())) {
+            HorseTracker.setLastRidden(player.getUUID(), horse);
+        }
+
         @Nullable AttributeInstance stepHeight = horse.getAttribute(Attributes.STEP_HEIGHT);
         if (stepHeight != null && stepHeight.getModifier(BH_MOUNTED_STEP_HEIGHT_ID) == null) {
             stepHeight.addTransientModifier(new AttributeModifier(
@@ -86,6 +93,25 @@ public abstract class EntityMixin {
         if (breakSpeed != null) {
             breakSpeed.removeModifier(BH_MOUNTED_BREAK_SPEED_ID);
         }
+    }
+
+    // Dismounting hands the horse back to itself: it wanders around the spot it was left at.
+    @Inject(method = "removeVehicle", at = @At("HEAD"))
+    private void bh_wanderAfterDismount(CallbackInfo ci) {
+        Entity self = (Entity) (Object) this;
+        if (!(self instanceof ServerPlayer player) || !(player.getVehicle() instanceof AbstractHorse horse)) {
+            return;
+        }
+
+        IHorseData data = (IHorseData) horse;
+        if (!player.getUUID().equals(data.bh_getOwner())) {
+            return;
+        }
+
+        // Also recorded here because taming completes mid-ride: the mount hook saw an unowned horse.
+        HorseTracker.setLastRidden(player.getUUID(), horse);
+        data.bh_setWanderCenter(horse.blockPosition());
+        data.bh_setCommand(HorseCommand.WANDER);
     }
 
     @Inject(
