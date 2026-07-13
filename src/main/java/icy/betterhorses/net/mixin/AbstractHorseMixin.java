@@ -97,7 +97,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     private static final EntityDataAccessor<String> BH_OWNER_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.STRING);
 
-    @Unique private @Nullable UUID bh_owner = null;
+    // volatile: parallel-ticking mods (async/worldthreader) read the owner from worker threads
+    // (entity load/unload, tick). Without it, an unregister could read a stale null for a horse whose
+    // owner was written on the loading thread, and HorseTracker would forget its whistle snapshot.
+    @Unique private volatile @Nullable UUID bh_owner = null;
     @Unique private HorseCommand bh_command = HorseCommand.FOLLOW;
     @Unique private @Nullable BlockPos bh_home = null;
     @Unique private @Nullable BlockPos bh_wanderCenter = null;
@@ -105,6 +108,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private @Nullable Vec3 bh_hitchAnchor = null;
     @Unique private int bh_bond = 0;
     @Unique private boolean bh_nameTagBondReceived = false;
+    @Unique private int bh_generation = 0;
     @Unique
     private final SimpleContainer bh_gearContainer = new SimpleContainer(GearSlot.COUNT) {
         @Override
@@ -166,7 +170,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             if (owner != null) {
                 HorseTracker.register(self);
             } else {
-                HorseTracker.unregister(self);
+                HorseTracker.disown(self);
             }
         }
     }
@@ -237,6 +241,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.bh_bond = Math.max(0, Math.min(100, level));
         this.entityData.set(BH_BOND_SYNCED, this.bh_bond);
         bh_applyBondAttributes();
+    }
+
+    @Override
+    public int bh_getGeneration() {
+        return this.bh_generation;
+    }
+
+    @Override
+    public void bh_setGeneration(int generation) {
+        this.bh_generation = generation;
     }
 
     @Override
@@ -351,6 +365,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
         output.putInt("BH_Command", bh_command.ordinal());
         output.putInt("BH_Bond", bh_bond);
+        output.putInt("BH_Generation", bh_generation);
         output.putInt("BH_NameTagBondGiven", bh_nameTagBondReceived ? 1 : 0);
         if (bh_home != null) {
             output.store("BH_Home", BlockPos.CODEC, bh_home);
@@ -378,6 +393,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.entityData.set(BH_OWNER_SYNCED, bh_owner == null ? "" : bh_owner.toString());
         bh_command = HorseCommand.fromId(input.getIntOr("BH_Command", HorseCommand.FOLLOW.ordinal()));
         bh_bond = input.getIntOr("BH_Bond", 0);
+        bh_generation = input.getIntOr("BH_Generation", 0);
         this.entityData.set(BH_BOND_SYNCED, bh_bond);
         // Pre-existing horses (saved before this flag existed) that already have bond should
         // be treated as having received their first-rename bond, so reloading and renaming
@@ -652,18 +668,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     }
 
-    @Inject(method = "doPlayerRide", at = @At("TAIL"))
-    private void bh_trackLastRidden(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self.level().isClientSide() || player.getVehicle() != self) {
-            return;
-        }
-        UUID owner = this.bh_getOwner();
-        if (owner == null || !owner.equals(player.getUUID())) {
-            return;
-        }
-        HorseTracker.setLastRidden(owner, self);
-    }
+    // Last-ridden tracking lives in EntityMixin's startRiding hook: doPlayerRide's TAIL never sees
+    // the player mounted in 26.2, so a hook here silently records nothing.
 
     @Inject(
             method = "doPlayerRide",

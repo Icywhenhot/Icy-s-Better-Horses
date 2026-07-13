@@ -4,6 +4,7 @@ import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -14,6 +15,8 @@ import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class IcysBetterHorses implements ModInitializer {
@@ -23,6 +26,9 @@ public class IcysBetterHorses implements ModInitializer {
 
     private static final int PASSIVE_BOND_INTERVAL_TICKS = 60 * 20;
 
+    // Leftover copies of whistle-respawned horses, discarded on the tick after their chunk loads.
+    private final List<AbstractHorse> staleHorses = new ArrayList<>();
+
     @Override
     public void onInitialize() {
         BhConfig.load();
@@ -30,6 +36,7 @@ public class IcysBetterHorses implements ModInitializer {
         ModBlockEntities.init();
         ModItems.init();
         ModSounds.init();
+        ModTicketTypes.init();
         BhBiomeSpawns.register();
         BhHorseSpawnRules.installSpawnPlacementOverride();
         registerPackets();
@@ -81,7 +88,12 @@ public class IcysBetterHorses implements ModInitializer {
     private void registerEntityTracking() {
         ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
             if (entity instanceof AbstractHorse horse && ((IHorseData) horse).bh_isOwned()) {
-                HorseTracker.register(horse);
+                if (HorseTracker.isStale(horse)) {
+                    // Leftover copy of a whistle-respawned horse; discard next tick, outside the load callback.
+                    staleHorses.add(horse);
+                } else {
+                    HorseTracker.register(horse);
+                }
             }
         });
         ServerEntityEvents.ENTITY_UNLOAD.register((entity, world) -> {
@@ -95,8 +107,31 @@ public class IcysBetterHorses implements ModInitializer {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             if (server.getTickCount() % PASSIVE_BOND_INTERVAL_TICKS == 0) {
                 growHorseBond(server);
+                HorseTracker.recordLoadedPositions();
             }
+            discardStaleHorses();
         });
+        ServerLifecycleEvents.SERVER_STARTED.register(HorseTracker::attach);
+        // Snapshot horses before the final world save so nothing is stale after a restart.
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> HorseTracker.recordLoadedPositions());
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            staleHorses.clear();
+            HorseTracker.detach();
+        });
+    }
+
+    private void discardStaleHorses() {
+        if (staleHorses.isEmpty()) return;
+        for (AbstractHorse stale : staleHorses) {
+            if (!stale.isRemoved()) {
+                LOGGER.debug("Discarding stale horse copy {} (generation {} < {})",
+                        stale.getUUID(),
+                        ((IHorseData) stale).bh_getGeneration(),
+                        HorseTracker.getGeneration(stale.getUUID()));
+                stale.discard();
+            }
+        }
+        staleHorses.clear();
     }
 
     private void growHorseBond(net.minecraft.server.MinecraftServer server) {

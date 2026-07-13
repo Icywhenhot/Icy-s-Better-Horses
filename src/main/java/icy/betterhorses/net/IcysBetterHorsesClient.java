@@ -32,6 +32,9 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
     public static KeyMapping CALL_KEY;
     public static KeyMapping RADIAL_KEY;
 
+    // Holding the call key fires OS key-repeat clicks; track the physical key edge so one press = one whistle.
+    private boolean callKeyWasDown = false;
+
     @Override
     public void onInitializeClient() {
         CALL_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
@@ -52,13 +55,17 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         HorseStabilizerSoundController.tick(client);
         if (client.player == null || client.level == null) return;
 
-        while (CALL_KEY.consumeClick()) {
+        boolean callKeyDown = CALL_KEY.isDown();
+        if (callKeyDown && !callKeyWasDown) {
             if (client.player.getVehicle() instanceof AbstractHorse mount) {
                 client.setScreen(new HorseInfoScreen(mount));
             } else {
                 ClientPlayNetworking.send(new CallHorsePayload());
             }
         }
+        callKeyWasDown = callKeyDown;
+        // Drain queued key-repeat clicks so they can't fire extra whistles.
+        while (CALL_KEY.consumeClick()) {}
 
         while (RADIAL_KEY.consumeClick()) {
             bh_tryOpenRadial(client);
