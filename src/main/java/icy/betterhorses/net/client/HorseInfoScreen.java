@@ -1,9 +1,14 @@
 package icy.betterhorses.net.client;
 
+import icy.betterhorses.net.HorseManageAction;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.network.HorseManagePayload;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
@@ -14,7 +19,7 @@ import net.minecraft.world.entity.animal.equine.Variant;
 public class HorseInfoScreen extends Screen {
 
     private static final int PANEL_WIDTH = 280;
-    private static final int PANEL_HEIGHT = 196;
+    private static final int PANEL_HEIGHT = 224;
     private static final int PADDING = 12;
     private static final int ROW_HEIGHT = 16;
     private static final int LABEL_WIDTH = 70;
@@ -41,7 +46,17 @@ public class HorseInfoScreen extends Screen {
     private static final double JUMP_MAX = Math.max(0.0D, 1.0D * BOND_MAX_MULTIPLIER * 6.0D - 1.0D);
     private static final double HEALTH_MAX = 30.0D;
 
+    private static final int DISOWN_BTN_WIDTH = 110;
+    private static final int DISOWN_BTN_HEIGHT = 16;
+    private static final int DISOWN_BTN_BOTTOM_GAP = 12;
+
+    private static final int CONFIRM_WIDTH = 220;
+    private static final int CONFIRM_HEIGHT = 76;
+    private static final int CONFIRM_BTN_WIDTH = 84;
+    private static final int CONFIRM_BTN_HEIGHT = 18;
+
     private final AbstractHorse horse;
+    private boolean confirmingDisown;
 
     public HorseInfoScreen(AbstractHorse horse) {
         super(Component.translatable("screen.icys-better-horses.info"));
@@ -54,7 +69,25 @@ public class HorseInfoScreen extends Screen {
     }
 
     @Override
+    protected void init() {
+        super.init();
+        ClientHorseRoster.clearFlash();
+    }
+
+    @Override
+    public void removed() {
+        super.removed();
+        ClientHorseRoster.clearFlash();
+    }
+
+    @Override
     public void extractRenderState(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float delta) {
+        // The horse this screen describes is no longer ours — nothing left to show.
+        if (ClientHorseRoster.consumeSuccess(horse.getUUID(), HorseManageAction.DISOWN)) {
+            onClose();
+            return;
+        }
+
         super.extractRenderState(gfx, mouseX, mouseY, delta);
 
         int left = (this.width - PANEL_WIDTH) / 2;
@@ -111,6 +144,123 @@ public class HorseInfoScreen extends Screen {
                 Component.translatable("screen.icys-better-horses.info.health"),
                 String.format(java.util.Locale.ROOT, "%.1f HP", health),
                 health / HEALTH_MAX);
+
+        renderDisownSection(gfx, font, left, top, mouseX, mouseY);
+        if (confirmingDisown) {
+            renderConfirm(gfx, font, mouseX, mouseY);
+        }
+    }
+
+    // --- Disown ---
+
+    private void renderDisownSection(GuiGraphicsExtractor gfx, Font font, int left, int top, int mouseX, int mouseY) {
+        String flashKey = ClientHorseRoster.flashMessageKey();
+        if (!flashKey.isEmpty()) {
+            gfx.centeredText(font, Component.translatable(flashKey),
+                    left + PANEL_WIDTH / 2, disownButtonY(top) - 13, BhScreenDraw.TEXT_ERROR);
+        }
+
+        int x = disownButtonX(left);
+        int y = disownButtonY(top);
+        boolean flashing = ClientHorseRoster.isFlashing();
+        boolean hovered = !confirmingDisown && BhScreenDraw.inBox(mouseX, mouseY, x, y, DISOWN_BTN_WIDTH, DISOWN_BTN_HEIGHT);
+        int color = flashing
+                ? BhScreenDraw.BTN_ERROR
+                : (hovered ? BhScreenDraw.BTN_DISOWN_HOVER : BhScreenDraw.BTN_DISOWN);
+        BhScreenDraw.button(gfx, font, x, y, DISOWN_BTN_WIDTH, DISOWN_BTN_HEIGHT,
+                Component.translatable("screen.icys-better-horses.manage.disown"), color, BhScreenDraw.TEXT);
+    }
+
+    private void renderConfirm(GuiGraphicsExtractor gfx, Font font, int mouseX, int mouseY) {
+        gfx.fill(0, 0, this.width, this.height, 0x99000000);
+
+        int cx = (this.width - CONFIRM_WIDTH) / 2;
+        int cy = (this.height - CONFIRM_HEIGHT) / 2;
+        BhScreenDraw.panel(gfx, cx, cy, CONFIRM_WIDTH, CONFIRM_HEIGHT);
+
+        Component name = horse.hasCustomName() ? horse.getCustomName() : ((IHorseData) horse).bh_getBreed()
+                .displayName(((IHorseData) horse).bh_isMixedBreed());
+        gfx.centeredText(font, Component.translatable("screen.icys-better-horses.manage.confirm_title"),
+                cx + CONFIRM_WIDTH / 2, cy + 12, BhScreenDraw.TEXT);
+        gfx.centeredText(font, Component.translatable("screen.icys-better-horses.manage.confirm_body", name),
+                cx + CONFIRM_WIDTH / 2, cy + 26, BhScreenDraw.TEXT_MUTED);
+
+        int btnY = confirmButtonY();
+        boolean yesHovered = BhScreenDraw.inBox(mouseX, mouseY, confirmYesX(), btnY, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT);
+        boolean cancelHovered = BhScreenDraw.inBox(mouseX, mouseY, confirmCancelX(), btnY, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT);
+
+        BhScreenDraw.button(gfx, font, confirmYesX(), btnY, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT,
+                Component.translatable("screen.icys-better-horses.manage.confirm_yes"),
+                yesHovered ? BhScreenDraw.BTN_DISOWN_HOVER : BhScreenDraw.BTN_DISOWN, BhScreenDraw.TEXT);
+        BhScreenDraw.button(gfx, font, confirmCancelX(), btnY, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT,
+                Component.translatable("screen.icys-better-horses.manage.confirm_cancel"),
+                cancelHovered ? BhScreenDraw.BTN_NEUTRAL_HOVER : BhScreenDraw.BTN_NEUTRAL, BhScreenDraw.TEXT);
+    }
+
+    private int disownButtonX(int left) {
+        return left + (PANEL_WIDTH - DISOWN_BTN_WIDTH) / 2;
+    }
+
+    private int disownButtonY(int top) {
+        return top + PANEL_HEIGHT - DISOWN_BTN_HEIGHT - DISOWN_BTN_BOTTOM_GAP;
+    }
+
+    private int confirmButtonY() {
+        return (this.height - CONFIRM_HEIGHT) / 2 + CONFIRM_HEIGHT - CONFIRM_BTN_HEIGHT - 10;
+    }
+
+    private int confirmYesX() {
+        return (this.width - CONFIRM_WIDTH) / 2 + 12;
+    }
+
+    private int confirmCancelX() {
+        return (this.width - CONFIRM_WIDTH) / 2 + CONFIRM_WIDTH - CONFIRM_BTN_WIDTH - 12;
+    }
+
+    @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (event.button() != 0) {
+            return super.mouseClicked(event, doubleClick);
+        }
+
+        if (confirmingDisown) {
+            int btnY = confirmButtonY();
+            if (BhScreenDraw.inBox(event.x(), event.y(), confirmYesX(), btnY, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT)) {
+                confirmingDisown = false;
+                ClientHorseRoster.clearFlash();
+                ClientPlayNetworking.send(
+                        new HorseManagePayload(horse.getUUID(), HorseManageAction.DISOWN.ordinal()));
+                return true;
+            }
+            if (BhScreenDraw.inBox(event.x(), event.y(), confirmCancelX(), btnY, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT)) {
+                confirmingDisown = false;
+                return true;
+            }
+            // Modal: swallow everything else.
+            return true;
+        }
+
+        int left = (this.width - PANEL_WIDTH) / 2;
+        int top = (this.height - PANEL_HEIGHT) / 2;
+        if (BhScreenDraw.inBox(event.x(), event.y(),
+                disownButtonX(left), disownButtonY(top), DISOWN_BTN_WIDTH, DISOWN_BTN_HEIGHT)) {
+            ClientHorseRoster.clearFlash();
+            confirmingDisown = true;
+            return true;
+        }
+
+        return super.mouseClicked(event, doubleClick);
+    }
+
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        if (confirmingDisown) {
+            if (event.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) {
+                confirmingDisown = false;
+            }
+            return true;
+        }
+        return super.keyPressed(event);
     }
 
     private static Component coatLabel(AbstractHorse horse) {

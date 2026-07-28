@@ -19,7 +19,10 @@ import net.minecraft.world.level.storage.TagValueOutput;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -48,7 +51,11 @@ public class HorseTrackerState extends SavedData {
             Codec.unboundedMap(UUIDUtil.STRING_CODEC, CompoundTag.CODEC)
                     .optionalFieldOf("horse_snapshots", Map.of()).forGetter(state -> state.snapshots),
             Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.INT)
-                    .optionalFieldOf("horse_generations", Map.of()).forGetter(state -> state.generations)
+                    .optionalFieldOf("horse_generations", Map.of()).forGetter(state -> state.generations),
+            UUIDUtil.STRING_CODEC.listOf()
+                    .optionalFieldOf("pending_disowns", List.of()).forGetter(state -> List.copyOf(state.pendingDisowns)),
+            Codec.unboundedMap(UUIDUtil.STRING_CODEC, UUIDUtil.STRING_CODEC)
+                    .optionalFieldOf("active_horse_by_player", Map.of()).forGetter(state -> state.activeHorseByPlayer)
     ).apply(instance, HorseTrackerState::new));
 
     public static final SavedDataType<HorseTrackerState> TYPE = new SavedDataType<>(
@@ -61,25 +68,43 @@ public class HorseTrackerState extends SavedData {
     private final Map<UUID, KnownPosition> lastKnownPositions;
     private final Map<UUID, CompoundTag> snapshots;
     private final Map<UUID, Integer> generations;
+    /**
+     * Horses disowned while their chunk was unloaded. The stored snapshot is dropped immediately so
+     * the roster and the whistle forget them at once, but the real entity is still sitting in an
+     * unloaded chunk with its owner tag intact — so it is released the next time it loads.
+     */
+    private final Set<UUID> pendingDisowns;
+    /**
+     * The horse each player picked in the management screen. The whistle calls this one before
+     * falling back to "last ridden, else nearest", and it only changes when the player says so.
+     */
+    private final Map<UUID, UUID> activeHorseByPlayer;
 
-    // Concurrent maps: parallel-ticking mods mutate these from multiple entity-tick threads at once
-    // (e.g. two horses unloading, or a dismount landing while another horse records its position).
+    // Concurrent collections: parallel-ticking mods mutate these from multiple entity-tick threads at
+    // once (e.g. two horses unloading, or a dismount landing while another horse records its position).
     public HorseTrackerState() {
         this.lastRiddenByPlayer = new ConcurrentHashMap<>();
         this.lastKnownPositions = new ConcurrentHashMap<>();
         this.snapshots = new ConcurrentHashMap<>();
         this.generations = new ConcurrentHashMap<>();
+        this.pendingDisowns = ConcurrentHashMap.newKeySet();
+        this.activeHorseByPlayer = new ConcurrentHashMap<>();
     }
 
     private HorseTrackerState(
             Map<UUID, UUID> lastRiddenByPlayer,
             Map<UUID, KnownPosition> lastKnownPositions,
             Map<UUID, CompoundTag> snapshots,
-            Map<UUID, Integer> generations) {
+            Map<UUID, Integer> generations,
+            List<UUID> pendingDisowns,
+            Map<UUID, UUID> activeHorseByPlayer) {
         this.lastRiddenByPlayer = new ConcurrentHashMap<>(lastRiddenByPlayer);
         this.lastKnownPositions = new ConcurrentHashMap<>(lastKnownPositions);
         this.snapshots = new ConcurrentHashMap<>(snapshots);
         this.generations = new ConcurrentHashMap<>(generations);
+        this.pendingDisowns = ConcurrentHashMap.newKeySet();
+        this.pendingDisowns.addAll(pendingDisowns);
+        this.activeHorseByPlayer = new ConcurrentHashMap<>(activeHorseByPlayer);
     }
 
     public static HorseTrackerState get(MinecraftServer server) {
@@ -130,13 +155,57 @@ public class HorseTrackerState extends SavedData {
     /** Fallback lookup when no last-ridden entry exists: any stored horse owned by this player. */
     public @Nullable UUID findStoredHorseOwnedBy(UUID playerId) {
         for (Map.Entry<UUID, CompoundTag> entry : snapshots.entrySet()) {
-            if (entry.getValue().read("BH_Owner", UUIDUtil.CODEC)
-                    .map(playerId::equals)
-                    .orElse(false)) {
+            if (isOwnedBy(entry.getValue(), playerId)) {
                 return entry.getKey();
             }
         }
         return null;
+    }
+
+    /** Every horse this player owns that has a stored snapshot — the source list for the roster screen. */
+    public List<UUID> findAllStoredHorsesOwnedBy(UUID playerId) {
+        List<UUID> owned = new ArrayList<>();
+        for (Map.Entry<UUID, CompoundTag> entry : snapshots.entrySet()) {
+            if (isOwnedBy(entry.getValue(), playerId)) {
+                owned.add(entry.getKey());
+            }
+        }
+        return owned;
+    }
+
+    private static boolean isOwnedBy(CompoundTag snapshot, UUID playerId) {
+        return snapshot.read("BH_Owner", UUIDUtil.CODEC).map(playerId::equals).orElse(false);
+    }
+
+    public void setActiveHorse(UUID playerId, UUID horseId) {
+        activeHorseByPlayer.put(playerId, horseId);
+        setDirty();
+    }
+
+    public @Nullable UUID getActiveHorseId(UUID playerId) {
+        return activeHorseByPlayer.get(playerId);
+    }
+
+    /** Drops a horse from every player's active slot — called when it is disowned or dies. */
+    public void clearActiveHorse(UUID horseId) {
+        if (activeHorseByPlayer.values().removeIf(horseId::equals)) {
+            setDirty();
+        }
+    }
+
+    public void markPendingDisown(UUID horseId) {
+        if (pendingDisowns.add(horseId)) {
+            setDirty();
+        }
+    }
+
+    /** True (once) when this horse was disowned while unloaded and still needs to be released. */
+    public boolean consumePendingDisown(UUID horseId) {
+        if (pendingDisowns.remove(horseId)) {
+            setDirty();
+            return true;
+        }
+        return false;
     }
 
     public int getGeneration(UUID horseId) {

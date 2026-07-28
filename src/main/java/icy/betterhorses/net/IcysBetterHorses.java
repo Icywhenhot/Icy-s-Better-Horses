@@ -1,6 +1,10 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.network.CallHorsePayload;
+import icy.betterhorses.net.network.HorseManagePayload;
+import icy.betterhorses.net.network.HorseManageResultPayload;
+import icy.betterhorses.net.network.HorseRosterSyncPayload;
+import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
@@ -8,17 +12,10 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityProcessor;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntitySpawnRequest;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,10 +30,11 @@ public class IcysBetterHorses implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static final int PASSIVE_BOND_INTERVAL_TICKS = 60 * 20;
-    private static final double CALL_TELEPORT_DIST_SQ = 32.0 * 32.0; // teleport to the player when whistled from beyond 32 blocks
 
     // Leftover copies of whistle-respawned horses, discarded on the tick after their chunk loads.
     private final List<AbstractHorse> staleHorses = new ArrayList<>();
+    // Horses disowned while unloaded, released on the tick after their chunk loads.
+    private final List<AbstractHorse> pendingReleases = new ArrayList<>();
 
     @Override
     public void onInitialize() {
@@ -59,6 +57,10 @@ public class IcysBetterHorses implements ModInitializer {
     private void registerPackets() {
         PayloadTypeRegistry.serverboundPlay().register(RadialCommandPayload.TYPE, new RadialCommandPayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(CallHorsePayload.TYPE, new CallHorsePayload.StreamCodec());
+        PayloadTypeRegistry.serverboundPlay().register(OpenHorseRosterPayload.TYPE, new OpenHorseRosterPayload.StreamCodec());
+        PayloadTypeRegistry.serverboundPlay().register(HorseManagePayload.TYPE, new HorseManagePayload.StreamCodec());
+        PayloadTypeRegistry.clientboundPlay().register(HorseRosterSyncPayload.TYPE, new HorseRosterSyncPayload.StreamCodec());
+        PayloadTypeRegistry.clientboundPlay().register(HorseManageResultPayload.TYPE, new HorseManageResultPayload.StreamCodec());
     }
 
     private void registerServerHandlers() {
@@ -72,6 +74,40 @@ public class IcysBetterHorses implements ModInitializer {
             ServerPlayer player = context.player();
             context.server().execute(() -> handleCallHorse(player));
         });
+
+        ServerPlayNetworking.registerGlobalReceiver(OpenHorseRosterPayload.TYPE, (payload, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() -> sendRoster(player));
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(HorseManagePayload.TYPE, (payload, context) -> {
+            ServerPlayer player = context.player();
+            HorseManageAction action = HorseManageAction.fromId(payload.actionOrdinal());
+            context.server().execute(() -> handleManageAction(player, payload.horseId(), action));
+        });
+    }
+
+    private void sendRoster(ServerPlayer player) {
+        ServerPlayNetworking.send(player, new HorseRosterSyncPayload(HorseManagement.buildRoster(player)));
+    }
+
+    private void handleManageAction(ServerPlayer player, UUID horseId, HorseManageAction action) {
+        HorseManagement.Outcome outcome = switch (action) {
+            case WHISTLE -> HorseManagement.whistle(player, horseId);
+            case SEND_HOME -> HorseManagement.sendHome(player, horseId);
+            case DISOWN -> HorseManagement.disown(player, horseId);
+            case SET_ACTIVE -> HorseManagement.setActive(player, horseId);
+        };
+
+        ServerPlayNetworking.send(player,
+                new HorseManageResultPayload(horseId, action.ordinal(), outcome.ok(), outcome.messageKey()));
+        if (outcome.ok()) {
+            if (action == HorseManageAction.WHISTLE) {
+                playWhistle(player);
+            }
+            // The roster changed (a horse loaded, moved dimension, or is gone entirely) — resend it.
+            sendRoster(player);
+        }
     }
 
     private void handleRadialCommand(ServerPlayer player, int horseId, HorseCommand command) {
@@ -93,138 +129,31 @@ public class IcysBetterHorses implements ModInitializer {
 
     private void handleCallHorse(ServerPlayer player) {
         if (!(player.getVehicle() instanceof AbstractHorse)) {
-            player.level().playSound(
-                    null,
-                    player.getX(),
-                    player.getY(),
-                    player.getZ(),
-                    ModSounds.CALL_WHISTLE,
-                    SoundSource.PLAYERS,
-                    1.0F,
-                    1.0F);
+            playWhistle(player);
         }
 
-        UUID playerId = player.getUUID();
-        AbstractHorse horse = findCallableHorse(player, playerId);
-        if (horse == null) {
-            LOGGER.info("[whistle] {} whistled: no loaded horse found, trying stored respawn", player.getName().getString());
-            respawnStoredHorse(player, playerId);
-            return;
-        }
-
-        LOGGER.info("[whistle] {} whistled: summoning loaded horse {}", player.getName().getString(), horse.getUUID());
-        summonHorseToPlayer(horse, player);
+        HorseManagement.callNearestHorse(player);
     }
 
-    // Whistling always cancels whatever standing order the horse was on — the player explicitly wants it to come to them.
-    private void summonHorseToPlayer(AbstractHorse horse, ServerPlayer player) {
-        IHorseData data = (IHorseData) horse;
-        if (data.bh_getBond() <= 0) return;
-
-        data.bh_setCommand(HorseCommand.FOLLOW);
-
-        BlockPos target = player.blockPosition();
-        if (horse.distanceToSqr(player) > CALL_TELEPORT_DIST_SQ) {
-            horse.teleportTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
-        }
-    }
-
-    // The last-ridden horse is somewhere in an unloaded chunk. Instead of chasing the entity, spawn a
-    // fresh copy from its stored NBT snapshot right at the player, and bump the generation counter so
-    // the copy left behind in the unloaded chunk is discarded whenever its chunk loads again.
-    private void respawnStoredHorse(ServerPlayer player, UUID playerId) {
-        UUID horseId = HorseTracker.getLastRiddenId(playerId);
-        if (horseId == null || HorseTracker.getSnapshot(horseId) == null) {
-            // No usable last-ridden entry — fall back to any stored horse this player owns.
-            horseId = HorseTracker.findStoredHorseOwnedBy(playerId);
-        }
-        if (horseId == null) {
-            LOGGER.info("[whistle] no stored horse found for {}", playerId);
-            return;
-        }
-
-        ServerLevel level = (ServerLevel) player.level();
-        // Catch horses that are loaded but slipped past the tracker (e.g. spawn chunks loading before
-        // server start); respawning on top of a loaded copy would collide on the entity UUID.
-        if (level.getEntityInAnyDimension(horseId) instanceof AbstractHorse loaded) {
-            LOGGER.info("[whistle] horse {} was loaded but untracked (level {})", horseId, loaded.level().dimension().identifier());
-            if (loaded.level() == level && playerId.equals(((IHorseData) loaded).bh_getOwner())) {
-                HorseTracker.register(loaded);
-                summonHorseToPlayer(loaded, player);
-            }
-            return;
-        }
-
-        HorseTrackerState.KnownPosition known = HorseTracker.getLastKnownPosition(horseId);
-        CompoundTag snapshot = HorseTracker.getSnapshot(horseId);
-        if (known == null || snapshot == null) {
-            LOGGER.info("[whistle] horse {} has no stored {} — cannot respawn",
-                    horseId, snapshot == null ? "snapshot" : "position");
-            return;
-        }
-        if (!level.dimension().equals(known.dimension())) {
-            LOGGER.info("[whistle] horse {} is in {}, player is in {} — not respawning",
-                    horseId, known.dimension().identifier(), level.dimension().identifier());
-            return;
-        }
-        if (snapshot.getIntOr("BH_Bond", 0) <= 0) {
-            LOGGER.info("[whistle] horse {} has no bond — not respawning", horseId);
-            return; // same rule as the loaded path
-        }
-
-        Entity loaded = EntityType.loadEntityRecursive(
-                snapshot, level, new EntitySpawnRequest(EntitySpawnReason.LOAD, true), EntityProcessor.NOP);
-        if (!(loaded instanceof AbstractHorse horse)) {
-            LOGGER.warn("[whistle] snapshot of horse {} did not deserialize to a horse", horseId);
-            return;
-        }
-
-        IHorseData data = (IHorseData) horse;
-        int newGeneration = HorseTracker.getGeneration(horseId) + 1;
-        data.bh_setGeneration(newGeneration);
-        horse.snapTo(player.getX(), player.getY(), player.getZ(), horse.getYRot(), horse.getXRot());
-        horse.fallDistance = 0.0F;
-        data.bh_setCommand(HorseCommand.FOLLOW);
-
-        if (!level.addFreshEntity(horse)) {
-            LOGGER.warn("[whistle] failed to spawn respawned horse {}", horseId);
-            return;
-        }
-        // Committed only after the spawn succeeded, otherwise the original copy would become stale
-        // with no live replacement.
-        HorseTracker.setGeneration(horseId, newGeneration);
-        LOGGER.info("[whistle] respawned horse {} at {} (generation {})", horseId, player.blockPosition(), newGeneration);
-    }
-
-    // Resolve which horse the whistle summons: prefer the last horse this player rode, else the nearest owned horse in the same level.
-    private AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {
-        AbstractHorse lastRidden = HorseTracker.getLastRidden(playerId);
-        if (lastRidden != null
-                && playerId.equals(((IHorseData) lastRidden).bh_getOwner())
-                && lastRidden.level() == player.level()
-                && lastRidden.isAlive()) {
-            return lastRidden;
-        }
-
-        AbstractHorse nearest = null;
-        double nearestDistSq = Double.MAX_VALUE;
-        for (AbstractHorse candidate : HorseTracker.getAll()) {
-            if (!candidate.isAlive() || candidate.level() != player.level()) continue;
-            UUID owner = ((IHorseData) candidate).bh_getOwner();
-            if (!playerId.equals(owner)) continue;
-            double distSq = candidate.distanceToSqr(player);
-            if (distSq < nearestDistSq) {
-                nearestDistSq = distSq;
-                nearest = candidate;
-            }
-        }
-        return nearest;
+    private void playWhistle(ServerPlayer player) {
+        player.level().playSound(
+                null,
+                player.getX(),
+                player.getY(),
+                player.getZ(),
+                ModSounds.CALL_WHISTLE,
+                SoundSource.PLAYERS,
+                0.5F, // volume halved from 1.0
+                1.0F);
     }
 
     private void registerEntityTracking() {
         ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
             if (entity instanceof AbstractHorse horse && ((IHorseData) horse).bh_isOwned()) {
-                if (HorseTracker.isStale(horse)) {
+                if (HorseTracker.consumePendingDisown(horse.getUUID())) {
+                    // Disowned while its chunk was unloaded; release it next tick, outside the load callback.
+                    pendingReleases.add(horse);
+                } else if (HorseTracker.isStale(horse)) {
                     // Leftover copy of a whistle-respawned horse; discard next tick, outside the load callback.
                     staleHorses.add(horse);
                 } else {
@@ -246,14 +175,27 @@ public class IcysBetterHorses implements ModInitializer {
                 HorseTracker.recordLoadedPositions();
             }
             discardStaleHorses();
+            applyPendingReleases();
         });
         ServerLifecycleEvents.SERVER_STARTED.register(HorseTracker::attach);
         // Snapshot horses before the final world save so nothing is stale after a restart.
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> HorseTracker.recordLoadedPositions());
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             staleHorses.clear();
+            pendingReleases.clear();
             HorseTracker.detach();
         });
+    }
+
+    private void applyPendingReleases() {
+        if (pendingReleases.isEmpty()) return;
+        for (AbstractHorse horse : pendingReleases) {
+            if (!horse.isRemoved()) {
+                LOGGER.info("[manage] releasing horse {} disowned while unloaded", horse.getUUID());
+                ((IHorseData) horse).bh_disown();
+            }
+        }
+        pendingReleases.clear();
     }
 
     private void discardStaleHorses() {

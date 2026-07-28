@@ -1,13 +1,18 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.client.ClientHorseRoster;
 import icy.betterhorses.net.client.HorseInfoScreen;
+import icy.betterhorses.net.client.HorseRosterScreen;
 import icy.betterhorses.net.client.HorseStabilizerSoundController;
 import icy.betterhorses.net.client.RadialMenuScreen;
 import icy.betterhorses.net.client.render.HorseCartRenderer;
 import icy.betterhorses.net.network.CallHorsePayload;
+import icy.betterhorses.net.network.HorseManageResultPayload;
+import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -33,6 +38,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
 
     public static KeyMapping CALL_KEY;
     public static KeyMapping RADIAL_KEY;
+    public static KeyMapping MANAGE_KEY;
 
     // Holding the call key fires OS key-repeat clicks; track the physical key edge so one press = one whistle.
     private boolean callKeyWasDown = false;
@@ -49,10 +55,31 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_R,
                 CATEGORY));
+        MANAGE_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.icys-better-horses.manage",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_G,
+                CATEGORY));
 
         EntityRendererRegistry.register(ModEntities.HORSE_CART, HorseCartRenderer::new);
 
+        registerClientHandlers();
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
+    }
+
+    private void registerClientHandlers() {
+        ClientPlayNetworking.registerGlobalReceiver(HorseRosterSyncPayload.TYPE, (payload, context) ->
+                context.client().execute(() -> ClientHorseRoster.setEntries(payload.entries())));
+
+        ClientPlayNetworking.registerGlobalReceiver(HorseManageResultPayload.TYPE, (payload, context) ->
+                context.client().execute(() -> ClientHorseRoster.onActionResult(
+                        payload.horseId(),
+                        HorseManageAction.fromId(payload.actionOrdinal()),
+                        payload.success(),
+                        payload.messageKey())));
+
+        // A roster from the previous world must not survive into the next one.
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> ClientHorseRoster.reset());
     }
 
     private void onClientTick(Minecraft client) {
@@ -73,6 +100,12 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
 
         while (RADIAL_KEY.consumeClick()) {
             bh_tryOpenRadial(client);
+        }
+
+        while (MANAGE_KEY.consumeClick()) {
+            if (client.gui.screen() == null) {
+                client.setScreenAndShow(new HorseRosterScreen());
+            }
         }
     }
 

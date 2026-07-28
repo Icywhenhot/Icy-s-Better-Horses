@@ -8,6 +8,7 @@ import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -102,6 +103,14 @@ public final class HorseTracker {
         IcysBetterHorses.LOGGER.info("[whistle] disowned horse {}", horse.getUUID());
     }
 
+    /** Drops a stored horse's snapshot without touching a live entity — used when disowning an unloaded horse. */
+    public static void forgetStoredHorse(UUID horseId) {
+        HorseTrackerState state = state();
+        if (state != null) {
+            state.forgetHorse(horseId);
+        }
+    }
+
     public static Collection<AbstractHorse> getAll() {
         return ownedHorses.values();
     }
@@ -143,6 +152,43 @@ public final class HorseTracker {
     public static @Nullable UUID findStoredHorseOwnedBy(UUID playerId) {
         HorseTrackerState state = state();
         return state == null ? null : state.findStoredHorseOwnedBy(playerId);
+    }
+
+    public static List<UUID> findAllStoredHorsesOwnedBy(UUID playerId) {
+        HorseTrackerState state = state();
+        return state == null ? List.of() : state.findAllStoredHorsesOwnedBy(playerId);
+    }
+
+    public static void setActiveHorse(UUID playerId, UUID horseId) {
+        HorseTrackerState state = state();
+        if (state != null) {
+            state.setActiveHorse(playerId, horseId);
+        }
+    }
+
+    public static @Nullable UUID getActiveHorseId(UUID playerId) {
+        HorseTrackerState state = state();
+        return state == null ? null : state.getActiveHorseId(playerId);
+    }
+
+    public static void clearActiveHorse(UUID horseId) {
+        HorseTrackerState state = state();
+        if (state != null) {
+            state.clearActiveHorse(horseId);
+        }
+    }
+
+    /** Queues a horse that was disowned while unloaded; it is released when its chunk next loads. */
+    public static void markPendingDisown(UUID horseId) {
+        HorseTrackerState state = state();
+        if (state != null) {
+            state.markPendingDisown(horseId);
+        }
+    }
+
+    public static boolean consumePendingDisown(UUID horseId) {
+        HorseTrackerState state = state();
+        return state != null && state.consumePendingDisown(horseId);
     }
 
     public static int getGeneration(UUID horseId) {

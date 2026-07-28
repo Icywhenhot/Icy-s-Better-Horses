@@ -179,16 +179,17 @@ public final class HorseStabilizerSoundController {
 
     private static final class StabilizerSoundInstance extends AbstractTickableSoundInstance {
         private static final int FADE_OUT_TICKS = 6;
+        private static final float BASE_VOLUME = 0.5F; // halved from 1.0
 
         private final AbstractHorse horse;
         private boolean fadingOut = false;
-        private float fadeStep = 1.0F / FADE_OUT_TICKS;
+        private float fadeStep = BASE_VOLUME / FADE_OUT_TICKS;
 
         private StabilizerSoundInstance(AbstractHorse horse, SoundEvent sound, boolean looping) {
             super(sound, SoundSource.NEUTRAL, SoundInstance.createUnseededRandom());
             this.horse = horse;
             this.looping = looping;
-            this.volume = 1.0F;
+            this.volume = BASE_VOLUME;
             this.pitch = 1.0F;
             this.delay = 0;
             this.relative = false;

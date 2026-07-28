@@ -105,4 +105,19 @@ public interface IHorseData {
 
     /** Called when the upgraded saddle is removed, so dependent gear and storage can be dropped. */
     void bh_onUpgradedSaddleRemoved(ItemStack previousSaddle);
+
+    // --- Management screen ---
+
+    /**
+     * True while the horse still carries anything at all: saddle, body armor, its vanilla inventory,
+     * the mod's gear slots or its chest storage. Disowning is refused until this is false, so nothing
+     * the player owns walks off with a horse they just let go of.
+     */
+    boolean bh_hasAnyEquipment();
+
+    /**
+     * Releases the horse back into the wild: ejects riders, untames it, clears the owner (which also
+     * drops its whistle snapshot), and forgets home, hitchpost and bond. Server side only.
+     */
+    void bh_disown();
 }

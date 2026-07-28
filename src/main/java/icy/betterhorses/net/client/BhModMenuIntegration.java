@@ -58,6 +58,10 @@ public class BhModMenuIntegration implements ModMenuApi {
                         Component.translatable("config.icys-better-horses.radial_key"), IcysBetterHorsesClient.RADIAL_KEY)
                 .setTooltip(Component.translatable("config.icys-better-horses.radial_key.tooltip"))
                 .build());
+        keybinds.addEntry(eb.fillKeybindingField(
+                        Component.translatable("config.icys-better-horses.manage_key"), IcysBetterHorsesClient.MANAGE_KEY)
+                .setTooltip(Component.translatable("config.icys-better-horses.manage_key.tooltip"))
+                .build());
 
         builder.setSavingRunnable(() -> {
             BhConfig.apply(values[0], values[1], values[2], values[3], values[4], values[5]);

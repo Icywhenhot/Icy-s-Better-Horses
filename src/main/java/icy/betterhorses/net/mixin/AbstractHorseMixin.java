@@ -69,6 +69,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Shadow
     protected SimpleContainer inventory;
 
+    // Vanilla has setOwner(LivingEntity) but no way to clear it; bh_disown() needs to null it out.
+    @Shadow
+    private EntityReference<LivingEntity> owner;
+
     @Shadow
     protected abstract void doPlayerRide(net.minecraft.world.entity.player.Player player);
 
@@ -130,6 +134,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     // Transient handle to the pulled cart entity (never saved). Reconciled each server tick from
     // whether the cart item occupies the shared stabilizer slot; see bh_tickCart.
     @Unique private @Nullable HorseCartEntity bh_cartEntity = null;
+    // Freeze bookkeeping: a cart-hitched horse parks in place (position + facing) until a player
+    // takes the bench and drives it. See bh_freezeUnriddenCartHorse.
+    @Unique private boolean bh_cartFrozen = false;
+    @Unique private float bh_cartFrozenYaw = 0.0F;
+    @Unique private @Nullable Vec3 bh_cartFrozenPos = null;
 
     @Unique
     private static final Identifier BH_SPEED_ID =
@@ -353,6 +362,33 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         bh_dropContainerContents(self, serverLevel, bh_gearContainer);
         bh_dropChestContents();
         bh_syncGearFlags();
+    }
+
+    @Override
+    public boolean bh_hasAnyEquipment() {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (!self.getItemBySlot(EquipmentSlot.SADDLE).isEmpty()
+                || !self.getItemBySlot(EquipmentSlot.BODY).isEmpty()) {
+            return true;
+        }
+        return !this.inventory.isEmpty() || !bh_gearContainer.isEmpty() || !bh_chestContainer.isEmpty();
+    }
+
+    @Override
+    public void bh_disown() {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        self.ejectPassengers();
+        // Vanilla only exposes setOwner(LivingEntity), so the reference is cleared directly; leaving a
+        // stale one behind would keep the horse "remembering" a player it no longer belongs to.
+        this.owner = null;
+        self.setTamed(false);
+        bh_setBond(0);
+        bh_setHome(null);
+        bh_setHitchpostPos(null);
+        bh_setWanderCenter(self.blockPosition());
+        bh_setCommand(HorseCommand.WANDER);
+        // Last: this is what drops the whistle snapshot, so everything above is already applied.
+        bh_setOwner(null);
     }
 
     @Inject(method = "defineSynchedData", at = @At("TAIL"))
@@ -846,6 +882,60 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             }
             bh_cartEntity = null;
         }
+    }
+
+    /**
+     * A hitched cart turns the horse into a parked wagon: with no player driving, it holds its
+     * position and facing so an unmanned cart never wanders off or spins in place. As soon as a
+     * player takes the bench (any player riding the horse), it moves under full vanilla control
+     * again. Server-side authority; the pinned transform syncs to clients normally.
+     */
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void bh_freezeUnriddenCartHorse(CallbackInfo ci) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.level().isClientSide() || !((IHorseData) this).bh_hasCartGear()) {
+            bh_cartFrozen = false;
+            return;
+        }
+
+        boolean ridden = false;
+        for (Entity passenger : self.getPassengers()) {
+            if (passenger instanceof net.minecraft.world.entity.player.Player) {
+                ridden = true;
+                break;
+            }
+        }
+        if (ridden) {
+            bh_cartFrozen = false;
+            return;
+        }
+
+        if (!bh_cartFrozen) {
+            bh_cartFrozen = true;
+            bh_cartFrozenYaw = self.getYRot();
+            bh_cartFrozenPos = self.position();
+        }
+
+        // Pin the horizontal position (gravity still settles it vertically); kill horizontal/upward drift.
+        if (bh_cartFrozenPos != null) {
+            self.setPos(bh_cartFrozenPos.x, self.getY(), bh_cartFrozenPos.z);
+        }
+        Vec3 motion = self.getDeltaMovement();
+        self.setDeltaMovement(0.0D, Math.min(motion.y, 0.0D), 0.0D);
+        self.hurtMarked = true;
+        self.getNavigation().stop();
+        self.xxa = 0.0F;
+        self.yya = 0.0F;
+        self.zza = 0.0F;
+
+        // Lock facing so AI targets can't turn it.
+        float yaw = bh_cartFrozenYaw;
+        self.setYRot(yaw);
+        self.yRotO = yaw;
+        self.setYHeadRot(yaw);
+        self.setYBodyRot(yaw);
+        self.yHeadRotO = yaw;
+        self.yBodyRotO = yaw;
     }
 
     @Inject(method = "tick", at = @At("TAIL"))

@@ -1,5 +1,6 @@
 package icy.betterhorses.net.entity;
 
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModEntities;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -11,10 +12,13 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.fox.Fox;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
@@ -32,6 +36,7 @@ import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.state.AnimationTest;
 import com.geckolib.util.GeckoLibUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -84,6 +89,30 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     /** Sideways spacing of the two seats from the cart center line. */
     private static final double SEAT_SIDE = 0.45D;
 
+    // --- Carriage seats (two occupants in the bed behind the bench: players or small mobs). ---
+    private static final int REAR_SEAT_COUNT = 2;
+    /** Distance behind the entity origin to the carriage seats (further back than the bench). */
+    private static final double REAR_SEAT_BEHIND = 2.55D;
+    /** Sideways spacing of the two carriage seats from the cart center line. */
+    private static final double REAR_SEAT_SIDE = 0.45D;
+    /**
+     * Seat height above the entity origin. Set flush with the underside of the bed (the floor cube
+     * runs y 12..13 in the model, so 12/16 = 0.75) rather than on top of it: riders drop into the
+     * cart the way a minecart passenger does, and the side rails — which top out at 21/16 — hide
+     * their legs. 0.75 is as low as this can go before feet poke out beneath the cart.
+     */
+    private static final double REAR_SEAT_HEIGHT = 0.75D;
+    /** "Smaller than a horse" gate for carriage mobs (a horse is ~1.4 wide, ~1.6 tall). Tunable. */
+    private static final float MAX_CARRIAGE_MOB_WIDTH = 1.2F;
+    private static final float MAX_CARRIAGE_MOB_HEIGHT = 2.1F;
+    /** How far above the bed floor to look for mobs standing in the carriage, to auto-board them. */
+    private static final double BOARD_SCAN_HEIGHT = 1.6D;
+    /**
+     * How long a freshly spawned cart force-boards mobs found in its bed, ignoring vanilla's 60-tick
+     * re-boarding cooldown. Long enough to cover the reload hand-off (see {@link #shouldBeSaved()}).
+     */
+    private static final int RESTORE_BOARD_TICKS = 80;
+
     // --- Wheel animation pacing ---
     /** Per-tick easing toward the measured speed; lower = longer spin-up ramp. */
     private static final double SPEED_SMOOTHING = 0.12D;
@@ -107,6 +136,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     private @Nullable UUID horseUuid;
     private @Nullable AbstractHorse horse;
+
+    /** Tick up to which this cart force-boards mobs in its bed; zeroed once cargo is unloaded by hand. */
+    private int cargoRestoreDeadline = RESTORE_BOARD_TICKS;
 
     // Client-side movement measure (drives the wheel animation pacing).
     private double prevX;
@@ -157,6 +189,66 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             return;
         }
         this.followHorse(boundHorse);
+        this.tryBoardNearbyMobs();
+        this.seatPassengers();
+    }
+
+    /**
+     * Keeps carried animals in their sitting pose.
+     *
+     * <p>Humanoid riders (players, villagers, piglins…) fold their legs on their own — vanilla's
+     * {@code HumanoidModel} does that for any passenger. Animals have no such pose: a pig or a sheep
+     * stands in a vanilla boat too. The ones that <i>do</i> own a sit animation get it switched on
+     * here, and it is re-asserted every tick because their AI keeps ticking while they ride and can
+     * clear the flag underneath us.</p>
+     */
+    private void seatPassengers() {
+        for (Entity passenger : this.getPassengers()) {
+            setSeatedPose(passenger, true);
+        }
+    }
+
+    /**
+     * Sets everyone in the back down beside the cart. Vanilla's 60-tick boarding cooldown, stamped
+     * on each of them by {@code removePassenger}, is what stops {@link #tryBoardNearbyMobs()} from
+     * immediately hauling them back in.
+     */
+    private void unloadPassengers() {
+        // Closes the restore window too, so a sneak-click right after the cart appears isn't undone
+        // by the force-boarding below.
+        this.cargoRestoreDeadline = 0;
+        for (Entity passenger : List.copyOf(this.getPassengers())) {
+            passenger.stopRiding();
+            // Step them clear of the bed so they aren't standing in the scan box when the cooldown
+            // lapses; without this a sneak-click on a parked cart just re-loads itself.
+            Vec3 beside = this.position().add(
+                    new Vec3(this.getBbWidth() * 0.5D + 0.6D, 0.0D, 0.0D)
+                            .yRot(-this.getYRot() * ((float) Math.PI / 180.0F)));
+            passenger.teleportTo(beside.x, this.getY(), beside.z);
+        }
+    }
+
+    /** True for the first moments of a cart's life — see {@link #RESTORE_BOARD_TICKS}. */
+    private boolean restoringCargo() {
+        return this.tickCount <= this.cargoRestoreDeadline;
+    }
+
+    private static void setSeatedPose(Entity passenger, boolean seated) {
+        if (passenger instanceof TamableAnimal tamable) {
+            // Only the pose, never orderedToSit — a dog told to stay put must still be told to stay
+            // put once it hops back out.
+            tamable.setInSittingPose(seated || tamable.isOrderedToSit());
+        } else if (passenger instanceof Fox fox) {
+            fox.setSitting(seated);
+        }
+    }
+
+    @Override
+    protected void removePassenger(Entity passenger) {
+        super.removePassenger(passenger);
+        if (!this.level().isClientSide()) {
+            setSeatedPose(passenger, false);
+        }
     }
 
     /**
@@ -303,28 +395,127 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
                 .yRot(-horseYaw * ((float) Math.PI / 180.0F));
     }
 
+    // --- Carriage seating (players or small mobs, boat-style boarding) ---------
+
+    /** Seat offset (from the cart origin) for a carriage occupant, rotated into world space. */
+    private static Vec3 carriageSeatOffset(int seatIndex, float cartYaw) {
+        double side = seatIndex <= 0 ? -REAR_SEAT_SIDE : REAR_SEAT_SIDE;
+        // Local space: +z is the facing direction, so the carriage (behind the bench) is negative z.
+        return new Vec3(side, REAR_SEAT_HEIGHT, -REAR_SEAT_BEHIND)
+                .yRot(-cartYaw * ((float) Math.PI / 180.0F));
+    }
+
+    @Override
+    protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scaleFactor) {
+        int seatIndex = Math.max(0, this.getPassengers().indexOf(passenger));
+        return carriageSeatOffset(seatIndex, this.getYRot());
+    }
+
+    /** Whether {@code candidate} may occupy a carriage seat: players always; mobs only if small enough. */
+    private boolean canCarry(Entity candidate) {
+        if (candidate instanceof Player) {
+            return true;
+        }
+        if (!(candidate instanceof LivingEntity) || candidate instanceof AbstractHorse) {
+            // No non-living riders, and never a horse/donkey/mule — those are the "big mobs" we exclude.
+            return false;
+        }
+        if (candidate == this.boundHorse()) {
+            return false;
+        }
+        return candidate.getBbWidth() < MAX_CARRIAGE_MOB_WIDTH
+                && candidate.getBbHeight() < MAX_CARRIAGE_MOB_HEIGHT;
+    }
+
+    /** Box over the bed (up to {@link #BOARD_SCAN_HEIGHT} tall) used to catch mobs standing in the carriage. */
+    private AABB boardScanBox() {
+        AABB bed = this.getBoundingBox();
+        return new AABB(bed.minX, bed.minY, bed.minZ, bed.maxX, bed.minY + BOARD_SCAN_HEIGHT, bed.maxZ)
+                .inflate(0.1D);
+    }
+
+    /**
+     * Boat-style boarding: any small mob that ends up standing in the carriage climbs aboard, until
+     * both back seats are taken. Players board by right-clicking (see {@link #interact}). Server-side.
+     */
+    private void tryBoardNearbyMobs() {
+        if (this.getPassengers().size() >= REAR_SEAT_COUNT) {
+            return;
+        }
+        for (LivingEntity candidate : this.level().getEntitiesOfClass(LivingEntity.class, boardScanBox())) {
+            if (this.getPassengers().size() >= REAR_SEAT_COUNT) {
+                break;
+            }
+            if (candidate instanceof Player
+                    || candidate.isPassenger()
+                    || candidate.isVehicle()
+                    || !candidate.isAlive()
+                    || !this.canCarry(candidate)) {
+                continue;
+            }
+            // Normally this respects boardingCooldown, so a mob you just shoved out isn't re-grabbed
+            // instantly. The exception is a cart that has only just appeared: on a reload the mobs
+            // in the bed are the ones the saved cart set down a moment ago, and vanilla stamped them
+            // with a 60-tick cooldown on the way out. Force those aboard so a reload doesn't scatter
+            // the cargo. Our seat/size gate still runs via canAddPassenger.
+            candidate.startRiding(this, this.restoringCargo(), true);
+        }
+    }
+
     @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 hitLocation) {
+        // Sneak-click unloads the back: the only way to get a mob out again, since mobs never
+        // dismount on their own and the auto-boarder would grab anything standing in the bed.
         if (player.isSecondaryUseActive()) {
-            return InteractionResult.PASS;
+            if (this.getPassengers().isEmpty()) {
+                return InteractionResult.PASS;
+            }
+            if (!this.level().isClientSide()) {
+                this.unloadPassengers();
+            }
+            return InteractionResult.SUCCESS;
         }
         if (this.level().isClientSide()) {
             return this.clientHorse() != null ? InteractionResult.SUCCESS : InteractionResult.PASS;
         }
         AbstractHorse boundHorse = this.resolveHorse();
-        if (boundHorse != null) {
-            // Board the horse (routed through its normal ride path so ownership gating applies);
-            // the bench attachment puts the player on the cart.
+        if (boundHorse == null) {
+            return InteractionResult.PASS;
+        }
+
+        // Prefer the bench (which drives the horse) when the player is allowed there and it has room;
+        // otherwise drop into a carriage seat in the back. Bench riders are passengers of the horse
+        // (routed through its normal ride path so ownership gating applies); carriage riders are ours.
+        boolean benchHasRoom = boundHorse.getPassengers().size() < 2;
+        if (benchHasRoom && this.playerMayTakeBench(boundHorse, player)) {
             ((IHorseData) boundHorse).bh_ridePlayer(player);
+            return InteractionResult.CONSUME;
+        }
+        if (this.getPassengers().size() < REAR_SEAT_COUNT) {
+            player.startRiding(this);
             return InteractionResult.CONSUME;
         }
         return InteractionResult.PASS;
     }
 
+    /** Bench eligibility mirrors the horse's own owner-gating: only the owner drives, unless exclusivity is off. */
+    private boolean playerMayTakeBench(AbstractHorse boundHorse, Player player) {
+        if (!BhConfig.horseExclusivityEnabled()) {
+            return true;
+        }
+        UUID owner = ((IHorseData) boundHorse).bh_getOwner();
+        if (owner == null || owner.equals(player.getUUID())) {
+            return true;
+        }
+        List<Entity> passengers = boundHorse.getPassengers();
+        return !passengers.isEmpty() && passengers.get(0).getUUID().equals(owner);
+    }
+
     @Override
     protected boolean canAddPassenger(Entity passenger) {
-        // Riders belong to the horse, never to the cart itself.
-        return false;
+        // The two front bench seats belong to the horse; the cart itself only seats the two carriage
+        // occupants behind it. Players always fit; mobs must be smaller than a horse.
+        return this.getPassengers().size() < REAR_SEAT_COUNT && this.canCarry(passenger);
     }
 
     @Override
@@ -399,8 +590,16 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     @Override
     public boolean shouldBeSaved() {
-        // Purely derived from the horse's gear; re-spawned on load by the horse's tick.
-        return false;
+        // An empty cart stays pure derived state: the horse's gear re-spawns it on load, so writing
+        // it would only risk orphans and duplicates.
+        //
+        // A loaded one has to be written, though. Vanilla stores passengers *inside* their vehicle
+        // (Entity.save returns false for anything that is riding), so a cart that skipped the save
+        // took its riders down with it — mobs left in the back simply ceased to exist on reload.
+        // The restored cart still has no horse binding, so its first tick discards it and sets the
+        // riders down exactly where they were; the horse's own tick spawns the real cart and
+        // tryBoardNearbyMobs picks them straight back up.
+        return !this.getPassengers().isEmpty();
     }
 
     @Override

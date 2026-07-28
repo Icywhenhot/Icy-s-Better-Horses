@@ -3,6 +3,7 @@ package icy.betterhorses.net.mixin;
 import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.HorseTracker;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -39,6 +40,22 @@ public abstract class EntityMixin {
             Identifier.fromNamespaceAndPath("icys-better-horses", "mounted_break_speed");
     @Unique private static final double BH_MOUNTED_STEP_HEIGHT_BONUS = 0.1D;
     @Unique private static final double BH_MOUNTED_BREAK_SPEED_BONUS = 5.0D;
+
+    /**
+     * Cart riders never suffocate.
+     *
+     * <p>{@code LivingEntity.baseTick} deals a heart of in-wall damage whenever
+     * {@link Entity#isInWall()} is true. The cart snaps to its horse rather than moving with
+     * collision, so backing into a wall or a fence shoves whoever is in the bed straight into the
+     * block — a wolf riding along would just start bleeding. Boats never do this because they stop
+     * against the block instead.</p>
+     */
+    @Inject(method = "isInWall", at = @At("HEAD"), cancellable = true)
+    private void bh_cartRidersDoNotSuffocate(CallbackInfoReturnable<Boolean> cir) {
+        if (((Entity) (Object) this).getVehicle() instanceof HorseCartEntity) {
+            cir.setReturnValue(false);
+        }
+    }
 
     @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;ZZ)Z", at = @At("TAIL"))
     private void bh_applyMountedHorseBonuses(
