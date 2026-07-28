@@ -43,6 +43,7 @@ public class IcysBetterHorses implements ModInitializer {
         BhConfig.load();
         ModBlocks.init();
         ModBlockEntities.init();
+        ModEntities.init();
         ModItems.init();
         ModSounds.init();
         ModTicketTypes.init();

@@ -1,0 +1,42 @@
+{
+  "__comment": "Base model for the GeckoLib 3D item render (like vanilla chest/trident use builtin/entity). Only the display transforms are used; the geometry comes from the geckolib:geckolib special renderer. The scale/translation below are a STARTING GUESS for the large cart model — nudge them in-game (or set them in Blockbench 'Display' mode and paste here).",
+  "parent": "minecraft:builtin/entity",
+  "gui_light": "side",
+  "display": {
+    "gui": {
+      "rotation": [30, 225, 0],
+      "translation": [0, -3, 0],
+      "scale": [0.18, 0.18, 0.18]
+    },
+    "ground": {
+      "rotation": [0, 0, 0],
+      "translation": [0, 3, 0],
+      "scale": [0.13, 0.13, 0.13]
+    },
+    "fixed": {
+      "rotation": [0, 180, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.18, 0.18, 0.18]
+    },
+    "thirdperson_righthand": {
+      "rotation": [0, 0, 0],
+      "translation": [0, 1, 0],
+      "scale": [0.2, 0.2, 0.2]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [0, 0, 0],
+      "translation": [0, 1, 0],
+      "scale": [0.2, 0.2, 0.2]
+    },
+    "firstperson_righthand": {
+      "rotation": [0, 45, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.22, 0.22, 0.22]
+    },
+    "firstperson_lefthand": {
+      "rotation": [0, 45, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.22, 0.22, 0.22]
+    }
+  }
+}

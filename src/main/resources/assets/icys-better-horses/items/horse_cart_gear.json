@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "icys-better-horses:item/horse_cart_gear",
+    "model": {
+      "type": "geckolib:geckolib"
+    }
+  }
+}

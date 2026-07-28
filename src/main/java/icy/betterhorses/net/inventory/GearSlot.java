@@ -19,7 +19,9 @@ public enum GearSlot {
             case CHEST -> stack.is(Items.CHEST) || stack.is(Items.ENDER_CHEST);
             case HOOVES -> stack.is(ModItems.HORSE_HOOVES);
             case MEDKIT -> stack.is(ModItems.HORSE_MEDKIT);
-            case STABILIZER -> stack.is(ModItems.HORSE_STABILIZER);
+            // Shared slot: the stabilizer and the horse cart are mutually exclusive (one slot,
+            // one item). The empty slot's ghost icon alternates between the two in the horse GUI.
+            case STABILIZER -> stack.is(ModItems.HORSE_STABILIZER) || stack.is(ModItems.HORSE_CART);
             case HITCHPOST -> stack.is(ModItems.HITCHPOST);
         };
     }

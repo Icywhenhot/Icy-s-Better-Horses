@@ -9,6 +9,7 @@ import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.HorseTracker;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
+import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.item.HitchpostBlock;
 import icy.betterhorses.net.goal.HorseFollowOwnerGoal;
 import icy.betterhorses.net.goal.HorseReturnHomeGoal;
@@ -80,6 +81,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique
     private static final EntityDataAccessor<Integer> BH_GEAR_FLAGS_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
+    // The stabilizer slot is shared with the horse cart; the gear-flags bitmask only tells us the
+    // slot is occupied, so this syncs which of the two it holds (true = cart) for client visuals.
+    @Unique
+    private static final EntityDataAccessor<Boolean> BH_CART_SYNCED =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
     @Unique
     private static final EntityDataAccessor<Optional<BlockPos>> BH_HITCHPOST_POS_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
@@ -121,6 +127,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private boolean bh_hadUpgradedSaddle = false;
     @Unique private boolean bh_fedGoldenAppleThisTick = false;
     @Unique private @Nullable Vec3 bh_lastFrostWalkerPos = null;
+    // Transient handle to the pulled cart entity (never saved). Reconciled each server tick from
+    // whether the cart item occupies the shared stabilizer slot; see bh_tickCart.
+    @Unique private @Nullable HorseCartEntity bh_cartEntity = null;
 
     @Unique
     private static final Identifier BH_SPEED_ID =
@@ -351,6 +360,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         builder.define(BH_BOND_SYNCED, 0);
         builder.define(BH_STABILIZER_STATE_SYNCED, HorseStabilizerState.CLOSED.ordinal());
         builder.define(BH_GEAR_FLAGS_SYNCED, 0);
+        builder.define(BH_CART_SYNCED, false);
         builder.define(BH_HITCHPOST_POS_SYNCED, Optional.empty());
         builder.define(BH_GENDER_SYNCED, 0);
         builder.define(BH_BREED_SYNCED, HorseBreed.UNKNOWN_SPECIES.ordinal());
@@ -812,6 +822,32 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.bh_setStabilizerState(state);
     }
 
+    /**
+     * Keeps the pulled cart entity in sync with the shared stabilizer/cart gear slot: spawns a cart
+     * bound to this horse when the cart item is equipped and none is live, and discards it when the
+     * item is removed. The cart is derived state (never saved), so on chunk reload this simply
+     * re-spawns it. Cheap: one item check per horse per tick on the server.
+     */
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void bh_tickCart(CallbackInfo ci) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (!(self.level() instanceof ServerLevel)) {
+            return;
+        }
+
+        boolean wantsCart = ((IHorseData) this).bh_hasCartGear();
+        boolean hasCart = bh_cartEntity != null && bh_cartEntity.isAlive() && !bh_cartEntity.isRemoved();
+
+        if (wantsCart && !hasCart) {
+            bh_cartEntity = HorseCartEntity.spawnFor(self);
+        } else if (!wantsCart && bh_cartEntity != null) {
+            if (hasCart) {
+                bh_cartEntity.discard();
+            }
+            bh_cartEntity = null;
+        }
+    }
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_boostWaterMovement(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -953,6 +989,15 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             float scaleFactor,
             CallbackInfoReturnable<Vec3> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
+
+        // With a cart hitched, riders sit on the cart's bench instead of on the horse's back. They
+        // stay passengers of the horse, so the driver keeps full vanilla control of it.
+        if (((IHorseData) this).bh_hasCartGear()) {
+            int seatIndex = Math.max(0, self.getPassengers().indexOf(passenger));
+            cir.setReturnValue(HorseCartEntity.benchSeatOffset(seatIndex, self.getYRot()));
+            return;
+        }
+
         if (!BhConfig.multiRidingEnabled() || self.getPassengers().size() <= 1) {
             return;
         }
@@ -992,7 +1037,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Override
     protected boolean canAddPassenger(Entity passenger) {
         java.util.List<Entity> passengers = this.getPassengers();
-        boolean multiRidingEnabled = BhConfig.multiRidingEnabled();
+        // A hitched cart's bench physically seats two, so it grants the second seat on its own.
+        boolean multiRidingEnabled = BhConfig.multiRidingEnabled() || ((IHorseData) this).bh_hasCartGear();
         boolean horseExclusivityEnabled = BhConfig.horseExclusivityEnabled();
         if (passengers.size() >= (multiRidingEnabled ? 2 : 1)) {
             return false;
@@ -1073,7 +1119,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Unique
     private boolean bh_hasStabilizerGear() {
-        return BhConfig.stabilizerEnabled() && this.bh_hasGear(GearSlot.STABILIZER);
+        // The stabilizer slot is shared with the horse cart; only the stabilizer item enables the
+        // gliding/landing behavior — a cart in the slot must not deploy wings. bh_hasStabilizerItem
+        // reads synced state, so this is correct on both client and server.
+        return BhConfig.stabilizerEnabled() && ((IHorseData) this).bh_hasStabilizerItem();
     }
 
     @Unique
@@ -1194,5 +1243,18 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
 
         this.entityData.set(BH_GEAR_FLAGS_SYNCED, flags);
+        this.entityData.set(BH_CART_SYNCED,
+                this.bh_gearContainer.getItem(GearSlot.STABILIZER.ordinal()).is(ModItems.HORSE_CART));
+    }
+
+    @Override
+    public boolean bh_hasCartGear() {
+        // Read the synced flag so this is correct on both sides (the gear container isn't synced).
+        return this.entityData.get(BH_CART_SYNCED);
+    }
+
+    @Override
+    public void bh_ridePlayer(net.minecraft.world.entity.player.Player player) {
+        this.doPlayerRide(player);
     }
 }

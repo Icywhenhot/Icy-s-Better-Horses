@@ -64,6 +64,28 @@ public interface IHorseData {
         return (bh_getGearFlags() & (1 << slot.ordinal())) != 0;
     }
 
+    /**
+     * True when the horse-cart item occupies the (shared) stabilizer gear slot. Backed by a synced
+     * flag so it is correct on both sides (the gear container itself is not synced to clients).
+     * Drives cart spawn/despawn in {@code AbstractHorseMixin.bh_tickCart}.
+     */
+    boolean bh_hasCartGear();
+
+    /**
+     * True when the stabilizer item (not the cart) occupies the shared slot. Uses the synced gear
+     * flag plus {@link #bh_hasCartGear()}, so it is safe on the client for the wing render layer.
+     */
+    default boolean bh_hasStabilizerItem() {
+        return bh_hasGear(GearSlot.STABILIZER) && !bh_hasCartGear();
+    }
+
+    /**
+     * Seats a player on this horse through its normal ride path (so ownership gating still applies).
+     * Used when boarding the cart: cart riders are passengers of the horse — merely attached at the
+     * bench — so driving stays vanilla horse control.
+     */
+    void bh_ridePlayer(net.minecraft.world.entity.player.Player player);
+
     // --- Upgraded saddle gear + chest ---
 
     /** True when the upgraded saddle item occupies the horse saddle slot. */

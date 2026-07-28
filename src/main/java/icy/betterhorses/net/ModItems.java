@@ -1,5 +1,6 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.item.HorseCartItem;
 import icy.betterhorses.net.item.UpgradedSaddleItem;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.minecraft.core.component.DataComponents;
@@ -39,6 +40,11 @@ public final class ModItems {
     public static final Item HORSE_STABILIZER = register("horse_stabilizer_gear",
             new Item(itemProperties("horse_stabilizer_gear").stacksTo(1)));
 
+    // Shares the stabilizer gear slot; equipping it spawns the pulled cart entity behind the horse.
+    // Rendered in-slot/hand as the 3D cart model via GeckoLib (GeoItem).
+    public static final Item HORSE_CART = register("horse_cart_gear",
+            new HorseCartItem(itemProperties("horse_cart_gear").stacksTo(1)));
+
     public static final CreativeModeTab STABLE_SUPPLIES_TAB = Registry.register(
             BuiltInRegistries.CREATIVE_MODE_TAB,
             Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "stable_supplies"),
@@ -56,6 +62,7 @@ public final class ModItems {
                         entries.accept(HORSE_MEDKIT);
                         entries.accept(CANISTER);
                         entries.accept(HORSE_STABILIZER);
+                        entries.accept(HORSE_CART);
                         entries.accept(HITCHPOST);
                     })
                     .build());

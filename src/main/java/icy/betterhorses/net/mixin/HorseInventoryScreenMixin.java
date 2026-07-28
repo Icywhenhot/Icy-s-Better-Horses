@@ -239,7 +239,12 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         this.bh_drawGearHint(gfx, x, y, GearSlot.CHEST, Items.CHEST);
         this.bh_drawGearHint(gfx, x, y, GearSlot.HOOVES, ModItems.HORSE_HOOVES);
         this.bh_drawGearHint(gfx, x, y, GearSlot.MEDKIT, ModItems.HORSE_MEDKIT);
-        this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, ModItems.HORSE_STABILIZER);
+        // The stabilizer slot is shared with the horse cart; alternate the ghost hint (~1s each)
+        // so the player knows either item can go here.
+        Item stabilizerSlotHint = (System.currentTimeMillis() / 1000L) % 2L == 0L
+                ? ModItems.HORSE_STABILIZER
+                : ModItems.HORSE_CART;
+        this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, stabilizerSlotHint);
         this.bh_drawGearHint(gfx, x, y, GearSlot.HITCHPOST, ModItems.HITCHPOST);
     }
 
