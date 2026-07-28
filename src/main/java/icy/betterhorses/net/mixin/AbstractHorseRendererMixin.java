@@ -3,6 +3,7 @@ package icy.betterhorses.net.mixin;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.client.render.BhMountedHorseVisibility;
+import icy.betterhorses.net.client.render.HorseChestLayer;
 import icy.betterhorses.net.client.render.HorseStabilizerAnimatable;
 import icy.betterhorses.net.client.render.HorseStabilizerLayer;
 import icy.betterhorses.net.client.render.IBhEquineStabilizerState;
@@ -59,6 +60,7 @@ public abstract class AbstractHorseRendererMixin<
     @Inject(method = "<init>", at = @At("TAIL"))
     private void bh_addStabilizerLayer(EntityRendererProvider.Context context, M adultModel, M babyModel, CallbackInfo ci) {
         this.addLayer(new HorseStabilizerLayer<>(this));
+        this.addLayer(new HorseChestLayer<>(this));
     }
 
     /**
@@ -77,8 +79,11 @@ public abstract class AbstractHorseRendererMixin<
 
         if (!(entity instanceof IHorseData data)) {
             extState.bh_setStabilizerData(false, HorseStabilizerState.CLOSED, entity.getId(), partialTick);
+            extState.bh_setChestGear(false);
             return;
         }
+
+        extState.bh_setChestGear(data.bh_hasChestGear());
 
         boolean hasStabilizer = data.bh_hasStabilizerItem();
         extState.bh_setStabilizerData(

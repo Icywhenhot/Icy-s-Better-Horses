@@ -27,4 +27,9 @@ public interface IBhEquineStabilizerState {
     boolean bh_isRiddenByPlayerInFirstPerson();
 
     float bh_getOpacity();
+
+    void bh_setChestGear(boolean hasChestGear);
+
+    /** True when a chest / ender chest sits in the horse's gear slot, so {@link HorseChestLayer} draws the pouch. */
+    boolean bh_hasChestGear();
 }

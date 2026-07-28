@@ -24,6 +24,7 @@ public abstract class EquineRenderStateMixin implements IBhEquineStabilizerState
     @Unique private float bh_partialTick;
     @Unique private boolean bh_riddenByPlayerInFirstPerson;
     @Unique private float bh_opacity = 1.0F;
+    @Unique private boolean bh_hasChestGear;
 
     @Override
     public void bh_setStabilizerData(boolean hasStabilizer, HorseStabilizerState state, int horseId, float partialTick) {
@@ -67,5 +68,15 @@ public abstract class EquineRenderStateMixin implements IBhEquineStabilizerState
     @Override
     public float bh_getOpacity() {
         return this.bh_opacity;
+    }
+
+    @Override
+    public void bh_setChestGear(boolean hasChestGear) {
+        this.bh_hasChestGear = hasChestGear;
+    }
+
+    @Override
+    public boolean bh_hasChestGear() {
+        return this.bh_hasChestGear;
     }
 }
