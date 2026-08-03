@@ -2,7 +2,9 @@ package icy.betterhorses.net.client;
 
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
 /** Flat-panel drawing helpers shared by the horse management and horse info screens. */
 public final class BhScreenDraw {
@@ -34,6 +36,18 @@ public final class BhScreenDraw {
     public static final int BTN_ERROR = 0xFFD24B4B;
     public static final int TEXT_ERROR = 0xFFFF8A8A;
 
+    /**
+     * Single nine-sliced button texture, shared by every button at every size. Lives at
+     * {@code assets/icys-better-horses/textures/gui/sprites/widget/button.png} with a sibling
+     * {@code button.png.mcmeta} declaring {@code gui.scaling.type = "nine_slice"} (corners stay
+     * fixed, edges + center stretch). The border/size in that .mcmeta can be tuned live in-game
+     * with a resource reload (F3+T) — no recompile.
+     */
+    public static final Identifier BUTTON_SPRITE =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "widget/button");
+    /** Flip to true once button.png + its .mcmeta are in place; false keeps the flat-colour buttons. */
+    private static final boolean TEXTURED_BUTTONS = false;
+
     private BhScreenDraw() {}
 
     public static void panel(GuiGraphicsExtractor gfx, int x, int y, int width, int height) {
@@ -43,7 +57,13 @@ public final class BhScreenDraw {
 
     public static void button(GuiGraphicsExtractor gfx, Font font, int x, int y, int width, int height,
                               Component label, int color, int textColor) {
-        gfx.fill(x, y, x + width, y + height, color);
+        if (TEXTURED_BUTTONS) {
+            // Nine-slice the one button sprite to this button's size, tinted by the state colour so the
+            // per-button colour-coding (whistle/home/disown, hover, error) still comes through one texture.
+            gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BUTTON_SPRITE, x, y, width, height, color);
+        } else {
+            gfx.fill(x, y, x + width, y + height, color);
+        }
         gfx.centeredText(font, label, x + width / 2, y + (height - font.lineHeight) / 2 + 1, textColor);
     }
 
