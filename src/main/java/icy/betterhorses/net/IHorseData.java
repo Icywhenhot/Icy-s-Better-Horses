@@ -74,9 +74,13 @@ public interface IHorseData {
     /**
      * True when the stabilizer item (not the cart) occupies the shared slot. Uses the synced gear
      * flag plus {@link #bh_hasCartGear()}, so it is safe on the client for the wing render layer.
+     * Only true {@link net.minecraft.world.entity.animal.equine.Horse Horse}s benefit from the
+     * stabilizer — mules, donkeys, skeleton/zombie horses can't wear it (they can still pull a
+     * cart, which shares this slot), so the effect and wing render are gated to real horses here.
      */
     default boolean bh_hasStabilizerItem() {
-        return bh_hasGear(GearSlot.STABILIZER) && !bh_hasCartGear();
+        return this instanceof net.minecraft.world.entity.animal.equine.Horse
+                && bh_hasGear(GearSlot.STABILIZER) && !bh_hasCartGear();
     }
 
     /**

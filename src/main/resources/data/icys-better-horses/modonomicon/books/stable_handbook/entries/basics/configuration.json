@@ -1,0 +1,39 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:basics/configuration",
+  "category": "icys-better-horses:basics",
+  "name": "Tuning the Mod",
+  "icon": { "id": "minecraft:redstone" },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": -3,
+  "y": -2,
+  "sort_number": 5,
+  "parents": [ { "entry": "icys-better-horses:basics/welcome" } ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "file",
+      "title": "Config File",
+      "show_title_separator": true,
+      "text": "A JSON config at **config/betterhorses-common.json** lets you toggle whole systems without removing the mod. Server admins use it to decide what's available on a world."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "toggles",
+      "title": "What You Can Toggle",
+      "show_title_separator": true,
+      "text": "- **Stabilizers** - gliding descent.\n- **Medkits** - auto-heal on low health.\n- **Hitchposts** - tethering blocks.\n- **Hooves** - frost-walk, step-up, and fall-damage perks.\n- **Horse Exclusivity** - owner-only riding.\n- **Multi-riding** - two riders on one horse."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "dummy",
+      "title": "Dummy Mode",
+      "show_title_separator": true,
+      "text": "Items disabled in the config don't vanish - they switch to **dummy mode** and stay craftable as decorative models only. Nothing fires off in the world, but you can still build a display stable."
+    }
+  ]
+}

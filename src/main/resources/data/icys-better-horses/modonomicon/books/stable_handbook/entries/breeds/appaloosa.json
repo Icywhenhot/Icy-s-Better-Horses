@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:breeds/appaloosa",
+  "category": "icys-better-horses:breeds",
+  "name": "Appaloosa",
+  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 4,
+  "y": 2,
+  "sort_number": 14,
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "Appaloosa",
+      "show_title_separator": true,
+      "text": "Known for its leopard-spot pattern - the only breed whose coat always carries **dots**. Tough and athletic."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "coat",
+      "title": "Coat",
+      "show_title_separator": true,
+      "text": "Always with **Dots** markings:\n\n- White + Black Dots\n- Gray + Black Dots\n- Chestnut + White Dots\n- Brown + White Dots\n- Black + White Dots\n- Dark Brown + White Dots"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "biomes",
+      "title": "Where They Live",
+      "show_title_separator": true,
+      "text": "- Plains\n- Wooded Badlands\n- Savanna Plateau\n- Sunflower Plains"
+    }
+  ]
+}

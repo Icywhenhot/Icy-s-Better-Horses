@@ -1,0 +1,32 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:equipment/hitchpost",
+  "category": "icys-better-horses:equipment",
+  "name": "Hitchpost",
+  "icon": { "id": "icys-better-horses:hitchpost" },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 0,
+  "y": 2,
+  "sort_number": 7,
+  "parents": [ { "entry": "icys-better-horses:equipment/upgraded_saddle" } ],
+  "pages": [
+    {
+      "type": "modonomicon:crafting_recipe",
+      "id": "recipe",
+      "recipe_id_1": "icys-better-horses:hitchpost",
+      "title1": "Set a Hitchpost",
+      "text": "A **Lead** and any block in the **Fences** tag. Simple to build, very useful."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "tie_up",
+      "title": "Tie Up",
+      "show_title_separator": true,
+      "text": "Place a hitchpost near a ridden horse, or near another owned horse, to tether it. It only works with your own horses; breaking it releases the tether."
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Tack Room",
+  "icon": { "id": "icys-better-horses:upgraded_saddle" },
+  "background": "icys-better-horses:textures/gui/handbook_bg.png",
+  "sort_number": 2,
+  "description": "Every craft in the mod, with a note on when each piece is worth making."
+}

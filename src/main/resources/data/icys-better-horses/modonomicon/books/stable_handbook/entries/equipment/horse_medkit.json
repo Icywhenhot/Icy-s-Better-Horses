@@ -1,0 +1,32 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:equipment/horse_medkit",
+  "category": "icys-better-horses:equipment",
+  "name": "Horse Medkit",
+  "icon": { "id": "icys-better-horses:horse_medkit_gear" },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": -2,
+  "y": 1,
+  "sort_number": 4,
+  "parents": [ { "entry": "icys-better-horses:equipment/upgraded_saddle" } ],
+  "pages": [
+    {
+      "type": "modonomicon:crafting_recipe",
+      "id": "recipe",
+      "recipe_id_1": "icys-better-horses:horse_medkit_gear",
+      "title1": "Pack a Medkit",
+      "text": "Emergency tack. Wrap wool, healing supplies, and a regeneration potion together before heading somewhere dangerous."
+    },
+    {
+      "type": "modonomicon:spotlight",
+      "id": "info",
+      "item": "icys-better-horses:horse_medkit_gear",
+      "title": "Last-Second Rescue",
+      "text": "If a hit would drop your horse below half health, the medkit is used up and grants **Regeneration**, **Instant Health**, **Resistance**, and **Fire Resistance** - often the difference between a close call and a dead horse."
+    }
+  ]
+}

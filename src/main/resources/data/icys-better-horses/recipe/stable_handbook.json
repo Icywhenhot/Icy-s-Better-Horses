@@ -3,7 +3,7 @@
     {
       "condition": "fabric:all_mods_loaded",
       "values": [
-        "patchouli"
+        "modonomicon"
       ]
     }
   ],
@@ -14,10 +14,10 @@
     "#icys-better-horses:stable_handbook_ingredients"
   ],
   "result": {
-    "id": "patchouli:guide_book",
+    "id": "modonomicon:modonomicon",
     "count": 1,
     "components": {
-      "patchouli:book": "icys-better-horses:stable_handbook"
+      "modonomicon:book_id": "icys-better-horses:stable_handbook"
     }
   }
 }

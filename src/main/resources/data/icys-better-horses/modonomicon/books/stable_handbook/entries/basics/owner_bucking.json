@@ -1,0 +1,32 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:basics/owner_bucking",
+  "category": "icys-better-horses:basics",
+  "name": "Owner-Only Riding",
+  "icon": { "id": "minecraft:iron_sword" },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 2,
+  "y": 0,
+  "sort_number": 4,
+  "parents": [ { "entry": "icys-better-horses:basics/ownership_and_bonding" } ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "yours",
+      "title": "Your Horse Only",
+      "show_title_separator": true,
+      "text": "An owned horse only answers to you. Anyone else who tries to ride it as the main rider is bucked off at once. It will still accept a second rider - but only while you're already in the saddle."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "toggle",
+      "title": "Toggle It Off",
+      "show_title_separator": true,
+      "text": "Servers can turn this off in **betterhorses-common.json** by setting **horseExclusivityEnabled** to **false** - then any player can ride any owned horse, handy for shared stables. The same file also toggles stabilizers, medkits, hitchposts, hooves, and multi-riding."
+    }
+  ]
+}

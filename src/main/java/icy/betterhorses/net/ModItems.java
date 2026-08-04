@@ -1,6 +1,5 @@
 package icy.betterhorses.net;
 
-import icy.betterhorses.net.item.HorseCartItem;
 import icy.betterhorses.net.item.UpgradedSaddleItem;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.minecraft.core.component.DataComponents;
@@ -14,7 +13,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.equipment.Equippable;
 
 public final class ModItems {
@@ -41,9 +39,13 @@ public final class ModItems {
             new Item(itemProperties("horse_stabilizer_gear").stacksTo(1)));
 
     // Shares the stabilizer gear slot; equipping it spawns the pulled cart entity behind the horse.
-    // Rendered in-slot/hand as the 3D cart model via GeckoLib (GeoItem).
+    // Shown in-inventory/hand as a flat 2D icon; the placed cart entity keeps its 3D GeckoLib model.
     public static final Item HORSE_CART = register("horse_cart_gear",
-            new HorseCartItem(itemProperties("horse_cart_gear").stacksTo(1)));
+            new Item(itemProperties("horse_cart_gear").stacksTo(1)));
+
+    // Crafting component used to build the horse cart.
+    public static final Item WHEEL = register("wheel",
+            new Item(itemProperties("wheel")));
 
     public static final CreativeModeTab STABLE_SUPPLIES_TAB = Registry.register(
             BuiltInRegistries.CREATIVE_MODE_TAB,
@@ -52,16 +54,14 @@ public final class ModItems {
                     .title(Component.translatable("itemGroup.icys-better-horses.stable_supplies"))
                     .icon(() -> new ItemStack(UPGRADED_SADDLE))
                     .displayItems((parameters, entries) -> {
-                        BuiltInRegistries.ITEM
-                                .get(Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "stable_handbook"))
-                                .map(net.minecraft.core.Holder::value)
-                                .filter(item -> item != Items.AIR)
-                                .ifPresent(entries::accept);
+                        // The Stable Handbook (a Modonomicon book item) is injected into this tab
+                        // automatically via the book's "creative_tab" field.
                         entries.accept(UPGRADED_SADDLE);
                         entries.accept(HORSE_HOOVES);
                         entries.accept(HORSE_MEDKIT);
                         entries.accept(CANISTER);
                         entries.accept(HORSE_STABILIZER);
+                        entries.accept(WHEEL);
                         entries.accept(HORSE_CART);
                         entries.accept(HITCHPOST);
                     })

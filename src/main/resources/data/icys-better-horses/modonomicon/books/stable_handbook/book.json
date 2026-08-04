@@ -1,0 +1,12 @@
+{
+  "name": "Stable Handbook",
+  "tooltip": "Barnside Field Guide",
+  "creative_tab": "icys-better-horses:stable_supplies",
+  "model": "icys-better-horses:stable_handbook_book",
+  "font": "minecraft:default",
+  "generate_book_item": true,
+  "display_mode": "node",
+  "page_display_mode": "double_page",
+  "allow_open_book_with_invalid_links": true,
+  "show_recently_unlocked": true
+}

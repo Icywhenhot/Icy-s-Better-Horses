@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:breeds/mustang",
+  "category": "icys-better-horses:breeds",
+  "name": "Mustang",
+  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": -4,
+  "y": 2,
+  "sort_number": 10,
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "Mustang",
+      "show_title_separator": true,
+      "text": "A free-roaming North American horse - tough, weatherproof, and rarely the same coat twice."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "coat",
+      "title": "Coat",
+      "show_title_separator": true,
+      "text": "- Dark Brown\n- Brown\n- Chestnut\n- Black\n- Dark Brown + White\n- Chestnut + White Field"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "biomes",
+      "title": "Where They Live",
+      "show_title_separator": true,
+      "text": "Open frontier country:\n\n- Plains\n- Savanna\n- Windswept Hills\n- Badlands\n- Wooded Badlands\n- Sparse Jungle"
+    }
+  ]
+}

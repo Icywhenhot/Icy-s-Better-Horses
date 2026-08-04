@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:breeds/arabian",
+  "category": "icys-better-horses:breeds",
+  "name": "Arabian",
+  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": -2,
+  "y": -2,
+  "sort_number": 1,
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "Arabian",
+      "show_title_separator": true,
+      "text": "Compact and hardy, bred for tough country. A strong choice for desert crossings and badlands runs."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "coat",
+      "title": "Coat",
+      "show_title_separator": true,
+      "text": "- Gray\n- Gray + White\n- White\n- Chestnut\n- Brown\n- Black"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "biomes",
+      "title": "Where They Live",
+      "show_title_separator": true,
+      "text": "Hot and arid biomes:\n\n- Desert\n- Badlands\n- Eroded Badlands\n- Savanna\n- Savanna Plateau\n- Windswept Savanna"
+    }
+  ]
+}

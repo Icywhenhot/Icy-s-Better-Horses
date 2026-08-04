@@ -130,7 +130,16 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         for (GearSlot slot : GearSlot.values()) {
             final GearSlot type = slot;
             this.addSlot(new Slot(gear, slot.ordinal(), BH_GEAR_SLOT_X + slot.ordinal() * 18, BH_GEAR_SLOT_Y) {
-                @Override public boolean mayPlace(ItemStack stack) { return type.accepts(stack); }
+                @Override public boolean mayPlace(ItemStack stack) {
+                    // The stabilizer is horse-only; mules, donkeys and skeleton/zombie horses can't
+                    // wear it. The cart shares this slot and stays allowed on every equine.
+                    if (type == GearSlot.STABILIZER
+                            && stack.is(icy.betterhorses.net.ModItems.HORSE_STABILIZER)
+                            && !(horse instanceof net.minecraft.world.entity.animal.equine.Horse)) {
+                        return false;
+                    }
+                    return type.accepts(stack);
+                }
                 @Override public boolean isActive() { return HorseInventoryMenuMixin.this.bh_hasUpgradedSaddleInMenu(); }
                 @Override public int getMaxStackSize() { return 1; }
 

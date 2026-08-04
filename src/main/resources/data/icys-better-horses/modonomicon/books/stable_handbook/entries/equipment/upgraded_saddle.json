@@ -1,0 +1,52 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:equipment/upgraded_saddle",
+  "category": "icys-better-horses:equipment",
+  "name": "Upgraded Saddle",
+  "icon": { "id": "icys-better-horses:upgraded_saddle" },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 0,
+  "y": 0,
+  "sort_number": 2,
+  "pages": [
+    {
+      "type": "modonomicon:crafting_recipe",
+      "id": "recipe",
+      "recipe_id_1": "icys-better-horses:upgraded_saddle",
+      "title1": "Build the Saddle",
+      "text": "The core of the tack room. A vanilla **Saddle**, some copper, and a few diamonds turn your horse into a gear hauler."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "unlocks",
+      "title": "What It Unlocks",
+      "show_title_separator": true,
+      "text": "Once equipped, the **Upgraded Saddle** opens five gear slots: **Chest**, **Hooves**, **Medkit**, **Stabilizer**, and **Hitchpost**. Most of the mod's equipment starts here."
+    },
+    {
+      "type": "modonomicon:spotlight",
+      "id": "chest",
+      "item": "minecraft:chest",
+      "title": "Chest Storage",
+      "text": "Put a plain **Chest** in the chest slot for 27 storage slots on the horse screen. Empty it before removing it, or the contents drop."
+    },
+    {
+      "type": "modonomicon:spotlight",
+      "id": "ender_chest",
+      "item": "minecraft:ender_chest",
+      "title": "Ender Chest Option",
+      "text": "Use an **Ender Chest** instead and those 27 slots become your **Ender Inventory**, shared with every ender chest you own. Swapping back to a normal chest or pulling the ender chest keeps its contents."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "stats",
+      "title": "Stats Overlay",
+      "show_title_separator": true,
+      "text": "Hold the **Upgraded Saddle** and look at any horse to show a **Horse Stats** panel above your hotbar:\n\n- **Gender**\n- **Breed**\n- **Speed** - blocks per second\n- **Jump** - block height\n\nHandy for checking wild stock before taming."
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:equipment/recipe_roundup",
+  "category": "icys-better-horses:equipment",
+  "name": "Recipe Roundup",
+  "icon": { "id": "icys-better-horses:upgraded_saddle" },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 2,
+  "y": -3,
+  "sort_number": 0,
+  "pages": [
+    {
+      "type": "modonomicon:crafting_recipe",
+      "id": "r1",
+      "recipe_id_1": "icys-better-horses:stable_handbook",
+      "recipe_id_2": "icys-better-horses:upgraded_saddle"
+    },
+    {
+      "type": "modonomicon:crafting_recipe",
+      "id": "r2",
+      "recipe_id_1": "icys-better-horses:horse_hooves_gear",
+      "recipe_id_2": "icys-better-horses:horse_medkit_gear"
+    },
+    {
+      "type": "modonomicon:crafting_recipe",
+      "id": "r3",
+      "recipe_id_1": "icys-better-horses:canister",
+      "recipe_id_2": "icys-better-horses:horse_stabilizer_gear"
+    },
+    {
+      "type": "modonomicon:crafting_recipe",
+      "id": "r4",
+      "recipe_id_1": "icys-better-horses:wheel",
+      "recipe_id_2": "icys-better-horses:horse_cart_gear"
+    },
+    {
+      "type": "modonomicon:crafting_recipe",
+      "id": "r5",
+      "recipe_id_1": "icys-better-horses:hitchpost",
+      "text": "Every craft in the tack room, gathered here for a quick reference."
+    }
+  ]
+}

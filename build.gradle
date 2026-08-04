@@ -46,8 +46,11 @@ dependencies {
 	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.0"
 	implementation "maven.modrinth:geckolib:${project.geckolib_version_id}"
-	// Patchouli has no 1.21.11 Fabric release yet (latest supports 1.21.1 only).
-	// Re-enable when upstream publishes a 1.21.11 build.
+
+	// Guidebook library. Patchouli still has no 26.2 Fabric build, so this branch uses Modonomicon.
+	// Pinned by Modrinth version id (see gradle.properties) because the Fabric and NeoForge
+	// builds share the version_number "26.2-2.2.0" and the bare string resolves to NeoForge.
+	implementation "maven.modrinth:modonomicon:${project.modonomicon_version_id}"
 
 	// In-game config: ModMenu entry + Cloth Config screen. Dev-only (matches this branch's non-remap loom convention), not shipped.
 	implementation "com.terraformersmc:modmenu:${project.modmenu_version}"

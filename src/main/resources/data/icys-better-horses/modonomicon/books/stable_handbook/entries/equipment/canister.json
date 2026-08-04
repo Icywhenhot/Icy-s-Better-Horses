@@ -1,0 +1,32 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:equipment/canister",
+  "category": "icys-better-horses:equipment",
+  "name": "Canister",
+  "icon": { "id": "icys-better-horses:canister" },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 2,
+  "y": -1,
+  "sort_number": 5,
+  "parents": [ { "entry": "icys-better-horses:equipment/upgraded_saddle" } ],
+  "pages": [
+    {
+      "type": "modonomicon:crafting_recipe",
+      "id": "recipe",
+      "recipe_id_1": "icys-better-horses:canister",
+      "title1": "Craft a Canister",
+      "text": "A small copper-and-gold capsule. It does little alone, but the stabilizer can't be built without it."
+    },
+    {
+      "type": "modonomicon:spotlight",
+      "id": "info",
+      "item": "icys-better-horses:canister",
+      "title": "Workshop Note",
+      "text": "Think of the canister as the working end of the stabilizer. Craft it first, then build the full rig when you're ready to protect a horse from falls."
+    }
+  ]
+}

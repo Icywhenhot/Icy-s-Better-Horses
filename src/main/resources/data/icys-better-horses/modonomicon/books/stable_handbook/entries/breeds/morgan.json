@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:breeds/morgan",
+  "category": "icys-better-horses:breeds",
+  "name": "Morgan",
+  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 0,
+  "y": 2,
+  "sort_number": 12,
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "Morgan",
+      "show_title_separator": true,
+      "text": "A compact, hardworking American breed - versatile enough for the trail or the field."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "coat",
+      "title": "Coat",
+      "show_title_separator": true,
+      "text": "- Brown\n- Chestnut\n- Black\n- Dark Brown\n- Brown + White"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "biomes",
+      "title": "Where They Live",
+      "show_title_separator": true,
+      "text": "Settled grasslands and woodland:\n\n- Plains\n- Sunflower Plains\n- Forest\n- Birch Forest\n- Meadow"
+    }
+  ]
+}

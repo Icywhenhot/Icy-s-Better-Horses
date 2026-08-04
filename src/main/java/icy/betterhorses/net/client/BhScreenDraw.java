@@ -48,6 +48,20 @@ public final class BhScreenDraw {
     /** Flip to true once button.png + its .mcmeta are in place; false keeps the flat-colour buttons. */
     private static final boolean TEXTURED_BUTTONS = false;
 
+    // --- Custom panel background textures (exact panel size; drawn 1:1, art includes its own border). ---
+    public static final Identifier SCREEN_INFO_TEXTURE =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/screen_info.png");
+    public static final Identifier SCREEN_MANAGE_TEXTURE =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/screen_manage.png");
+    public static final Identifier SCREEN_CONFIRM_TEXTURE =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/screen_confirm.png");
+    /** Roster row plate (300×30). One base texture; hover/selected add a translucent overlay. */
+    public static final Identifier ROW_TEXTURE =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/row.png");
+    /** Info screen's bespoke "Disown Horse" button (110×20, light plank with a red X emblem). */
+    public static final Identifier DISOWN_BUTTON_TEXTURE =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/disown_button.png");
+
     private BhScreenDraw() {}
 
     public static void panel(GuiGraphicsExtractor gfx, int x, int y, int width, int height) {
@@ -55,8 +69,49 @@ public final class BhScreenDraw {
         gfx.fill(x, y, x + width, y + height, PANEL_BG);
     }
 
+    /** Draws a panel-background texture at its exact panel size (the PNG is authored w×h, blitted 1:1). */
+    public static void panelTexture(GuiGraphicsExtractor gfx, int x, int y, int width, int height, Identifier texture) {
+        gfx.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 0.0F, 0.0F, width, height, width, height);
+    }
+
+    /**
+     * Draws a fixed-size button texture (blitted 1:1) with a shadowless centred label. {@code tint}
+     * multiplies the texture (0xFFFFFFFF = untouched) — used to flash it red on a refused action.
+     */
+    public static void textureButton(GuiGraphicsExtractor gfx, Font font, Identifier texture,
+                                     int x, int y, int width, int height, Component label, int textColor, int tint) {
+        gfx.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 0.0F, 0.0F, width, height, width, height, tint);
+        int textY = y + (height - font.lineHeight) / 2 + 1;
+        gfx.text(font, label, x + width / 2 - font.width(label) / 2, textY, textColor, false);
+    }
+
+    /** As {@link #panelTexture}, but fades the whole plate by {@code alpha} (0..1) for entrance animations. */
+    public static void panelTexture(GuiGraphicsExtractor gfx, int x, int y, int width, int height,
+                                    Identifier texture, float alpha) {
+        int a = Math.round(255f * BhAnim.clamp01(alpha));
+        gfx.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 0.0F, 0.0F, width, height, width, height,
+                (a << 24) | 0xFFFFFF);
+    }
+
+    /**
+     * Draws the roster row plate. The texture is 2px taller than the row (1px of threading overhangs
+     * the top and bottom edges), so it's blitted one pixel above the row top to centre it.
+     */
+    public static void rowPlate(GuiGraphicsExtractor gfx, int x, int rowTop, int rowWidth, int rowHeight) {
+        int texHeight = rowHeight + 2;
+        gfx.blit(RenderPipelines.GUI_TEXTURED, ROW_TEXTURE, x, rowTop - 1, 0.0F, 0.0F,
+                rowWidth, texHeight, rowWidth, texHeight);
+    }
+
     public static void button(GuiGraphicsExtractor gfx, Font font, int x, int y, int width, int height,
                               Component label, int color, int textColor) {
+        button(gfx, font, x, y, width, height, label, color, textColor, true);
+    }
+
+    /** {@code shadow=false} draws the label shadowless — used for dark text on a bright button (e.g. "Active"
+     *  on amber), where centeredText's forced drop shadow reads as an ugly doubled strike. */
+    public static void button(GuiGraphicsExtractor gfx, Font font, int x, int y, int width, int height,
+                              Component label, int color, int textColor, boolean shadow) {
         if (TEXTURED_BUTTONS) {
             // Nine-slice the one button sprite to this button's size, tinted by the state colour so the
             // per-button colour-coding (whistle/home/disown, hover, error) still comes through one texture.
@@ -64,7 +119,12 @@ public final class BhScreenDraw {
         } else {
             gfx.fill(x, y, x + width, y + height, color);
         }
-        gfx.centeredText(font, label, x + width / 2, y + (height - font.lineHeight) / 2 + 1, textColor);
+        int textY = y + (height - font.lineHeight) / 2 + 1;
+        if (shadow) {
+            gfx.centeredText(font, label, x + width / 2, textY, textColor);
+        } else {
+            gfx.text(font, label, x + width / 2 - font.width(label) / 2, textY, textColor, false);
+        }
     }
 
     public static boolean inBox(double x, double y, int boxX, int boxY, int boxWidth, int boxHeight) {

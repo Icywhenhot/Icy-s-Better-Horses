@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:breeds/icelandic",
+  "category": "icys-better-horses:breeds",
+  "name": "Icelandic",
+  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 4,
+  "y": 0,
+  "sort_number": 9,
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "Icelandic",
+      "show_title_separator": true,
+      "text": "A short, shaggy, cold-hardy pony from Iceland, known for an unusually smooth extra gait."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "coat",
+      "title": "Coat",
+      "show_title_separator": true,
+      "text": "- Chestnut + White Field\n- Brown + White Field\n- Black + White\n- Gray + White Field\n- Creamy + White Field\n- Dark Brown + White"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "biomes",
+      "title": "Where They Live",
+      "show_title_separator": true,
+      "text": "Snow and ice biomes:\n\n- Snowy Plains\n- Snowy Taiga\n- Ice Spikes\n- Frozen Peaks\n- Jagged Peaks\n- Snowy Slopes\n- Grove"
+    }
+  ]
+}

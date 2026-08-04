@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:basics/welcome",
+  "category": "icys-better-horses:basics",
+  "name": "Welcome to the Barn",
+  "icon": { "id": "minecraft:book" },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 0,
+  "y": -2,
+  "sort_number": 0,
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "intro",
+      "title": "Better Horses",
+      "show_title_separator": true,
+      "text": "Better Horses turns an ordinary mount into a lasting companion - ownership, bonding, fifteen breeds, dedicated gear, and a stack of riding fixes. This handbook covers all of it."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "owned",
+      "title": "It's Yours",
+      "show_title_separator": true,
+      "text": "Tame a horse and it's registered to you right away. From there you can bond with it, equip it, and give it commands."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "start",
+      "title": "Where to Start",
+      "show_title_separator": true,
+      "text": "New here? Begin with **Claiming a Mount**. The **Tack Room** lists every craft, **Bloodlines** explains breeding, **Breeds** is a field guide to all fifteen, and **Trail Notes** collects the riding improvements."
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:breeds/thoroughbred",
+  "category": "icys-better-horses:breeds",
+  "name": "Thoroughbred",
+  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": -4,
+  "y": -2,
+  "sort_number": 0,
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "Thoroughbred",
+      "show_title_separator": true,
+      "text": "The classic racing horse - tall, lean, and built for speed. An easy first pick for long rides."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "coat",
+      "title": "Coat",
+      "show_title_separator": true,
+      "text": "- Brown\n- Chestnut\n- Black\n- Dark Brown\n- Brown + White\n- Chestnut + White"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "biomes",
+      "title": "Where They Live",
+      "show_title_separator": true,
+      "text": "Open grasslands and light woodland:\n\n- Plains\n- Sunflower Plains\n- Meadow\n- Forest\n- Birch Forest"
+    }
+  ]
+}

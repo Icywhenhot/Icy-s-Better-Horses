@@ -23,16 +23,21 @@ public class HorseInfoScreen extends Screen {
     private static final int PADDING = 12;
     private static final int ROW_HEIGHT = 16;
     private static final int LABEL_WIDTH = 70;
+    /** Extra left inset for the label column only, so headings start well inside the parchment (edge ≈ x21-24). */
+    private static final int LABEL_INDENT = 22;
+    /** Title now sits in the top banner plaque (banner ≈ y8-20). */
+    private static final int TITLE_Y = 13;
+    /** Body content starts lower, inside the lowered parchment (parchment ≈ y39-181). */
+    private static final int CONTENT_TOP = 50;
     private static final int BAR_WIDTH = 110;
     private static final int BAR_HEIGHT = 6;
     private static final int BAR_VALUE_GAP = 6;
 
-    private static final int BACKDROP_COLOR = 0xE0101723;
-    private static final int BACKDROP_BORDER_COLOR = 0xFF2E3A52;
-    private static final int LABEL_COLOR = 0xFFB9C4D6;
-    private static final int VALUE_COLOR = 0xFFFFFFFF;
-    private static final int BAR_BG_COLOR = 0xFF1A2235;
-    private static final int BAR_FILL_COLOR = 0xFF6CB8FF;
+    // Text sits on the light parchment now, so it's dark brown "ink" rather than the old light-on-dark.
+    private static final int LABEL_COLOR = 0xFF6B4A2C;
+    private static final int VALUE_COLOR = 0xFF3A2714;
+    private static final int BAR_BG_COLOR = 0xFF3B2A17;   // unfilled track: dark brown
+    private static final int BAR_FILL_COLOR = 0xFFA06A34; // filled: warm brown
 
     // Display-unit conversions: blocks/sec for speed, blocks for jump height, HP for health.
     // Matches the in-world stats HUD: speed_blocks_per_sec = raw * 43.2, jump_blocks = max(0, raw*6 - 1).
@@ -47,16 +52,36 @@ public class HorseInfoScreen extends Screen {
     private static final double HEALTH_MAX = 30.0D;
 
     private static final int DISOWN_BTN_WIDTH = 110;
-    private static final int DISOWN_BTN_HEIGHT = 16;
+    private static final int DISOWN_BTN_HEIGHT = 20;   // matches the custom disown_button.png (110×20)
     private static final int DISOWN_BTN_BOTTOM_GAP = 12;
+    private static final int DISOWN_TEXT_COLOR = 0xFF3A2714;   // dark brown ink on the light plank
+    private static final int DISOWN_FLASH_TINT = 0xFFE85C5C;   // red multiply when the server refuses
 
     private static final int CONFIRM_WIDTH = 220;
     private static final int CONFIRM_HEIGHT = 76;
     private static final int CONFIRM_BTN_WIDTH = 84;
     private static final int CONFIRM_BTN_HEIGHT = 18;
 
+    // Entrance: the panel rises ENTER_RISE px and scales up from ENTER_SCALE over ENTER_MS.
+    private static final float ENTER_MS = 220f;
+    private static final float ENTER_RISE = 10f;
+    private static final float ENTER_SCALE = 0.95f;
+    private static final float CLOSE_MS = 150f;    // reverse slide-down + fade
+    private static final float LIFT_PX = 2f;       // hover raise
+    private static final float LIFT_TAU = 0.045f;  // hover spring time-constant
+    private static final float PRESS_DEPTH = 0.08f;// click squish
+    private static final float PRESS_MS = 130f;
+    private static final float STAT_DELAY_MS = 120f;// count-up starts after the panel is settling
+    private static final float STAT_MS = 520f;
+
     private final AbstractHorse horse;
     private boolean confirmingDisown;
+    private long bhOpenMs;
+    private long bhConfirmOpenMs;
+    private boolean bhClosing;
+    private long bhCloseMs;
+    private final BhAnim.Lift lift = new BhAnim.Lift();
+    private final BhAnim.Press press = new BhAnim.Press();
 
     public HorseInfoScreen(AbstractHorse horse) {
         super(Component.translatable("screen.icys-better-horses.info"));
@@ -72,6 +97,18 @@ public class HorseInfoScreen extends Screen {
     protected void init() {
         super.init();
         ClientHorseRoster.clearFlash();
+        bhOpenMs = System.currentTimeMillis();
+    }
+
+    @Override
+    public void onClose() {
+        // Begin the reverse (slide-down + fade) animation; the render loop dismisses once it finishes.
+        if (bhClosing) {
+            super.onClose();
+            return;
+        }
+        bhClosing = true;
+        bhCloseMs = System.currentTimeMillis();
     }
 
     @Override
@@ -93,15 +130,36 @@ public class HorseInfoScreen extends Screen {
         int left = (this.width - PANEL_WIDTH) / 2;
         int top = (this.height - PANEL_HEIGHT) / 2;
 
-        gfx.fill(left - 1, top - 1, left + PANEL_WIDTH + 1, top + PANEL_HEIGHT + 1, BACKDROP_BORDER_COLOR);
-        gfx.fill(left, top, left + PANEL_WIDTH, top + PANEL_HEIGHT, BACKDROP_COLOR);
+        float vis;
+        if (bhClosing) {
+            float cp = (System.currentTimeMillis() - bhCloseMs) / CLOSE_MS;
+            if (cp >= 1f) {
+                super.onClose();
+                return;
+            }
+            vis = 1f - BhAnim.easeInCubic(cp);
+        } else {
+            vis = BhAnim.easeOutCubic((System.currentTimeMillis() - bhOpenMs) / ENTER_MS);
+        }
+        // Stat bars grow + numbers count up shortly after the panel settles (full value while closing).
+        float statP = bhClosing ? 1f
+                : BhAnim.easeOutCubic((System.currentTimeMillis() - bhOpenMs - STAT_DELAY_MS) / STAT_MS);
+        lift.beginFrame(LIFT_TAU);
+
+        var pose = gfx.pose();
+        pose.pushMatrix();
+        BhAnim.enter(pose, vis, left + PANEL_WIDTH / 2f, top + PANEL_HEIGHT / 2f, ENTER_RISE, ENTER_SCALE);
+
+        BhScreenDraw.panelTexture(gfx, left, top, PANEL_WIDTH, PANEL_HEIGHT, BhScreenDraw.SCREEN_INFO_TEXTURE, vis);
 
         Font font = this.font;
         Component title = horse.hasCustomName() ? horse.getCustomName() : getTitle();
-        gfx.centeredText(font, title, left + PANEL_WIDTH / 2, top + PADDING, VALUE_COLOR);
+        // Draw shadowless (centeredText forces a drop shadow, which reads as a doubled/bold strike
+        // now that the title is dark ink on the light banner). Centre it manually in the banner.
+        gfx.text(font, title, left + PANEL_WIDTH / 2 - font.width(title) / 2, top + TITLE_Y, VALUE_COLOR, false);
 
         IHorseData data = (IHorseData) horse;
-        int y = top + PADDING + 18;
+        int y = top + CONTENT_TOP;
 
         drawLabel(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.gender"),
@@ -118,34 +176,38 @@ public class HorseInfoScreen extends Screen {
                 coatLabel(horse));
         y += ROW_HEIGHT + 4;
 
-        int bond = data.bh_getBond();
+        int bond = Math.round(data.bh_getBond() * statP);
         drawStatRow(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.bond"),
                 bond + " / 100",
                 bond / 100.0D);
         y += ROW_HEIGHT;
 
-        double speedBlocksPerSec = horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * SPEED_DISPLAY_FACTOR;
+        double speedBlocksPerSec = horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * SPEED_DISPLAY_FACTOR * statP;
         drawStatRow(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.speed"),
                 String.format(java.util.Locale.ROOT, "%.1f blk/s", speedBlocksPerSec),
                 speedBlocksPerSec / SPEED_MAX);
         y += ROW_HEIGHT;
 
-        double jumpBlocks = Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D);
+        double jumpBlocks = Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D) * statP;
         drawStatRow(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.jump"),
                 String.format(java.util.Locale.ROOT, "%.2f blk", jumpBlocks),
                 jumpBlocks / JUMP_MAX);
         y += ROW_HEIGHT;
 
-        double health = horse.getMaxHealth();
+        double health = horse.getMaxHealth() * statP;
         drawStatRow(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.health"),
                 String.format(java.util.Locale.ROOT, "%.1f HP", health),
                 health / HEALTH_MAX);
 
         renderDisownSection(gfx, font, left, top, mouseX, mouseY);
+
+        pose.popMatrix();
+
+        // Modal confirm sits above the (settled) panel with its own little pop, unaffected by the entrance.
         if (confirmingDisown) {
             renderConfirm(gfx, font, mouseX, mouseY);
         }
@@ -164,19 +226,36 @@ public class HorseInfoScreen extends Screen {
         int y = disownButtonY(top);
         boolean flashing = ClientHorseRoster.isFlashing();
         boolean hovered = !confirmingDisown && BhScreenDraw.inBox(mouseX, mouseY, x, y, DISOWN_BTN_WIDTH, DISOWN_BTN_HEIGHT);
-        int color = flashing
-                ? BhScreenDraw.BTN_ERROR
-                : (hovered ? BhScreenDraw.BTN_DISOWN_HOVER : BhScreenDraw.BTN_DISOWN);
-        BhScreenDraw.button(gfx, font, x, y, DISOWN_BTN_WIDTH, DISOWN_BTN_HEIGHT,
-                Component.translatable("screen.icys-better-horses.manage.disown"), color, BhScreenDraw.TEXT);
+        int tint = flashing ? DISOWN_FLASH_TINT : 0xFFFFFFFF; // hover feedback is the lift/press, not a colour
+
+        float ly = lift.get("disown", hovered, LIFT_PX);
+        float sc = press.scale("disown", PRESS_DEPTH, PRESS_MS);
+        var pose = gfx.pose();
+        pose.pushMatrix();
+        pose.translate(0f, -ly);
+        if (sc != 1f) {
+            float ccx = x + DISOWN_BTN_WIDTH / 2f;
+            float ccy = y + DISOWN_BTN_HEIGHT / 2f;
+            pose.translate(ccx, ccy);
+            pose.scale(sc, sc);
+            pose.translate(-ccx, -ccy);
+        }
+        BhScreenDraw.textureButton(gfx, font, BhScreenDraw.DISOWN_BUTTON_TEXTURE, x, y, DISOWN_BTN_WIDTH, DISOWN_BTN_HEIGHT,
+                Component.translatable("screen.icys-better-horses.manage.disown"), DISOWN_TEXT_COLOR, tint);
+        pose.popMatrix();
     }
 
     private void renderConfirm(GuiGraphicsExtractor gfx, Font font, int mouseX, int mouseY) {
-        gfx.fill(0, 0, this.width, this.height, 0x99000000);
+        float t = BhAnim.clamp01((System.currentTimeMillis() - bhConfirmOpenMs) / ENTER_MS);
+        gfx.fill(0, 0, this.width, this.height, Math.round(0x99 * t) << 24); // scrim fades in
 
         int cx = (this.width - CONFIRM_WIDTH) / 2;
         int cy = (this.height - CONFIRM_HEIGHT) / 2;
-        BhScreenDraw.panel(gfx, cx, cy, CONFIRM_WIDTH, CONFIRM_HEIGHT);
+
+        var pose = gfx.pose();
+        pose.pushMatrix();
+        BhAnim.enter(pose, BhAnim.easeOutBack(t), cx + CONFIRM_WIDTH / 2f, cy + CONFIRM_HEIGHT / 2f, 6f, 0.9f);
+        BhScreenDraw.panelTexture(gfx, cx, cy, CONFIRM_WIDTH, CONFIRM_HEIGHT, BhScreenDraw.SCREEN_CONFIRM_TEXTURE, t);
 
         Component name = horse.hasCustomName() ? horse.getCustomName() : ((IHorseData) horse).bh_getBreed()
                 .displayName(((IHorseData) horse).bh_isMixedBreed());
@@ -189,12 +268,25 @@ public class HorseInfoScreen extends Screen {
         boolean yesHovered = BhScreenDraw.inBox(mouseX, mouseY, confirmYesX(), btnY, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT);
         boolean cancelHovered = BhScreenDraw.inBox(mouseX, mouseY, confirmCancelX(), btnY, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT);
 
-        BhScreenDraw.button(gfx, font, confirmYesX(), btnY, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT,
-                Component.translatable("screen.icys-better-horses.manage.confirm_yes"),
-                yesHovered ? BhScreenDraw.BTN_DISOWN_HOVER : BhScreenDraw.BTN_DISOWN, BhScreenDraw.TEXT);
-        BhScreenDraw.button(gfx, font, confirmCancelX(), btnY, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT,
-                Component.translatable("screen.icys-better-horses.manage.confirm_cancel"),
-                cancelHovered ? BhScreenDraw.BTN_NEUTRAL_HOVER : BhScreenDraw.BTN_NEUTRAL, BhScreenDraw.TEXT);
+        confirmButton(gfx, font, confirmYesX(), btnY, "confirm_yes",
+                "screen.icys-better-horses.manage.confirm_yes",
+                yesHovered ? BhScreenDraw.BTN_DISOWN_HOVER : BhScreenDraw.BTN_DISOWN, yesHovered);
+        confirmButton(gfx, font, confirmCancelX(), btnY, "confirm_cancel",
+                "screen.icys-better-horses.manage.confirm_cancel",
+                cancelHovered ? BhScreenDraw.BTN_NEUTRAL_HOVER : BhScreenDraw.BTN_NEUTRAL, cancelHovered);
+
+        pose.popMatrix();
+    }
+
+    private void confirmButton(GuiGraphicsExtractor gfx, Font font, int x, int y, Object key, String labelKey,
+                               int color, boolean hovered) {
+        float ly = lift.get(key, hovered, LIFT_PX);
+        var pose = gfx.pose();
+        pose.pushMatrix();
+        pose.translate(0f, -ly);
+        BhScreenDraw.button(gfx, font, x, y, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT,
+                Component.translatable(labelKey), color, BhScreenDraw.TEXT);
+        pose.popMatrix();
     }
 
     private int disownButtonX(int left) {
@@ -219,7 +311,7 @@ public class HorseInfoScreen extends Screen {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() != 0) {
+        if (event.button() != 0 || bhClosing) {
             return super.mouseClicked(event, doubleClick);
         }
 
@@ -244,8 +336,10 @@ public class HorseInfoScreen extends Screen {
         int top = (this.height - PANEL_HEIGHT) / 2;
         if (BhScreenDraw.inBox(event.x(), event.y(),
                 disownButtonX(left), disownButtonY(top), DISOWN_BTN_WIDTH, DISOWN_BTN_HEIGHT)) {
+            press.hit("disown");
             ClientHorseRoster.clearFlash();
             confirmingDisown = true;
+            bhConfirmOpenMs = System.currentTimeMillis();
             return true;
         }
 
@@ -279,12 +373,12 @@ public class HorseInfoScreen extends Screen {
     }
 
     private void drawLabel(GuiGraphicsExtractor gfx, Font font, int x, int y, Component label, Component value) {
-        gfx.text(font, label, x, y, LABEL_COLOR, false);
+        gfx.text(font, label, x + LABEL_INDENT, y, LABEL_COLOR, false);
         gfx.text(font, value, x + LABEL_WIDTH, y, VALUE_COLOR, false);
     }
 
     private void drawStatRow(GuiGraphicsExtractor gfx, Font font, int x, int y, Component label, String value, double normalized) {
-        gfx.text(font, label, x, y, LABEL_COLOR, false);
+        gfx.text(font, label, x + LABEL_INDENT, y, LABEL_COLOR, false);
         int barX = x + LABEL_WIDTH;
         int barY = y + 3;
         gfx.fill(barX, barY, barX + BAR_WIDTH, barY + BAR_HEIGHT, BAR_BG_COLOR);

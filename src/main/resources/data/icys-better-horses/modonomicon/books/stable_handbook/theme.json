@@ -1,0 +1,9 @@
+{
+  "type": "modonomicon:default",
+  "layout": {
+    "book_text_offset_x": 8,
+    "book_text_offset_y": 2,
+    "book_text_offset_width": -16,
+    "book_text_offset_height": -4
+  }
+}

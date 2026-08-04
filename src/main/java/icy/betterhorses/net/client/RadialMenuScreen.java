@@ -50,6 +50,7 @@ public class RadialMenuScreen extends Screen {
     private final int horseId;
     private int hoveredIndex = -1;
     private List<int[]>[] segmentRuns;
+    private long bhOpenMs;
 
     public RadialMenuScreen(int horseId) {
         super(Component.translatable("screen.icys-better-horses.radial"));
@@ -64,6 +65,7 @@ public class RadialMenuScreen extends Screen {
     @Override
     protected void init() {
         bh_rebuildGeometry();
+        bhOpenMs = System.currentTimeMillis();
     }
 
     @Override
@@ -84,7 +86,13 @@ public class RadialMenuScreen extends Screen {
         double angle = Math.atan2(dy, dx);
         hoveredIndex = (dist >= RING_INNER && dist <= RING_OUTER) ? bh_angleToIndex(angle) : -1;
 
-        gfx.fill(0, 0, width, height, BASE_BACKGROUND_COLOR);
+        // Entrance: the dim scrim fades in while the wheel blooms outward from the centre.
+        float t = BhAnim.clamp01((System.currentTimeMillis() - bhOpenMs) / 200f);
+        gfx.fill(0, 0, width, height, BhAnim.fade(BASE_BACKGROUND_COLOR, t));
+
+        var pose = gfx.pose();
+        pose.pushMatrix();
+        BhAnim.enter(pose, BhAnim.easeOutBack(t), cx, cy, 0f, 0.85f);
 
         bh_drawFullRing(gfx, cx + 2, cy + 3, RING_BACKDROP_INNER, RING_BACKDROP_OUTER, RING_BACKDROP_SHADOW_COLOR);
         bh_drawFullRing(gfx, cx, cy, RING_BACKDROP_INNER, RING_BACKDROP_OUTER, RING_BACKDROP_COLOR);
@@ -111,6 +119,8 @@ public class RadialMenuScreen extends Screen {
 
         gfx.fill(cx - 5, cy - 5, cx + 5, cy + 5, CENTER_DOT_SHADOW_COLOR);
         gfx.fill(cx - 2, cy - 2, cx + 2, cy + 2, hoveredIndex >= 0 ? CENTER_DOT_HOVER_COLOR : CENTER_DOT_COLOR);
+
+        pose.popMatrix();
     }
 
     // Precompute each wedge's horizontal fill runs once, so extractRenderState never re-runs atan2.

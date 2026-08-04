@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:breeds/american_paint",
+  "category": "icys-better-horses:breeds",
+  "name": "American Paint",
+  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 2,
+  "y": 2,
+  "sort_number": 13,
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "American Paint",
+      "show_title_separator": true,
+      "text": "Bold patchwork coats are the signature. Same all-purpose build as the Quarter Horse, with a dramatic **white field** pattern."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "coat",
+      "title": "Coat",
+      "show_title_separator": true,
+      "text": "Always with **White Field** markings:\n\n- Brown + White Field\n- Black + White Field\n- Chestnut + White Field\n- Dark Brown + White Field\n- White + White Field\n- Creamy + White Field"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "biomes",
+      "title": "Where They Live",
+      "show_title_separator": true,
+      "text": "- Plains\n- Sunflower Plains\n- Savanna\n- Sparse Jungle"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:basics/horse_info_screen",
+  "category": "icys-better-horses:basics",
+  "name": "The Horse Info Screen",
+  "icon": { "id": "minecraft:writable_book" },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": -2,
+  "y": 0,
+  "sort_number": 3,
+  "parents": [ { "entry": "icys-better-horses:basics/ownership_and_bonding" } ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "open",
+      "title": "Open It",
+      "show_title_separator": true,
+      "text": "Press your **Horse Whistle** key while mounted to open a full profile of the horse you're riding. Pressing it without a horse still whistles your nearby mount."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "shown",
+      "title": "What's Shown",
+      "show_title_separator": true,
+      "text": "- **Gender** and **Breed** (with a **(mix)** tag if cross-bred).\n- **Coat** - color plus markings.\n- **Bond** - value out of 100 with a fill bar.\n- **Speed** - blocks per second.\n- **Jump** - block height.\n- **Health** - hit points."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "bars",
+      "title": "Reading the Bars",
+      "show_title_separator": true,
+      "text": "Each bar fills toward the mod's maximum at full bond:\n\n- Speed up to **25.5 blk/s**.\n- Jump up to **9.5 blk**.\n- Health up to **30 HP**.\n\nA short bar means room to grow; bonding closes the gap."
+    }
+  ]
+}

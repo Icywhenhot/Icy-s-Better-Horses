@@ -1,0 +1,32 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:equipment/horse_cart",
+  "category": "icys-better-horses:equipment",
+  "name": "Horse Cart",
+  "icon": { "id": "icys-better-horses:horse_cart_gear" },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 4,
+  "y": 1,
+  "sort_number": 9,
+  "parents": [ { "entry": "icys-better-horses:equipment/wheel" } ],
+  "pages": [
+    {
+      "type": "modonomicon:crafting_recipe",
+      "id": "recipe",
+      "recipe_id_1": "icys-better-horses:horse_cart_gear",
+      "title1": "Build the Cart",
+      "text": "Two **Wheels**, a row of planks for the bed, and two slabs on top. Make the wheels first."
+    },
+    {
+      "type": "modonomicon:spotlight",
+      "id": "info",
+      "item": "icys-better-horses:horse_cart_gear",
+      "title": "Hitch and Haul",
+      "text": "Slot the cart into the **Upgraded Saddle** and it appears behind your horse, rolling along as you ride. It shares the stabilizer's slot, so a horse carries one or the other - not both."
+    }
+  ]
+}

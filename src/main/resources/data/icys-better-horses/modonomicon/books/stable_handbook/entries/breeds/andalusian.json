@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:breeds/andalusian",
+  "category": "icys-better-horses:breeds",
+  "name": "Andalusian",
+  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 4,
+  "y": -2,
+  "sort_number": 4,
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "Andalusian",
+      "show_title_separator": true,
+      "text": "An agile, strong Iberian breed with a thick mane, common across open meadows."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "coat",
+      "title": "Coat",
+      "show_title_separator": true,
+      "text": "- Gray\n- White\n- Black\n- Chestnut"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "biomes",
+      "title": "Where They Live",
+      "show_title_separator": true,
+      "text": "Open meadows and light woodland:\n\n- Meadow\n- Cherry Grove\n- Flower Forest\n- Plains\n- Forest"
+    }
+  ]
+}

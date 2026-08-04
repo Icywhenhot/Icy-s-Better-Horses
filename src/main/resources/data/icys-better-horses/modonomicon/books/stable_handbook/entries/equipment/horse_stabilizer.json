@@ -1,0 +1,32 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:equipment/horse_stabilizer",
+  "category": "icys-better-horses:equipment",
+  "name": "Horse Stabilizer",
+  "icon": { "id": "icys-better-horses:horse_stabilizer_gear" },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 4,
+  "y": -1,
+  "sort_number": 6,
+  "parents": [ { "entry": "icys-better-horses:equipment/canister" } ],
+  "pages": [
+    {
+      "type": "modonomicon:crafting_recipe",
+      "id": "recipe",
+      "recipe_id_1": "icys-better-horses:horse_stabilizer_gear",
+      "title1": "Rig the Stabilizer",
+      "text": "Bind your canisters into the full stabilizer and mount it on the upgraded saddle."
+    },
+    {
+      "type": "modonomicon:spotlight",
+      "id": "info",
+      "item": "icys-better-horses:horse_stabilizer_gear",
+      "title": "Cliff Insurance",
+      "text": "Built for ravines and cliffs. During big falls it deploys, slows the descent, and can cancel fall damage entirely."
+    }
+  ]
+}

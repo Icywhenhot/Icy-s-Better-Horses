@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:breeds/quarter",
+  "category": "icys-better-horses:breeds",
+  "name": "Quarter Horse",
+  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 0,
+  "y": -2,
+  "sort_number": 2,
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "Quarter Horse",
+      "show_title_separator": true,
+      "text": "Stocky and broad-chested, very fast over short distances. A reliable all-purpose ranch horse."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "coat",
+      "title": "Coat",
+      "show_title_separator": true,
+      "text": "- Chestnut\n- Chestnut + White\n- Brown\n- Brown + White\n- Black + White\n- Creamy + White"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "biomes",
+      "title": "Where They Live",
+      "show_title_separator": true,
+      "text": "Wide grasslands:\n\n- Plains\n- Sunflower Plains\n- Savanna\n- Savanna Plateau\n- Windswept Savanna"
+    }
+  ]
+}

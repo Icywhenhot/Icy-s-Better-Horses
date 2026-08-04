@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:breeds/friesian",
+  "category": "icys-better-horses:breeds",
+  "name": "Friesian",
+  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 2,
+  "y": -2,
+  "sort_number": 3,
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "Friesian",
+      "show_title_separator": true,
+      "text": "The all-black horse of the Dutch lowlands - tall and powerful, always show-ready."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "coat",
+      "title": "Coat",
+      "show_title_separator": true,
+      "text": "- Black\n\nOnly one coat. Friesians are always black."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "biomes",
+      "title": "Where They Live",
+      "show_title_separator": true,
+      "text": "Damp temperate woodland:\n\n- Dark Forest\n- Forest\n- Old Growth Spruce Taiga\n- Taiga"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Barn Door Basics",
+  "icon": { "id": "minecraft:lead" },
+  "background": "icys-better-horses:textures/gui/handbook_bg.png",
+  "sort_number": 0,
+  "description": "Everything to get started - claim and bond a horse, read its stats, ride smarter, and how breeding and coats work."
+}

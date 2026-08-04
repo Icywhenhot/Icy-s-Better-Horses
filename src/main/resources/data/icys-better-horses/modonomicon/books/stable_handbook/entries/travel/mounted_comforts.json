@@ -1,0 +1,53 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:travel/mounted_comforts",
+  "category": "icys-better-horses:basics",
+  "name": "Mounted Comforts",
+  "icon": { "id": "minecraft:feather" },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 4,
+  "y": -2,
+  "sort_number": 1,
+  "parents": [ { "entry": "icys-better-horses:travel/riding_improvements" } ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "intro",
+      "title": "Smoother Riding",
+      "show_title_separator": true,
+      "text": "A ridden horse should feel responsive. Better Horses fixes a list of small frictions vanilla horses used to have."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "step",
+      "title": "Step Up & Mine Through",
+      "show_title_separator": true,
+      "text": "- Step height is raised 10% so a galloping horse doesn't trip over slabs, paths, or full blocks.\n- Mounted block-breaking now matches on-foot speed for most blocks.\n- The remaining penalty is cut by 80%."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "look",
+      "title": "Look Around Freely",
+      "show_title_separator": true,
+      "text": "Mounting no longer snaps your camera to the horse's facing - the **horse turns to match you** instead. Standing still, you get up to **90 degrees** of free look before the horse follows, so you can scan the horizon without dismounting."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "clear",
+      "title": "Out of Your Way",
+      "show_title_separator": true,
+      "text": "Look down and the horse fades nearly invisible so it doesn't block your work or aim. While ridden, its head also drops forward to clear your view."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "creative",
+      "title": "Creative Convenience",
+      "show_title_separator": true,
+      "text": "Using a **Saddle** (vanilla or upgraded) on a horse in **Creative Mode** tames it instantly - no waiting on hearts. Useful when testing builds."
+    }
+  ]
+}
