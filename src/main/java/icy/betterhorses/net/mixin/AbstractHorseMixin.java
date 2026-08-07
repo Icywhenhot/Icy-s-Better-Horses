@@ -90,6 +90,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique
     private static final EntityDataAccessor<Boolean> BH_CART_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
+    // Whether the pulled cart carries a chest. Synced because the cart renderer hides/shows the
+    // chest bone from it and the horse GUI locks the cart's gear slot while it is set.
+    @Unique
+    private static final EntityDataAccessor<Boolean> BH_CART_CHEST_SYNCED =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
     @Unique
     private static final EntityDataAccessor<Optional<BlockPos>> BH_HITCHPOST_POS_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
@@ -128,6 +133,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     };
     @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(27);
+    // Storage for the chest mounted on the pulled cart: a double chest's worth, since the cart is
+    // the mod's bulk-hauling option. Kept here rather than on the cart entity, which is never
+    // saved — see IHorseData#bh_hasCartChest.
+    @Unique private static final int BH_CART_CHEST_SIZE = 54;
+    @Unique private final SimpleContainer bh_cartChestContainer = new SimpleContainer(BH_CART_CHEST_SIZE);
     @Unique private boolean bh_hadUpgradedSaddle = false;
     @Unique private boolean bh_fedGoldenAppleThisTick = false;
     @Unique private @Nullable Vec3 bh_lastFrostWalkerPos = null;
@@ -359,9 +369,39 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     public void bh_onUpgradedSaddleRemoved(ItemStack previousSaddle) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!(self.level() instanceof ServerLevel serverLevel)) return;
+        // Before the gear container is emptied: this takes the cart item with it, so the chest
+        // riding on that cart has to come off too rather than be stranded on a cartless horse.
+        bh_dropCartChest();
         bh_dropContainerContents(self, serverLevel, bh_gearContainer);
         bh_dropChestContents();
         bh_syncGearFlags();
+    }
+
+    @Override
+    public boolean bh_hasCartChest() {
+        // Synced, so this reads correctly on the client too (the containers themselves are not).
+        return this.entityData.get(BH_CART_CHEST_SYNCED);
+    }
+
+    @Override
+    public void bh_setCartChest(boolean attached) {
+        this.entityData.set(BH_CART_CHEST_SYNCED, attached);
+    }
+
+    @Override
+    public SimpleContainer bh_getCartChestContainer() {
+        return bh_cartChestContainer;
+    }
+
+    @Override
+    public void bh_dropCartChest() {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (!(self.level() instanceof ServerLevel serverLevel) || !bh_hasCartChest()) {
+            return;
+        }
+        bh_setCartChest(false);
+        bh_dropContainerContents(self, serverLevel, bh_cartChestContainer);
+        self.spawnAtLocation(serverLevel, new ItemStack(Items.CHEST));
     }
 
     @Override
@@ -371,7 +411,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                 || !self.getItemBySlot(EquipmentSlot.BODY).isEmpty()) {
             return true;
         }
-        return !this.inventory.isEmpty() || !bh_gearContainer.isEmpty() || !bh_chestContainer.isEmpty();
+        return !this.inventory.isEmpty() || !bh_gearContainer.isEmpty() || !bh_chestContainer.isEmpty()
+                || bh_hasCartChest();
     }
 
     @Override
@@ -397,6 +438,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         builder.define(BH_STABILIZER_STATE_SYNCED, HorseStabilizerState.CLOSED.ordinal());
         builder.define(BH_GEAR_FLAGS_SYNCED, 0);
         builder.define(BH_CART_SYNCED, false);
+        builder.define(BH_CART_CHEST_SYNCED, false);
         builder.define(BH_HITCHPOST_POS_SYNCED, Optional.empty());
         builder.define(BH_GENDER_SYNCED, 0);
         builder.define(BH_BREED_SYNCED, HorseBreed.UNKNOWN_SPECIES.ordinal());
@@ -424,6 +466,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
         bh_writeContainer(output.list("BH_Gear", BhSlotEntry.CODEC), bh_gearContainer);
         bh_writeContainer(output.list("BH_Chest", BhSlotEntry.CODEC), bh_chestContainer);
+        output.putBoolean("BH_CartChestOn", this.entityData.get(BH_CART_CHEST_SYNCED));
+        bh_writeContainer(output.list("BH_CartChest", BhSlotEntry.CODEC), bh_cartChestContainer);
         output.putInt("BH_Gender", this.entityData.get(BH_GENDER_SYNCED));
         output.putInt("BH_Breed", this.entityData.get(BH_BREED_SYNCED));
         output.putBoolean("BH_BreedMixed", this.entityData.get(BH_BREED_MIXED_SYNCED));
@@ -462,6 +506,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         bh_applyBondAttributes();
         bh_readContainer(input.listOrEmpty("BH_Gear", BhSlotEntry.CODEC), bh_gearContainer);
         bh_readContainer(input.listOrEmpty("BH_Chest", BhSlotEntry.CODEC), bh_chestContainer);
+        this.entityData.set(BH_CART_CHEST_SYNCED, input.getBooleanOr("BH_CartChestOn", false));
+        bh_readContainer(input.listOrEmpty("BH_CartChest", BhSlotEntry.CODEC), bh_cartChestContainer);
         bh_restoreUpgradedSaddle(input);
         bh_syncGearFlags();
         bh_hadUpgradedSaddle = this.bh_hasUpgradedSaddle();
@@ -874,6 +920,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         boolean wantsCart = ((IHorseData) this).bh_hasCartGear();
         boolean hasCart = bh_cartEntity != null && bh_cartEntity.isAlive() && !bh_cartEntity.isRemoved();
 
+        // Safety net for the "no cart, but still flagged as carrying its chest" state. The GUI slot
+        // refuses to give the cart item back while a chest is on it, so reaching here means the item
+        // left by some route we don't control (another mod, a command, creative middle-click); set
+        // the chest and its contents down rather than leaving them unreachable on a cartless horse.
+        if (!wantsCart) {
+            bh_dropCartChest();
+        }
+
         if (wantsCart && !hasCart) {
             bh_cartEntity = HorseCartEntity.spawnFor(self);
         } else if (!wantsCart && bh_cartEntity != null) {
@@ -1058,6 +1112,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         if (this.bh_hitchpostPos != null) {
             HitchpostBlock.releaseHorse(level, self, false);
         }
+        bh_dropCartChest();
         bh_dropContainerContents(self, level, bh_gearContainer);
         bh_dropContainerContents(self, level, bh_chestContainer);
         bh_syncGearFlags();
@@ -1083,8 +1138,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         // With a cart hitched, riders sit on the cart's bench instead of on the horse's back. They
         // stay passengers of the horse, so the driver keeps full vanilla control of it.
         if (((IHorseData) this).bh_hasCartGear()) {
-            int seatIndex = Math.max(0, self.getPassengers().indexOf(passenger));
-            cir.setReturnValue(HorseCartEntity.benchSeatOffset(seatIndex, self.getYRot()));
+            cir.setReturnValue(
+                    HorseCartEntity.benchSeatOffset(bh_benchSeatIndex(self, passenger), self.getYRot()));
             return;
         }
 
@@ -1134,6 +1189,17 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             return false;
         }
 
+        // Cargo riding shotgun on a cart's bench. Allowed only once a player holds the reins, so the
+        // animal can never land in slot 0: vanilla hands control to the first passenger and only if
+        // it is a player, and a sheep sat there would leave the horse unsteerable. The ownership
+        // rules below are about who may *ride* a horse and have nothing to say about livestock.
+        if (!(passenger instanceof net.minecraft.world.entity.player.Player)) {
+            return ((IHorseData) this).bh_hasCartGear()
+                    && !passengers.isEmpty()
+                    && passengers.get(0) instanceof net.minecraft.world.entity.player.Player
+                    && HorseCartEntity.isCarriableCargo(passenger);
+        }
+
         UUID owner = this.bh_getOwner();
         if (owner == null || !horseExclusivityEnabled) {
             if (passengers.isEmpty()) {
@@ -1156,6 +1222,53 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             return true;
         }
         return passengers.get(0).getUUID().equals(owner);
+    }
+
+    /**
+     * Which bench seat a passenger sits in. Deliberately not the raw passenger index: cargo always
+     * takes the seat beside the driver, never the driver's own, so an animal doesn't slide over and
+     * sit behind the reins the moment the player hops off.
+     */
+    @Unique
+    private static int bh_benchSeatIndex(AbstractHorse horse, Entity passenger) {
+        if (!(passenger instanceof net.minecraft.world.entity.player.Player)) {
+            return 1;
+        }
+        int seat = 0;
+        for (Entity other : horse.getPassengers()) {
+            if (other == passenger) {
+                break;
+            }
+            if (other instanceof net.minecraft.world.entity.player.Player) {
+                seat++;
+            }
+        }
+        return Math.min(seat, 1);
+    }
+
+    /**
+     * Keeps a player at the reins when cargo is riding along on the bench.
+     *
+     * <p>Vanilla only hands control to the <i>first</i> passenger, and only when that passenger is a
+     * player. Cargo can only board behind a driver, but the driver can then dismount and leave the
+     * animal as passenger zero — at which point the horse would answer to nobody until someone
+     * emptied the seat. Looking past the animal for a player keeps the cart drivable.</p>
+     */
+    @Inject(method = "getControllingPassenger", at = @At("RETURN"), cancellable = true)
+    private void bh_keepPlayerAtTheReins(CallbackInfoReturnable<LivingEntity> cir) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (cir.getReturnValue() != null
+                || !((IHorseData) this).bh_hasCartGear()
+                || !self.isSaddled()) {
+            return;
+        }
+
+        for (Entity passenger : self.getPassengers()) {
+            if (passenger instanceof net.minecraft.world.entity.player.Player player) {
+                cir.setReturnValue(player);
+                return;
+            }
+        }
     }
 
     @Unique

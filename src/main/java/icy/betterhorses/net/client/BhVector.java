@@ -1,0 +1,243 @@
+package icy.betterhorses.net.client;
+
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import icy.betterhorses.net.mixin.GuiGraphicsExtractorAccessor;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3x2f;
+import org.joml.Matrix3x2fc;
+import org.joml.Vector2f;
+
+/**
+ * Arbitrary translucent 2D geometry for the GUI — curves, rings, wedges — instead of the axis-aligned
+ * rectangles {@code GuiGraphicsExtractor.fill} is limited to.
+ *
+ * <p>Two things make this worth the machinery. Rectangles snap to whole <em>GUI</em> pixels, which at
+ * GUI scale 3 or 4 are chunky blocks, so a circle built from them steps in 3–4px stairs; real geometry
+ * rasterises at native screen pixels, so the same curve steps at a third or a quarter of the size.
+ * On top of that, the GUI framebuffer has no multisampling, so edges are anti-aliased the way vector
+ * renderers do it: every shape is ringed by a one-pixel band of vertices whose alpha fades to zero,
+ * and the hardware's colour interpolation does the blending.</p>
+ *
+ * <p>Vertices go to {@code GuiRenderState.addGuiElement} through {@link GuiGraphicsExtractorAccessor},
+ * which is the modern equivalent of the old immediate-mode {@code Tesselator}/{@code BufferBuilder}
+ * pair — the render state collects everything first and draws it later, but the capability is the
+ * same. The pipeline is {@link RenderPipelines#GUI}: position + colour, alpha blended, no texture.</p>
+ */
+public final class BhVector {
+
+    /** Angular resolution of curves. 3° keeps a 110px-radius arc smooth without silly vertex counts. */
+    private static final double ANGLE_STEP = Math.toRadians(3.0D);
+    /** Width of the alpha fade band, in GUI pixels. Below ~0.75 the edge starts to look hard again. */
+    public static final float FEATHER = 1.0F;
+
+    private BhVector() {}
+
+    // ------------------------------------------------------------------ mesh
+
+    /** Accumulates quads. Reused per frame: build, submit, discard. */
+    public static final class Builder {
+
+        private float[] xy = new float[1024];
+        private int[] colors = new int[512];
+        private int vertices;
+
+        /**
+         * Adds one quad. Corners go in order around the perimeter, and the direction matters: the GUI
+         * pipeline culls back faces, so a quad wound the wrong way is dropped without a warning.
+         */
+        public void quad(float x0, float y0, int c0, float x1, float y1, int c1,
+                         float x2, float y2, int c2, float x3, float y3, int c3) {
+            ensure(4);
+            vertex(x0, y0, c0);
+            vertex(x1, y1, c1);
+            vertex(x2, y2, c2);
+            vertex(x3, y3, c3);
+        }
+
+        private void vertex(float x, float y, int color) {
+            xy[vertices * 2] = x;
+            xy[vertices * 2 + 1] = y;
+            colors[vertices] = color;
+            vertices++;
+        }
+
+        private void ensure(int more) {
+            if (vertices + more <= colors.length) return;
+            int capacity = Math.max(colors.length * 2, vertices + more);
+            float[] grownXy = new float[capacity * 2];
+            int[] grownColors = new int[capacity];
+            System.arraycopy(xy, 0, grownXy, 0, vertices * 2);
+            System.arraycopy(colors, 0, grownColors, 0, vertices);
+            xy = grownXy;
+            colors = grownColors;
+        }
+
+        public boolean isEmpty() {
+            return vertices == 0;
+        }
+    }
+
+    /**
+     * Hands the built geometry to the GUI render state, baking in the extractor's current pose so the
+     * shape rides screen transforms (the entrance scale, hover lifts) like any other drawn element.
+     */
+    public static void submit(GuiGraphicsExtractor gfx, Builder builder) {
+        if (builder.isEmpty()) return;
+
+        float[] xy = new float[builder.vertices * 2];
+        int[] colors = new int[builder.vertices];
+        System.arraycopy(builder.xy, 0, xy, 0, xy.length);
+        System.arraycopy(builder.colors, 0, colors, 0, colors.length);
+
+        Matrix3x2f pose = new Matrix3x2f(gfx.pose());
+        ((GuiGraphicsExtractorAccessor) (Object) gfx).bh_guiRenderState()
+                .addGuiElement(new MeshRenderState(xy, colors, pose, bounds(xy, pose)));
+    }
+
+    /** Screen-space AABB of the transformed geometry; the render state uses it for sorting and culling. */
+    private static ScreenRectangle bounds(float[] xy, Matrix3x2fc pose) {
+        float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;
+        float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
+        Vector2f point = new Vector2f();
+        for (int i = 0; i < xy.length; i += 2) {
+            pose.transformPosition(point.set(xy[i], xy[i + 1]));
+            minX = Math.min(minX, point.x);
+            minY = Math.min(minY, point.y);
+            maxX = Math.max(maxX, point.x);
+            maxY = Math.max(maxY, point.y);
+        }
+        int x = (int) Math.floor(minX);
+        int y = (int) Math.floor(minY);
+        return new ScreenRectangle(x, y, (int) Math.ceil(maxX) - x + 1, (int) Math.ceil(maxY) - y + 1);
+    }
+
+    private record MeshRenderState(float[] xy, int[] colors, Matrix3x2fc pose, ScreenRectangle bounds)
+            implements GuiElementRenderState {
+
+        @Override
+        public void buildVertices(VertexConsumer consumer) {
+            for (int i = 0; i < colors.length; i++) {
+                consumer.addVertexWith2DPose(pose, xy[i * 2], xy[i * 2 + 1]).setColor(colors[i]);
+            }
+        }
+
+        @Override
+        public RenderPipeline pipeline() {
+            return RenderPipelines.GUI;
+        }
+
+        @Override
+        public TextureSetup textureSetup() {
+            return TextureSetup.noTexture();
+        }
+
+        @Override
+        public @Nullable ScreenRectangle scissorArea() {
+            return null;
+        }
+    }
+
+    // ---------------------------------------------------------------- shapes
+
+    /**
+     * An annular wedge: the area between {@code innerRadius} and {@code outerRadius}, from
+     * {@code startAngle} to {@code endAngle} (radians, 0 = east, clockwise on screen).
+     *
+     * <p>Built as a grid of quads — a few angular slices across, three bands deep. The outer two bands
+     * are the feather: their outermost vertices carry alpha 0, so the hardware fades the shape out
+     * across the last pixel instead of ending on a hard step. The first and last angular slices do the
+     * same along the straight edges, so all four sides of the wedge are anti-aliased.</p>
+     */
+    public static void wedge(Builder builder, float cx, float cy, float innerRadius, float outerRadius,
+                             double startAngle, double endAngle, int color, float feather) {
+        arc(builder, cx, cy, innerRadius, outerRadius, startAngle, endAngle, color, feather, false);
+    }
+
+    /** A complete ring — as {@link #wedge} but closed, so only the inner and outer edges are feathered. */
+    public static void ring(Builder builder, float cx, float cy, float innerRadius, float outerRadius,
+                            int color, float feather) {
+        arc(builder, cx, cy, innerRadius, outerRadius, 0.0D, Math.PI * 2.0D, color, feather, true);
+    }
+
+    /** A filled disc: a ring with no hole, so only the outer edge is feathered. */
+    public static void disc(Builder builder, float cx, float cy, float radius, int color, float feather) {
+        arc(builder, cx, cy, 0f, radius, 0.0D, Math.PI * 2.0D, color, feather, true);
+    }
+
+    private static void arc(Builder builder, float cx, float cy, float innerRadius, float outerRadius,
+                            double startAngle, double endAngle, int color, float feather, boolean closed) {
+        double span = endAngle - startAngle;
+        if (span <= 0.0D || outerRadius <= innerRadius) return;
+
+        // Radial bands. A hole gets a feather on its inner edge; a solid disc starts opaque at the centre.
+        float radialFeather = Math.min(feather, (outerRadius - innerRadius) * 0.45F);
+        boolean solid = innerRadius <= 0.01F;
+        float[] radii = solid
+                ? new float[]{0f, outerRadius - radialFeather, outerRadius}
+                : new float[]{innerRadius, innerRadius + radialFeather, outerRadius - radialFeather, outerRadius};
+        float[] radialAlpha = solid ? new float[]{1f, 1f, 0f} : new float[]{0f, 1f, 1f, 0f};
+
+        // Angle samples: the two feather steps at the ends, then even steps across the middle. A closed
+        // ring has no ends to feather, so it just walks the whole way round.
+        double angularFeather = closed ? 0.0D
+                : Math.min(span * 0.45D, feather / Math.max(1.0F, (innerRadius + outerRadius) * 0.5F));
+        int steps = Math.max(1, (int) Math.ceil(span / ANGLE_STEP));
+        double[] angles = new double[steps + 3];
+        int count = 0;
+        angles[count++] = startAngle;
+        if (angularFeather > 0.0D) angles[count++] = startAngle + angularFeather;
+        for (int i = 1; i < steps; i++) {
+            double a = startAngle + span * i / steps;
+            if (a > startAngle + angularFeather && a < endAngle - angularFeather) angles[count++] = a;
+        }
+        if (angularFeather > 0.0D) angles[count++] = endAngle - angularFeather;
+        angles[count++] = endAngle;
+
+        for (int i = 0; i < count - 1; i++) {
+            double a0 = angles[i];
+            double a1 = angles[i + 1];
+            float edge0 = edgeAlpha(a0, startAngle, endAngle, angularFeather);
+            float edge1 = edgeAlpha(a1, startAngle, endAngle, angularFeather);
+            float cos0 = (float) Math.cos(a0), sin0 = (float) Math.sin(a0);
+            float cos1 = (float) Math.cos(a1), sin1 = (float) Math.sin(a1);
+
+            for (int band = 0; band < radii.length - 1; band++) {
+                float rNear = radii[band];
+                float rFar = radii[band + 1];
+                int cNear0 = scaleAlpha(color, radialAlpha[band] * edge0);
+                int cFar0 = scaleAlpha(color, radialAlpha[band + 1] * edge0);
+                int cFar1 = scaleAlpha(color, radialAlpha[band + 1] * edge1);
+                int cNear1 = scaleAlpha(color, radialAlpha[band] * edge1);
+                // Wound to match vanilla's ColoredRectangleRenderState — (x0,y0) (x0,y1) (x1,y1) (x1,y0)
+                // with radius standing in for x and angle for y. The GUI pipeline leaves culling at the
+                // builder's default of ON, so the opposite winding is silently discarded by the GPU:
+                // the shapes vanish without a single error anywhere.
+                builder.quad(
+                        cx + cos0 * rNear, cy + sin0 * rNear, cNear0,
+                        cx + cos1 * rNear, cy + sin1 * rNear, cNear1,
+                        cx + cos1 * rFar, cy + sin1 * rFar, cFar1,
+                        cx + cos0 * rFar, cy + sin0 * rFar, cFar0);
+            }
+        }
+    }
+
+    /** 1 inside the wedge, ramping to 0 across the feather band at either straight edge. */
+    private static float edgeAlpha(double angle, double startAngle, double endAngle, double feather) {
+        if (feather <= 0.0D) return 1f;
+        double fromStart = (angle - startAngle) / feather;
+        double toEnd = (endAngle - angle) / feather;
+        return (float) (BhAnim.clamp01((float) fromStart) * BhAnim.clamp01((float) toEnd));
+    }
+
+    /** ARGB with its alpha multiplied by {@code k} (0..1). */
+    public static int scaleAlpha(int argb, float k) {
+        int alpha = Math.round(((argb >>> 24) & 0xFF) * BhAnim.clamp01(k));
+        return (alpha << 24) | (argb & 0xFFFFFF);
+    }
+}

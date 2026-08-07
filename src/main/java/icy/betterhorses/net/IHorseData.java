@@ -84,6 +84,32 @@ public interface IHorseData {
     }
 
     /**
+     * True when a chest has been mounted on the cart this horse pulls. Backed by a synced flag: the
+     * renderer needs it to decide whether to draw the cart's chest bone, and the horse GUI needs it
+     * to know the cart is locked in its gear slot.
+     *
+     * <p>Chest state lives on the <i>horse</i> rather than the cart because the cart entity is
+     * derived state that is discarded and respawned on every chunk reload
+     * (see {@code HorseCartEntity#shouldBeSaved}); anything stored on it would not survive.</p>
+     */
+    boolean bh_hasCartChest();
+
+    void bh_setCartChest(boolean attached);
+
+    /**
+     * Storage behind the cart's chest — 54 slots, the size of a double chest. Only meaningful while
+     * {@link #bh_hasCartChest()}.
+     */
+    SimpleContainer bh_getCartChestContainer();
+
+    /**
+     * Drops the cart's chest item along with everything inside it, and clears the attached flag.
+     * Called for every route that separates a horse from its cart other than the player shearing it
+     * off by hand: death, upgraded-saddle removal, and the cart item leaving the gear slot.
+     */
+    void bh_dropCartChest();
+
+    /**
      * Seats a player on this horse through its normal ride path (so ownership gating still applies).
      * Used when boarding the cart: cart riders are passengers of the horse — merely attached at the
      * bench — so driving stays vanilla horse control.

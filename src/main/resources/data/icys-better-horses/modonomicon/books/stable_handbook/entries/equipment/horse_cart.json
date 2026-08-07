@@ -27,6 +27,27 @@
       "item": "icys-better-horses:horse_cart_gear",
       "title": "Hitch and Haul",
       "text": "Slot the cart into the **Upgraded Saddle** and it appears behind your horse, rolling along as you ride. It shares the stabilizer's slot, so a horse carries one or the other - not both."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "riders",
+      "title": "Room for Four",
+      "show_title_separator": true,
+      "text": "An empty cart seats four. Two share the driver's bench up front - whoever takes it first drives the horse - and two more ride in the bed behind. Small animals that wander into the bed climb aboard on their own; **sneak** and right-click to set everyone in the back down again."
+    },
+    {
+      "type": "modonomicon:spotlight",
+      "id": "chest",
+      "item": "minecraft:chest",
+      "title": "Fitting a Chest",
+      "text": "Right-click the cart with a **Chest** in hand to mount it in the bed. **Sneak** and right-click the cart to open it - a full **double chest** of room, and the lid swings up while you're browsing.\n\nThe chest fills the bed, so a cart hauling cargo carries no back-seat passengers - the driver's bench still seats two."
+    },
+    {
+      "type": "modonomicon:spotlight",
+      "id": "shears",
+      "item": "minecraft:shears",
+      "title": "Taking It Off",
+      "text": "**Shears** take the chest back off and drop it beside the horse. Empty it first - a loaded chest refuses to come off rather than spill across the road.\n\nWhile a chest is fitted, the cart itself is locked into its gear slot; the slot flashes **red** if you try to pull it out. Shear the chest off first, then unhitch the cart."
     }
   ]
 }

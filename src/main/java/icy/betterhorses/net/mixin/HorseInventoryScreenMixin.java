@@ -3,6 +3,9 @@ package icy.betterhorses.net.mixin;
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
+import icy.betterhorses.net.client.BhAnim;
+import icy.betterhorses.net.client.BhScreenDraw;
+import icy.betterhorses.net.client.BhSlotFlash;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -61,6 +64,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final int BH_STATS_TEXT_Y = 38;
     @Unique private static final int BH_STATS_LINE_SPACING = 10;
     @Unique private static final int BH_TEXT_COLOR = 0xFF404040;
+    /** Peak opacity of the locked-cart-slot flash: strong enough to read, weak enough to see through. */
+    @Unique private static final float BH_LOCK_FLASH_ALPHA = 0.65F;
 
     // Pseudo-constructor required for compilation — never actually called at runtime
     protected HorseInventoryScreenMixin(AbstractMountInventoryMenu menu, Inventory inventory, Component title) {
@@ -246,6 +251,29 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
                 : ModItems.HORSE_CART;
         this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, stabilizerSlotHint);
         this.bh_drawGearHint(gfx, x, y, GearSlot.HITCHPOST, ModItems.HITCHPOST);
+        this.bh_drawCartLockFlash(gfx, x, y);
+    }
+
+    /**
+     * Red wash over the cart slot for a moment after it has refused a click, because a chest is
+     * fitted to the cart it holds. Drawn into the background layer, so it reads as the slot itself
+     * glowing red with the cart still sitting legibly on top of it.
+     */
+    @Unique
+    private void bh_drawCartLockFlash(GuiGraphicsExtractor gfx, int x, int y) {
+        HorseInventoryLayoutAccess layoutAccess = this.bh_getLayoutAccessOrNull();
+        if (layoutAccess == null || !layoutAccess.bh_isCartSlotLocked()) {
+            return;
+        }
+
+        float intensity = BhSlotFlash.intensity();
+        if (intensity <= 0.0F) {
+            return;
+        }
+
+        int slotX = x + GearSlot.STABILIZER.ordinal() * 18;
+        gfx.fill(slotX + 1, y + 1, slotX + 17, y + 17,
+                BhAnim.fade(BhScreenDraw.BTN_ERROR, intensity * BH_LOCK_FLASH_ALPHA));
     }
 
     @Unique

@@ -58,9 +58,32 @@ public final class BhScreenDraw {
     /** Roster row plate (300×30). One base texture; hover/selected add a translucent overlay. */
     public static final Identifier ROW_TEXTURE =
             Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/row.png");
-    /** Info screen's bespoke "Disown Horse" button (110×20, light plank with a red X emblem). */
+    /** Info screen's bespoke "Disown Horse" button (110×24, light plank with a red X emblem). */
     public static final Identifier DISOWN_BUTTON_TEXTURE =
             Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/disown_button.png");
+    /** The same plank at confirm-panel size (84×20), used for the "yes, let go" button. */
+    public static final Identifier DISOWN_BUTTON_SMALL_TEXTURE =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/disown_button_small.png");
+    /** Confirm panel's "keep him" button (84×20, dark slate plank) — the safe counterpart to the red one. */
+    public static final Identifier CANCEL_BUTTON_TEXTURE =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/cancel_button.png");
+    /**
+     * The roster row's disown button: a 15×17 red pennant. It is taller than the row's other buttons
+     * on purpose — the extra height is the tapering tail, which hangs below the button line rather
+     * than being centred on it (see HorseRosterScreen's BTN_DISOWN_HEIGHT).
+     */
+    public static final Identifier CROSS_BUTTON_TEXTURE =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/cross_button.png");
+    /** The roster row's two word buttons (50×14 and 62×14), sized to the row's existing button slots. */
+    public static final Identifier WHISTLE_BUTTON_TEXTURE =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/whistle_button.png");
+    public static final Identifier SEND_HOME_BUTTON_TEXTURE =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/send_home_button.png");
+    /** Preview pane's "Set Active" button in its two states (both 110×22): dark slate, and lit amber. */
+    public static final Identifier SET_ACTIVE_BUTTON_TEXTURE =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/set_active_button.png");
+    public static final Identifier ACTIVE_BUTTON_TEXTURE =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/active_button.png");
 
     private BhScreenDraw() {}
 
@@ -83,6 +106,30 @@ public final class BhScreenDraw {
         gfx.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 0.0F, 0.0F, width, height, width, height, tint);
         int textY = y + (height - font.lineHeight) / 2 + 1;
         gfx.text(font, label, x + width / 2 - font.width(label) / 2, textY, textColor, false);
+    }
+
+    /**
+     * Soft drop shadow for a fixed-size button texture: the button's own silhouette, black-tinted and
+     * blitted a few times at growing offsets, so the plank reads as resting on the panel instead of
+     * being pasted on top of it. Draw this <em>before</em> the button itself.
+     *
+     * <p>{@code spread} scales how far the shadow falls — feed it the hover lift so the shadow
+     * stretches as the button rises. {@code alpha} multiplies the whole thing, for entrance fades.</p>
+     */
+    public static void textureShadow(GuiGraphicsExtractor gfx, Identifier texture,
+                                     int x, int y, int width, int height, float spread, float alpha) {
+        // Furthest + faintest first; the stacked passes are what make the edge read soft.
+        shadowPass(gfx, texture, x + 1, y + Math.round(2f + spread * 1.5f), width, height, 0x22, alpha);
+        shadowPass(gfx, texture, x, y + Math.round(2f + spread), width, height, 0x30, alpha);
+        shadowPass(gfx, texture, x, y + Math.round(1f + spread * 0.5f), width, height, 0x44, alpha);
+    }
+
+    private static void shadowPass(GuiGraphicsExtractor gfx, Identifier texture, int x, int y,
+                                   int width, int height, int baseAlpha, float alpha) {
+        int a = Math.round(baseAlpha * BhAnim.clamp01(alpha));
+        if (a <= 0) return;
+        // Tint multiplies the texture, so RGB 0 flattens the art to a pure black silhouette.
+        gfx.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 0.0F, 0.0F, width, height, width, height, a << 24);
     }
 
     /** As {@link #panelTexture}, but fades the whole plate by {@code alpha} (0..1) for entrance animations. */
@@ -126,6 +173,19 @@ public final class BhScreenDraw {
             gfx.text(font, label, x + width / 2 - font.width(label) / 2, textY, textColor, false);
         }
     }
+
+    /**
+     * Translucent red wash marking a refused action on a dark plank. Multiplying a red tint into art
+     * that is already dark navy or dark green only darkens it further — this actually reads as red.
+     * Inset 1px at the top and bottom rows to follow the planks' clipped corners.
+     */
+    public static void errorWash(GuiGraphicsExtractor gfx, int x, int y, int width, int height) {
+        gfx.fill(x, y + 1, x + width, y + height - 1, ERROR_WASH);
+        gfx.fill(x + 1, y, x + width - 1, y + 1, ERROR_WASH);
+        gfx.fill(x + 1, y + height - 1, x + width - 1, y + height, ERROR_WASH);
+    }
+
+    private static final int ERROR_WASH = 0x99C43A3A;
 
     public static boolean inBox(double x, double y, int boxX, int boxY, int boxWidth, int boxHeight) {
         return x >= boxX && x < boxX + boxWidth && y >= boxY && y < boxY + boxHeight;

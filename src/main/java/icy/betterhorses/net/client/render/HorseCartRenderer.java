@@ -5,7 +5,10 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.phys.Vec3;
 import com.geckolib.constant.DataTickets;
+import com.geckolib.constant.dataticket.DataTicket;
 import com.geckolib.renderer.GeoEntityRenderer;
+import com.geckolib.renderer.base.BoneSnapshots;
+import com.geckolib.renderer.base.RenderPassInfo;
 
 /**
  * GeckoLib entity renderer for the cart. GeckoLib 5's {@link GeoEntityRenderer} already handles the
@@ -14,8 +17,33 @@ import com.geckolib.renderer.GeoEntityRenderer;
  * (GeckoLib mixes {@code GeoRenderState} into it).
  */
 public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, EntityRenderState> {
+
+    /** Bone holding the cargo chest in {@code horse_cart.geo.json}. */
+    private static final String CHEST_BONE = "chest";
+    /**
+     * Carries the cart's chest state into the render pass. Bone visibility has to be decided from
+     * the render state rather than the entity: rendering runs off a snapshot taken during extract,
+     * and the entity may have been re-ticked (or gone) by then.
+     */
+    private static final DataTicket<Boolean> HAS_CHEST =
+            DataTicket.create("bh_cart_has_chest", Boolean.class);
+
     public HorseCartRenderer(EntityRendererProvider.Context context) {
         super(context, new HorseCartGeoModel());
+    }
+
+    /**
+     * The model always contains the chest; an unloaded cart simply skips that bone. One model with a
+     * hidden bone beats two geometry files — the chest sits inside the same bounce animation as the
+     * rest of the cart, so it stays glued to the bed while it rolls.
+     */
+    @Override
+    public void adjustModelBonesForRender(RenderPassInfo<EntityRenderState> pass, BoneSnapshots snapshots) {
+        super.adjustModelBonesForRender(pass, snapshots);
+
+        if (!pass.renderState().getOrDefaultGeckolibData(HAS_CHEST, false)) {
+            snapshots.ifPresent(CHEST_BONE, snapshot -> snapshot.skipRender(true).skipChildrenRender(true));
+        }
     }
 
     /**
@@ -29,6 +57,8 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, 
     @Override
     public void extractRenderState(HorseCartEntity entity, EntityRenderState state, float partialTick) {
         super.extractRenderState(entity, state, partialTick);
+
+        state.addGeckolibData(HAS_CHEST, entity.hasChest());
 
         Vec3 glued = entity.gluedRenderPosition(partialTick);
         if (glued != null) {

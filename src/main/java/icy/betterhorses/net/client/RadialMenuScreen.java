@@ -8,9 +8,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class RadialMenuScreen extends Screen {
 
     private static final HorseCommand[] COMMANDS = {
@@ -30,26 +27,38 @@ public class RadialMenuScreen extends Screen {
     private static final int LABEL_RADIUS = 78;
     private static final double SEGMENT_GAP_RADIANS = Math.toRadians(2.5D);
 
-    private static final int BASE_BACKGROUND_COLOR = 0x88060912;
-    private static final int RING_BACKDROP_COLOR = 0xD0111723;
-    private static final int RING_BACKDROP_SHADOW_COLOR = 0x80000000;
-    private static final int INNER_DISC_COLOR = 0xE082A7E8;
-    private static final int INNER_DISC_SHADOW_COLOR = 0x90000000;
-    private static final int[] SEGMENT_COLORS = {
-            0xC07C848E,
-            0xC08A929C,
-            0xC0767D87,
-            0xC0939AA5,
-            0xC088929D
-    };
-    private static final int HOVERED_SEGMENT_COLOR = 0xF4D5E7FF;
-    private static final int CENTER_DOT_COLOR = 0xFFE6F1FF;
-    private static final int CENTER_DOT_HOVER_COLOR = 0xFFFFFFFF;
-    private static final int CENTER_DOT_SHADOW_COLOR = 0xCC0C111A;
+    // Tinted to the rest of the mod's UI rather than the old cool blue-grey: the hues below are
+    // sampled straight out of the panel art — parchment #E0C1A6 and #CCA989 from screen_info.png,
+    // frame brown #A37236 from screen_manage.png, wax red #BF360C from the button seals. The dial is
+    // still glass, so everything stays at low alpha and the blurred world reads through it.
+    private static final int BASE_BACKGROUND_COLOR = 0x55140D07;
+    /** Light brown, for the ring the wedges sit in. */
+    private static final int RING_BACKDROP_COLOR = 0x4C5A3A1C;
+    /** Thin warm arcs along the ring's inner and outer edges — the detail that reads as a lit rim. */
+    private static final int RING_RIM_COLOR = 0x66A37236;
+    /** Parchment, for the five command panels. */
+    private static final int SEGMENT_COLOR = 0x4CE0C1A6;
+    private static final int SEGMENT_HOVER_COLOR = 0x99F2DFC4;
+    /** Each segment's own outer rim, warming and brightening as it's hovered. */
+    private static final int SEGMENT_RIM_COLOR = 0x40CCA989;
+    private static final int SEGMENT_RIM_HOVER_COLOR = 0xB2FFF0D8;
+    /** Light red, for the hub. */
+    private static final int CENTER_DISC_COLOR = 0x66A83B18;
+    private static final int CENTER_RIM_COLOR = 0x80BF360C;
+    private static final int CENTER_DOT_COLOR = 0x99F2DFC4;
+    private static final int CENTER_DOT_HOVER_COLOR = 0xFFFFF3E0;
+
+    private static final int LABEL_COLOR = 0xFFEBD9BE;
+    private static final int LABEL_HOVER_COLOR = 0xFFFFFFFF;
+
+    /** Thickness of the rim arcs, and how far a hovered wedge swells outward. */
+    private static final float RIM_THICKNESS = 1.5F;
+    private static final float HOVER_PUSH = 4F;
+    private static final float HOVER_TAU = 0.05F;   // hover fade time-constant; smaller = snappier
 
     private final int horseId;
     private int hoveredIndex = -1;
-    private List<int[]>[] segmentRuns;
+    private final BhAnim.Lift hover = new BhAnim.Lift();
     private long bhOpenMs;
 
     public RadialMenuScreen(int horseId) {
@@ -64,7 +73,6 @@ public class RadialMenuScreen extends Screen {
 
     @Override
     protected void init() {
-        bh_rebuildGeometry();
         bhOpenMs = System.currentTimeMillis();
     }
 
@@ -74,143 +82,83 @@ public class RadialMenuScreen extends Screen {
             onClose();
             return;
         }
-        if (segmentRuns == null) {
-            bh_rebuildGeometry();
-        }
         int cx = width / 2;
         int cy = height / 2;
 
         double dx = mouseX - cx;
         double dy = mouseY - cy;
         double dist = Math.sqrt(dx * dx + dy * dy);
-        double angle = Math.atan2(dy, dx);
-        hoveredIndex = (dist >= RING_INNER && dist <= RING_OUTER) ? bh_angleToIndex(angle) : -1;
+        hoveredIndex = (dist >= RING_INNER && dist <= RING_OUTER)
+                ? bh_angleToIndex(Math.atan2(dy, dx)) : -1;
 
-        // Entrance: the dim scrim fades in while the wheel blooms outward from the centre.
+        // Entrance: the wheel blooms outward from the centre over a dimmed, blurred world.
+        //
+        // The blur is not ours to request. Screen.extractRenderStateWithTooltipAndSubtitles runs
+        // extractBackground() before this method, and that already calls blurBeforeThisStratum()
+        // whenever the player's Menu Background Blurriness is at least 1 — and the render state
+        // throws "Can only blur once per frame" on a second call. So the world behind the dial is
+        // blurred for free, and a player who set blurriness to 0 gets the sharp world they asked for.
         float t = BhAnim.clamp01((System.currentTimeMillis() - bhOpenMs) / 200f);
         gfx.fill(0, 0, width, height, BhAnim.fade(BASE_BACKGROUND_COLOR, t));
+        hover.beginFrame(HOVER_TAU);
 
         var pose = gfx.pose();
         pose.pushMatrix();
         BhAnim.enter(pose, BhAnim.easeOutBack(t), cx, cy, 0f, 0.85f);
 
-        bh_drawFullRing(gfx, cx + 2, cy + 3, RING_BACKDROP_INNER, RING_BACKDROP_OUTER, RING_BACKDROP_SHADOW_COLOR);
-        bh_drawFullRing(gfx, cx, cy, RING_BACKDROP_INNER, RING_BACKDROP_OUTER, RING_BACKDROP_COLOR);
-
-        for (int i = 0; i < SEGMENT_COUNT; i++) {
-            int color = (i == hoveredIndex) ? HOVERED_SEGMENT_COLOR : SEGMENT_COLORS[i % SEGMENT_COLORS.length];
-            for (int[] run : segmentRuns[i]) {
-                gfx.fill(run[0], run[1], run[2], run[1] + 1, color);
-            }
-        }
-
-        bh_drawDisc(gfx, cx, cy + 2, CENTER_RADIUS + 2, INNER_DISC_SHADOW_COLOR);
-        bh_drawDisc(gfx, cx, cy, CENTER_RADIUS, INNER_DISC_COLOR);
+        BhVector.Builder mesh = new BhVector.Builder();
+        BhVector.ring(mesh, cx, cy, RING_BACKDROP_INNER, RING_BACKDROP_OUTER, RING_BACKDROP_COLOR, BhVector.FEATHER);
+        BhVector.ring(mesh, cx, cy, RING_BACKDROP_OUTER - RIM_THICKNESS, RING_BACKDROP_OUTER,
+                RING_RIM_COLOR, BhVector.FEATHER);
+        BhVector.ring(mesh, cx, cy, RING_BACKDROP_INNER, RING_BACKDROP_INNER + RIM_THICKNESS,
+                RING_RIM_COLOR, BhVector.FEATHER);
 
         double segAngle = Math.PI * 2.0D / SEGMENT_COUNT;
+        float[] hoverAmount = new float[SEGMENT_COUNT];
         for (int i = 0; i < SEGMENT_COUNT; i++) {
-            double labelAngle = segAngle * i - Math.PI / 2.0D;
-            int lx = cx + (int) Math.round(Math.cos(labelAngle) * LABEL_RADIUS);
-            int ly = cy + (int) Math.round(Math.sin(labelAngle) * LABEL_RADIUS);
-            String text = Component.translatable(commandKey(COMMANDS[i])).getString();
-            int textColor = (i == hoveredIndex) ? 0xFFFFFFFF : 0xFFD4DAE6;
-            gfx.centeredText(font, text, lx, ly - font.lineHeight / 2, textColor);
+            // Hover fades in and out through the shared spring, so the highlight never snaps.
+            hoverAmount[i] = hover.get(i, i == hoveredIndex, 1f);
+            double start = segAngle * i - Math.PI / 2.0D - segAngle / 2.0D + SEGMENT_GAP_RADIANS;
+            double end = start + segAngle - SEGMENT_GAP_RADIANS * 2.0D;
+
+            // A hovered wedge swells outward a few pixels as well as brightening.
+            float outer = RING_OUTER + HOVER_PUSH * hoverAmount[i];
+            int fill = bh_mixColor(SEGMENT_COLOR, SEGMENT_HOVER_COLOR, hoverAmount[i]);
+            int rim = bh_mixColor(SEGMENT_RIM_COLOR, SEGMENT_RIM_HOVER_COLOR, hoverAmount[i]);
+            BhVector.wedge(mesh, cx, cy, RING_INNER, outer, start, end, fill, BhVector.FEATHER);
+            BhVector.wedge(mesh, cx, cy, outer - RIM_THICKNESS, outer, start, end, rim, BhVector.FEATHER);
         }
 
-        gfx.fill(cx - 5, cy - 5, cx + 5, cy + 5, CENTER_DOT_SHADOW_COLOR);
-        gfx.fill(cx - 2, cy - 2, cx + 2, cy + 2, hoveredIndex >= 0 ? CENTER_DOT_HOVER_COLOR : CENTER_DOT_COLOR);
+        BhVector.disc(mesh, cx, cy, CENTER_RADIUS, CENTER_DISC_COLOR, BhVector.FEATHER);
+        BhVector.ring(mesh, cx, cy, CENTER_RADIUS - RIM_THICKNESS, CENTER_RADIUS,
+                CENTER_RIM_COLOR, BhVector.FEATHER);
+        BhVector.disc(mesh, cx, cy, 3.5F,
+                hoveredIndex >= 0 ? CENTER_DOT_HOVER_COLOR : CENTER_DOT_COLOR, BhVector.FEATHER);
+        BhVector.submit(gfx, mesh);
+
+        for (int i = 0; i < SEGMENT_COUNT; i++) {
+            double labelAngle = segAngle * i - Math.PI / 2.0D;
+            float labelRadius = LABEL_RADIUS + HOVER_PUSH * 0.5F * hoverAmount[i];
+            int lx = cx + Math.round((float) Math.cos(labelAngle) * labelRadius);
+            int ly = cy + Math.round((float) Math.sin(labelAngle) * labelRadius);
+            String text = Component.translatable(commandKey(COMMANDS[i])).getString();
+            int textColor = bh_mixColor(LABEL_COLOR, LABEL_HOVER_COLOR, hoverAmount[i]);
+            gfx.centeredText(font, text, lx, ly - font.lineHeight / 2, textColor);
+        }
 
         pose.popMatrix();
     }
 
-    // Precompute each wedge's horizontal fill runs once, so extractRenderState never re-runs atan2.
-    @SuppressWarnings("unchecked")
-    private void bh_rebuildGeometry() {
-        int cx = width / 2;
-        int cy = height / 2;
-        double segAngle = Math.PI * 2.0D / SEGMENT_COUNT;
-        segmentRuns = new List[SEGMENT_COUNT];
-        for (int i = 0; i < SEGMENT_COUNT; i++) {
-            double startAngle = segAngle * i - Math.PI / 2.0D - segAngle / 2.0D + SEGMENT_GAP_RADIANS;
-            double endAngle = startAngle + segAngle - SEGMENT_GAP_RADIANS * 2.0D;
-            segmentRuns[i] = bh_collectAnnulusRuns(cx, cy, RING_INNER, RING_OUTER, startAngle, endAngle);
+    /** Channel-wise blend of two ARGB colours, {@code k} 0 = first, 1 = second. */
+    private static int bh_mixColor(int from, int to, float k) {
+        float m = BhAnim.clamp01(k);
+        int out = 0;
+        for (int shift = 0; shift <= 24; shift += 8) {
+            int a = (from >>> shift) & 0xFF;
+            int b = (to >>> shift) & 0xFF;
+            out |= Math.round(a + (b - a) * m) << shift;
         }
-    }
-
-    // Filled disc via horizontal scanlines.
-    private void bh_drawDisc(GuiGraphicsExtractor gfx, int cx, int cy, int radius, int color) {
-        int r2 = radius * radius;
-        for (int dy = -radius; dy <= radius; dy++) {
-            int xExtent = (int) Math.sqrt(r2 - dy * dy);
-            gfx.fill(cx - xExtent, cy + dy, cx + xExtent + 1, cy + dy + 1, color);
-        }
-    }
-
-    // Full ring via horizontal scanlines (no angular clipping needed).
-    private void bh_drawFullRing(GuiGraphicsExtractor gfx, int cx, int cy, int innerRadius, int outerRadius, int color) {
-        int outerR2 = outerRadius * outerRadius;
-        int innerR2 = innerRadius * innerRadius;
-        for (int dy = -outerRadius; dy <= outerRadius; dy++) {
-            int dy2 = dy * dy;
-            if (dy2 > outerR2) continue;
-            int outerX = (int) Math.sqrt(outerR2 - dy2);
-            int yPx = cy + dy;
-            if (dy2 >= innerR2) {
-                gfx.fill(cx - outerX, yPx, cx + outerX + 1, yPx + 1, color);
-            } else {
-                int innerX = (int) Math.sqrt(innerR2 - dy2);
-                gfx.fill(cx - outerX, yPx, cx - innerX, yPx + 1, color);
-                gfx.fill(cx + innerX + 1, yPx, cx + outerX + 1, yPx + 1, color);
-            }
-        }
-    }
-
-    // Collect the horizontal fill runs of an annular arc clipped to [startAngle, endAngle].
-    private List<int[]> bh_collectAnnulusRuns(int cx, int cy, int innerRadius, int outerRadius,
-                                              double startAngle, double endAngle) {
-        List<int[]> runs = new ArrayList<>();
-        int outerR2 = outerRadius * outerRadius;
-        int innerR2 = innerRadius * innerRadius;
-        for (int dy = -outerRadius; dy <= outerRadius; dy++) {
-            int dy2 = dy * dy;
-            if (dy2 > outerR2) continue;
-            int outerX = (int) Math.sqrt(outerR2 - dy2);
-            int yPx = cy + dy;
-            if (dy2 >= innerR2) {
-                bh_collectClippedRun(runs, cx - outerX, cx + outerX, yPx, dy, cx, startAngle, endAngle);
-            } else {
-                int innerX = (int) Math.sqrt(innerR2 - dy2);
-                bh_collectClippedRun(runs, cx - outerX, cx - innerX - 1, yPx, dy, cx, startAngle, endAngle);
-                bh_collectClippedRun(runs, cx + innerX + 1, cx + outerX, yPx, dy, cx, startAngle, endAngle);
-            }
-        }
-        return runs;
-    }
-
-    // Walk x over the span, emitting {x0, y, x1} runs for pixels whose angle is inside the arc.
-    private void bh_collectClippedRun(List<int[]> runs, int xStart, int xEnd, int yPx, int dy, int cx,
-                                      double startAngle, double endAngle) {
-        if (xEnd < xStart) return;
-        int runStart = -1;
-        for (int x = xStart; x <= xEnd; x++) {
-            boolean inside = bh_angleInRange(Math.atan2(dy, x - cx), startAngle, endAngle);
-            if (inside && runStart == -1) {
-                runStart = x;
-            } else if (!inside && runStart != -1) {
-                runs.add(new int[]{runStart, yPx, x});
-                runStart = -1;
-            }
-        }
-        if (runStart != -1) {
-            runs.add(new int[]{runStart, yPx, xEnd + 1});
-        }
-    }
-
-    private boolean bh_angleInRange(double a, double start, double end) {
-        double twoPi = Math.PI * 2.0D;
-        double diff = a - start;
-        diff = ((diff % twoPi) + twoPi) % twoPi;
-        return diff <= (end - start);
+        return out;
     }
 
     // Maps a mouse angle to a segment index (segment 0 centered on "up").

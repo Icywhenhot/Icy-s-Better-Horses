@@ -62,6 +62,13 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
             return;
         }
 
+        // Shift-clicking moves items without consulting mayPickup, so the chest-locked cart has to
+        // be turned away here as well as in the slot itself.
+        if (index == gearStartIndex + GearSlot.STABILIZER.ordinal() && layoutAccess.bh_isCartSlotLocked()) {
+            cir.setReturnValue(ItemStack.EMPTY);
+            return;
+        }
+
         ItemStack sourceStack = sourceSlot.getItem();
         ItemStack copiedStack = sourceStack.copy();
 

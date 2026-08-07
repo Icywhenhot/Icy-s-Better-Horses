@@ -3,6 +3,7 @@ package icy.betterhorses.net.client;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.HorseGender;
 import icy.betterhorses.net.HorseManageAction;
+import icy.betterhorses.net.HorseManagement;
 import icy.betterhorses.net.IcysBetterHorsesClient;
 import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.network.HorseRosterEntry;
@@ -10,10 +11,12 @@ import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 
 import org.jetbrains.annotations.Nullable;
@@ -71,16 +74,42 @@ public class HorseRosterScreen extends Screen {
     private static final float LIFT_TAU = 0.045f;
     private static final float PRESS_DEPTH = 0.08f;     // click squish
     private static final float PRESS_MS = 130f;
+    // Refusal shake: a short damped wobble on the button that was pressed.
+    private static final float SHAKE_MS = 420f;
+    private static final float SHAKE_PX = 2.5f;
+    private static final float SHAKE_CYCLES = 3f;
     private static final int SELECT_ARROW_HALF = 2;     // 5px tall, 3px wide right-pointing arrow
 
     private static final int BTN_HEIGHT = 14;
     private static final int BTN_WHISTLE_WIDTH = 50;
     private static final int BTN_HOME_WIDTH = 62;
-    private static final int BTN_DISOWN_WIDTH = 14;
+    /**
+     * The disown pennant is 15×17 against the row's 14px-tall buttons. It is *not* centred on the
+     * button line: its top edge stays level with whistle/send-home and the extra 3px is the tail,
+     * which hangs below. Being 1px wider also nudges whistle and send-home 1px left, since both are
+     * positioned relative to it.
+     */
+    private static final int BTN_DISOWN_WIDTH = 15;
+    private static final int BTN_DISOWN_HEIGHT = 17;
+    private static final int BTN_DISOWN_FLASH_TINT = 0xFF8A2020; // darkened multiply on a refused action
+    /** Lighter than the confirm planks' shadow — the row buttons are small and sit on a small plate. */
+    private static final float ROW_SHADOW_ALPHA = 0.6f;
+    /** Both word planks are dark (navy, green), so their labels are near-white. */
+    private static final int ROW_BTN_TEXT_COLOR = 0xFFEDE6DA;
     private static final int BTN_GAP = 4;
     private static final int ROW_BTN_RIGHT_PAD = 6;
 
-    private static final int SET_ACTIVE_HEIGHT = 16;
+    /** Matches active_button.png / set_active_button.png (both 100×22). */
+    private static final int SET_ACTIVE_WIDTH = 100;
+    private static final int SET_ACTIVE_HEIGHT = 22;
+    /** Left inset inside the preview column, chosen to line the plank up with the panel art's dotted frame. */
+    private static final int SET_ACTIVE_LEFT_INSET = 4;
+    /** Gap below the plank; larger = the button sits higher off the panel's bottom edge. */
+    private static final int SET_ACTIVE_BOTTOM_GAP = 10;
+    /** Dark ink on the lit amber plank; near-white on the dark slate one. */
+    private static final int SET_ACTIVE_TEXT_COLOR = 0xFFEDE6DA;
+    private static final int ACTIVE_TEXT_COLOR = 0xFF2A210A;
+    private static final int SET_ACTIVE_FLASH_TINT = 0xFFE85C5C;
     private static final int PREVIEW_TEXT_HEIGHT = 22;
     private static final float PREVIEW_FORWARD_OFFSET = 0.0625F;
     private static final int PREVIEW_MIN_SCALE = 14;
@@ -89,8 +118,13 @@ public class HorseRosterScreen extends Screen {
 
     private static final int CONFIRM_WIDTH = 220;
     private static final int CONFIRM_HEIGHT = 76;
+    /** Matches disown_button_small.png / cancel_button.png (both 84×20). */
     private static final int CONFIRM_BTN_WIDTH = 84;
-    private static final int CONFIRM_BTN_HEIGHT = 18;
+    private static final int CONFIRM_BTN_HEIGHT = 20;
+    /** Dark brown ink — the disown plank is light, so white text would disappear on it. */
+    private static final int CONFIRM_DISOWN_TEXT_COLOR = 0xFF3A2714;
+    /** The cancel plank is dark slate, so its label goes the other way: light on dark. */
+    private static final int CONFIRM_CANCEL_TEXT_COLOR = 0xFFEDE6DA;
 
     private int left;
     private int top;
@@ -199,8 +233,8 @@ public class HorseRosterScreen extends Screen {
             }
         }
 
-        int separatorX = left + PADDING + ROWS_WIDTH + PREVIEW_GAP;
-        gfx.fill(separatorX, rowsTop, separatorX + 1, top + PANEL_HEIGHT - PADDING, BhScreenDraw.PANEL_BORDER);
+        // No drawn separator between the list and the preview: the panel art has its own divider, and
+        // the old 1px flat-UI line read as a stray blue streak over it.
         renderPreview(gfx, paneMouseX, paneMouseY);
 
         renderFooter(gfx, entries);
@@ -218,10 +252,19 @@ public class HorseRosterScreen extends Screen {
         // The footer strip now only carries the transient flash message (why an action failed); the
         // "more horses" hint is a pulsing arrow instead — see renderScrollArrows.
         String flashKey = ClientHorseRoster.flashMessageKey();
-        if (!flashKey.isEmpty()) {
+        if (!flashKey.isEmpty() && !isSilentFailure(flashKey)) {
             gfx.centeredText(this.font, Component.translatable(flashKey),
                     left + PADDING + ROWS_WIDTH / 2, top + PANEL_HEIGHT - FOOTER_HEIGHT + 5, BhScreenDraw.TEXT_ERROR);
         }
+    }
+
+    /**
+     * "Send home" on a horse with no home is a self-explanatory refusal — the red flash and the shake
+     * say it, so the footer stays quiet rather than popping a line of text for the obvious case.
+     * Every other failure (still carrying gear, wrong dimension, …) still explains itself.
+     */
+    private static boolean isSilentFailure(String flashKey) {
+        return HorseManagement.MSG_NO_HOME.equals(flashKey);
     }
 
     /**
@@ -238,7 +281,8 @@ public class HorseRosterScreen extends Screen {
         if (scrollOffset > 0) {
             drawArrow(gfx, centerX, rowsTop - 2 - SCROLL_ARROW_HEIGHT, true, color);
         }
-        boolean flashing = !ClientHorseRoster.flashMessageKey().isEmpty();
+        String flashKey = ClientHorseRoster.flashMessageKey();
+        boolean flashing = !flashKey.isEmpty() && !isSilentFailure(flashKey);
         if (!flashing && scrollOffset + visibleRows < entries.size()) {
             // Sit just below the last visible card (which grows lower as the gap widens).
             int lastPlateBottom = rowY(visibleRows - 1) + ROW_HEIGHT;
@@ -290,47 +334,94 @@ public class HorseRosterScreen extends Screen {
         gfx.text(this.font, subtitle(entry), textX, y + 17, ROW_SUBTITLE_COLOR, false);
 
         int btnY = y + (ROW_HEIGHT - BTN_HEIGHT) / 2;
-        drawActionButton(gfx, entry, HorseManageAction.WHISTLE, whistleButtonX(), btnY, BTN_WHISTLE_WIDTH,
-                Component.translatable("screen.icys-better-horses.manage.whistle"),
-                BhScreenDraw.BTN_WHISTLE, BhScreenDraw.BTN_WHISTLE_HOVER, mouseX, mouseY);
-        drawActionButton(gfx, entry, HorseManageAction.SEND_HOME, homeButtonX(), btnY, BTN_HOME_WIDTH,
-                Component.translatable("screen.icys-better-horses.manage.send_home"),
-                BhScreenDraw.BTN_HOME, BhScreenDraw.BTN_HOME_HOVER, mouseX, mouseY);
-        drawActionButton(gfx, entry, HorseManageAction.DISOWN, disownButtonX(), btnY, BTN_DISOWN_WIDTH,
-                Component.literal("X"),
-                BhScreenDraw.BTN_DISOWN, BhScreenDraw.BTN_DISOWN_HOVER, mouseX, mouseY);
+        drawActionButton(gfx, entry, HorseManageAction.WHISTLE, BhScreenDraw.WHISTLE_BUTTON_TEXTURE,
+                whistleButtonX(), btnY, BTN_WHISTLE_WIDTH,
+                Component.translatable("screen.icys-better-horses.manage.whistle"), mouseX, mouseY);
+        drawActionButton(gfx, entry, HorseManageAction.SEND_HOME, BhScreenDraw.SEND_HOME_BUTTON_TEXTURE,
+                homeButtonX(), btnY, BTN_HOME_WIDTH,
+                Component.translatable("screen.icys-better-horses.manage.send_home"), mouseX, mouseY);
+        drawDisownPennant(gfx, entry, disownButtonX(), btnY, mouseX, mouseY);
 
         pose.popMatrix();
     }
 
+    /**
+     * One of the row's two word buttons, drawn from its own plank texture. Hover is the 2px lift the
+     * rest of the screen uses, since the art has no hover variant. A refused action shakes the button
+     * and washes it red — and for "no home set" that shake is the whole explanation, because no
+     * message is drawn (see renderFooter).
+     */
     private void drawActionButton(GuiGraphicsExtractor gfx, HorseRosterEntry entry, HorseManageAction action,
-                                  int x, int y, int width, Component label, int color, int hoverColor,
+                                  Identifier texture, int x, int y, int width, Component label,
                                   int mouseX, int mouseY) {
-        int drawColor;
-        if (ClientHorseRoster.isFlashing(entry.horseId(), action)) {
-            drawColor = BhScreenDraw.BTN_ERROR;
-        } else {
-            drawColor = BhScreenDraw.inBox(mouseX, mouseY, x, y, width, BTN_HEIGHT) ? hoverColor : color;
-        }
-        pressScaledButton(gfx, x, y, width, BTN_HEIGHT, label, drawColor, BhScreenDraw.TEXT,
-                pressKey(entry.horseId(), action), true);
-    }
+        boolean flashing = ClientHorseRoster.isFlashing(entry.horseId(), action);
+        boolean hovered = BhScreenDraw.inBox(mouseX, mouseY, x, y, width, BTN_HEIGHT);
+        Object key = pressKey(entry.horseId(), action);
 
-    /** Draws a button that briefly squishes when its {@code pressKey} was just clicked. */
-    private void pressScaledButton(GuiGraphicsExtractor gfx, int x, int y, int width, int height,
-                                   Component label, int color, int textColor, Object pressKey, boolean shadow) {
-        float sc = press.scale(pressKey, PRESS_DEPTH, PRESS_MS);
+        float shakeX = flashing ? shakeOffset(ClientHorseRoster.flashElapsedMs()) : 0f;
+        float ly = lift.get(key, hovered, LIFT_PX);
+        float sc = press.scale(key, PRESS_DEPTH, PRESS_MS);
+
+        BhScreenDraw.textureShadow(gfx, texture, Math.round(x + shakeX), y, width, BTN_HEIGHT,
+                ly, ROW_SHADOW_ALPHA);
+
         var pose = gfx.pose();
         pose.pushMatrix();
+        pose.translate(shakeX, -ly);
         if (sc != 1f) {
             float ccx = x + width / 2f;
-            float ccy = y + height / 2f;
+            float ccy = y + BTN_HEIGHT / 2f;
             pose.translate(ccx, ccy);
             pose.scale(sc, sc);
             pose.translate(-ccx, -ccy);
         }
-        BhScreenDraw.button(gfx, this.font, x, y, width, height, label, color, textColor, shadow);
+        BhScreenDraw.textureButton(gfx, this.font, texture, x, y, width, BTN_HEIGHT,
+                label, ROW_BTN_TEXT_COLOR, 0xFFFFFFFF);
+        if (flashing) {
+            BhScreenDraw.errorWash(gfx, x, y, width, BTN_HEIGHT);
+        }
         pose.popMatrix();
+    }
+
+    /**
+     * The row's disown button: the bespoke pennant texture instead of a flat red square. Drawn from
+     * {@code y} downwards so its top stays level with the other two buttons and the tail overhangs.
+     */
+    private void drawDisownPennant(GuiGraphicsExtractor gfx, HorseRosterEntry entry,
+                                   int x, int y, int mouseX, int mouseY) {
+        boolean flashing = ClientHorseRoster.isFlashing(entry.horseId(), HorseManageAction.DISOWN);
+        boolean hovered = BhScreenDraw.inBox(mouseX, mouseY, x, y, BTN_DISOWN_WIDTH, BTN_DISOWN_HEIGHT);
+        int tint = flashing ? BTN_DISOWN_FLASH_TINT : 0xFFFFFFFF;
+
+        float shakeX = flashing ? shakeOffset(ClientHorseRoster.flashElapsedMs()) : 0f;
+        float ly = lift.get(pressKey(entry.horseId(), HorseManageAction.DISOWN), hovered, LIFT_PX);
+        float sc = press.scale(pressKey(entry.horseId(), HorseManageAction.DISOWN), PRESS_DEPTH, PRESS_MS);
+
+        // Same anchored shadow as the disown/cancel planks, but lighter — this sits on a small row
+        // plate and its tail already overhangs the bottom edge, so a full-strength one reads as smudge.
+        BhScreenDraw.textureShadow(gfx, BhScreenDraw.CROSS_BUTTON_TEXTURE, Math.round(x + shakeX), y,
+                BTN_DISOWN_WIDTH, BTN_DISOWN_HEIGHT, ly, ROW_SHADOW_ALPHA);
+
+        var pose = gfx.pose();
+        pose.pushMatrix();
+        pose.translate(shakeX, -ly);
+        if (sc != 1f) {
+            // Squish about the top edge, not the centre — the pennant hangs from the button line.
+            float ccx = x + BTN_DISOWN_WIDTH / 2f;
+            pose.translate(ccx, y);
+            pose.scale(sc, sc);
+            pose.translate(-ccx, -y);
+        }
+        gfx.blit(RenderPipelines.GUI_TEXTURED, BhScreenDraw.CROSS_BUTTON_TEXTURE,
+                x, y, 0.0F, 0.0F, BTN_DISOWN_WIDTH, BTN_DISOWN_HEIGHT, BTN_DISOWN_WIDTH, BTN_DISOWN_HEIGHT, tint);
+        pose.popMatrix();
+    }
+
+    /** Damped horizontal wobble: a couple of quick shakes that die out over {@link #SHAKE_MS}. */
+    private static float shakeOffset(long elapsedMs) {
+        if (elapsedMs < 0L || elapsedMs >= SHAKE_MS) return 0f;
+        float t = elapsedMs / SHAKE_MS;
+        return (float) (Math.sin(t * Math.PI * 2 * SHAKE_CYCLES) * SHAKE_PX * (1f - t));
     }
 
     private static String pressKey(UUID horseId, HorseManageAction action) {
@@ -368,7 +459,12 @@ public class HorseRosterScreen extends Screen {
     }
 
     private int setActiveButtonY() {
-        return top + PANEL_HEIGHT - PADDING - SET_ACTIVE_HEIGHT;
+        return top + PANEL_HEIGHT - SET_ACTIVE_BOTTOM_GAP - SET_ACTIVE_HEIGHT;
+    }
+
+    /** Fixed left edge — the plank was trimmed on its right, so it stays put rather than re-centring. */
+    private int setActiveButtonX() {
+        return previewX() + SET_ACTIVE_LEFT_INSET;
     }
 
     private void renderPreview(GuiGraphicsExtractor gfx, int mouseX, int mouseY) {
@@ -437,33 +533,49 @@ public class HorseRosterScreen extends Screen {
                 gfx, x0, y0, x1, y1, scale, PREVIEW_FORWARD_OFFSET, mouseX, clampedMouseY, preview);
     }
 
+    /**
+     * The preview pane's activate button, drawn from one of two bespoke planks: dark slate while the
+     * horse is merely selected, lit amber once it's the one the whistle calls. The lit state is a
+     * status readout rather than a button, so it neither lifts on hover nor squishes on click.
+     */
     private void renderSetActiveButton(GuiGraphicsExtractor gfx, HorseRosterEntry selected,
                                        int x, int width, int mouseX, int mouseY) {
-        int btnX = x + 2;
-        int btnWidth = width - 4;
+        int btnX = setActiveButtonX();
         int btnY = setActiveButtonY();
 
         boolean alreadyActive = selected.active();
-        boolean hovered = !alreadyActive && BhScreenDraw.inBox(mouseX, mouseY, btnX, btnY, btnWidth, SET_ACTIVE_HEIGHT);
-        int color;
-        if (ClientHorseRoster.isFlashing(selected.horseId(), HorseManageAction.SET_ACTIVE)) {
-            color = BhScreenDraw.BTN_ERROR;
-        } else if (alreadyActive) {
-            color = BhScreenDraw.ACTIVE;
-        } else {
-            color = hovered ? BhScreenDraw.BTN_GREY_HOVER : BhScreenDraw.BTN_GREY;
-        }
+        boolean hovered = !alreadyActive
+                && BhScreenDraw.inBox(mouseX, mouseY, btnX, btnY, SET_ACTIVE_WIDTH, SET_ACTIVE_HEIGHT);
+        boolean flashing = ClientHorseRoster.isFlashing(selected.horseId(), HorseManageAction.SET_ACTIVE);
+
+        Identifier texture = alreadyActive
+                ? BhScreenDraw.ACTIVE_BUTTON_TEXTURE
+                : BhScreenDraw.SET_ACTIVE_BUTTON_TEXTURE;
         Component label = alreadyActive
                 ? Component.translatable("screen.icys-better-horses.manage.is_active")
                 : Component.translatable("screen.icys-better-horses.manage.set_active");
+        int textColor = alreadyActive ? ACTIVE_TEXT_COLOR : SET_ACTIVE_TEXT_COLOR;
+        int tint = flashing ? SET_ACTIVE_FLASH_TINT : 0xFFFFFFFF;
 
+        float shakeX = flashing ? shakeOffset(ClientHorseRoster.flashElapsedMs()) : 0f;
         float ly = lift.get("setActive", hovered, LIFT_PX);
+        float sc = press.scale("setActive", PRESS_DEPTH, PRESS_MS);
+
+        BhScreenDraw.textureShadow(gfx, texture, Math.round(btnX + shakeX), btnY,
+                SET_ACTIVE_WIDTH, SET_ACTIVE_HEIGHT, ly, 1f);
+
         var pose = gfx.pose();
         pose.pushMatrix();
-        pose.translate(0f, -ly);
-        // The "Active" state is dark text on the amber button — draw it shadowless (the shadow looked bad).
-        pressScaledButton(gfx, btnX, btnY, btnWidth, SET_ACTIVE_HEIGHT, label, color,
-                alreadyActive ? BhScreenDraw.TEXT_ON_ACTIVE : BhScreenDraw.TEXT, "setActive", !alreadyActive);
+        pose.translate(shakeX, -ly);
+        if (sc != 1f) {
+            float ccx = btnX + SET_ACTIVE_WIDTH / 2f;
+            float ccy = btnY + SET_ACTIVE_HEIGHT / 2f;
+            pose.translate(ccx, ccy);
+            pose.scale(sc, sc);
+            pose.translate(-ccx, -ccy);
+        }
+        BhScreenDraw.textureButton(gfx, this.font, texture, btnX, btnY, SET_ACTIVE_WIDTH, SET_ACTIVE_HEIGHT,
+                label, textColor, tint);
         pose.popMatrix();
     }
 
@@ -492,22 +604,28 @@ public class HorseRosterScreen extends Screen {
         boolean yesHovered = BhScreenDraw.inBox(mouseX, mouseY, confirmYesX(), btnY, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT);
         boolean cancelHovered = BhScreenDraw.inBox(mouseX, mouseY, confirmCancelX(), btnY, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT);
 
-        confirmButton(gfx, confirmYesX(), btnY, "confirm_yes", "screen.icys-better-horses.manage.confirm_yes",
-                yesHovered ? BhScreenDraw.BTN_DISOWN_HOVER : BhScreenDraw.BTN_DISOWN, yesHovered);
-        confirmButton(gfx, confirmCancelX(), btnY, "confirm_cancel", "screen.icys-better-horses.manage.confirm_cancel",
-                cancelHovered ? BhScreenDraw.BTN_NEUTRAL_HOVER : BhScreenDraw.BTN_NEUTRAL, cancelHovered);
+        confirmButton(gfx, BhScreenDraw.DISOWN_BUTTON_SMALL_TEXTURE, confirmYesX(), btnY, "confirm_yes",
+                "screen.icys-better-horses.manage.confirm_yes", CONFIRM_DISOWN_TEXT_COLOR, yesHovered);
+        confirmButton(gfx, BhScreenDraw.CANCEL_BUTTON_TEXTURE, confirmCancelX(), btnY, "confirm_cancel",
+                "screen.icys-better-horses.manage.confirm_cancel", CONFIRM_CANCEL_TEXT_COLOR, cancelHovered);
 
         pose.popMatrix();
     }
 
-    private void confirmButton(GuiGraphicsExtractor gfx, int x, int y, Object key, String labelKey,
-                               int color, boolean hovered) {
+    /**
+     * Both confirm buttons are bespoke 84×20 planks rather than flat colour fills: the red one for
+     * letting the horse go, the dark slate one for backing out. Same shadow + hover-lift as the big
+     * disown button, so the whole screen reads as one set.
+     */
+    private void confirmButton(GuiGraphicsExtractor gfx, net.minecraft.resources.Identifier texture,
+                               int x, int y, Object key, String labelKey, int textColor, boolean hovered) {
         float ly = lift.get(key, hovered, LIFT_PX);
+        BhScreenDraw.textureShadow(gfx, texture, x, y, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT, ly, 1f);
         var pose = gfx.pose();
         pose.pushMatrix();
         pose.translate(0f, -ly);
-        BhScreenDraw.button(gfx, this.font, x, y, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT,
-                Component.translatable(labelKey), color, BhScreenDraw.TEXT);
+        BhScreenDraw.textureButton(gfx, this.font, texture, x, y, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT,
+                Component.translatable(labelKey), textColor, 0xFFFFFFFF);
         pose.popMatrix();
     }
 
@@ -569,8 +687,8 @@ public class HorseRosterScreen extends Screen {
 
         HorseRosterEntry selected = ClientHorseRoster.find(selectedHorseId);
         if (selected != null && !selected.active()
-                && BhScreenDraw.inBox(mouseX, mouseY, previewX() + 2, setActiveButtonY(),
-                        previewWidth() - 4, SET_ACTIVE_HEIGHT)) {
+                && BhScreenDraw.inBox(mouseX, mouseY, setActiveButtonX(), setActiveButtonY(),
+                        SET_ACTIVE_WIDTH, SET_ACTIVE_HEIGHT)) {
             press.hit("setActive");
             send(selected.horseId(), HorseManageAction.SET_ACTIVE);
             return true;
@@ -592,7 +710,7 @@ public class HorseRosterScreen extends Screen {
                 send(entry.horseId(), HorseManageAction.SEND_HOME);
                 return true;
             }
-            if (BhScreenDraw.inBox(mouseX, mouseY, disownButtonX(), btnY, BTN_DISOWN_WIDTH, BTN_HEIGHT)) {
+            if (BhScreenDraw.inBox(mouseX, mouseY, disownButtonX(), btnY, BTN_DISOWN_WIDTH, BTN_DISOWN_HEIGHT)) {
                 press.hit(pressKey(entry.horseId(), HorseManageAction.DISOWN));
                 ClientHorseRoster.clearFlash();
                 confirmingDisownOf = entry.horseId();

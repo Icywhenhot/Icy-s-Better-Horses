@@ -100,6 +100,11 @@ public final class ClientHorseRoster {
         return isFlashing() ? flashMessageKey : "";
     }
 
+    /** Milliseconds since the current flash started, or -1 when nothing is flashing. Drives the shake. */
+    public static long flashElapsedMs() {
+        return isFlashing() ? FLASH_MS - (flashExpiresAt - System.currentTimeMillis()) : -1L;
+    }
+
     /**
      * True exactly once, for the screen that is waiting on this specific action to go through — the
      * horse info screen uses it to close itself after the horse it was describing has been let go.

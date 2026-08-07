@@ -58,6 +58,7 @@
   "message.icys-better-horses.not_owner": "This horse doesn't trust you enough to ride.",
   "message.icys-better-horses.not_inventory_owner": "This horse won't let you access its gear.",
   "message.icys-better-horses.not_shear_owner": "This horse refuses to let you remove its saddle.",
+  "message.icys-better-horses.cart_chest_not_empty": "Empty the cart's chest before shearing it off.",
   "message.icys-better-horses.same_gender_breed": "These horses are the same gender and can't breed.",
 
   "gender.icys-better-horses.male": "Male",

@@ -36,6 +36,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Unique private int bh_playerInventoryStartIndex = -1;
     @Unique private int bh_playerInventoryEndIndex = -1;
     @Unique private boolean bh_playerInventoryShifted = false;
+    @Unique private @org.jetbrains.annotations.Nullable AbstractHorse bh_horse = null;
     @Unique private final SimpleContainer bh_enderChestView = new SimpleContainer(BH_CHEST_SLOT_COUNT);
     @Unique private PlayerEnderChestContainer bh_playerEnderChest = null;
     @Unique private boolean bh_enderChestViewLoaded = false;
@@ -53,6 +54,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             int horseChestColumns,
             CallbackInfo ci) {
         final IHorseData data = (IHorseData) horse;
+        this.bh_horse = horse;
         final SimpleContainer gear = data.bh_getGearContainer();
         final SimpleContainer chest = data.bh_getChestContainer();
         this.bh_playerEnderChest = playerInventory.player.level().isClientSide()
@@ -131,6 +133,12 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             final GearSlot type = slot;
             this.addSlot(new Slot(gear, slot.ordinal(), BH_GEAR_SLOT_X + slot.ordinal() * 18, BH_GEAR_SLOT_Y) {
                 @Override public boolean mayPlace(ItemStack stack) {
+                    // A chest-laden cart is welded in: block swapping it for a stabilizer too, since
+                    // a swap would take the cart out without ever going through mayPickup.
+                    if (type == GearSlot.STABILIZER
+                            && HorseInventoryMenuMixin.this.bh_isCartSlotLocked()) {
+                        return false;
+                    }
                     // The stabilizer is horse-only; mules, donkeys and skeleton/zombie horses can't
                     // wear it. The cart shares this slot and stays allowed on every equine.
                     if (type == GearSlot.STABILIZER
@@ -139,6 +147,11 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                         return false;
                     }
                     return type.accepts(stack);
+                }
+
+                @Override public boolean mayPickup(Player player) {
+                    return !(type == GearSlot.STABILIZER
+                            && HorseInventoryMenuMixin.this.bh_isCartSlotLocked());
                 }
                 @Override public boolean isActive() { return HorseInventoryMenuMixin.this.bh_hasUpgradedSaddleInMenu(); }
                 @Override public int getMaxStackSize() { return 1; }
@@ -222,6 +235,15 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Override
     public boolean bh_hasChestStorageLayout() {
         return this.bh_hasUpgradedSaddleInMenu() && this.bh_hasChestGearInMenu();
+    }
+
+    @Override
+    public boolean bh_isCartSlotLocked() {
+        // Both flags are synced, so this answers the same on the client — the refused click never
+        // has to round-trip to the server to be predicted correctly.
+        return this.bh_horse != null
+                && ((IHorseData) this.bh_horse).bh_hasCartGear()
+                && ((IHorseData) this.bh_horse).bh_hasCartChest();
     }
 
     @Override

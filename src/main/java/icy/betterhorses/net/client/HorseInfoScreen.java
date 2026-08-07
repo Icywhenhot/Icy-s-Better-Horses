@@ -52,15 +52,19 @@ public class HorseInfoScreen extends Screen {
     private static final double HEALTH_MAX = 30.0D;
 
     private static final int DISOWN_BTN_WIDTH = 110;
-    private static final int DISOWN_BTN_HEIGHT = 20;   // matches the custom disown_button.png (110×20)
-    private static final int DISOWN_BTN_BOTTOM_GAP = 12;
+    private static final int DISOWN_BTN_HEIGHT = 24;   // matches the custom disown_button.png (110×24)
+    /** Gap below the plank; smaller = the button sits lower in the panel. */
+    private static final int DISOWN_BTN_BOTTOM_GAP = 6;
     private static final int DISOWN_TEXT_COLOR = 0xFF3A2714;   // dark brown ink on the light plank
     private static final int DISOWN_FLASH_TINT = 0xFFE85C5C;   // red multiply when the server refuses
 
     private static final int CONFIRM_WIDTH = 220;
     private static final int CONFIRM_HEIGHT = 76;
+    /** Matches disown_button_small.png / cancel_button.png (both 84×20). */
     private static final int CONFIRM_BTN_WIDTH = 84;
-    private static final int CONFIRM_BTN_HEIGHT = 18;
+    private static final int CONFIRM_BTN_HEIGHT = 20;
+    /** The cancel plank is dark slate, so its label is light rather than the disown button's ink. */
+    private static final int CANCEL_TEXT_COLOR = 0xFFEDE6DA;
 
     // Entrance: the panel rises ENTER_RISE px and scales up from ENTER_SCALE over ENTER_MS.
     private static final float ENTER_MS = 220f;
@@ -230,6 +234,12 @@ public class HorseInfoScreen extends Screen {
 
         float ly = lift.get("disown", hovered, LIFT_PX);
         float sc = press.scale("disown", PRESS_DEPTH, PRESS_MS);
+
+        // The shadow stays anchored to the resting spot and stretches as the button lifts, so the
+        // plank looks like it's sitting on the parchment rather than floating over it.
+        BhScreenDraw.textureShadow(gfx, BhScreenDraw.DISOWN_BUTTON_TEXTURE, x, y,
+                DISOWN_BTN_WIDTH, DISOWN_BTN_HEIGHT, ly, 1f);
+
         var pose = gfx.pose();
         pose.pushMatrix();
         pose.translate(0f, -ly);
@@ -268,24 +278,28 @@ public class HorseInfoScreen extends Screen {
         boolean yesHovered = BhScreenDraw.inBox(mouseX, mouseY, confirmYesX(), btnY, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT);
         boolean cancelHovered = BhScreenDraw.inBox(mouseX, mouseY, confirmCancelX(), btnY, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT);
 
-        confirmButton(gfx, font, confirmYesX(), btnY, "confirm_yes",
-                "screen.icys-better-horses.manage.confirm_yes",
-                yesHovered ? BhScreenDraw.BTN_DISOWN_HOVER : BhScreenDraw.BTN_DISOWN, yesHovered);
-        confirmButton(gfx, font, confirmCancelX(), btnY, "confirm_cancel",
-                "screen.icys-better-horses.manage.confirm_cancel",
-                cancelHovered ? BhScreenDraw.BTN_NEUTRAL_HOVER : BhScreenDraw.BTN_NEUTRAL, cancelHovered);
+        confirmButton(gfx, font, BhScreenDraw.DISOWN_BUTTON_SMALL_TEXTURE, confirmYesX(), btnY, "confirm_yes",
+                "screen.icys-better-horses.manage.confirm_yes", DISOWN_TEXT_COLOR, yesHovered);
+        confirmButton(gfx, font, BhScreenDraw.CANCEL_BUTTON_TEXTURE, confirmCancelX(), btnY, "confirm_cancel",
+                "screen.icys-better-horses.manage.confirm_cancel", CANCEL_TEXT_COLOR, cancelHovered);
 
         pose.popMatrix();
     }
 
-    private void confirmButton(GuiGraphicsExtractor gfx, Font font, int x, int y, Object key, String labelKey,
-                               int color, boolean hovered) {
+    /**
+     * Both confirm buttons are bespoke 84×20 planks rather than flat colour fills: the red one for
+     * letting the horse go, the dark slate one for backing out. Same shadow + hover-lift as the big
+     * disown button, so the whole screen reads as one set.
+     */
+    private void confirmButton(GuiGraphicsExtractor gfx, Font font, net.minecraft.resources.Identifier texture,
+                               int x, int y, Object key, String labelKey, int textColor, boolean hovered) {
         float ly = lift.get(key, hovered, LIFT_PX);
+        BhScreenDraw.textureShadow(gfx, texture, x, y, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT, ly, 1f);
         var pose = gfx.pose();
         pose.pushMatrix();
         pose.translate(0f, -ly);
-        BhScreenDraw.button(gfx, font, x, y, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT,
-                Component.translatable(labelKey), color, BhScreenDraw.TEXT);
+        BhScreenDraw.textureButton(gfx, font, texture, x, y, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT,
+                Component.translatable(labelKey), textColor, 0xFFFFFFFF);
         pose.popMatrix();
     }
 
