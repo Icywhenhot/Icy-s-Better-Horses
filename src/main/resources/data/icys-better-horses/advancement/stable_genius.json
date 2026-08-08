@@ -1,0 +1,33 @@
+{
+  "criteria": {
+    "horse_count": {
+      "conditions": {
+        "key": "horse_count",
+        "value": {
+          "min": 10
+        }
+      },
+      "trigger": "icys-better-horses:milestone"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.icys-better-horses.stable_genius.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "minecraft:lead"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.icys-better-horses.stable_genius.title"
+    }
+  },
+  "parent": "icys-better-horses:home_is_where_the_hay_is",
+  "requirements": [
+    [
+      "horse_count"
+    ]
+  ]
+}

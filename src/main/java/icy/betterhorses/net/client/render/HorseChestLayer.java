@@ -19,31 +19,14 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 
-/**
- * Draws the donkey-style saddle pouch on the horse's flanks whenever a chest / ender chest is in
- * the mod's chest gear slot.
- *
- * <p>The cubes, their UVs and their placement are copies of vanilla's
- * {@code DonkeyModel.modifyMesh}, and they are drawn from the vanilla donkey texture, so the
- * pouch is pixel-identical to the one a donkey wears (and follows any resource pack that
- * retextures donkeys).</p>
- *
- * <p>Vanilla bakes those cubes as children of the model's {@code body} part. We can't do that
- * here: the 1.21.5+ pipeline defers the actual draw until after {@code submit} returns, and it
- * re-runs {@code setupAnim} on the shared parent model in between — anything we toggled on a
- * borrowed {@code ModelPart} would be undone before it rendered. So the layer bakes its own
- * standalone part and walks the parent's transform chain by hand instead: {@code root} carries
- * the per-model mesh scale ({@code 1.1} for horses, {@code 1.0} for skeleton/zombie horses,
- * {@code 0.87}/{@code 0.92} for donkeys and mules) and {@code body} the current animation pose,
- * which together put us in exactly the frame vanilla's own chest children render in.</p>
- */
+// draws the donkey-style saddle pouch on the horse's flanks whenever a chest / ender chest
 public final class HorseChestLayer<S extends EquineRenderState, M extends EntityModel<? super S>>
         extends RenderLayer<S, M> {
 
     private static final Identifier CHEST_TEXTURE =
             Identifier.withDefaultNamespace("textures/entity/horse/donkey.png");
 
-    /** Same submit order vanilla uses for horse armor — after the base model, before name tags. */
+    // same submit order vanilla uses for horse armor, after the base model, before name tags
     private static final int RENDER_ORDER = 2;
 
     private final ModelPart chest;
@@ -75,7 +58,7 @@ public final class HorseChestLayer<S extends EquineRenderState, M extends Entity
         if (!((IBhEquineStabilizerState) (Object) state).bh_hasChestGear() || state.isInvisible || state.isBaby) {
             return;
         }
-        // Donkeys and mules already wear the vanilla pouch when they're carrying a chest.
+        // donkeys and mules already wear the vanilla pouch when they're carrying a chest
         if (state instanceof DonkeyRenderState donkey && donkey.hasChest) {
             return;
         }

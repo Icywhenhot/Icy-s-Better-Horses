@@ -41,14 +41,7 @@ public abstract class HorseMarkingLayerMixin extends RenderLayer<HorseRenderStat
         }
     }
 
-    /**
-     * Fade the coat pattern along with the rest of the horse when the rider looks down.
-     *
-     * <p>Vanilla submits the markings through the short {@code submitModel} overload, whose 7th
-     * argument is the <b>outline</b> color — it hard-codes the tint to {@code -1} internally, so
-     * there is no argument to fade. We swap in the full overload and pass the faded tint there
-     * instead. The render type is already {@code entityTranslucent}, so alpha blends.</p>
-     */
+    // fade the coat pattern along with the rest of the horse when the rider looks down
     @Redirect(
             method = "submit(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/client/renderer/entity/state/HorseRenderState;FF)V",
             at = @At(

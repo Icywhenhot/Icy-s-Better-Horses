@@ -10,17 +10,13 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public final class ModBlockEntities {
 
-    /**
-     * 1.21.11 made {@link BlockEntityType}'s constructor and the inner {@code BlockEntitySupplier}
-     * package-private. Fabric API exposes {@link FabricBlockEntityTypeBuilder} as the supported
-     * way to create one — same outcome, public API.
-     */
+    // 1.21.11 made BlockEntityType's constructor and the inner BlockEntitySupplier package-private
     public static final BlockEntityType<HitchpostBlockEntity> HITCHPOST = register(
             "hitchpost",
             FabricBlockEntityTypeBuilder.create(HitchpostBlockEntity::new, ModBlocks.HITCHPOST).build());
 
     public static void init() {
-        // Registration happens via static initializer; touching the class triggers it.
+        // registration happens via static initializer; touching the class triggers
     }
 
     private static <T extends BlockEntity> BlockEntityType<T> register(String path, BlockEntityType<T> type) {

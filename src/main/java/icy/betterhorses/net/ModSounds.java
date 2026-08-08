@@ -12,7 +12,7 @@ public final class ModSounds {
     public static final SoundEvent STABILIZER_LOOP = register("stabilizer_loop");
 
     public static void init() {
-        // Trigger static registration.
+        // trigger static registration
     }
 
     private static SoundEvent register(String path) {

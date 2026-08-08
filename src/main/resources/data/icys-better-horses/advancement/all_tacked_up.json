@@ -1,0 +1,33 @@
+{
+  "criteria": {
+    "has_upgraded_saddle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "icys-better-horses:upgraded_saddle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.icys-better-horses.all_tacked_up.description"
+    },
+    "icon": {
+      "id": "icys-better-horses:upgraded_saddle"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.icys-better-horses.all_tacked_up.title"
+    }
+  },
+  "parent": "icys-better-horses:hold_your_horses",
+  "requirements": [
+    [
+      "has_upgraded_saddle"
+    ]
+  ]
+}

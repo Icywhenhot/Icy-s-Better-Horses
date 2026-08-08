@@ -1,0 +1,33 @@
+{
+  "criteria": {
+    "stabilizer_landing": {
+      "conditions": {
+        "key": "stabilizer_landing",
+        "value": {
+          "min": 30
+        }
+      },
+      "trigger": "icys-better-horses:milestone"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.icys-better-horses.pegasus_sort_of.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "icys-better-horses:horse_stabilizer_gear"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.icys-better-horses.pegasus_sort_of.title"
+    }
+  },
+  "parent": "icys-better-horses:all_tacked_up",
+  "requirements": [
+    [
+      "stabilizer_landing"
+    ]
+  ]
+}

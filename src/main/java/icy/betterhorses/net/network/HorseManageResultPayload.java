@@ -6,10 +6,7 @@ import net.minecraft.resources.Identifier;
 
 import java.util.UUID;
 
-/**
- * Server → client: the outcome of a management action. The screen uses it to flash the button that
- * was pressed red and show {@code messageKey} next to it; on success it just clears any old flash.
- */
+// server → client: the outcome of a management action
 public record HorseManageResultPayload(UUID horseId, int actionOrdinal, boolean success, String messageKey)
         implements CustomPacketPayload {
 

@@ -31,9 +31,9 @@ public class IcysBetterHorses implements ModInitializer {
 
     private static final int PASSIVE_BOND_INTERVAL_TICKS = 60 * 20;
 
-    // Leftover copies of whistle-respawned horses, discarded on the tick after their chunk loads.
+    // leftover copies of whistle-respawned horses, discarded on the tick after their chunk loads
     private final List<AbstractHorse> staleHorses = new ArrayList<>();
-    // Horses disowned while unloaded, released on the tick after their chunk loads.
+    // horses disowned while unloaded, released on the tick after their chunk loads
     private final List<AbstractHorse> pendingReleases = new ArrayList<>();
 
     @Override
@@ -47,6 +47,7 @@ public class IcysBetterHorses implements ModInitializer {
         ModTicketTypes.init();
         BhBiomeSpawns.register();
         BhHorseSpawnRules.installSpawnPlacementOverride();
+        BhCriteria.init();
         registerPackets();
         registerServerHandlers();
         registerEntityTracking();
@@ -88,7 +89,15 @@ public class IcysBetterHorses implements ModInitializer {
     }
 
     private void sendRoster(ServerPlayer player) {
-        ServerPlayNetworking.send(player, new HorseRosterSyncPayload(HorseManagement.buildRoster(player)));
+        List<icy.betterhorses.net.network.HorseRosterEntry> roster = HorseManagement.buildRoster(player);
+        ServerPlayNetworking.send(player, new HorseRosterSyncPayload(roster));
+        if (!roster.isEmpty()) {
+            BhCriteria.fire(player, BhCriteria.OWN_HORSE);
+            BhCriteria.fire(player, BhCriteria.HORSE_COUNT, roster.size());
+            for (icy.betterhorses.net.network.HorseRosterEntry entry : roster) {
+                BhCriteria.fireBreed(player, HorseBreed.fromId(entry.breedOrdinal()));
+            }
+        }
     }
 
     private void handleManageAction(ServerPlayer player, UUID horseId, HorseManageAction action) {
@@ -105,7 +114,7 @@ public class IcysBetterHorses implements ModInitializer {
             if (action == HorseManageAction.WHISTLE) {
                 playWhistle(player);
             }
-            // The roster changed (a horse loaded, moved dimension, or is gone entirely) — resend it.
+            // the roster changed (a horse loaded, moved dimension, or is gone entirely), resend
             sendRoster(player);
         }
     }
@@ -119,6 +128,7 @@ public class IcysBetterHorses implements ModInitializer {
             data.bh_setHome(horse.blockPosition());
             data.bh_setCommand(HorseCommand.STAY);
             player.sendSystemMessage(Component.translatable("message.icys-better-horses.home_set"));
+            BhCriteria.fire(player, BhCriteria.SET_HOME);
         } else {
             if (command == HorseCommand.WANDER) {
                 data.bh_setWanderCenter(horse.blockPosition());
@@ -151,10 +161,10 @@ public class IcysBetterHorses implements ModInitializer {
         ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
             if (entity instanceof AbstractHorse horse && ((IHorseData) horse).bh_isOwned()) {
                 if (HorseTracker.consumePendingDisown(horse.getUUID())) {
-                    // Disowned while its chunk was unloaded; release it next tick, outside the load callback.
+                    // disowned while its chunk was unloaded; release it next tick, outside the load callback
                     pendingReleases.add(horse);
                 } else if (HorseTracker.isStale(horse)) {
-                    // Leftover copy of a whistle-respawned horse; discard next tick, outside the load callback.
+                    // leftover copy of a whistle-respawned horse; discard next tick, outside the load callback
                     staleHorses.add(horse);
                 } else {
                     HorseTracker.register(horse);
@@ -178,7 +188,7 @@ public class IcysBetterHorses implements ModInitializer {
             applyPendingReleases();
         });
         ServerLifecycleEvents.SERVER_STARTED.register(HorseTracker::attach);
-        // Snapshot horses before the final world save so nothing is stale after a restart.
+        // snapshot horses before the final world save so nothing is stale after a restart
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> HorseTracker.recordLoadedPositions());
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             staleHorses.clear();

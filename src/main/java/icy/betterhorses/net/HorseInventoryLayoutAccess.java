@@ -13,12 +13,14 @@ public interface HorseInventoryLayoutAccess {
 
     int bh_getChestStartIndex();
 
-    /**
-     * True while the cart in the shared stabilizer slot is held there by a chest fitted to it.
-     * Unhitching the cart would strand the chest and its contents, so the slot refuses to give the
-     * cart back until the chest has been sheared off. The screen reads this to flash the slot red.
-     */
+    // true while the cart in the shared stabilizer slot is held there by a chest fitted
     default boolean bh_isCartSlotLocked() {
+        return false;
+    }
+
+    // true while the saddle is held on by a hitched cart. the cart hangs off the saddle's gear slots,
+    // so pulling the saddle out from under it would strand the cart
+    default boolean bh_isSaddleSlotLocked() {
         return false;
     }
 

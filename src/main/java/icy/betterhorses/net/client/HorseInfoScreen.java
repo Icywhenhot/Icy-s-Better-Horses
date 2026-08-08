@@ -23,50 +23,48 @@ public class HorseInfoScreen extends Screen {
     private static final int PADDING = 12;
     private static final int ROW_HEIGHT = 16;
     private static final int LABEL_WIDTH = 70;
-    /** Extra left inset for the label column only, so headings start well inside the parchment (edge ≈ x21-24). */
+    // extra left inset for the label column only
     private static final int LABEL_INDENT = 22;
-    /** Title now sits in the top banner plaque (banner ≈ y8-20). */
+    // title now sits in the top banner plaque (banner ≈ y8-20)
     private static final int TITLE_Y = 13;
-    /** Body content starts lower, inside the lowered parchment (parchment ≈ y39-181). */
+    // body content starts lower, inside the lowered parchment (parchment ≈ y39-181)
     private static final int CONTENT_TOP = 50;
     private static final int BAR_WIDTH = 110;
     private static final int BAR_HEIGHT = 6;
     private static final int BAR_VALUE_GAP = 6;
 
-    // Text sits on the light parchment now, so it's dark brown "ink" rather than the old light-on-dark.
+    // text sits on the light parchment now, so it's dark brown "ink" rather than the old light-on-dark
     private static final int LABEL_COLOR = 0xFF6B4A2C;
     private static final int VALUE_COLOR = 0xFF3A2714;
     private static final int BAR_BG_COLOR = 0xFF3B2A17;   // unfilled track: dark brown
     private static final int BAR_FILL_COLOR = 0xFFA06A34; // filled: warm brown
 
-    // Display-unit conversions: blocks/sec for speed, blocks for jump height, HP for health.
-    // Matches the in-world stats HUD: speed_blocks_per_sec = raw * 43.2, jump_blocks = max(0, raw*6 - 1).
+    // display-unit conversions: blocks/sec for speed, blocks for jump height, HP for health
     private static final double SPEED_DISPLAY_FACTOR = 43.2D;
 
-    // Mod-attainable max = vanilla base ceiling * full-bond multiplier.
-    // Bond gives up to 5 levels * 15% ADD_MULTIPLIED_BASE = +75% on top of base speed and jump.
+    // mod-attainable max = vanilla base ceiling * full-bond multiplier
     private static final double BOND_MAX_MULTIPLIER = 1.0D + 5 * 0.15D;
-    // Bar ceilings (in display units). Bars are zero-baselined: fill = value / max.
+    // bar ceilings (in display units)
     private static final double SPEED_MAX = 0.3375D * BOND_MAX_MULTIPLIER * SPEED_DISPLAY_FACTOR;
     private static final double JUMP_MAX = Math.max(0.0D, 1.0D * BOND_MAX_MULTIPLIER * 6.0D - 1.0D);
     private static final double HEALTH_MAX = 30.0D;
 
     private static final int DISOWN_BTN_WIDTH = 110;
     private static final int DISOWN_BTN_HEIGHT = 24;   // matches the custom disown_button.png (110×24)
-    /** Gap below the plank; smaller = the button sits lower in the panel. */
+    // gap below the plank; smaller = the button sits lower in the panel
     private static final int DISOWN_BTN_BOTTOM_GAP = 6;
     private static final int DISOWN_TEXT_COLOR = 0xFF3A2714;   // dark brown ink on the light plank
     private static final int DISOWN_FLASH_TINT = 0xFFE85C5C;   // red multiply when the server refuses
 
     private static final int CONFIRM_WIDTH = 220;
     private static final int CONFIRM_HEIGHT = 76;
-    /** Matches disown_button_small.png / cancel_button.png (both 84×20). */
+    // matches disown_button_small.png / cancel_button.png (both 84×20)
     private static final int CONFIRM_BTN_WIDTH = 84;
     private static final int CONFIRM_BTN_HEIGHT = 20;
-    /** The cancel plank is dark slate, so its label is light rather than the disown button's ink. */
+    // the cancel plank is dark slate, so its label is light rather than the disown button's ink
     private static final int CANCEL_TEXT_COLOR = 0xFFEDE6DA;
 
-    // Entrance: the panel rises ENTER_RISE px and scales up from ENTER_SCALE over ENTER_MS.
+    // entrance: the panel rises ENTER_RISE px and scales up from ENTER_SCALE over ENTER_MS
     private static final float ENTER_MS = 220f;
     private static final float ENTER_RISE = 10f;
     private static final float ENTER_SCALE = 0.95f;
@@ -106,7 +104,7 @@ public class HorseInfoScreen extends Screen {
 
     @Override
     public void onClose() {
-        // Begin the reverse (slide-down + fade) animation; the render loop dismisses once it finishes.
+        // begin the reverse (slide-down + fade) animation; the render loop dismisses once it finishes
         if (bhClosing) {
             super.onClose();
             return;
@@ -123,7 +121,7 @@ public class HorseInfoScreen extends Screen {
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float delta) {
-        // The horse this screen describes is no longer ours — nothing left to show.
+        // the horse this screen describes is no longer ours, nothing left to show
         if (ClientHorseRoster.consumeSuccess(horse.getUUID(), HorseManageAction.DISOWN)) {
             onClose();
             return;
@@ -145,7 +143,7 @@ public class HorseInfoScreen extends Screen {
         } else {
             vis = BhAnim.easeOutCubic((System.currentTimeMillis() - bhOpenMs) / ENTER_MS);
         }
-        // Stat bars grow + numbers count up shortly after the panel settles (full value while closing).
+        // stat bars grow + numbers count up shortly after the panel settles (full value while closing)
         float statP = bhClosing ? 1f
                 : BhAnim.easeOutCubic((System.currentTimeMillis() - bhOpenMs - STAT_DELAY_MS) / STAT_MS);
         lift.beginFrame(LIFT_TAU);
@@ -158,8 +156,7 @@ public class HorseInfoScreen extends Screen {
 
         Font font = this.font;
         Component title = horse.hasCustomName() ? horse.getCustomName() : getTitle();
-        // Draw shadowless (centeredText forces a drop shadow, which reads as a doubled/bold strike
-        // now that the title is dark ink on the light banner). Centre it manually in the banner.
+        // draw shadowless (centeredText forces a drop shadow
         gfx.text(font, title, left + PANEL_WIDTH / 2 - font.width(title) / 2, top + TITLE_Y, VALUE_COLOR, false);
 
         IHorseData data = (IHorseData) horse;
@@ -211,13 +208,13 @@ public class HorseInfoScreen extends Screen {
 
         pose.popMatrix();
 
-        // Modal confirm sits above the (settled) panel with its own little pop, unaffected by the entrance.
+        // modal confirm sits above the (settled) panel with its own little pop, unaffected by the entrance
         if (confirmingDisown) {
             renderConfirm(gfx, font, mouseX, mouseY);
         }
     }
 
-    // --- Disown ---
+    // disown
 
     private void renderDisownSection(GuiGraphicsExtractor gfx, Font font, int left, int top, int mouseX, int mouseY) {
         String flashKey = ClientHorseRoster.flashMessageKey();
@@ -235,8 +232,7 @@ public class HorseInfoScreen extends Screen {
         float ly = lift.get("disown", hovered, LIFT_PX);
         float sc = press.scale("disown", PRESS_DEPTH, PRESS_MS);
 
-        // The shadow stays anchored to the resting spot and stretches as the button lifts, so the
-        // plank looks like it's sitting on the parchment rather than floating over it.
+        // the shadow stays anchored to the resting spot and stretches as the button lifts
         BhScreenDraw.textureShadow(gfx, BhScreenDraw.DISOWN_BUTTON_TEXTURE, x, y,
                 DISOWN_BTN_WIDTH, DISOWN_BTN_HEIGHT, ly, 1f);
 
@@ -257,7 +253,7 @@ public class HorseInfoScreen extends Screen {
 
     private void renderConfirm(GuiGraphicsExtractor gfx, Font font, int mouseX, int mouseY) {
         float t = BhAnim.clamp01((System.currentTimeMillis() - bhConfirmOpenMs) / ENTER_MS);
-        gfx.fill(0, 0, this.width, this.height, Math.round(0x99 * t) << 24); // scrim fades in
+        gfx.fill(0, 0, this.width, this.height, Math.round(0x99 * t) << 24); // scrim fades
 
         int cx = (this.width - CONFIRM_WIDTH) / 2;
         int cy = (this.height - CONFIRM_HEIGHT) / 2;
@@ -286,11 +282,7 @@ public class HorseInfoScreen extends Screen {
         pose.popMatrix();
     }
 
-    /**
-     * Both confirm buttons are bespoke 84×20 planks rather than flat colour fills: the red one for
-     * letting the horse go, the dark slate one for backing out. Same shadow + hover-lift as the big
-     * disown button, so the whole screen reads as one set.
-     */
+    // both confirm buttons are bespoke 84×20 planks rather than flat colour fills
     private void confirmButton(GuiGraphicsExtractor gfx, Font font, net.minecraft.resources.Identifier texture,
                                int x, int y, Object key, String labelKey, int textColor, boolean hovered) {
         float ly = lift.get(key, hovered, LIFT_PX);
@@ -342,7 +334,7 @@ public class HorseInfoScreen extends Screen {
                 confirmingDisown = false;
                 return true;
             }
-            // Modal: swallow everything else.
+            // modal: swallow everything else
             return true;
         }
 

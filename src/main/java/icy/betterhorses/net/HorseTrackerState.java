@@ -26,16 +26,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * World-saved half of the horse tracker: which horse each player last rode, where each owned horse
- * was last seen, a full NBT snapshot of it, and a generation counter per horse. The whistle respawns
- * a horse from its snapshot when the real entity is unreachable (unloaded chunk); the generation
- * counter marks the copy left behind in the unloaded chunk as stale so it is discarded when its
- * chunk eventually loads. Everything survives restarts.
- */
+// world-saved half of the horse tracker: which horse each player last rode
 public class HorseTrackerState extends SavedData {
 
-    /** Where an owned horse was last seen, used for the same-dimension check when whistling. */
+    // where an owned horse was last seen, used for the same-dimension check when whistling
     public record KnownPosition(ResourceKey<Level> dimension, BlockPos pos) {
         static final Codec<KnownPosition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ResourceKey.codec(Registries.DIMENSION).fieldOf("dimension").forGetter(KnownPosition::dimension),
@@ -68,20 +62,12 @@ public class HorseTrackerState extends SavedData {
     private final Map<UUID, KnownPosition> lastKnownPositions;
     private final Map<UUID, CompoundTag> snapshots;
     private final Map<UUID, Integer> generations;
-    /**
-     * Horses disowned while their chunk was unloaded. The stored snapshot is dropped immediately so
-     * the roster and the whistle forget them at once, but the real entity is still sitting in an
-     * unloaded chunk with its owner tag intact — so it is released the next time it loads.
-     */
+    // horses disowned while their chunk was unloaded
     private final Set<UUID> pendingDisowns;
-    /**
-     * The horse each player picked in the management screen. The whistle calls this one before
-     * falling back to "last ridden, else nearest", and it only changes when the player says so.
-     */
+    // the horse each player picked in the management screen
     private final Map<UUID, UUID> activeHorseByPlayer;
 
-    // Concurrent collections: parallel-ticking mods mutate these from multiple entity-tick threads at
-    // once (e.g. two horses unloading, or a dismount landing while another horse records its position).
+    // concurrent collections: parallel-ticking mods mutate these from multiple entity-tick threads
     public HorseTrackerState() {
         this.lastRiddenByPlayer = new ConcurrentHashMap<>();
         this.lastKnownPositions = new ConcurrentHashMap<>();
@@ -120,7 +106,7 @@ public class HorseTrackerState extends SavedData {
         return lastRiddenByPlayer.get(playerId);
     }
 
-    /** Records both the horse's position and a full NBT snapshot the whistle can respawn it from. */
+    // records both the horse's position and a full NBT snapshot the whistle can respawn
     public void recordHorse(AbstractHorse horse) {
         UUID horseId = horse.getUUID();
         lastKnownPositions.put(horseId, new KnownPosition(horse.level().dimension(), horse.blockPosition()));
@@ -131,11 +117,7 @@ public class HorseTrackerState extends SavedData {
         setDirty();
     }
 
-    /**
-     * Drops the position and snapshot of a horse that died, was discarded, or was disowned. The
-     * generation entry is deliberately kept forever so a stale copy of a dead horse can never be
-     * resurrected when its chunk loads.
-     */
+    // drops the position and snapshot of a horse that died, was discarded, or was disowned
     public void forgetHorse(UUID horseId) {
         boolean removed = lastKnownPositions.remove(horseId) != null;
         removed |= snapshots.remove(horseId) != null;
@@ -152,7 +134,7 @@ public class HorseTrackerState extends SavedData {
         return snapshots.get(horseId);
     }
 
-    /** Fallback lookup when no last-ridden entry exists: any stored horse owned by this player. */
+    // fallback lookup when no last-ridden entry exists: any stored horse owned by this player
     public @Nullable UUID findStoredHorseOwnedBy(UUID playerId) {
         for (Map.Entry<UUID, CompoundTag> entry : snapshots.entrySet()) {
             if (isOwnedBy(entry.getValue(), playerId)) {
@@ -162,7 +144,7 @@ public class HorseTrackerState extends SavedData {
         return null;
     }
 
-    /** Every horse this player owns that has a stored snapshot — the source list for the roster screen. */
+    // every horse this player owns that has a stored snapshot, the source list for the roster screen
     public List<UUID> findAllStoredHorsesOwnedBy(UUID playerId) {
         List<UUID> owned = new ArrayList<>();
         for (Map.Entry<UUID, CompoundTag> entry : snapshots.entrySet()) {
@@ -186,7 +168,7 @@ public class HorseTrackerState extends SavedData {
         return activeHorseByPlayer.get(playerId);
     }
 
-    /** Drops a horse from every player's active slot — called when it is disowned or dies. */
+    // drops a horse from every player's active slot, called when it is disowned or dies
     public void clearActiveHorse(UUID horseId) {
         if (activeHorseByPlayer.values().removeIf(horseId::equals)) {
             setDirty();
@@ -199,7 +181,7 @@ public class HorseTrackerState extends SavedData {
         }
     }
 
-    /** True (once) when this horse was disowned while unloaded and still needs to be released. */
+    // true (once) when this horse was disowned while unloaded and still needs to be released
     public boolean consumePendingDisown(UUID horseId) {
         if (pendingDisowns.remove(horseId)) {
             setDirty();

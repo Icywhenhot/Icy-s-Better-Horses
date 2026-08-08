@@ -13,44 +13,26 @@ import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fc;
 import org.joml.Vector2f;
 
-/**
- * Arbitrary translucent 2D geometry for the GUI — curves, rings, wedges — instead of the axis-aligned
- * rectangles {@code GuiGraphicsExtractor.fill} is limited to.
- *
- * <p>Two things make this worth the machinery. Rectangles snap to whole <em>GUI</em> pixels, which at
- * GUI scale 3 or 4 are chunky blocks, so a circle built from them steps in 3–4px stairs; real geometry
- * rasterises at native screen pixels, so the same curve steps at a third or a quarter of the size.
- * On top of that, the GUI framebuffer has no multisampling, so edges are anti-aliased the way vector
- * renderers do it: every shape is ringed by a one-pixel band of vertices whose alpha fades to zero,
- * and the hardware's colour interpolation does the blending.</p>
- *
- * <p>Vertices go to {@code GuiRenderState.addGuiElement} through {@link GuiGraphicsExtractorAccessor},
- * which is the modern equivalent of the old immediate-mode {@code Tesselator}/{@code BufferBuilder}
- * pair — the render state collects everything first and draws it later, but the capability is the
- * same. The pipeline is {@link RenderPipelines#GUI}: position + colour, alpha blended, no texture.</p>
- */
+// arbitrary translucent 2D geometry for the GUI, curves, rings, wedges
 public final class BhVector {
 
-    /** Angular resolution of curves. 3° keeps a 110px-radius arc smooth without silly vertex counts. */
+    // angular resolution of curves
     private static final double ANGLE_STEP = Math.toRadians(3.0D);
-    /** Width of the alpha fade band, in GUI pixels. Below ~0.75 the edge starts to look hard again. */
+    // width of the alpha fade band, in GUI pixels
     public static final float FEATHER = 1.0F;
 
     private BhVector() {}
 
-    // ------------------------------------------------------------------ mesh
+    // mesh
 
-    /** Accumulates quads. Reused per frame: build, submit, discard. */
+    // accumulates quads. reused per frame: build, submit, discard
     public static final class Builder {
 
         private float[] xy = new float[1024];
         private int[] colors = new int[512];
         private int vertices;
 
-        /**
-         * Adds one quad. Corners go in order around the perimeter, and the direction matters: the GUI
-         * pipeline culls back faces, so a quad wound the wrong way is dropped without a warning.
-         */
+        // adds one quad. corners go in order around the perimeter, and the direction matters
         public void quad(float x0, float y0, int c0, float x1, float y1, int c1,
                          float x2, float y2, int c2, float x3, float y3, int c3) {
             ensure(4);
@@ -83,10 +65,7 @@ public final class BhVector {
         }
     }
 
-    /**
-     * Hands the built geometry to the GUI render state, baking in the extractor's current pose so the
-     * shape rides screen transforms (the entrance scale, hover lifts) like any other drawn element.
-     */
+    // hands the built geometry to the GUI render state
     public static void submit(GuiGraphicsExtractor gfx, Builder builder) {
         if (builder.isEmpty()) return;
 
@@ -100,7 +79,7 @@ public final class BhVector {
                 .addGuiElement(new MeshRenderState(xy, colors, pose, bounds(xy, pose)));
     }
 
-    /** Screen-space AABB of the transformed geometry; the render state uses it for sorting and culling. */
+    // screen-space AABB of the transformed geometry; the render state uses it for sorting and culling
     private static ScreenRectangle bounds(float[] xy, Matrix3x2fc pose) {
         float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;
         float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
@@ -143,29 +122,21 @@ public final class BhVector {
         }
     }
 
-    // ---------------------------------------------------------------- shapes
+    // shapes
 
-    /**
-     * An annular wedge: the area between {@code innerRadius} and {@code outerRadius}, from
-     * {@code startAngle} to {@code endAngle} (radians, 0 = east, clockwise on screen).
-     *
-     * <p>Built as a grid of quads — a few angular slices across, three bands deep. The outer two bands
-     * are the feather: their outermost vertices carry alpha 0, so the hardware fades the shape out
-     * across the last pixel instead of ending on a hard step. The first and last angular slices do the
-     * same along the straight edges, so all four sides of the wedge are anti-aliased.</p>
-     */
+    // an annular wedge: the area between innerRadius and outerRadius, from startAngle to endAngle (radians
     public static void wedge(Builder builder, float cx, float cy, float innerRadius, float outerRadius,
                              double startAngle, double endAngle, int color, float feather) {
         arc(builder, cx, cy, innerRadius, outerRadius, startAngle, endAngle, color, feather, false);
     }
 
-    /** A complete ring — as {@link #wedge} but closed, so only the inner and outer edges are feathered. */
+    // a complete ring, as wedge but closed, so only the inner and outer edges are feathered
     public static void ring(Builder builder, float cx, float cy, float innerRadius, float outerRadius,
                             int color, float feather) {
         arc(builder, cx, cy, innerRadius, outerRadius, 0.0D, Math.PI * 2.0D, color, feather, true);
     }
 
-    /** A filled disc: a ring with no hole, so only the outer edge is feathered. */
+    // a filled disc: a ring with no hole, so only the outer edge is feathered
     public static void disc(Builder builder, float cx, float cy, float radius, int color, float feather) {
         arc(builder, cx, cy, 0f, radius, 0.0D, Math.PI * 2.0D, color, feather, true);
     }
@@ -175,7 +146,7 @@ public final class BhVector {
         double span = endAngle - startAngle;
         if (span <= 0.0D || outerRadius <= innerRadius) return;
 
-        // Radial bands. A hole gets a feather on its inner edge; a solid disc starts opaque at the centre.
+        // radial bands. a hole gets a feather on its inner edge; a solid disc starts opaque at the centre
         float radialFeather = Math.min(feather, (outerRadius - innerRadius) * 0.45F);
         boolean solid = innerRadius <= 0.01F;
         float[] radii = solid
@@ -183,8 +154,7 @@ public final class BhVector {
                 : new float[]{innerRadius, innerRadius + radialFeather, outerRadius - radialFeather, outerRadius};
         float[] radialAlpha = solid ? new float[]{1f, 1f, 0f} : new float[]{0f, 1f, 1f, 0f};
 
-        // Angle samples: the two feather steps at the ends, then even steps across the middle. A closed
-        // ring has no ends to feather, so it just walks the whole way round.
+        // angle samples: the two feather steps at the ends, then even steps across the middle
         double angularFeather = closed ? 0.0D
                 : Math.min(span * 0.45D, feather / Math.max(1.0F, (innerRadius + outerRadius) * 0.5F));
         int steps = Math.max(1, (int) Math.ceil(span / ANGLE_STEP));
@@ -214,10 +184,7 @@ public final class BhVector {
                 int cFar0 = scaleAlpha(color, radialAlpha[band + 1] * edge0);
                 int cFar1 = scaleAlpha(color, radialAlpha[band + 1] * edge1);
                 int cNear1 = scaleAlpha(color, radialAlpha[band] * edge1);
-                // Wound to match vanilla's ColoredRectangleRenderState — (x0,y0) (x0,y1) (x1,y1) (x1,y0)
-                // with radius standing in for x and angle for y. The GUI pipeline leaves culling at the
-                // builder's default of ON, so the opposite winding is silently discarded by the GPU:
-                // the shapes vanish without a single error anywhere.
+                // wound to match vanilla's ColoredRectangleRenderState, (x0,y0) (x0,y1) (x1,y1) (x1
                 builder.quad(
                         cx + cos0 * rNear, cy + sin0 * rNear, cNear0,
                         cx + cos1 * rNear, cy + sin1 * rNear, cNear1,
@@ -227,7 +194,7 @@ public final class BhVector {
         }
     }
 
-    /** 1 inside the wedge, ramping to 0 across the feather band at either straight edge. */
+    // 1 inside the wedge, ramping to 0 across the feather band at either straight edge
     private static float edgeAlpha(double angle, double startAngle, double endAngle, double feather) {
         if (feather <= 0.0D) return 1f;
         double fromStart = (angle - startAngle) / feather;
@@ -235,7 +202,7 @@ public final class BhVector {
         return (float) (BhAnim.clamp01((float) fromStart) * BhAnim.clamp01((float) toEnd));
     }
 
-    /** ARGB with its alpha multiplied by {@code k} (0..1). */
+    // ARGB with its alpha multiplied by k (0..1)
     public static int scaleAlpha(int argb, float k) {
         int alpha = Math.round(((argb >>> 24) & 0xFF) * BhAnim.clamp01(k));
         return (alpha << 24) | (argb & 0xFFFFFF);

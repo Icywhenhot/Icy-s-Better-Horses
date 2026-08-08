@@ -40,6 +40,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Unique private final SimpleContainer bh_enderChestView = new SimpleContainer(BH_CHEST_SLOT_COUNT);
     @Unique private PlayerEnderChestContainer bh_playerEnderChest = null;
     @Unique private boolean bh_enderChestViewLoaded = false;
+    @Unique private @org.jetbrains.annotations.Nullable Player bh_menuPlayer = null;
 
     protected HorseInventoryMenuMixin(MenuType<?> type, int id) {
         super(type, id);
@@ -57,11 +58,15 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         this.bh_horse = horse;
         final SimpleContainer gear = data.bh_getGearContainer();
         final SimpleContainer chest = data.bh_getChestContainer();
+        this.bh_menuPlayer = playerInventory.player;
         this.bh_playerEnderChest = playerInventory.player.level().isClientSide()
                 ? null
                 : playerInventory.player.getEnderChestInventory();
         if (this.bh_isEnderChestGear(gear.getItem(GearSlot.CHEST.ordinal()))) {
             this.bh_loadEnderChestView();
+            if (playerInventory.player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+                icy.betterhorses.net.BhCriteria.fire(serverPlayer, icy.betterhorses.net.BhCriteria.ENDER_CHEST_GEAR);
+            }
         }
         final Container extraStorage = new Container() {
             private Container bh_active() {
@@ -133,14 +138,12 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             final GearSlot type = slot;
             this.addSlot(new Slot(gear, slot.ordinal(), BH_GEAR_SLOT_X + slot.ordinal() * 18, BH_GEAR_SLOT_Y) {
                 @Override public boolean mayPlace(ItemStack stack) {
-                    // A chest-laden cart is welded in: block swapping it for a stabilizer too, since
-                    // a swap would take the cart out without ever going through mayPickup.
+                    // a chest-laden cart is welded in: block swapping it for a stabilizer too
                     if (type == GearSlot.STABILIZER
                             && HorseInventoryMenuMixin.this.bh_isCartSlotLocked()) {
                         return false;
                     }
-                    // The stabilizer is horse-only; mules, donkeys and skeleton/zombie horses can't
-                    // wear it. The cart shares this slot and stays allowed on every equine.
+                    // the stabilizer is horse-only; mules, donkeys and skeleton/zombie horses can't wear
                     if (type == GearSlot.STABILIZER
                             && stack.is(icy.betterhorses.net.ModItems.HORSE_STABILIZER)
                             && !(horse instanceof net.minecraft.world.entity.animal.equine.Horse)) {
@@ -163,15 +166,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                     if (type == GearSlot.CHEST) {
                         HorseInventoryMenuMixin.this.bh_handleChestGearChange(previousStack, stack, data);
                     }
-                    // Refresh the player-inventory Y shift the moment the chest-gear slot is
-                    // populated. Critical for the client: at menu construction the client's gear
-                    // container is empty (the menu was built before the SetContent sync packet
-                    // arrived), so the construction-time bh_refreshLayout() can't see the chest
-                    // gear and leaves player inv at default Y. Without this hook, the chest slots
-                    // become active on sync but the player-inv slots don't shift until the *next*
-                    // render frame — in that window they overlap and findSlot returns the
-                    // player-inv slot beneath the chest panel (added first in the slot list),
-                    // routing clicks to the wrong container and producing ghost-item reverts.
+                    // refresh the player-inventory y shift the moment the chest-gear slot is populated
                     if (type == GearSlot.CHEST) {
                         HorseInventoryMenuMixin.this.bh_refreshLayout();
                     }
@@ -239,11 +234,15 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
     @Override
     public boolean bh_isCartSlotLocked() {
-        // Both flags are synced, so this answers the same on the client — the refused click never
-        // has to round-trip to the server to be predicted correctly.
+        // both flags are synced, so this answers the same on the client
         return this.bh_horse != null
                 && ((IHorseData) this.bh_horse).bh_hasCartGear()
                 && ((IHorseData) this.bh_horse).bh_hasCartChest();
+    }
+
+    @Override
+    public boolean bh_isSaddleSlotLocked() {
+        return this.bh_horse != null && ((IHorseData) this.bh_horse).bh_hasCartGear();
     }
 
     @Override
@@ -291,6 +290,9 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         }
         if (!wasEnderChest && isEnderChest) {
             this.bh_loadEnderChestView();
+            if (this.bh_menuPlayer instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+                icy.betterhorses.net.BhCriteria.fire(serverPlayer, icy.betterhorses.net.BhCriteria.ENDER_CHEST_GEAR);
+            }
         }
     }
 

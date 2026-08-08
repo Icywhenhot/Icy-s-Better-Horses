@@ -1,0 +1,33 @@
+{
+  "criteria": {
+    "bond_max": {
+      "conditions": {
+        "key": "bond_max"
+      },
+      "trigger": "icys-better-horses:milestone"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.icys-better-horses.ride_or_die.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "id": "minecraft:name_tag"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.icys-better-horses.ride_or_die.title"
+    }
+  },
+  "parent": "icys-better-horses:hold_your_horses",
+  "requirements": [
+    [
+      "bond_max"
+    ]
+  ],
+  "rewards": {
+    "experience": 100
+  }
+}

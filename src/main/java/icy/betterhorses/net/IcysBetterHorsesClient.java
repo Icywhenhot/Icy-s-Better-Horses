@@ -31,7 +31,7 @@ import java.util.UUID;
 
 public class IcysBetterHorsesClient implements ClientModInitializer {
 
-    // KeyMapping's category is a typed record; register our own so both binds group under "Icy's Better Horses" in Controls (label key: key.category.icys-better-horses.general).
+    // KeyMapping's category is a typed record; register our own so both binds group under "Icy's better
     private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
             Identifier.fromNamespaceAndPath("icys-better-horses", "general"));
     private static final double RADIAL_REACH = 12.0D;
@@ -40,7 +40,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
     public static KeyMapping RADIAL_KEY;
     public static KeyMapping MANAGE_KEY;
 
-    // Holding the call key fires OS key-repeat clicks; track the physical key edge so one press = one whistle.
+    // holding the call key fires OS key-repeat clicks
     private boolean callKeyWasDown = false;
 
     @Override
@@ -78,7 +78,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                         payload.success(),
                         payload.messageKey())));
 
-        // A roster from the previous world must not survive into the next one.
+        // a roster from the previous world must not survive into the next one
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> ClientHorseRoster.reset());
     }
 
@@ -95,7 +95,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
             }
         }
         callKeyWasDown = callKeyDown;
-        // Drain queued key-repeat clicks so they can't fire extra whistles.
+        // drain queued key-repeat clicks so they can't fire extra whistles
         while (CALL_KEY.consumeClick()) {}
 
         while (RADIAL_KEY.consumeClick()) {

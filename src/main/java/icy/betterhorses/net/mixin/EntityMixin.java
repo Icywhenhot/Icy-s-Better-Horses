@@ -41,15 +41,7 @@ public abstract class EntityMixin {
     @Unique private static final double BH_MOUNTED_STEP_HEIGHT_BONUS = 0.1D;
     @Unique private static final double BH_MOUNTED_BREAK_SPEED_BONUS = 5.0D;
 
-    /**
-     * Cart riders never suffocate.
-     *
-     * <p>{@code LivingEntity.baseTick} deals a heart of in-wall damage whenever
-     * {@link Entity#isInWall()} is true. The cart snaps to its horse rather than moving with
-     * collision, so backing into a wall or a fence shoves whoever is in the bed straight into the
-     * block — a wolf riding along would just start bleeding. Boats never do this because they stop
-     * against the block instead.</p>
-     */
+    // cart riders never suffocate
     @Inject(method = "isInWall", at = @At("HEAD"), cancellable = true)
     private void bh_cartRidersDoNotSuffocate(CallbackInfoReturnable<Boolean> cir) {
         if (((Entity) (Object) this).getVehicle() instanceof HorseCartEntity) {
@@ -68,7 +60,7 @@ public abstract class EntityMixin {
             return;
         }
 
-        // Track the ride here rather than in doPlayerRide — this hook fires for every mount path in 26.2.
+        // track the ride here rather than in doPlayerRide, this hook fires for every mount path in 26.2
         if (player.getUUID().equals(((IHorseData) horse).bh_getOwner())) {
             HorseTracker.setLastRidden(player.getUUID(), horse);
         }
@@ -112,7 +104,7 @@ public abstract class EntityMixin {
         }
     }
 
-    // Dismounting hands the horse back to itself: it wanders around the spot it was left at.
+    // dismounting hands the horse back to itself: it wanders around the spot it was left
     @Inject(method = "removeVehicle", at = @At("HEAD"))
     private void bh_wanderAfterDismount(CallbackInfo ci) {
         Entity self = (Entity) (Object) this;
@@ -125,7 +117,7 @@ public abstract class EntityMixin {
             return;
         }
 
-        // Also recorded here because taming completes mid-ride: the mount hook saw an unowned horse.
+        // also recorded here because taming completes mid-ride: the mount hook saw an unowned horse
         HorseTracker.setLastRidden(player.getUUID(), horse);
         data.bh_setWanderCenter(horse.blockPosition());
         data.bh_setCommand(HorseCommand.WANDER);
@@ -144,15 +136,25 @@ public abstract class EntityMixin {
             Vec3 location,
             CallbackInfoReturnable<InteractionResult> cir) {
         Entity self = (Entity) (Object) this;
-        if (self.level().isClientSide()
-                || !(self instanceof AbstractHorse horse)
-                || !bh_shouldBlockHorseSaddleShearing(horse, player, player.getItemInHand(hand))) {
+        if (self.level().isClientSide() || !(self instanceof AbstractHorse horse)) {
+            return;
+        }
+
+        ItemStack held = player.getItemInHand(hand);
+        // shears are the other way a saddle comes off, so the cart has to hold it on here too
+        boolean cartHitched = held.is(Items.SHEARS)
+                && !player.isSecondaryUseActive()
+                && ((IHorseData) horse).bh_hasCartGear()
+                && !horse.getItemBySlot(EquipmentSlot.SADDLE).isEmpty();
+        if (!cartHitched && !bh_shouldBlockHorseSaddleShearing(horse, player, held)) {
             return;
         }
 
         horse.playSound(SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
         if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_shear_owner"));
+            serverPlayer.sendSystemMessage(Component.translatable(cartHitched
+                    ? "message.icys-better-horses.saddle_cart_attached"
+                    : "message.icys-better-horses.not_shear_owner"));
         }
         cir.setReturnValue(InteractionResult.CONSUME);
     }

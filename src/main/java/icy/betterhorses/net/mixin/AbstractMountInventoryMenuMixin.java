@@ -22,10 +22,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * 1.21.11 moved mount shift-click logic up from {@code HorseInventoryMenu} to
- * {@link AbstractMountInventoryMenu}. Keep the upgraded-saddle gear/chest routes wired in there.
- */
+// 1.21.11 moved mount shift-click logic up from HorseInventoryMenu to AbstractMountInventoryMenu
 @Mixin(AbstractMountInventoryMenu.class)
 public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerMenu {
 
@@ -62,9 +59,12 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
             return;
         }
 
-        // Shift-clicking moves items without consulting mayPickup, so the chest-locked cart has to
-        // be turned away here as well as in the slot itself.
-        if (index == gearStartIndex + GearSlot.STABILIZER.ordinal() && layoutAccess.bh_isCartSlotLocked()) {
+        // shift-clicking moves items without consulting mayPickup, so anything a hitched cart holds
+        // shut has to be turned away here too
+        boolean lockedCart = index == gearStartIndex + GearSlot.STABILIZER.ordinal()
+                && layoutAccess.bh_isCartSlotLocked();
+        boolean lockedSaddle = index == 0 && layoutAccess.bh_isSaddleSlotLocked();
+        if (lockedCart || lockedSaddle) {
             cir.setReturnValue(ItemStack.EMPTY);
             return;
         }

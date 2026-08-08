@@ -70,9 +70,7 @@ public abstract class GuiMixin {
         int left = (scaledWidth - boxWidth) / 2;
         int top = BH_STATS_HUD_TOP;
 
-        // 26.2 no longer passes a GuiGraphicsExtractor into extractRenderState; the HUD now
-        // appends draw commands to the Gui's GuiRenderState. Build an extractor bound to that
-        // same render state so our HUD layers on top of vanilla's, exactly as before.
+        // 26.2 no longer passes a GuiGraphicsExtractor into extractRenderState
         GuiGraphicsExtractor gfx = new GuiGraphicsExtractor(this.minecraft, this.guiRenderState, scaledWidth, scaledHeight);
 
         gfx.fill(left, top, left + boxWidth, top + boxHeight, BH_STATS_HUD_BACKGROUND);

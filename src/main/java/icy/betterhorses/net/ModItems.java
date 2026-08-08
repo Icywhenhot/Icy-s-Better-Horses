@@ -25,7 +25,7 @@ public final class ModItems {
     public static final Item HORSE_HOOVES = register("horse_hooves_gear",
             new Item(itemProperties("horse_hooves_gear").stacksTo(1).enchantable(15)));
 
-    // Keep the original medkit id so existing worlds keep their saved item stacks.
+    // keep the original medkit id so existing worlds keep their saved item stacks
     public static final Item HORSE_MEDKIT = register("horse_medkit_gear",
             new Item(itemProperties("horse_medkit_gear").stacksTo(1)));
 
@@ -38,12 +38,12 @@ public final class ModItems {
     public static final Item HORSE_STABILIZER = register("horse_stabilizer_gear",
             new Item(itemProperties("horse_stabilizer_gear").stacksTo(1)));
 
-    // Shares the stabilizer gear slot; equipping it spawns the pulled cart entity behind the horse.
-    // Shown in-inventory/hand as a flat 2D icon; the placed cart entity keeps its 3D GeckoLib model.
+    // shares the stabilizer gear slot; equipping it spawns the pulled cart entity behind the horse,
+    // or right-click a block to stand one up in the world on its own
     public static final Item HORSE_CART = register("horse_cart_gear",
-            new Item(itemProperties("horse_cart_gear").stacksTo(1)));
+            new icy.betterhorses.net.item.HorseCartItem(itemProperties("horse_cart_gear").stacksTo(1)));
 
-    // Crafting component used to build the horse cart.
+    // crafting component used to build the horse cart
     public static final Item WHEEL = register("wheel",
             new Item(itemProperties("wheel")));
 
@@ -54,8 +54,7 @@ public final class ModItems {
                     .title(Component.translatable("itemGroup.icys-better-horses.stable_supplies"))
                     .icon(() -> new ItemStack(UPGRADED_SADDLE))
                     .displayItems((parameters, entries) -> {
-                        // The Stable Handbook (a Modonomicon book item) is injected into this tab
-                        // automatically via the book's "creative_tab" field.
+                        // the stable handbook (a modonomicon book item) is injected into this tab automatically via
                         entries.accept(UPGRADED_SADDLE);
                         entries.accept(HORSE_HOOVES);
                         entries.accept(HORSE_MEDKIT);

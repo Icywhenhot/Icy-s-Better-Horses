@@ -1,0 +1,29 @@
+{
+  "criteria": {
+    "ender_chest_gear": {
+      "conditions": {
+        "key": "ender_chest_gear"
+      },
+      "trigger": "icys-better-horses:milestone"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.icys-better-horses.pocket_dimension_four_legs.description"
+    },
+    "icon": {
+      "id": "minecraft:ender_chest"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.icys-better-horses.pocket_dimension_four_legs.title"
+    }
+  },
+  "parent": "icys-better-horses:all_tacked_up",
+  "requirements": [
+    [
+      "ender_chest_gear"
+    ]
+  ]
+}

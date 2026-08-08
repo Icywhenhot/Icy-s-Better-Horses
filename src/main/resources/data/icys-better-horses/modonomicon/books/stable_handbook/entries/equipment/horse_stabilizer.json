@@ -3,7 +3,9 @@
   "id": "icys-better-horses:equipment/horse_stabilizer",
   "category": "icys-better-horses:equipment",
   "name": "Horse Stabilizer",
-  "icon": { "id": "icys-better-horses:horse_stabilizer_gear" },
+  "icon": {
+    "id": "icys-better-horses:horse_stabilizer_gear"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -12,7 +14,11 @@
   "x": 4,
   "y": -1,
   "sort_number": 6,
-  "parents": [ { "entry": "icys-better-horses:equipment/canister" } ],
+  "parents": [
+    {
+      "entry": "icys-better-horses:equipment/canister"
+    }
+  ],
   "pages": [
     {
       "type": "modonomicon:crafting_recipe",
@@ -26,7 +32,7 @@
       "id": "info",
       "item": "icys-better-horses:horse_stabilizer_gear",
       "title": "Cliff Insurance",
-      "text": "Built for ravines and cliffs. During big falls it deploys, slows the descent, and can cancel fall damage entirely."
+      "text": "Built for ravines and cliffs. During big falls it deploys, slows the descent, and can cancel fall damage entirely.\n\nRight-click the horse holding the stabilizer to fit it, as long as it wears an Upgraded Saddle and that slot is empty. Horses only - mules, donkeys and the undead sort can't wear one."
     }
   ]
 }

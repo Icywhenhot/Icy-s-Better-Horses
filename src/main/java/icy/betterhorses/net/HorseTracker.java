@@ -13,20 +13,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-// Server-side registry of all loaded, owned horses, backed by HorseTrackerState for the bits that
-// must survive chunk unloads and restarts.
-//
-// Parallel-ticking mods (async, worldthreader) run entity ticks — and therefore mount/dismount,
-// taming, and entity load/unload callbacks that reach this class — on worker threads rather than the
-// server main thread. Two consequences that this class must respect:
-//   1. Never call MinecraftServer#overworld() off-thread: worldthreader guards it with an exclusive
-//      world-access lock, so an async worker calling it deadlocks against the world thread that would
-//      release it. We resolve the SavedData once at attach() and cache it instead.
-//   2. The shared collections are mutated concurrently, so they must be thread-safe.
+// server-side registry of all loaded, owned horses
 public final class HorseTracker {
 
     private static final Map<UUID, AbstractHorse> ownedHorses = new ConcurrentHashMap<>();
-    // Resolved once on the main thread at attach(); reused everywhere so no hot path calls overworld().
+    // resolved once on the main thread at attach(); reused everywhere so no hot path calls overworld()
     private static @Nullable HorseTrackerState cachedState;
 
     private HorseTracker() {}
@@ -36,7 +27,7 @@ public final class HorseTracker {
         IcysBetterHorses.LOGGER.info("[whistle] tracker attached: {}", cachedState.describe());
     }
 
-    // In-memory state must not leak into the next world when a singleplayer world is switched.
+    // in-memory state must not leak into the next world when a singleplayer world is switched
     public static void detach() {
         cachedState = null;
         ownedHorses.clear();
@@ -46,7 +37,7 @@ public final class HorseTracker {
         return cachedState;
     }
 
-    /** True for a leftover copy of a horse that has since been respawned elsewhere by the whistle. */
+    // true for a leftover copy of a horse that has since been respawned elsewhere by the whistle
     public static boolean isStale(AbstractHorse horse) {
         HorseTrackerState state = state();
         return state != null
@@ -63,23 +54,16 @@ public final class HorseTracker {
     }
 
     public static void unregister(AbstractHorse horse) {
-        // Two-arg remove: a stale copy being discarded must not evict the live horse's entry.
+        // two-arg remove: a stale copy being discarded must not evict the live horse's entry
         ownedHorses.remove(horse.getUUID(), horse);
         HorseTrackerState state = state();
         if (state == null || isStale(horse)) return;
 
-        // A plain chunk unload reports removalReason == null and isAlive() == true — the horse is
-        // NOT gone, it just left loaded memory. Only an explicit destroy (killed/discarded) means it
-        // can never come back. Crucially, a chunk unload must NEVER delete the respawn snapshot:
-        // parallel-ticking mods (async/worldthreader) can momentarily read the owner as null here
-        // (the load ran on another thread), and forgetting the snapshot on that misread is exactly
-        // what left owned horses un-whistleable after a restart. So on a plain unload we only ever
-        // refresh the snapshot for owned horses; we never forget. Explicit disown goes through
-        // disown() instead.
+        // a plain chunk unload reports removalReason == null and isAlive() == true, the horse is NOT gone
         Entity.RemovalReason reason = horse.getRemovalReason();
         boolean destroyed = (reason != null && reason.shouldDestroy()) || !horse.isAlive();
         if (destroyed) {
-            // Died or was discarded — no longer respawnable by the whistle.
+            // died or was discarded, no longer respawnable by the whistle
             state.forgetHorse(horse.getUUID());
             IcysBetterHorses.LOGGER.info("[whistle] forgot horse {} (destroyed, removalReason={})",
                     horse.getUUID(), reason);
@@ -90,11 +74,7 @@ public final class HorseTracker {
         }
     }
 
-    /**
-     * Explicit disown: the player gave the horse up, so drop it and its respawn snapshot. This is the
-     * only path that forgets an owned, living horse — a plain chunk unload never does, so a horse that
-     * merely wandered out of loaded chunks stays whistleable (see {@link #unregister}).
-     */
+    // explicit disown: the player gave the horse up, so drop it and its respawn snapshot
     public static void disown(AbstractHorse horse) {
         ownedHorses.remove(horse.getUUID(), horse);
         HorseTrackerState state = state();
@@ -103,7 +83,7 @@ public final class HorseTracker {
         IcysBetterHorses.LOGGER.info("[whistle] disowned horse {}", horse.getUUID());
     }
 
-    /** Drops a stored horse's snapshot without touching a live entity — used when disowning an unloaded horse. */
+    // drops a stored horse's snapshot without touching a live entity
     public static void forgetStoredHorse(UUID horseId) {
         HorseTrackerState state = state();
         if (state != null) {
@@ -178,7 +158,7 @@ public final class HorseTracker {
         }
     }
 
-    /** Queues a horse that was disowned while unloaded; it is released when its chunk next loads. */
+    // queues a horse that was disowned while unloaded; it is released when its chunk next loads
     public static void markPendingDisown(UUID horseId) {
         HorseTrackerState state = state();
         if (state != null) {
@@ -203,7 +183,7 @@ public final class HorseTracker {
         }
     }
 
-    // Called periodically so a crash (which skips unload events) still leaves reasonably fresh snapshots on disk.
+    // called periodically so a crash (which skips unload events) still leaves reasonably fresh snapshots
     public static void recordLoadedPositions() {
         HorseTrackerState state = state();
         if (state == null) return;

@@ -1,0 +1,29 @@
+{
+  "criteria": {
+    "own_horse": {
+      "conditions": {
+        "key": "own_horse"
+      },
+      "trigger": "icys-better-horses:milestone"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "background": "minecraft:gui/advancements/backgrounds/husbandry",
+    "description": {
+      "translate": "advancements.icys-better-horses.hold_your_horses.description"
+    },
+    "icon": {
+      "id": "minecraft:saddle"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.icys-better-horses.hold_your_horses.title"
+    }
+  },
+  "requirements": [
+    [
+      "own_horse"
+    ]
+  ]
+}

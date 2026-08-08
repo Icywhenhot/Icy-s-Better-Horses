@@ -8,13 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Client-side mirror of the player's horse roster, plus the most recent action result.
- *
- * <p>Failures are what the screens actually render: the button that was pressed flashes red and its
- * message shows for {@link #FLASH_MS}. Success just clears the flash — the follow-up roster sync is
- * the visible feedback.</p>
- */
+// client-side mirror of the player's horse roster, plus the most recent action result
 public final class ClientHorseRoster {
 
     public static final long FLASH_MS = 2600L;
@@ -33,7 +27,7 @@ public final class ClientHorseRoster {
 
     public static void setEntries(List<HorseRosterEntry> newEntries) {
         entries = List.copyOf(newEntries);
-        // Coats, ages and the roster itself can all have changed; rebuild previews on demand.
+        // coats, ages and the roster itself can all have changed; rebuild previews on demand
         HorsePreviewCache.clear();
     }
 
@@ -78,7 +72,7 @@ public final class ClientHorseRoster {
         flashExpiresAt = 0L;
     }
 
-    /** True while this specific button should be drawn in the error colour. */
+    // true while this specific button should be drawn in the error colour
     public static boolean isFlashing(UUID horseId, HorseManageAction action) {
         return isFlashing() && action == flashAction && horseId.equals(flashHorseId);
     }
@@ -100,15 +94,12 @@ public final class ClientHorseRoster {
         return isFlashing() ? flashMessageKey : "";
     }
 
-    /** Milliseconds since the current flash started, or -1 when nothing is flashing. Drives the shake. */
+    // milliseconds since the current flash started, or -1 when nothing is flashing
     public static long flashElapsedMs() {
         return isFlashing() ? FLASH_MS - (flashExpiresAt - System.currentTimeMillis()) : -1L;
     }
 
-    /**
-     * True exactly once, for the screen that is waiting on this specific action to go through — the
-     * horse info screen uses it to close itself after the horse it was describing has been let go.
-     */
+    // true exactly once, for the screen that is waiting on this specific action to go through
     public static boolean consumeSuccess(UUID horseId, HorseManageAction action) {
         if (action != successAction || !horseId.equals(successHorseId)) {
             return false;
@@ -118,7 +109,7 @@ public final class ClientHorseRoster {
         return true;
     }
 
-    /** Called on disconnect so a new world doesn't inherit the previous one's roster. */
+    // called on disconnect so a new world doesn't inherit the previous one's roster
     public static void reset() {
         entries = List.of();
         HorsePreviewCache.clear();

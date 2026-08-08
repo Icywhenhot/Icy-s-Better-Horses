@@ -1,11 +1,11 @@
 package icy.betterhorses.net;
 
-/** What the horse management screen can do to a horse. */
+// what the horse management screen can do to a horse
 public enum HorseManageAction {
     WHISTLE,
     SEND_HOME,
     DISOWN,
-    /** Makes this the horse the whistle keybind calls, until the player picks another. */
+    // makes this the horse the whistle keybind calls, until the player picks another
     SET_ACTIVE;
 
     public static HorseManageAction fromId(int id) {

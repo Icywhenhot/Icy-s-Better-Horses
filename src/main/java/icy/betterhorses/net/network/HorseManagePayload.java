@@ -6,7 +6,7 @@ import net.minecraft.resources.Identifier;
 
 import java.util.UUID;
 
-/** Client → server: run one of the management actions on a specific owned horse. */
+// client → server: run one of the management actions on a specific owned horse
 public record HorseManagePayload(UUID horseId, int actionOrdinal) implements CustomPacketPayload {
 
     public static final Type<HorseManagePayload> TYPE =

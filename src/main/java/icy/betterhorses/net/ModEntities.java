@@ -15,13 +15,13 @@ public final class ModEntities {
             "horse_cart",
             EntityType.Builder.of(HorseCartEntity::new, MobCategory.MISC)
                     .sized(HorseCartEntity.WIDTH, HorseCartEntity.HEIGHT)
-                    // Tight tracking so the cart stays glued to the horse with minimal sync lag.
+                    // tight tracking so the cart stays glued to the horse with minimal sync lag
                     .clientTrackingRange(11)
                     .updateInterval(1)
                     .build(key("horse_cart")));
 
     public static void init() {
-        // Registration happens in the static field initializer; touching the class triggers it.
+        // registration happens in the static field initializer; touching the class triggers
     }
 
     private static EntityType<HorseCartEntity> register(String path, EntityType<HorseCartEntity> type) {

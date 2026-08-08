@@ -19,14 +19,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(BlockBehaviour.BlockStateBase.class)
 public abstract class LeafPassthroughMixin {
 
-    // getBlock() is directly on BlockBehaviour.BlockStateBase — safe to @Shadow
+    // getBlock() is directly on BlockBehaviour.BlockStateBase, safe to @Shadow
     @Shadow public abstract net.minecraft.world.level.block.Block getBlock();
 
-    /**
-     * Makes leaf blocks have no collision when the entity interacting is a horse
-     * or a player/entity riding a horse. Runs on both client and server so
-     * client-side movement prediction also skips leaves.
-     */
+    // makes leaf blocks have no collision when the entity interacting is a horse or a player/entity
     @Inject(
         method = "getCollisionShape(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/shapes/CollisionContext;)Lnet/minecraft/world/phys/shapes/VoxelShape;",
         at = @At("HEAD"), cancellable = true
@@ -36,7 +32,7 @@ public abstract class LeafPassthroughMixin {
         if (!(getBlock() instanceof LeavesBlock)) return;
 
         if (!(context instanceof EntityCollisionContext ecc)) return;
-        Entity entity = ecc.getEntity(); // returns Entity directly in 1.21
+        Entity entity = ecc.getEntity(); // returns entity directly in 1.21
         if (entity == null) return;
 
         boolean horseMounted = entity instanceof AbstractHorse

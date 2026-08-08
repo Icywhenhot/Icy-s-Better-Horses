@@ -1,6 +1,7 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhCriteria;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.HorseGender;
@@ -69,7 +70,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Shadow
     protected SimpleContainer inventory;
 
-    // Vanilla has setOwner(LivingEntity) but no way to clear it; bh_disown() needs to null it out.
+    // vanilla has setOwner(LivingEntity) but no way to clear it; bh_disown() needs to null it out
     @Shadow
     private EntityReference<LivingEntity> owner;
 
@@ -85,13 +86,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique
     private static final EntityDataAccessor<Integer> BH_GEAR_FLAGS_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
-    // The stabilizer slot is shared with the horse cart; the gear-flags bitmask only tells us the
-    // slot is occupied, so this syncs which of the two it holds (true = cart) for client visuals.
+    // the stabilizer slot is shared with the horse cart
     @Unique
     private static final EntityDataAccessor<Boolean> BH_CART_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
-    // Whether the pulled cart carries a chest. Synced because the cart renderer hides/shows the
-    // chest bone from it and the horse GUI locks the cart's gear slot while it is set.
+    // whether the pulled cart carries a chest
     @Unique
     private static final EntityDataAccessor<Boolean> BH_CART_CHEST_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
@@ -107,14 +106,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique
     private static final EntityDataAccessor<Boolean> BH_BREED_MIXED_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
-    // 26.1.2 has no OPTIONAL_UUID serializer, so sync the owner UUID as a String ("" = unowned); the client only needs it to compare against the local player.
+    // 26.1.2 has no OPTIONAL_UUID serializer, so sync the owner UUID as a string ("" = unowned)
     @Unique
     private static final EntityDataAccessor<String> BH_OWNER_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.STRING);
 
-    // volatile: parallel-ticking mods (async/worldthreader) read the owner from worker threads
-    // (entity load/unload, tick). Without it, an unregister could read a stale null for a horse whose
-    // owner was written on the loading thread, and HorseTracker would forget its whistle snapshot.
+    // volatile: parallel-ticking mods (async/worldthreader) read the owner from worker threads (entity
     @Unique private volatile @Nullable UUID bh_owner = null;
     @Unique private HorseCommand bh_command = HorseCommand.FOLLOW;
     @Unique private @Nullable BlockPos bh_home = null;
@@ -133,19 +130,15 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     };
     @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(27);
-    // Storage for the chest mounted on the pulled cart: a double chest's worth, since the cart is
-    // the mod's bulk-hauling option. Kept here rather than on the cart entity, which is never
-    // saved — see IHorseData#bh_hasCartChest.
+    // storage for the chest mounted on the pulled cart: a double chest's worth
     @Unique private static final int BH_CART_CHEST_SIZE = 54;
     @Unique private final SimpleContainer bh_cartChestContainer = new SimpleContainer(BH_CART_CHEST_SIZE);
     @Unique private boolean bh_hadUpgradedSaddle = false;
     @Unique private boolean bh_fedGoldenAppleThisTick = false;
     @Unique private @Nullable Vec3 bh_lastFrostWalkerPos = null;
-    // Transient handle to the pulled cart entity (never saved). Reconciled each server tick from
-    // whether the cart item occupies the shared stabilizer slot; see bh_tickCart.
+    // transient handle to the pulled cart entity (never saved)
     @Unique private @Nullable HorseCartEntity bh_cartEntity = null;
-    // Freeze bookkeeping: a cart-hitched horse parks in place (position + facing) until a player
-    // takes the bench and drives it. See bh_freezeUnriddenCartHorse.
+    // freeze bookkeeping: a cart-hitched horse parks in place (position + facing) until a player takes
     @Unique private boolean bh_cartFrozen = false;
     @Unique private float bh_cartFrozenYaw = 0.0F;
     @Unique private @Nullable Vec3 bh_cartFrozenPos = null;
@@ -157,22 +150,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     private static final Identifier BH_JUMP_ID =
             Identifier.fromNamespaceAndPath("icys-better-horses", "bond_jump");
     @Unique private static final float BH_HOOVES_FALL_DAMAGE_MULTIPLIER = 0.5F;
+    @Unique private static final double BH_SPEED_DISPLAY_FACTOR = 43.2D;
     @Unique private static final double BH_STABILIZER_HALF_OPEN_DESCENT_SPEED = -0.35D;
     @Unique private static final double BH_STABILIZER_MAX_DESCENT_SPEED = -0.125D;
     @Unique private static final double BH_STABILIZER_SMOOTHING = 0.35D;
     @Unique private static final double BH_STABILIZER_HALF_OPEN_SMOOTHING = 0.2D;
-    // Horse bbox is 1.39625 wide (±0.698 from center). The 2nd-passenger player hitbox is
-    // ±0.3 around their attachment point, so any rear offset more negative than -0.398 pushes
-    // the rear of their hitbox past the horse's bbox — when the horse backs into a wall, the
-    // rider clips into the block and takes in-wall (suffocation) damage. -0.35 keeps the rear
-    // edge at -0.65, leaving ~0.05 of buffer against the horse's rear edge. Front offset is
-    // mirrored for visual balance and to keep the 1st passenger symmetric with the 2nd.
+    // horse bbox is 1.39625 wide (±0.698 from center)
     @Unique private static final double BH_FRONT_PASSENGER_Z_OFFSET = 0.35D;
     @Unique private static final double BH_REAR_PASSENGER_Z_OFFSET = -0.35D;
     @Unique private static final float BH_FREE_CAMERA_ANGLE_THRESHOLD = 90.0F;
-    // Vanilla water drag scales horizontal velocity by ~0.8 per tick on ridden horses.
-    // 1.125 ≈ 0.9 / 0.8 — leaves the horse with half of vanilla's water slowdown rather
-    // than overriding it entirely (1.6 produced a net speed-up, which felt unnatural).
+    // vanilla water drag scales horizontal velocity by ~0.8 per tick on ridden horses
     @Unique private static final double BH_WATER_HORIZONTAL_BOOST = 1.125D;
     @Unique private static final double BH_FROST_WALKER_SAMPLE_STEP = 0.75D;
     @Unique private static final double BH_FROST_WALKER_RESET_DISTANCE = 8.0D;
@@ -266,9 +253,23 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public void bh_setBond(int level) {
+        int previous = this.bh_bond;
         this.bh_bond = Math.max(0, Math.min(100, level));
         this.entityData.set(BH_BOND_SYNCED, this.bh_bond);
         bh_applyBondAttributes();
+        if (previous < 100 && this.bh_bond >= 100) {
+            bh_awardOwner(BhCriteria.BOND_MAX);
+        }
+    }
+
+    @Unique
+    private void bh_awardOwner(String key) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.level().isClientSide()) return;
+        UUID owner = this.bh_getOwner();
+        net.minecraft.server.MinecraftServer server = self.level().getServer();
+        if (owner == null || server == null) return;
+        BhCriteria.fire(server.getPlayerList().getPlayer(owner), key);
     }
 
     @Override
@@ -369,8 +370,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     public void bh_onUpgradedSaddleRemoved(ItemStack previousSaddle) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!(self.level() instanceof ServerLevel serverLevel)) return;
-        // Before the gear container is emptied: this takes the cart item with it, so the chest
-        // riding on that cart has to come off too rather than be stranded on a cartless horse.
+        // before the gear container is emptied: this takes the cart item
         bh_dropCartChest();
         bh_dropContainerContents(self, serverLevel, bh_gearContainer);
         bh_dropChestContents();
@@ -378,8 +378,13 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Override
+    public @Nullable HorseCartEntity bh_getCartEntity() {
+        return bh_cartEntity;
+    }
+
+    @Override
     public boolean bh_hasCartChest() {
-        // Synced, so this reads correctly on the client too (the containers themselves are not).
+        // synced, so this reads correctly on the client too (the containers themselves are not)
         return this.entityData.get(BH_CART_CHEST_SYNCED);
     }
 
@@ -419,8 +424,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     public void bh_disown() {
         AbstractHorse self = (AbstractHorse) (Object) this;
         self.ejectPassengers();
-        // Vanilla only exposes setOwner(LivingEntity), so the reference is cleared directly; leaving a
-        // stale one behind would keep the horse "remembering" a player it no longer belongs to.
+        // vanilla only exposes setOwner(LivingEntity), so the reference is cleared directly
         this.owner = null;
         self.setTamed(false);
         bh_setBond(0);
@@ -428,7 +432,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         bh_setHitchpostPos(null);
         bh_setWanderCenter(self.blockPosition());
         bh_setCommand(HorseCommand.WANDER);
-        // Last: this is what drops the whistle snapshot, so everything above is already applied.
+        // last: this is what drops the whistle snapshot, so everything above is already applied
         bh_setOwner(null);
     }
 
@@ -485,9 +489,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         bh_bond = input.getIntOr("BH_Bond", 0);
         bh_generation = input.getIntOr("BH_Generation", 0);
         this.entityData.set(BH_BOND_SYNCED, bh_bond);
-        // Pre-existing horses (saved before this flag existed) that already have bond should
-        // be treated as having received their first-rename bond, so reloading and renaming
-        // doesn't reopen the exploit. Brand-new horses (bond == 0) start with it unconsumed.
+        // pre-existing horses (saved before this flag existed) that already have bond should be treated
         bh_nameTagBondReceived = input.getIntOr("BH_NameTagBondGiven", bh_bond > 0 ? 1 : 0) != 0;
         bh_home = input.read("BH_Home", BlockPos.CODEC).orElse(null);
         bh_wanderCenter = input.read("BH_WanderCenter", BlockPos.CODEC).orElse(null);
@@ -523,8 +525,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             this.entityData.set(BH_BREED_SYNCED, savedBreed.get());
             this.entityData.set(BH_BREED_MIXED_SYNCED, input.getBooleanOr("BH_BreedMixed", false));
         } else {
-            // Pre-existing horse from before this feature existed — infer the breed from the coat
-            // the horse already wears (preserve appearance) instead of randomizing.
+            // pre-existing horse from before this feature existed
             bh_assignBreedPreservingCoat();
         }
     }
@@ -535,16 +536,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                                         net.minecraft.world.entity.EntitySpawnReason reason,
                                         @Nullable net.minecraft.world.entity.SpawnGroupData groupData,
                                         CallbackInfoReturnable<net.minecraft.world.entity.SpawnGroupData> cir) {
-        // Always randomize gender on fresh spawn — default int 0 doesn't distinguish "unset" from MALE.
+        // always randomize gender on fresh spawn, default int 0 doesn't distinguish "unset" from MALE
         this.entityData.set(BH_GENDER_SYNCED, this.random.nextBoolean() ? 0 : 1);
 
         if (this.bh_getBreed() != HorseBreed.UNKNOWN_SPECIES) {
             return;
         }
 
-        // Real horses are handled by HorseFinalizeSpawnMixin so we can read the original
-        // BhHorseGroupData passed from sibling spawns (vanilla Horse.finalizeSpawn clobbers
-        // its groupData arg before super, so we can't see the wrapper from here).
+        // real horses are handled by HorseFinalizeSpawnMixin so we can read the original BhHorseGroupData
         AbstractHorse self = (AbstractHorse) (Object) this;
         HorseBreed species = HorseBreed.speciesFor(self);
         if (species != null) {
@@ -571,7 +570,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
         this.entityData.set(BH_BREED_SYNCED, picked.ordinal());
         this.entityData.set(BH_BREED_MIXED_SYNCED, false);
-        // Intentionally do NOT touch the coat — pre-existing horses keep the look they had.
+        // intentionally do NOT touch the coat, pre-existing horses keep the look they had
     }
 
     @Unique
@@ -616,7 +615,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         return new BlockPos(x.get(), y.get(), z.get());
     }
 
-    /** Codec-friendly slot/stack pair used for {@code BH_Gear}/{@code BH_Chest} list entries. */
+    // codec-friendly slot/stack pair used for BH_Gear/BH_Chest list entries
     @Unique
     public record BhSlotEntry(int slot, ItemStack stack) {
         public static final com.mojang.serialization.Codec<BhSlotEntry> CODEC =
@@ -632,23 +631,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.bh_syncGearFlags();
     }
 
-    /**
-     * 1.21.11 dropped {@code AbstractHorse.containerChanged(Container)} (the old
-     * {@code ContainerListener} hook). Watch for upgraded-saddle removal from a tick poll instead.
-     * Cheap: one item-slot check per horse per tick on the server.
-     */
+    // 1.21.11 dropped AbstractHorse.containerChanged(Container) (the old ContainerListener hook)
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_pollUpgradedSaddleRemoval(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (self.level().isClientSide()) {
             return;
         }
-        // Skip when the horse is being removed for a dimension change. The portal teleport runs
-        // inside this same tick (baseTick -> handlePortal), and Mob.removeAfterChangingDimensions
-        // zeroes every equipment slot — including the saddle — on the OLD entity. Without this
-        // guard the poll would see the now-empty saddle slot, mistake it for a player removing the
-        // saddle, and dump the gear + chest containers onto the ground in the old dimension. The
-        // new entity already received copies via restoreFrom, so that produced duplicate drops.
+        // skip when the horse is being removed for a dimension change
         if (self.isRemoved()) {
             return;
         }
@@ -657,6 +647,19 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             this.bh_onUpgradedSaddleRemoved(ItemStack.EMPTY);
         }
         this.bh_hadUpgradedSaddle = hasUpgradedSaddle;
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void bh_trackTopSpeed(CallbackInfo ci) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.level().isClientSide() || self.tickCount % 20 != 0) {
+            return;
+        }
+        if (!(self.getControllingPassenger() instanceof ServerPlayer rider)) {
+            return;
+        }
+        long blocksPerSecond = Math.round(self.getAttributeValue(Attributes.MOVEMENT_SPEED) * BH_SPEED_DISPLAY_FACTOR);
+        BhCriteria.fire(rider, BhCriteria.TOP_SPEED, (int) blocksPerSecond);
     }
 
     @Inject(method = "fedFood", at = @At("HEAD"))
@@ -674,7 +677,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
             this.bh_setBond(this.bh_getBond() + 2);
 
-            // If horse just entered love mode and a same-gender horse is already in love nearby, cancel and warn.
+            // if horse just entered love mode and a same-gender horse is already in love nearby, cancel and warn
             if (self.isInLove()) {
                 HorseGender myGender = this.bh_getGender();
                 java.util.List<AbstractHorse> nearby = self.level().getEntitiesOfClass(
@@ -694,14 +697,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     }
 
-    /**
-     * Block non-owners from becoming the primary rider of an owned horse. A non-owner is allowed
-     * to mount only when the owner is already the primary rider (the 2-rider scenario the
-     * second-passenger feature enables). Wild/untamed horses fall through to vanilla so taming
-     * still works. We hook {@code doPlayerRide} rather than {@code mobInteract} because vanilla,
-     * commands like {@code /ride}, and some other mods all funnel through this method — gating
-     * here covers every path. Server-side only: clients don't have authoritative owner state.
-     */
+    // block non-owners from becoming the primary rider of an owned horse
     @Inject(method = "doPlayerRide", at = @At("HEAD"), cancellable = true)
     private void bh_gateOwnerOnlyMount(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -713,21 +709,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         if (player instanceof ServerPlayer serverPlayer) {
             serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_owner"));
         }
-        // Belt-and-suspenders force-eject — covers the case where another mod/path already
-        // attached the player as a passenger before our gate ran, or where the client
-        // optimistically predicted a mount. Idempotent if they aren't actually riding.
+        // belt-and-suspenders force-eject, covers the case where another mod/path already attached the player
         if (player.getVehicle() == self) {
             player.stopRiding();
         }
         ci.cancel();
     }
 
-    /**
-     * Catch-all: if at any tick the primary rider isn't the owner of an owned horse, eject
-     * every passenger. Covers owner-dismount-while-friend-was-secondary (friend slides into the
-     * primary slot), forced mounts from plugins/datapacks, and any future path we don't gate
-     * explicitly at mount time. Cheap — only runs when the horse is being ridden.
-     */
+    // catch-all: if at any tick the primary rider isn't the owner of an owned horse, eject every passenger
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_enforceOwnerPrimaryRider(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -760,8 +749,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     }
 
-    // Last-ridden tracking lives in EntityMixin's startRiding hook: doPlayerRide's TAIL never sees
-    // the player mounted in 26.2, so a hook here silently records nothing.
+    // last-ridden tracking lives in EntityMixin's startRiding hook
 
     @Inject(
             method = "doPlayerRide",
@@ -769,16 +757,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             cancellable = true)
     private void bh_rotateHorseInsteadOfPlayer(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        // Owner data only exists server-side. Let the client run vanilla's doPlayerRide body,
-        // which performs the usual non-authoritative rotation work but leaves the real mount
-        // decision to the server. Starting the ride here on the client caused the "message +
-        // angry sound, but still mounted" desync when the server rejected non-owners.
+        // owner data only exists server-side
         if (self.level().isClientSide()) {
             return;
         }
 
-        // Defense in depth: even if HEAD-cancel from bh_gateOwnerOnlyMount didn't suppress
-        // this injector for some mixin-ordering reason, never mount a non-owner here.
+        // defense in depth: even if HEAD-cancel from bh_gateOwnerOnlyMount didn't suppress this injector
         UUID owner = this.bh_getOwner();
         if (BhConfig.horseExclusivityEnabled()
                 && owner != null
@@ -810,6 +794,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.bh_setOwner(player.getUUID());
         if (player instanceof ServerPlayer serverPlayer) {
             serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.claimed"));
+            BhCriteria.fire(serverPlayer, BhCriteria.OWN_HORSE);
+            BhCriteria.fireBreed(serverPlayer, this.bh_getBreed());
+            BhCriteria.fireOwnedHorseCount(serverPlayer);
         }
     }
 
@@ -830,6 +817,50 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_inventory_owner"));
         }
         ci.cancel();
+    }
+
+    // right-click a horse holding a cart or a stabilizer to fit it, rather than opening the screen and
+    // dragging it into the slot. only when there's an upgraded saddle to hang it off and the shared
+    // slot is free, so this never quietly swaps out gear that's already on
+    @Inject(method = "mobInteract", at = @At("HEAD"), cancellable = true)
+    private void bh_equipGearFromHand(
+            net.minecraft.world.entity.player.Player player,
+            net.minecraft.world.InteractionHand hand,
+            CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        ItemStack held = player.getItemInHand(hand);
+        boolean cart = held.is(ModItems.HORSE_CART);
+        boolean stabilizer = held.is(ModItems.HORSE_STABILIZER);
+        if ((!cart && !stabilizer) || player.isSecondaryUseActive()) {
+            return;
+        }
+        if (!this.bh_hasUpgradedSaddle() || !bh_gearContainer.getItem(GearSlot.STABILIZER.ordinal()).isEmpty()) {
+            return;
+        }
+        // the stabilizer is horse-only; mules, donkeys and skeleton/zombie horses can only take a cart
+        if (stabilizer && !(self instanceof Horse)) {
+            return;
+        }
+        if (self.level().isClientSide()) {
+            cir.setReturnValue(net.minecraft.world.InteractionResult.SUCCESS);
+            return;
+        }
+        // same gate as opening the horse's inventory: fitting gear is handling its gear
+        UUID owner = this.bh_getOwner();
+        if (BhConfig.horseExclusivityEnabled() && owner != null && !owner.equals(player.getUUID())) {
+            self.playSound(SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
+            if (player instanceof ServerPlayer serverPlayer) {
+                serverPlayer.sendSystemMessage(
+                        Component.translatable("message.icys-better-horses.not_inventory_owner"));
+            }
+            cir.setReturnValue(net.minecraft.world.InteractionResult.CONSUME);
+            return;
+        }
+
+        bh_gearContainer.setItem(GearSlot.STABILIZER.ordinal(), held.copyWithCount(1));
+        held.consume(1, player);
+        self.playSound(SoundEvents.HORSE_SADDLE.value(), 1.0F, 1.0F);
+        cir.setReturnValue(net.minecraft.world.InteractionResult.CONSUME);
     }
 
     @Inject(method = "mobInteract", at = @At("HEAD"), cancellable = true)
@@ -904,12 +935,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.bh_setStabilizerState(state);
     }
 
-    /**
-     * Keeps the pulled cart entity in sync with the shared stabilizer/cart gear slot: spawns a cart
-     * bound to this horse when the cart item is equipped and none is live, and discards it when the
-     * item is removed. The cart is derived state (never saved), so on chunk reload this simply
-     * re-spawns it. Cheap: one item check per horse per tick on the server.
-     */
+    // keeps the pulled cart entity in sync with the shared stabilizer/cart gear slot
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_tickCart(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -920,10 +946,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         boolean wantsCart = ((IHorseData) this).bh_hasCartGear();
         boolean hasCart = bh_cartEntity != null && bh_cartEntity.isAlive() && !bh_cartEntity.isRemoved();
 
-        // Safety net for the "no cart, but still flagged as carrying its chest" state. The GUI slot
-        // refuses to give the cart item back while a chest is on it, so reaching here means the item
-        // left by some route we don't control (another mod, a command, creative middle-click); set
-        // the chest and its contents down rather than leaving them unreachable on a cartless horse.
+        // safety net for the "no cart, but still flagged as carrying its chest" state
         if (!wantsCart) {
             bh_dropCartChest();
         }
@@ -938,12 +961,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     }
 
-    /**
-     * A hitched cart turns the horse into a parked wagon: with no player driving, it holds its
-     * position and facing so an unmanned cart never wanders off or spins in place. As soon as a
-     * player takes the bench (any player riding the horse), it moves under full vanilla control
-     * again. Server-side authority; the pinned transform syncs to clients normally.
-     */
+    // a hitched cart turns the horse into a parked wagon: with no player driving
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_freezeUnriddenCartHorse(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -970,7 +988,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             bh_cartFrozenPos = self.position();
         }
 
-        // Pin the horizontal position (gravity still settles it vertically); kill horizontal/upward drift.
+        // pin the horizontal position (gravity still settles it vertically); kill horizontal/upward drift
         if (bh_cartFrozenPos != null) {
             self.setPos(bh_cartFrozenPos.x, self.getY(), bh_cartFrozenPos.z);
         }
@@ -982,7 +1000,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         self.yya = 0.0F;
         self.zza = 0.0F;
 
-        // Lock facing so AI targets can't turn it.
+        // lock facing so AI targets can't turn
         float yaw = bh_cartFrozenYaw;
         self.setYRot(yaw);
         self.yRotO = yaw;
@@ -1077,6 +1095,13 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             this.bh_setStabilizerState(landingState);
             this.fallDistance = 0.0D;
             cir.setReturnValue(false);
+            if (!self.level().isClientSide()) {
+                for (Entity passenger : self.getIndirectPassengers()) {
+                    if (passenger instanceof ServerPlayer serverPlayer) {
+                        BhCriteria.fire(serverPlayer, BhCriteria.STABILIZER_LANDING, (int) distance);
+                    }
+                }
+            }
             return;
         }
 
@@ -1135,8 +1160,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             CallbackInfoReturnable<Vec3> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
 
-        // With a cart hitched, riders sit on the cart's bench instead of on the horse's back. They
-        // stay passengers of the horse, so the driver keeps full vanilla control of it.
+        // with a cart hitched, riders sit on the cart's bench instead of on the horse's back
         if (((IHorseData) this).bh_hasCartGear()) {
             cir.setReturnValue(
                     HorseCartEntity.benchSeatOffset(bh_benchSeatIndex(self, passenger), self.getYRot()));
@@ -1182,17 +1206,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Override
     protected boolean canAddPassenger(Entity passenger) {
         java.util.List<Entity> passengers = this.getPassengers();
-        // A hitched cart's bench physically seats two, so it grants the second seat on its own.
+        // a hitched cart's bench physically seats two, so it grants the second seat on its own
         boolean multiRidingEnabled = BhConfig.multiRidingEnabled() || ((IHorseData) this).bh_hasCartGear();
         boolean horseExclusivityEnabled = BhConfig.horseExclusivityEnabled();
         if (passengers.size() >= (multiRidingEnabled ? 2 : 1)) {
             return false;
         }
 
-        // Cargo riding shotgun on a cart's bench. Allowed only once a player holds the reins, so the
-        // animal can never land in slot 0: vanilla hands control to the first passenger and only if
-        // it is a player, and a sheep sat there would leave the horse unsteerable. The ownership
-        // rules below are about who may *ride* a horse and have nothing to say about livestock.
+        // cargo riding shotgun on a cart's bench
         if (!(passenger instanceof net.minecraft.world.entity.player.Player)) {
             return ((IHorseData) this).bh_hasCartGear()
                     && !passengers.isEmpty()
@@ -1224,11 +1245,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         return passengers.get(0).getUUID().equals(owner);
     }
 
-    /**
-     * Which bench seat a passenger sits in. Deliberately not the raw passenger index: cargo always
-     * takes the seat beside the driver, never the driver's own, so an animal doesn't slide over and
-     * sit behind the reins the moment the player hops off.
-     */
+    // which bench seat a passenger sits
     @Unique
     private static int bh_benchSeatIndex(AbstractHorse horse, Entity passenger) {
         if (!(passenger instanceof net.minecraft.world.entity.player.Player)) {
@@ -1246,14 +1263,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         return Math.min(seat, 1);
     }
 
-    /**
-     * Keeps a player at the reins when cargo is riding along on the bench.
-     *
-     * <p>Vanilla only hands control to the <i>first</i> passenger, and only when that passenger is a
-     * player. Cargo can only board behind a driver, but the driver can then dismount and leave the
-     * animal as passenger zero — at which point the horse would answer to nobody until someone
-     * emptied the seat. Looking past the animal for a player keeps the cart drivable.</p>
-     */
+    // keeps a player at the reins when cargo is riding along on the bench
     @Inject(method = "getControllingPassenger", at = @At("RETURN"), cancellable = true)
     private void bh_keepPlayerAtTheReins(CallbackInfoReturnable<LivingEntity> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -1322,9 +1332,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Unique
     private boolean bh_hasStabilizerGear() {
-        // The stabilizer slot is shared with the horse cart; only the stabilizer item enables the
-        // gliding/landing behavior — a cart in the slot must not deploy wings. bh_hasStabilizerItem
-        // reads synced state, so this is correct on both client and server.
+        // the stabilizer slot is shared with the horse cart
         return BhConfig.stabilizerEnabled() && ((IHorseData) this).bh_hasStabilizerItem();
     }
 
@@ -1452,7 +1460,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public boolean bh_hasCartGear() {
-        // Read the synced flag so this is correct on both sides (the gear container isn't synced).
+        // read the synced flag so this is correct on both sides (the gear container isn't synced)
         return this.entityData.get(BH_CART_SYNCED);
     }
 

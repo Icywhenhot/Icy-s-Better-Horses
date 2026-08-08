@@ -23,29 +23,17 @@ import java.util.HashSet;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Stand-in horses for the management screen's preview pane.
- *
- * <p>Most of a player's horses are resting in chunks the client has never seen, so there is no real
- * entity to draw. Instead we build a throwaway client-side horse from the handful of cosmetic fields
- * the roster carries (entity type, coat, markings, baby) and keep it cached per horse — these are
- * never added to the world, they only ever exist to be handed to the GUI entity renderer.</p>
- */
+// stand-in horses for the management screen's preview pane
 public final class HorsePreviewCache {
 
     private static final Map<UUID, AbstractHorse> cache = new HashMap<>();
 
-    /**
-     * 26.2 leaves an entity's id at 0 until it is added to a level, and {@code Entity.getId()} throws
-     * on that sentinel — which the GUI entity renderer hits while resolving equipment item models.
-     * Preview horses never join a level, so they get ids from here instead: negative, so they can
-     * never collide with the positive ids the server hands out to real entities.
-     */
+    // 26.2 leaves an entity's id at 0 until it is added to a level
     private static final AtomicInteger previewIds = new AtomicInteger();
 
     private HorsePreviewCache() {}
 
-    /** Previews that threw while rendering; the pane falls back to a placeholder for these. */
+    // previews that threw while rendering; the pane falls back to a placeholder for these
     private static final Set<UUID> broken = new HashSet<>();
 
     public static @Nullable AbstractHorse getOrBuild(HorseRosterEntry entry) {
@@ -61,11 +49,7 @@ public final class HorsePreviewCache {
         return built;
     }
 
-    /**
-     * A preview horse is a synthetic entity handed to the full entity render pipeline, which other
-     * mods wrap. If one of them chokes on it, drop that preview rather than taking the game down with
-     * a crash on a management screen.
-     */
+    // a preview horse is a synthetic entity handed to the full entity render pipeline
     public static void markBroken(UUID horseId, Throwable error) {
         if (broken.add(horseId)) {
             cache.remove(horseId);
@@ -107,7 +91,7 @@ public final class HorsePreviewCache {
         return ordinal >= 0 && ordinal < values.length ? values[ordinal] : fallback;
     }
 
-    /** Called whenever the roster changes, so a re-coloured or disowned horse doesn't linger. */
+    // called whenever the roster changes, so a re-coloured or disowned horse doesn't linger
     public static void clear() {
         cache.clear();
         broken.clear();

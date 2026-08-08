@@ -3,7 +3,9 @@
   "id": "icys-better-horses:equipment/horse_cart",
   "category": "icys-better-horses:equipment",
   "name": "Horse Cart",
-  "icon": { "id": "icys-better-horses:horse_cart_gear" },
+  "icon": {
+    "id": "icys-better-horses:horse_cart_gear"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -12,7 +14,11 @@
   "x": 4,
   "y": 1,
   "sort_number": 9,
-  "parents": [ { "entry": "icys-better-horses:equipment/wheel" } ],
+  "parents": [
+    {
+      "entry": "icys-better-horses:equipment/wheel"
+    }
+  ],
   "pages": [
     {
       "type": "modonomicon:crafting_recipe",
@@ -26,14 +32,21 @@
       "id": "info",
       "item": "icys-better-horses:horse_cart_gear",
       "title": "Hitch and Haul",
-      "text": "Slot the cart into the **Upgraded Saddle** and it appears behind your horse, rolling along as you ride. It shares the stabilizer's slot, so a horse carries one or the other - not both."
+      "text": "Slot the cart into the **Upgraded Saddle** and it appears behind your horse, rolling along as you ride. It shares the stabilizer's slot, so a horse carries one or the other - not both.\n\nQuickest way to fit one: right-click the horse holding the cart. It goes straight on, as long as the horse wears an Upgraded Saddle and that slot is empty."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "standalone",
+      "title": "Park It Anywhere",
+      "show_title_separator": true,
+      "text": "Right-click the ground with the cart to stand one up on its own, shafts down, no horse needed. A parked cart is decoration - nobody rides it - but a **Chest** works on it exactly as it does on a hitched one.\n\nHit it a few times to pick it back up, like a boat. Break one with a chest fitted and the chest and everything in it come down with it."
     },
     {
       "type": "modonomicon:text",
       "id": "riders",
       "title": "Room for Four",
       "show_title_separator": true,
-      "text": "An empty cart seats four. Two share the driver's bench up front - whoever takes it first drives the horse - and two more ride in the bed behind. Small animals that wander into the bed climb aboard on their own; **sneak** and right-click to set everyone in the back down again."
+      "text": "An empty cart seats four. Two share the driver's bench up front - whoever takes it first drives the horse - and two more ride in the bed behind.\n\nAnimals that wander into the bed climb aboard on their own, and once you're driving, one can ride shotgun in the free seat beside you. The cart takes anything a **boat** would.\n\n**Sneak** and right-click an animal to set it down, or the cart itself to unload the lot."
     },
     {
       "type": "modonomicon:spotlight",
@@ -47,7 +60,7 @@
       "id": "shears",
       "item": "minecraft:shears",
       "title": "Taking It Off",
-      "text": "**Shears** take the chest back off and drop it beside the horse. Empty it first - a loaded chest refuses to come off rather than spill across the road.\n\nWhile a chest is fitted, the cart itself is locked into its gear slot; the slot flashes **red** if you try to pull it out. Shear the chest off first, then unhitch the cart."
+      "text": "**Shears** take the chest back off and drop it beside the horse. Empty it first - a loaded chest refuses to come off rather than spill across the road.\n\nThings come off in the order they went on, and the slot flashes **red** if you try to skip a step: shear the chest off before unhitching the cart, and unhitch the cart before taking the saddle off."
     }
   ]
 }

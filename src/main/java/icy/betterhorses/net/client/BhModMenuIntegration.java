@@ -16,7 +16,7 @@ public class BhModMenuIntegration implements ModMenuApi {
 
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        // Cloth Config is only a suggestion; without it we can't build a screen, so hand Mod Menu a no-op.
+        // cloth config is only a suggestion; without it we can't build a screen, so hand mod menu a no-op
         if (!FabricLoader.getInstance().isModLoaded("cloth-config")) {
             return parent -> null;
         }
@@ -47,7 +47,7 @@ public class BhModMenuIntegration implements ModMenuApi {
         general.addEntry(bh_toggle(eb, "horse_exclusivity", values, 4));
         general.addEntry(bh_toggle(eb, "multiriding", values, 5));
 
-        // Keybinds are real vanilla KeyMappings; fillKeybindingField reads the current bind and writes the chosen one back on save. The whistle key drives both the whistle and the mounted info screen, so a single entry covers both.
+        // keybinds are real vanilla KeyMappings; fillKeybindingField reads the current bind and writes
         ConfigCategory keybinds = builder.getOrCreateCategory(
                 Component.translatable("config.icys-better-horses.category.keybinds"));
         keybinds.addEntry(eb.fillKeybindingField(

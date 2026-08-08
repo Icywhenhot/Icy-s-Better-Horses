@@ -7,7 +7,9 @@ import icy.betterhorses.net.client.render.HorseChestLayer;
 import icy.betterhorses.net.client.render.HorseStabilizerAnimatable;
 import icy.betterhorses.net.client.render.HorseStabilizerLayer;
 import icy.betterhorses.net.client.render.IBhEquineStabilizerState;
+import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.inventory.GearSlot;
+import net.minecraft.util.Mth;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
@@ -17,7 +19,6 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.EquineRenderState;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
@@ -31,21 +32,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Adds the stabilizer wing layer to every {@link AbstractHorseRenderer}, and forwards the
- * relevant entity state into {@link IBhEquineStabilizerState} so the layer can access it
- * during the new state-based submit phase.
- *
- * 1.21.5+ rebuild:
- *  - {@link AbstractHorseRenderer} now has three type parameters {@code <T, S, M>} where {@code S}
- *    is an {@link EquineRenderState} and {@code M} an {@link EntityModel} parameterised by it.
- *  - The constructor signature is {@code (Context, M, M)} (two models — adult/baby), no longer
- *    {@code (Context, M, float)}, so the {@code @Inject} parameter list must match.
- *  - It extends {@link AgeableMobRenderer} (which itself extends {@code MobRenderer}); we extend
- *    that here so the mixin can call inherited methods like {@code addLayer}.
- *  - Per-frame entity data has to be captured in {@code extractRenderState}: by the time
- *    {@code submit} runs the entity is no longer reachable, only the render state is.
- */
+// adds the stabilizer wing layer to every AbstractHorseRenderer
 @Mixin(AbstractHorseRenderer.class)
 public abstract class AbstractHorseRendererMixin<
         T extends AbstractHorse,
@@ -63,11 +50,7 @@ public abstract class AbstractHorseRendererMixin<
         this.addLayer(new HorseChestLayer<>(this));
     }
 
-    /**
-     * Capture the current stabilizer flag/state from the live horse onto the render state, and
-     * keep the per-horse {@link HorseStabilizerAnimatable} ticking in sync (so its
-     * {@code AnimationController} fires deploy / glide transitions at the right moments).
-     */
+    // capture the current stabilizer flag/state from the live horse onto the render state
     @Inject(method = "extractRenderState", at = @At("TAIL"))
     private void bh_captureStabilizerState(T entity, S state, float partialTick, CallbackInfo ci) {
         IBhEquineStabilizerState extState = (IBhEquineStabilizerState) state;
@@ -98,34 +81,34 @@ public abstract class AbstractHorseRendererMixin<
     @Unique private static final double BH_REIN_SIDE = 0.15D;
     @Unique private static final double BH_REIN_HEAD_HEIGHT = 1.45D;
     @Unique private static final double BH_REIN_HEAD_FORWARD = 0.75D;
-    @Unique private static final double BH_REIN_HAND_HEIGHT = 0.9D;
+    // measured up from the driver's feet. 0.9 put the ropes at face height, so they sit half a block
+    // lower now, around where hands actually rest
+    @Unique private static final double BH_REIN_HAND_HEIGHT = 0.4D;
 
-    /**
-     * Draws a pair of reins from the horse's head back to the driver's hands whenever a cart is
-     * hitched and someone is in the driver's seat.
-     *
-     * <p>Reuses vanilla's leash rope rendering: {@code EntityRenderer.submit} draws every entry in
-     * {@code EntityRenderState.leashStates}, so we just append two. The list is <b>reassigned</b>
-     * rather than mutated because vanilla assigns it (often an immutable empty list when the entity
-     * isn't leashed) and only ever grows it — appending in place would throw, or leak a stale rope
-     * every frame.</p>
-     */
+    // draws a pair of reins from the horse's head back to the driver's hands whenever a cart is hitched
     @Inject(method = "extractRenderState", at = @At("TAIL"))
     private void bh_extractCartReins(T entity, S state, float partialTick, CallbackInfo ci) {
         if (!(entity instanceof IHorseData data) || !data.bh_hasCartGear()) {
             return;
         }
-        Entity driver = entity.getFirstPassenger();
-        if (driver == null) {
+        // whoever actually has the reins. a mob riding shotgun isn't holding anything
+        if (entity.getControllingPassenger() == null) {
             return;
         }
 
-        float radians = -entity.getYRot(partialTick) * ((float) Math.PI / 180.0F);
+        // the horse's interpolated *body* yaw, not getYRot(partialTick). on a player-controlled horse
+        // getYRot is rewritten every frame from the mouse and still steps at tick boundaries, which is
+        // what made the reins snap while the cart glided. body yaw is what the horse's own body
+        // renders with, and what the cart is glued to, so everything moves as one piece
+        float bodyYaw = Mth.rotLerp(partialTick, entity.yBodyRotO, entity.yBodyRot);
+        float radians = -bodyYaw * ((float) Math.PI / 180.0F);
         Vec3 horsePos = entity.getPosition(partialTick);
-        Vec3 driverPos = driver.getPosition(partialTick);
+        // the driver's hands come off that same transform rather than off the driver's own
+        // interpolated position, which is a tick behind and computed from the raw yaw
+        Vec3 driverPos = horsePos.add(HorseCartEntity.benchSeatOffset(0, bodyYaw));
         Level level = entity.level();
 
-        // Null (not an empty list) when the entity isn't leashed.
+        // null (not an empty list) when the entity isn't leashed
         List<EntityRenderState.LeashState> reins = state.leashStates == null
                 ? new ArrayList<>()
                 : new ArrayList<>(state.leashStates);

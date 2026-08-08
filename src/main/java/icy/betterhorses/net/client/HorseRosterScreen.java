@@ -24,57 +24,47 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * The horse management screen: every horse the player owns, loaded or resting in an unloaded chunk,
- * with a whistle / send-home / disown button each, plus a preview of the selected horse and the
- * "set active" toggle that decides which horse the whistle keybind calls.
- *
- * <p>The server owns every decision. A button press is a request; the reply either refreshes the
- * roster (success) or flashes that one button red with a reason (no home set, still carrying gear).
- * Disowning goes through a confirmation panel first, and the equipment check happens after the
- * player confirms — so a mistake costs a click, not a horse.</p>
- */
+// the horse management screen: every horse the player owns, loaded or resting in an unloaded chunk
 public class HorseRosterScreen extends Screen {
 
     private static final int PANEL_WIDTH = 440;
-    /** Fixed so a single background image always fits; the list scrolls inside it. */
+    // fixed so a single background image always fits; the list scrolls inside
     private static final int PANEL_HEIGHT = 200;
     private static final int PADDING = 5;
     private static final int TITLE_HEIGHT = 22;
     private static final int FOOTER_HEIGHT = 18;
     private static final int ROW_HEIGHT = 30;
-    /** 5 = 3px of visible background between adjacent row plates (each plate is ROW_HEIGHT+2 tall). */
+    // 5 = 3px of visible background between adjacent row plates (each plate is ROW_HEIGHT+2 tall)
     private static final int ROW_GAP = 5;
-    /** Fixed number of rows shown in the panel; the list scrolls within it. */
+    // fixed number of rows shown in the panel; the list scrolls within
     private static final int VISIBLE_ROWS = 5;
 
     private static final int ROWS_WIDTH = 300;
     private static final int PREVIEW_GAP = 5;
 
-    // Tiny pulsing arrow that hints there are more horses above/below the visible window.
+    // tiny pulsing arrow that hints there are more horses above/below the visible window
     private static final int SCROLL_ARROW_HEIGHT = 3;   // 5px wide at its base
     private static final int SCROLL_ARROW_RGB = 0x00E7B43B; // amber; alpha supplied by the pulse
 
-    // Row text sits on the light plate, so it's dark "ink".
+    // row text sits on the light plate, so it's dark "ink"
     private static final int ROW_NAME_COLOR = 0xFF3A2714;
     private static final int ROW_SUBTITLE_COLOR = 0xFF6B4A2C;
-    /** Preview-pane text sits on the light right-hand parchment, so it's dark ink too. */
+    // preview-pane text sits on the light right-hand parchment, so it's dark ink too
     private static final int PREVIEW_TEXT_COLOR = 0xFF3A2714;
 
-    // Entrance: panel scales + fades in; the cards themselves cascade up (see renderRow) so the list
-    // "unfurls" rather than the whole thing sliding as one block.
+    // entrance: panel scales + fades in; the cards themselves cascade up (see renderRow) so the list
     private static final float ENTER_MS = 240f;
     private static final float ENTER_SCALE = 0.96f;
     private static final float CARD_STAGGER_MS = 45f;  // per-row delay of the cascade
     private static final float CARD_ENTER_MS = 220f;
     private static final float CARD_RISE = 12f;
     private static final float CLOSE_MS = 150f;         // reverse slide-down + fade on close
-    // Hover raises a card/button; selection is a static little arrow, NOT a lift.
+    // hover raises a card/button; selection is a static little arrow, NOT a lift
     private static final float LIFT_PX = 2f;
     private static final float LIFT_TAU = 0.045f;
     private static final float PRESS_DEPTH = 0.08f;     // click squish
     private static final float PRESS_MS = 130f;
-    // Refusal shake: a short damped wobble on the button that was pressed.
+    // refusal shake: a short damped wobble on the button that was pressed
     private static final float SHAKE_MS = 420f;
     private static final float SHAKE_PX = 2.5f;
     private static final float SHAKE_CYCLES = 3f;
@@ -83,30 +73,25 @@ public class HorseRosterScreen extends Screen {
     private static final int BTN_HEIGHT = 14;
     private static final int BTN_WHISTLE_WIDTH = 50;
     private static final int BTN_HOME_WIDTH = 62;
-    /**
-     * The disown pennant is 15×17 against the row's 14px-tall buttons. It is *not* centred on the
-     * button line: its top edge stays level with whistle/send-home and the extra 3px is the tail,
-     * which hangs below. Being 1px wider also nudges whistle and send-home 1px left, since both are
-     * positioned relative to it.
-     */
+    // the disown pennant is 15×17 against the row's 14px-tall buttons
     private static final int BTN_DISOWN_WIDTH = 15;
     private static final int BTN_DISOWN_HEIGHT = 17;
     private static final int BTN_DISOWN_FLASH_TINT = 0xFF8A2020; // darkened multiply on a refused action
-    /** Lighter than the confirm planks' shadow — the row buttons are small and sit on a small plate. */
+    // lighter than the confirm planks' shadow, the row buttons are small and sit on a small plate
     private static final float ROW_SHADOW_ALPHA = 0.6f;
-    /** Both word planks are dark (navy, green), so their labels are near-white. */
+    // both word planks are dark (navy, green), so their labels are near-white
     private static final int ROW_BTN_TEXT_COLOR = 0xFFEDE6DA;
     private static final int BTN_GAP = 4;
     private static final int ROW_BTN_RIGHT_PAD = 6;
 
-    /** Matches active_button.png / set_active_button.png (both 100×22). */
+    // matches active_button.png / set_active_button.png (both 100×22)
     private static final int SET_ACTIVE_WIDTH = 100;
     private static final int SET_ACTIVE_HEIGHT = 22;
-    /** Left inset inside the preview column, chosen to line the plank up with the panel art's dotted frame. */
+    // left inset inside the preview column, chosen to line the plank up with the panel art's dotted frame
     private static final int SET_ACTIVE_LEFT_INSET = 4;
-    /** Gap below the plank; larger = the button sits higher off the panel's bottom edge. */
+    // gap below the plank; larger = the button sits higher off the panel's bottom edge
     private static final int SET_ACTIVE_BOTTOM_GAP = 10;
-    /** Dark ink on the lit amber plank; near-white on the dark slate one. */
+    // dark ink on the lit amber plank; near-white on the dark slate one
     private static final int SET_ACTIVE_TEXT_COLOR = 0xFFEDE6DA;
     private static final int ACTIVE_TEXT_COLOR = 0xFF2A210A;
     private static final int SET_ACTIVE_FLASH_TINT = 0xFFE85C5C;
@@ -118,12 +103,12 @@ public class HorseRosterScreen extends Screen {
 
     private static final int CONFIRM_WIDTH = 220;
     private static final int CONFIRM_HEIGHT = 76;
-    /** Matches disown_button_small.png / cancel_button.png (both 84×20). */
+    // matches disown_button_small.png / cancel_button.png (both 84×20)
     private static final int CONFIRM_BTN_WIDTH = 84;
     private static final int CONFIRM_BTN_HEIGHT = 20;
-    /** Dark brown ink — the disown plank is light, so white text would disappear on it. */
+    // dark brown ink, the disown plank is light, so white text would disappear
     private static final int CONFIRM_DISOWN_TEXT_COLOR = 0xFF3A2714;
-    /** The cancel plank is dark slate, so its label goes the other way: light on dark. */
+    // the cancel plank is dark slate, so its label goes the other way: light on dark
     private static final int CONFIRM_CANCEL_TEXT_COLOR = 0xFFEDE6DA;
 
     private int left;
@@ -133,7 +118,7 @@ public class HorseRosterScreen extends Screen {
     private int scrollOffset;
 
     private @Nullable UUID selectedHorseId;
-    /** Non-null while the "are you sure?" panel is up for that horse. */
+    // non-null while the "are you sure?" panel is up for that horse
     private @Nullable UUID confirmingDisownOf;
 
     private long bhOpenMs;
@@ -163,8 +148,7 @@ public class HorseRosterScreen extends Screen {
 
     @Override
     public void onClose() {
-        // First call begins the reverse (slide-down + fade) animation; the render loop dismisses for
-        // real once it finishes. A second onClose (e.g. ESC again) closes immediately.
+        // first call begins the reverse (slide-down + fade) animation
         if (bhClosing) {
             super.onClose();
             return;
@@ -182,7 +166,7 @@ public class HorseRosterScreen extends Screen {
 
         scrollOffset = Math.min(scrollOffset, Math.max(0, entries.size() - visibleRows));
 
-        // Selection defaults to the active horse, then the first row, and survives roster refreshes.
+        // selection defaults to the active horse, then the first row, and survives roster refreshes
         if (ClientHorseRoster.find(selectedHorseId) == null) {
             UUID active = ClientHorseRoster.activeHorseId();
             selectedHorseId = active != null ? active
@@ -190,7 +174,7 @@ public class HorseRosterScreen extends Screen {
         }
     }
 
-    // ------------------------------------------------------------------ render
+    // render
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float delta) {
@@ -201,7 +185,7 @@ public class HorseRosterScreen extends Screen {
         if (bhClosing) {
             float cp = (System.currentTimeMillis() - bhCloseMs) / CLOSE_MS;
             if (cp >= 1f) {
-                super.onClose(); // the reverse animation has finished — actually dismiss
+                super.onClose(); // the reverse animation has finished, actually dismiss
                 return;
             }
             vis = 1f - BhAnim.easeInCubic(cp);
@@ -218,7 +202,7 @@ public class HorseRosterScreen extends Screen {
         BhScreenDraw.panelTexture(gfx, left, top, PANEL_WIDTH, PANEL_HEIGHT, BhScreenDraw.SCREEN_MANAGE_TEXTURE, vis);
         gfx.centeredText(this.font, getTitle(), left + PANEL_WIDTH / 2, top + 7, BhScreenDraw.TEXT);
 
-        // The confirm panel is modal, so everything underneath stops reacting to the cursor.
+        // the confirm panel is modal, so everything underneath stops reacting to the cursor
         int paneMouseX = confirmingDisownOf == null ? mouseX : -1;
         int paneMouseY = confirmingDisownOf == null ? mouseY : -1;
 
@@ -233,8 +217,7 @@ public class HorseRosterScreen extends Screen {
             }
         }
 
-        // No drawn separator between the list and the preview: the panel art has its own divider, and
-        // the old 1px flat-UI line read as a stray blue streak over it.
+        // no drawn separator between the list and the preview: the panel art has its own divider
         renderPreview(gfx, paneMouseX, paneMouseY);
 
         renderFooter(gfx, entries);
@@ -242,15 +225,14 @@ public class HorseRosterScreen extends Screen {
 
         pose.popMatrix();
 
-        // Modal confirm sits above the settled panel with its own pop, outside the entrance transform.
+        // modal confirm sits above the settled panel with its own pop, outside the entrance transform
         if (confirmingDisownOf != null) {
             renderConfirm(gfx, mouseX, mouseY);
         }
     }
 
     private void renderFooter(GuiGraphicsExtractor gfx, List<HorseRosterEntry> entries) {
-        // The footer strip now only carries the transient flash message (why an action failed); the
-        // "more horses" hint is a pulsing arrow instead — see renderScrollArrows.
+        // the footer strip now only carries the transient flash message (why an action failed)
         String flashKey = ClientHorseRoster.flashMessageKey();
         if (!flashKey.isEmpty() && !isSilentFailure(flashKey)) {
             gfx.centeredText(this.font, Component.translatable(flashKey),
@@ -258,20 +240,12 @@ public class HorseRosterScreen extends Screen {
         }
     }
 
-    /**
-     * "Send home" on a horse with no home is a self-explanatory refusal — the red flash and the shake
-     * say it, so the footer stays quiet rather than popping a line of text for the obvious case.
-     * Every other failure (still carrying gear, wrong dimension, …) still explains itself.
-     */
+    // "Send home" on a horse with no home is a self-explanatory refusal
     private static boolean isSilentFailure(String flashKey) {
         return HorseManagement.MSG_NO_HOME.equals(flashKey);
     }
 
-    /**
-     * Tiny pulsing arrows that hint the list scrolls: a down-arrow when horses sit below the visible
-     * window, an up-arrow when some sit above it. The pulse breathes the alpha so it catches the eye
-     * without the weight of a scrollbar. Suppressed while a flash message occupies the footer.
-     */
+    // tiny pulsing arrows that hint the list scrolls
     private void renderScrollArrows(GuiGraphicsExtractor gfx, List<HorseRosterEntry> entries) {
         int centerX = left + PADDING + ROWS_WIDTH / 2;
         float pulse = 0.5F + 0.5F * (float) Math.sin(System.currentTimeMillis() / 380.0D);
@@ -284,13 +258,13 @@ public class HorseRosterScreen extends Screen {
         String flashKey = ClientHorseRoster.flashMessageKey();
         boolean flashing = !flashKey.isEmpty() && !isSilentFailure(flashKey);
         if (!flashing && scrollOffset + visibleRows < entries.size()) {
-            // Sit just below the last visible card (which grows lower as the gap widens).
+            // sit just below the last visible card (which grows lower as the gap widens)
             int lastPlateBottom = rowY(visibleRows - 1) + ROW_HEIGHT;
             drawArrow(gfx, centerX, lastPlateBottom + 2, false, color);
         }
     }
 
-    /** Draws a small solid triangle at {@code centerX}, its base {@code SCROLL_ARROW_HEIGHT} px wide, pointing up or down. */
+    // draws a small solid triangle at centerX, its base SCROLL_ARROW_HEIGHT px wide, pointing up or down
     private void drawArrow(GuiGraphicsExtractor gfx, int centerX, int topY, boolean up, int color) {
         for (int row = 0; row < SCROLL_ARROW_HEIGHT; row++) {
             int halfWidth = up ? row : (SCROLL_ARROW_HEIGHT - 1 - row);
@@ -308,12 +282,12 @@ public class HorseRosterScreen extends Screen {
         boolean hovered = BhScreenDraw.inBox(mouseX, mouseY, rowLeft, y, ROWS_WIDTH, ROW_HEIGHT);
         boolean selected = entry.horseId().equals(selectedHorseId);
 
-        // Cascade: each card eases up from below, delayed by its row index, so the list unfurls.
+        // cascade: each card eases up from below, delayed by its row index, so the list unfurls
         float cardT = bhClosing ? bhEnter : BhAnim.easeOutCubic(
                 (System.currentTimeMillis() - bhOpenMs - visibleIndex * CARD_STAGGER_MS) / CARD_ENTER_MS);
         float cardRise = (1f - cardT) * CARD_RISE;
 
-        // Selection = a tiny static arrow just left of the card (hover is the only thing that lifts now).
+        // selection = a tiny static arrow just left of the card (hover is the only thing that lifts now)
         if (selected) {
             drawSelectArrow(gfx, rowLeft - 4, Math.round(y + ROW_HEIGHT / 2f + cardRise), BhScreenDraw.ACTIVE);
         }
@@ -327,7 +301,7 @@ public class HorseRosterScreen extends Screen {
 
         int textX = rowLeft + 6;
         if (entry.active()) {
-            // Small marker so the whistle target is obvious without opening the preview.
+            // small marker so the whistle target is obvious without opening the preview
             gfx.fill(rowLeft + 2, y + ROW_HEIGHT / 2 - 3, rowLeft + 4, y + ROW_HEIGHT / 2 + 3, BhScreenDraw.ACTIVE);
         }
         gfx.text(this.font, displayName(entry), textX, y + 5, ROW_NAME_COLOR, false);
@@ -345,12 +319,7 @@ public class HorseRosterScreen extends Screen {
         pose.popMatrix();
     }
 
-    /**
-     * One of the row's two word buttons, drawn from its own plank texture. Hover is the 2px lift the
-     * rest of the screen uses, since the art has no hover variant. A refused action shakes the button
-     * and washes it red — and for "no home set" that shake is the whole explanation, because no
-     * message is drawn (see renderFooter).
-     */
+    // one of the row's two word buttons, drawn from its own plank texture
     private void drawActionButton(GuiGraphicsExtractor gfx, HorseRosterEntry entry, HorseManageAction action,
                                   Identifier texture, int x, int y, int width, Component label,
                                   int mouseX, int mouseY) {
@@ -383,10 +352,7 @@ public class HorseRosterScreen extends Screen {
         pose.popMatrix();
     }
 
-    /**
-     * The row's disown button: the bespoke pennant texture instead of a flat red square. Drawn from
-     * {@code y} downwards so its top stays level with the other two buttons and the tail overhangs.
-     */
+    // the row's disown button: the bespoke pennant texture instead of a flat red square
     private void drawDisownPennant(GuiGraphicsExtractor gfx, HorseRosterEntry entry,
                                    int x, int y, int mouseX, int mouseY) {
         boolean flashing = ClientHorseRoster.isFlashing(entry.horseId(), HorseManageAction.DISOWN);
@@ -397,8 +363,7 @@ public class HorseRosterScreen extends Screen {
         float ly = lift.get(pressKey(entry.horseId(), HorseManageAction.DISOWN), hovered, LIFT_PX);
         float sc = press.scale(pressKey(entry.horseId(), HorseManageAction.DISOWN), PRESS_DEPTH, PRESS_MS);
 
-        // Same anchored shadow as the disown/cancel planks, but lighter — this sits on a small row
-        // plate and its tail already overhangs the bottom edge, so a full-strength one reads as smudge.
+        // same anchored shadow as the disown/cancel planks, but lighter
         BhScreenDraw.textureShadow(gfx, BhScreenDraw.CROSS_BUTTON_TEXTURE, Math.round(x + shakeX), y,
                 BTN_DISOWN_WIDTH, BTN_DISOWN_HEIGHT, ly, ROW_SHADOW_ALPHA);
 
@@ -406,7 +371,7 @@ public class HorseRosterScreen extends Screen {
         pose.pushMatrix();
         pose.translate(shakeX, -ly);
         if (sc != 1f) {
-            // Squish about the top edge, not the centre — the pennant hangs from the button line.
+            // squish about the top edge, not the centre, the pennant hangs from the button line
             float ccx = x + BTN_DISOWN_WIDTH / 2f;
             pose.translate(ccx, y);
             pose.scale(sc, sc);
@@ -417,7 +382,7 @@ public class HorseRosterScreen extends Screen {
         pose.popMatrix();
     }
 
-    /** Damped horizontal wobble: a couple of quick shakes that die out over {@link #SHAKE_MS}. */
+    // damped horizontal wobble: a couple of quick shakes that die out over SHAKE_MS
     private static float shakeOffset(long elapsedMs) {
         if (elapsedMs < 0L || elapsedMs >= SHAKE_MS) return 0f;
         float t = elapsedMs / SHAKE_MS;
@@ -428,7 +393,7 @@ public class HorseRosterScreen extends Screen {
         return horseId + "#" + action.ordinal();
     }
 
-    /** Small right-pointing selection arrow with its vertical base at {@code baseLeftX}, centred on {@code centerY}. */
+    // small right-pointing selection arrow with its vertical base at baseLeftX, centred on centerY
     private void drawSelectArrow(GuiGraphicsExtractor gfx, int baseLeftX, int centerY, int color) {
         for (int r = -SELECT_ARROW_HALF; r <= SELECT_ARROW_HALF; r++) {
             int len = (SELECT_ARROW_HALF - Math.abs(r)) + 1; // 1,2,3,2,1 -> a triangle pointing right
@@ -448,7 +413,7 @@ public class HorseRosterScreen extends Screen {
         return homeButtonX() - BTN_GAP - BTN_WHISTLE_WIDTH;
     }
 
-    // ----------------------------------------------------------------- preview
+    // preview
 
     private int previewX() {
         return left + PADDING + ROWS_WIDTH + PREVIEW_GAP + PREVIEW_GAP + 1;
@@ -462,7 +427,7 @@ public class HorseRosterScreen extends Screen {
         return top + PANEL_HEIGHT - SET_ACTIVE_BOTTOM_GAP - SET_ACTIVE_HEIGHT;
     }
 
-    /** Fixed left edge — the plank was trimmed on its right, so it stays put rather than re-centring. */
+    // fixed left edge, the plank was trimmed on its right, so it stays put rather than re-centring
     private int setActiveButtonX() {
         return previewX() + SET_ACTIVE_LEFT_INSET;
     }
@@ -481,8 +446,7 @@ public class HorseRosterScreen extends Screen {
             return;
         }
 
-        // Hold the 3D horse back until the panel has settled — the entity render doesn't ride the 2D
-        // pose transform, so drawing it mid-entrance would leave it floating outside the moving panel.
+        // hold the 3D horse back until the panel has settled
         boolean settled = bhEnter > 0.9f;
         AbstractHorse preview = HorsePreviewCache.getOrBuild(selected);
         boolean drawn = false;
@@ -499,7 +463,7 @@ public class HorseRosterScreen extends Screen {
                     x + width / 2, (modelTop + modelBottom) / 2);
         }
 
-        // The details the rows no longer have room for.
+        // the details the rows no longer have room
         inkCentered(gfx, Component.translatable("screen.icys-better-horses.manage.bond", selected.bond()),
                 x + width / 2, modelBottom + 4);
         inkCentered(gfx, selected.hasHome()
@@ -510,7 +474,7 @@ public class HorseRosterScreen extends Screen {
         renderSetActiveButton(gfx, selected, x, width, mouseX, mouseY);
     }
 
-    /** Centre-draws shadowless dark ink — centeredText forces a shadow that doubles up on light parchment. */
+    // centre-draws shadowless dark ink, centeredText forces a shadow that doubles up on light parchment
     private void inkCentered(GuiGraphicsExtractor gfx, Component text, int centerX, int y) {
         gfx.text(this.font, text, centerX - this.font.width(text) / 2, y, PREVIEW_TEXT_COLOR, false);
     }
@@ -524,7 +488,7 @@ public class HorseRosterScreen extends Screen {
         int scale = Math.max(PREVIEW_MIN_SCALE,
                 Math.min(PREVIEW_MAX_SCALE, Math.min(scaleFromHeight, scaleFromWidth)));
 
-        // Let the horse follow the cursor horizontally, but keep the pitch nearly level.
+        // let the horse follow the cursor horizontally, but keep the pitch nearly level
         int verticalCenter = (y0 + y1) / 2;
         int clampedMouseY = Math.max(verticalCenter - PREVIEW_PITCH_CLAMP,
                 Math.min(verticalCenter + PREVIEW_PITCH_CLAMP, mouseY));
@@ -533,11 +497,7 @@ public class HorseRosterScreen extends Screen {
                 gfx, x0, y0, x1, y1, scale, PREVIEW_FORWARD_OFFSET, mouseX, clampedMouseY, preview);
     }
 
-    /**
-     * The preview pane's activate button, drawn from one of two bespoke planks: dark slate while the
-     * horse is merely selected, lit amber once it's the one the whistle calls. The lit state is a
-     * status readout rather than a button, so it neither lifts on hover nor squishes on click.
-     */
+    // the preview pane's activate button, drawn from one of two bespoke planks
     private void renderSetActiveButton(GuiGraphicsExtractor gfx, HorseRosterEntry selected,
                                        int x, int width, int mouseX, int mouseY) {
         int btnX = setActiveButtonX();
@@ -579,11 +539,11 @@ public class HorseRosterScreen extends Screen {
         pose.popMatrix();
     }
 
-    // ------------------------------------------------------------ confirm panel
+    // confirm panel
 
     private void renderConfirm(GuiGraphicsExtractor gfx, int mouseX, int mouseY) {
         float t = BhAnim.clamp01((System.currentTimeMillis() - bhConfirmOpenMs) / ENTER_MS);
-        gfx.fill(0, 0, this.width, this.height, Math.round(0x99 * t) << 24); // scrim fades in
+        gfx.fill(0, 0, this.width, this.height, Math.round(0x99 * t) << 24); // scrim fades
 
         int cx = (this.width - CONFIRM_WIDTH) / 2;
         int cy = (this.height - CONFIRM_HEIGHT) / 2;
@@ -612,11 +572,7 @@ public class HorseRosterScreen extends Screen {
         pose.popMatrix();
     }
 
-    /**
-     * Both confirm buttons are bespoke 84×20 planks rather than flat colour fills: the red one for
-     * letting the horse go, the dark slate one for backing out. Same shadow + hover-lift as the big
-     * disown button, so the whole screen reads as one set.
-     */
+    // both confirm buttons are bespoke 84×20 planks rather than flat colour fills
     private void confirmButton(GuiGraphicsExtractor gfx, net.minecraft.resources.Identifier texture,
                                int x, int y, Object key, String labelKey, int textColor, boolean hovered) {
         float ly = lift.get(key, hovered, LIFT_PX);
@@ -641,7 +597,7 @@ public class HorseRosterScreen extends Screen {
         return (this.width - CONFIRM_WIDTH) / 2 + CONFIRM_WIDTH - CONFIRM_BTN_WIDTH - 12;
     }
 
-    // ------------------------------------------------------------------ labels
+    // labels
 
     private Component displayName(HorseRosterEntry entry) {
         if (!entry.customName().isEmpty()) {
@@ -660,7 +616,7 @@ public class HorseRosterScreen extends Screen {
                 .append(where);
     }
 
-    // ------------------------------------------------------------------- input
+    // input
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
@@ -681,7 +637,7 @@ public class HorseRosterScreen extends Screen {
                 confirmingDisownOf = null;
                 return true;
             }
-            // Modal: swallow everything else so the rows behind it can't be clicked.
+            // modal: swallow everything else so the rows behind it can't be clicked
             return true;
         }
 
@@ -717,7 +673,7 @@ public class HorseRosterScreen extends Screen {
                 bhConfirmOpenMs = System.currentTimeMillis();
                 return true;
             }
-            // Anywhere else on the row just selects it for the preview.
+            // anywhere else on the row just selects it for the preview
             if (BhScreenDraw.inBox(mouseX, mouseY, left + PADDING, y, ROWS_WIDTH, ROW_HEIGHT)) {
                 selectedHorseId = entry.horseId();
                 return true;
@@ -747,7 +703,7 @@ public class HorseRosterScreen extends Screen {
     @Override
     public boolean keyPressed(KeyEvent event) {
         if (confirmingDisownOf != null) {
-            // ESC backs out of the confirmation rather than closing the whole screen.
+            // ESC backs out of the confirmation rather than closing the whole screen
             if (event.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) {
                 confirmingDisownOf = null;
             }

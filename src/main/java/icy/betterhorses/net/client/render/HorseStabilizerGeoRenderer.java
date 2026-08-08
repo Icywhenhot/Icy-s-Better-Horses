@@ -6,11 +6,7 @@ import com.geckolib.renderer.base.BoneSnapshots;
 import com.geckolib.renderer.base.GeoRenderState;
 import com.geckolib.renderer.base.RenderPassInfo;
 
-/**
- * GeckoLib 5 widened {@link GeoObjectRenderer} from one type parameter to three:
- * {@code <T animatable, O relatedObject, R renderState>}. We don't need a related object,
- * so we use {@link Void}, and the default {@link GeoRenderState.Impl} suffices for the state.
- */
+// GeckoLib 5 widened GeoObjectRenderer from one type parameter to three: <T animatable
 public final class HorseStabilizerGeoRenderer
         extends GeoObjectRenderer<HorseStabilizerAnimatable, Void, GeoRenderState.Impl> {
     private static final DataTicket<Boolean> WINGS_ACTIVE =
@@ -31,8 +27,7 @@ public final class HorseStabilizerGeoRenderer
 
     @Override
     public void adjustRenderPose(RenderPassInfo<GeoRenderState.Impl> renderPassInfo) {
-        // The layer already anchors the stabilizer to the horse body. GeoObjectRenderer's default
-        // +0.5/+0.51/+0.5 translation is for standalone objects and pushes the rig off the horse.
+        // the layer already anchors the stabilizer to the horse body
     }
 
     @Override
