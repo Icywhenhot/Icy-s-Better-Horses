@@ -8,6 +8,14 @@ baseurl: /Icy-s-Better-Horses
 
 theme: just-the-docs
 
+# Jekyll applies no layout unless one is named, so without this every page
+# except index.md (which sets layout: home) renders as bare unstyled HTML.
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+
 # Sidebar / navigation
 nav_external_links:
   - title: Source on GitHub
