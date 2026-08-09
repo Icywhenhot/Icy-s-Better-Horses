@@ -98,10 +98,15 @@ public class HorseRosterScreen extends Screen {
     private static final int SET_ACTIVE_TEXT_COLOR = 0xFFEDE6DA;
     private static final int ACTIVE_TEXT_COLOR = 0xFF2A210A;
     private static final int SET_ACTIVE_FLASH_TINT = 0xFFE85C5C;
-    // room under the model for three stacked lines: coordinates, bond, home
-    private static final int PREVIEW_TEXT_HEIGHT = 32;
+    // room under the dotted frame for the bond and home lines
+    private static final int PREVIEW_TEXT_HEIGHT = 22;
     private static final int PREVIEW_LINE_HEIGHT = 10;
-    // keeps the widest line clear of the panel art's dotted frame on both sides
+    // panel-local row where the art's dotted preview frame closes
+    private static final int PREVIEW_FRAME_BOTTOM = 136;
+    // the coordinate caption tucks inside that frame, just clear of its bottom edge, so it reads as
+    // part of the portrait instead of sitting on the dotted line
+    private static final int PREVIEW_COORDS_Y = PREVIEW_FRAME_BOTTOM - PREVIEW_LINE_HEIGHT - 1;
+    // keeps the widest line clear of the dotted frame on both sides
     private static final int PREVIEW_TEXT_INSET = 8;
     private static final float PREVIEW_FORWARD_OFFSET = 0.0625F;
     private static final int PREVIEW_MIN_SCALE = 14;
@@ -445,7 +450,9 @@ public class HorseRosterScreen extends Screen {
         HorseRosterEntry selected = ClientHorseRoster.find(selectedHorseId);
 
         int modelTop = rowsTop + 4;
-        int modelBottom = setActiveButtonY() - PREVIEW_TEXT_HEIGHT - 4;
+        int coordsY = top + PREVIEW_COORDS_Y;
+        // the model stops above the coordinate caption rather than rendering through it
+        int modelBottom = coordsY - 2;
 
         if (selected == null) {
             inkCentered(gfx, Component.translatable("screen.icys-better-horses.manage.preview_empty"),
@@ -470,13 +477,14 @@ public class HorseRosterScreen extends Screen {
                     x + width / 2, (modelTop + modelBottom) / 2);
         }
 
-        // the details the rows no longer have room
+        // where the horse is, captioned inside the frame under its portrait
         int centerX = x + width / 2;
-        int line = modelBottom + 4;
         BlockPos pos = currentPos(selected);
         inkCenteredFitted(gfx, Component.translatable("screen.icys-better-horses.manage.coords",
-                pos.getX(), pos.getY(), pos.getZ()), centerX, line, width - PREVIEW_TEXT_INSET);
-        line += PREVIEW_LINE_HEIGHT;
+                pos.getX(), pos.getY(), pos.getZ()), centerX, coordsY, width - PREVIEW_TEXT_INSET);
+
+        // the details the rows no longer have room for, in the strip below the frame
+        int line = setActiveButtonY() - PREVIEW_TEXT_HEIGHT;
         inkCentered(gfx, Component.translatable("screen.icys-better-horses.manage.bond", selected.bond()),
                 centerX, line);
         line += PREVIEW_LINE_HEIGHT;
