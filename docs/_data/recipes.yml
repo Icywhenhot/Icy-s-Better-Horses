@@ -1,0 +1,65 @@
+# Crafting recipes, mirroring src/main/resources/data/icys-better-horses/recipe/*.json
+# An empty string is an empty slot. Keys index into _data/items.yml.
+
+upgraded_saddle:
+  result: upgraded_saddle
+  shape:
+    - [diamond, diamond, diamond]
+    - [diamond, saddle, diamond]
+    - [copper_ingot, copper_ingot, copper_ingot]
+
+horse_hooves_gear:
+  result: horse_hooves_gear
+  shape:
+    - [copper_ingot, "", copper_ingot]
+    - [copper_ingot, leather, copper_ingot]
+    - [copper_ingot, copper_ingot, copper_ingot]
+
+horse_medkit_gear:
+  result: horse_medkit_gear
+  shape:
+    - [wool, wool, wool]
+    - [golden_carrot, potion_regeneration, golden_carrot]
+    - [golden_apple, golden_apple, golden_apple]
+
+canister:
+  result: canister
+  shape:
+    - [copper_ingot, gold_ingot, copper_ingot]
+    - [copper_ingot, "", copper_ingot]
+    - [copper_ingot, gold_ingot, copper_ingot]
+
+horse_stabilizer_gear:
+  result: horse_stabilizer_gear
+  shape:
+    - [copper_ingot, copper_ingot, copper_ingot]
+    - [canister, leather, canister]
+    - [copper_ingot, copper_ingot, copper_ingot]
+
+wheel:
+  result: wheel
+  shape:
+    - [planks, stick, planks]
+    - [stick, planks, stick]
+    - [planks, stick, planks]
+
+horse_cart_gear:
+  result: horse_cart_gear
+  shape:
+    - [wooden_slab, "", wooden_slab]
+    - [planks, planks, planks]
+    - [wheel, "", wheel]
+
+hitchpost:
+  result: hitchpost
+  shape:
+    - [lead, "", ""]
+    - [fence, "", ""]
+    - ["", "", ""]
+
+stable_handbook:
+  result: stable_handbook
+  shapeless: true
+  note: "Plus any one Better Horses item — a plain Chest counts, so this is craftable on day one."
+  ingredients: [book, chest]
+  alternatives: [upgraded_saddle, chest, horse_hooves_gear, horse_medkit_gear, canister, horse_stabilizer_gear, hitchpost, wheel, horse_cart_gear]

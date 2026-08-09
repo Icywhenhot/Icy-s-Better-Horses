@@ -2,14 +2,15 @@
 	"schemaVersion": 1,
 	"id": "icys-better-horses",
 	"version": "${version}",
-	"name": "Icy's better horses",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "Icy's Better Horses",
+	"description": "Turns horses from an early-game novelty into long-term companions: ownership and bonding, fifteen breeds with their own coats and biomes, dedicated tack, carts, and a stack of riding improvements.",
 	"authors": [
-		"Me!"
+		"Icywhenhot"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://icywhenhot.github.io/Icy-s-Better-Horses/",
+		"sources": "https://github.com/Icywhenhot/Icy-s-Better-Horses",
+		"issues": "https://github.com/Icywhenhot/Icy-s-Better-Horses/issues"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/icys-better-horses/icon.png",

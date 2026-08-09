@@ -28,7 +28,7 @@
   "message.icys-better-horses.manage.has_equipment": "Take your equipment off this horse before disowning it.",
   "message.icys-better-horses.manage.other_dimension": "That horse is in another dimension.",
   "message.icys-better-horses.manage.gone": "That horse can't be found any more.",
-  "message.icys-better-horses.manage.failed": "That didn't work — try again from somewhere more open.",
+  "message.icys-better-horses.manage.failed": "That didn't work. Try again from somewhere more open.",
 
   "screen.icys-better-horses.info": "Horse Info",
   "screen.icys-better-horses.info.gender": "Gender",

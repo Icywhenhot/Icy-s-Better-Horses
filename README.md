@@ -1,70 +1,48 @@
-Icy's Better Horses
+# Icy's Better Horses
 
+A Fabric mod for Minecraft 26.2 that turns horses from an early-game novelty into long-term companions: ownership and bonding, fifteen real breeds, dedicated tack, carts, and a stack of riding fixes.
 
-A Fabric mod for Minecraft 1.21 that overhauls horse gameplay with a bonding system, new gear, smarter AI, and quality-of-life riding improvements.
+**📖 [Read the wiki](https://icywhenhot.github.io/Icy-s-Better-Horses/)** for full documentation of every system, item, breed, and config option.
 
-Features
-Patchouli Guide Book
-Better Horses now ships with a Patchouli handbook that explains the mod's systems and every custom recipe in-game.
+---
 
-Taming & Ownership
-Taming a horse now claims it as your own immediately, so your bond starts the moment the horse is tamed. Two players can also ride the same horse at once.
+## Features
 
-Radial Command Wheel (Ctrl + Right Click)
-Interact with your horse through a radial menu with the following commands:
+- **Ownership & bonding**: taming claims a horse as yours. Bond grows 0–100 and adds up to **+75%** speed and jump.
+- **Fifteen breeds**: real breeds with their own coat palettes and biome ranges, plus gender, mixed-breed foals, and stat inheritance.
+- **Command wheel**: a radial menu to make a horse follow, stay, wander, or return to a saved home.
+- **Horse roster**: a screen listing every horse you own, so you can whistle it, send it home, or disown it from anywhere.
+- **Upgraded Saddle**: unlocks five gear slots for a chest, hooves, medkit, stabilizer, and hitchpost.
+- **Horse carts**: a four-seat cart your horse tows, with an optional double chest of cargo.
+- **Riding improvements**: auto-ride, free look, leaf passthrough, water floating, higher step height, and two riders per horse.
+- **Stable Handbook**: an in-game Modonomicon guide covering all of it.
 
-Command	Effect
-Follow	Horse follows you
-Stay	Horse stands in place
-Set Home	Marks the horse's current location as its home
-Return Home	Horse pathfinds back to its assigned home location
+Full detail on each: **[the wiki](https://icywhenhot.github.io/Icy-s-Better-Horses/)**.
 
+## Requirements
 
-Bonding System
-Horses have a bond level from 0 to 100. Every 20 points of bond increases the horse's speed and jump height.
+| | |
+|:---|:---|
+| Minecraft | 26.2 |
+| Loader | Fabric 0.19.3+ |
+| Java | 25 or newer |
+| Required | Fabric API, GeckoLib 5.5.0+, Modonomicon |
+| Optional | Mod Menu + Cloth Config, for the in-game settings screen |
 
-Ways to increase bond:
+## Configuration
 
-Spend time with your horse (passive gain)
-Give it a Name Tag (+10 bond)
-Feed it a Golden Apple (+2 bond)
+Six toggles in `config/icys-better-horses.json` let a server disable stabilizers, medkits, hitchposts, hooves, owner-only riding, or multi-riding. See [Configuration](https://icywhenhot.github.io/Icy-s-Better-Horses/configuration).
 
+## Building
 
-Home System
-Each horse can be assigned a home location via the Radial Command Wheel. Use Return Home to send the horse back at any time — useful if it wanders or you want it waiting somewhere specific.
+```bash
+./gradlew build
+```
 
-Water Traversal
-Horses no longer sink in water. They float and move faster in water than in vanilla.
+The jar lands in `build/libs/`. For IDE setup see the [Fabric documentation](https://docs.fabricmc.net/). Art and model notes are in [`docs/horse-stabilizer-model-guide.md`](docs/horse-stabilizer-model-guide.md) and [`docs/horse-ui-art-guide.md`](docs/horse-ui-art-guide.md).
 
-Auto-Ride
-Press W twice while riding to toggle Auto-Ride mode. The horse continues moving forward and you only need the mouse to steer. Press W, S, or D to return to manual control.
+The repository keeps a branch per Minecraft version; active development is on **`26.2-fab`**.
 
-Leaf Passthrough
-Horses now pass through leaf blocks without slowing down or dealing damage to the rider. Riding through forests is no longer a problem.
+## License
 
-New Items
-Upgraded Saddle
-A crafted saddle that unlocks 5 locked gear slots on the horse inventory screen. Each slot accepts one of the custom gear items below.
-
-Stabilizer
-The horse wears this like a brace. When the horse falls from a significant height, the stabilizer deploys and cancels all fall damage. It has three visible states: closed, half-open, and fully open.
-
-Med Kit
-Activates automatically when the horse's health drops below 50%. Grants the horse Regeneration, Instant Health, Fire Resistance, and other effects. One-time use — a get-out-of-jail-free card for your horse.
-
-Horse Hooves
-Gear that prevents the horse from sinking in powdered snow and reduces damage taken from falls.
-
-Hitch Post
-A placeable item that ties a horse to a fixed location. More immersive alternative to the Stay command for keeping a horse from wandering.
-
-Chest
-Equipping a chest gives the horse additional inventory storage slots.
-
-Setup
-For IDE setup instructions see the Fabric Documentation.
-
-Patchouli is a required dependency for this 1.21 build.
-
-License
-This mod is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
+Released under **CC0**. Learn from it, fork it, and reuse pieces of it in your own projects. No attribution required.

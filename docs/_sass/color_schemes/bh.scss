@@ -1,0 +1,34 @@
+// Icy's Better Horses — warm tack-room palette layered over Just the Docs' light scheme.
+$body-background-color: #fbf8f4;
+$sidebar-color: #f4ede3;
+$search-background-color: #fffdfa;
+$body-text-color: #33291f;
+$body-heading-color: #241c14;
+$nav-child-link-color: #6b5b48;
+
+$link-color: #8a5a2b;
+$btn-primary-color: #8a5a2b;
+$base-button-color: #f4ede3;
+
+$border-color: #e0d4c2;
+$table-background-color: #fffdfa;
+$code-background-color: #f4ede3;
+$search-result-preview-color: #7a6a58;
+
+$feedback-color: darken($sidebar-color, 3%);
+
+// Callout accents tuned to the parchment background.
+$blue-000: #e6eef7;
+$green-000: #e6f2e6;
+$yellow-000: #faf1dc;
+$purple-000: #efe8f5;
+
+.site-title {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+// Stat tables read better with tighter numeric columns.
+table {
+  font-variant-numeric: tabular-nums;
+}

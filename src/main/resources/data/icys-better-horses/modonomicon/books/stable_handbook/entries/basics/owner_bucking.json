@@ -26,7 +26,7 @@
       "id": "toggle",
       "title": "Toggle It Off",
       "show_title_separator": true,
-      "text": "Servers can turn this off in **betterhorses-common.json** by setting **horseExclusivityEnabled** to **false** - then any player can ride any owned horse, handy for shared stables. The same file also toggles stabilizers, medkits, hitchposts, hooves, and multi-riding."
+      "text": "Servers can turn this off in **config/icys-better-horses.json** by setting **horse_exclusivity** to **no** - then any player can ride any owned horse, handy for shared stables. The same file also toggles stabilizers, medkits, hitchposts, hooves, and multi-riding."
     }
   ]
 }

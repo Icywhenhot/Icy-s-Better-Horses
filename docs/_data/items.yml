@@ -1,0 +1,31 @@
+# Display name + sprite for every item that appears in a crafting grid.
+# Sprites live in assets/items/ and are generated from the mod's own textures
+# and the vanilla block/item textures.
+
+diamond:               { name: Diamond,                 sprite: diamond }
+saddle:                { name: Saddle,                  sprite: saddle }
+copper_ingot:          { name: Copper Ingot,            sprite: copper_ingot }
+gold_ingot:            { name: Gold Ingot,              sprite: gold_ingot }
+leather:               { name: Leather,                 sprite: leather }
+golden_carrot:         { name: Golden Carrot,           sprite: golden_carrot }
+golden_apple:          { name: Golden Apple,            sprite: golden_apple }
+potion_regeneration:   { name: Potion of Regeneration,  sprite: potion_regeneration }
+stick:                 { name: Stick,                   sprite: stick }
+lead:                  { name: Lead,                    sprite: lead }
+book:                  { name: Book,                    sprite: book }
+wool:                  { name: Wool (any colour),       sprite: wool }
+planks:                { name: Planks (any wood),       sprite: planks }
+wooden_slab:           { name: Wooden Slab (any wood),  sprite: wooden_slab }
+fence:                 { name: Fence (any type),        sprite: fence }
+chest:                 { name: Chest,                   sprite: chest }
+ender_chest:           { name: Ender Chest,             sprite: ender_chest }
+
+upgraded_saddle:       { name: Upgraded Saddle,         sprite: upgraded_saddle,       page: /equipment/upgraded-saddle }
+horse_hooves_gear:     { name: Horse Hooves,            sprite: horse_hooves_gear,     page: /equipment/horse-hooves }
+horse_medkit_gear:     { name: Horse Medkit,            sprite: horse_medkit_gear,     page: /equipment/horse-medkit }
+canister:              { name: Canister,                sprite: canister,              page: /equipment/canister }
+horse_stabilizer_gear: { name: Horse Stabilizer,        sprite: horse_stabilizer_gear, page: /equipment/horse-stabilizer }
+horse_cart_gear:       { name: Horse Cart,              sprite: horse_cart_gear,       page: /equipment/horse-cart }
+wheel:                 { name: Wheel,                   sprite: wheel,                 page: /equipment/wheel }
+hitchpost:             { name: Hitchpost,               sprite: hitchpost,             page: /equipment/hitchpost }
+stable_handbook:       { name: Stable Handbook,         sprite: stable_handbook,       page: /equipment/stable-handbook }

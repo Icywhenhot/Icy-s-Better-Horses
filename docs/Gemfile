@@ -1,0 +1,11 @@
+source "https://rubygems.org"
+
+gem "jekyll", "~> 4.3"
+gem "just-the-docs"
+gem "jekyll-seo-tag"
+# the theme's templates use {% include_cached %}; without this the build fails
+gem "jekyll-include-cache"
+
+# Windows / JRuby do not include zoneinfo files
+gem "tzinfo-data", platforms: [:mingw, :x64_mingw, :mswin, :jruby]
+gem "wdm", "~> 0.1", platforms: [:mingw, :x64_mingw, :mswin]
