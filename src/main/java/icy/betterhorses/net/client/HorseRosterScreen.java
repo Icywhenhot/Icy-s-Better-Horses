@@ -101,6 +101,8 @@ public class HorseRosterScreen extends Screen {
     // room under the model for three stacked lines: coordinates, bond, home
     private static final int PREVIEW_TEXT_HEIGHT = 32;
     private static final int PREVIEW_LINE_HEIGHT = 10;
+    // keeps the widest line clear of the panel art's dotted frame on both sides
+    private static final int PREVIEW_TEXT_INSET = 8;
     private static final float PREVIEW_FORWARD_OFFSET = 0.0625F;
     private static final int PREVIEW_MIN_SCALE = 14;
     private static final int PREVIEW_MAX_SCALE = 40;
@@ -472,8 +474,8 @@ public class HorseRosterScreen extends Screen {
         int centerX = x + width / 2;
         int line = modelBottom + 4;
         BlockPos pos = currentPos(selected);
-        inkCentered(gfx, Component.translatable("screen.icys-better-horses.manage.coords",
-                pos.getX(), pos.getY(), pos.getZ()), centerX, line);
+        inkCenteredFitted(gfx, Component.translatable("screen.icys-better-horses.manage.coords",
+                pos.getX(), pos.getY(), pos.getZ()), centerX, line, width - PREVIEW_TEXT_INSET);
         line += PREVIEW_LINE_HEIGHT;
         inkCentered(gfx, Component.translatable("screen.icys-better-horses.manage.bond", selected.bond()),
                 centerX, line);
@@ -502,6 +504,24 @@ public class HorseRosterScreen extends Screen {
     // centre-draws shadowless dark ink, centeredText forces a shadow that doubles up on light parchment
     private void inkCentered(GuiGraphicsExtractor gfx, Component text, int centerX, int y) {
         gfx.text(this.font, text, centerX - this.font.width(text) / 2, y, PREVIEW_TEXT_COLOR, false);
+    }
+
+    // a horse tens of thousands of blocks out has coordinates wider than this narrow column, so the
+    // line shrinks to fit rather than running off the parchment
+    private void inkCenteredFitted(GuiGraphicsExtractor gfx, Component text, int centerX, int y, int maxWidth) {
+        int textWidth = this.font.width(text);
+        if (textWidth <= maxWidth || maxWidth <= 0) {
+            inkCentered(gfx, text, centerX, y);
+            return;
+        }
+
+        float scale = maxWidth / (float) textWidth;
+        var pose = gfx.pose();
+        pose.pushMatrix();
+        pose.translate(centerX, (float) y);
+        pose.scale(scale, scale);
+        gfx.text(this.font, text, -textWidth / 2, 0, PREVIEW_TEXT_COLOR, false);
+        pose.popMatrix();
     }
 
     private void renderPreviewModel(GuiGraphicsExtractor gfx, AbstractHorse preview,
