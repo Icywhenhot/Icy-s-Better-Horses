@@ -1,6 +1,6 @@
 ---
 title: FAQ
-nav_order: 15
+nav_order: 16
 ---
 
 # FAQ
@@ -39,7 +39,17 @@ Yes. The gear toggles and `horse_exclusivity` exist specifically for multiplayer
 
 ### Why can't my friend ride my horse?
 
-That's [owner-only riding](ownership-and-bonding#owner-only-riding), on by default. They *can* ride behind you as a second rider while you're in the saddle. To let anyone ride anything, set `horse_exclusivity` to `no`.
+That's [owner-only riding](ownership-and-bonding#owner-only-riding), on by default. They *can* ride behind you as a second rider while you're in the saddle.
+
+To let one specific friend ride on their own, run `/horse trust <player>`. To let *anyone* ride *anything*, set `horse_exclusivity` to `no`. See [Commands](commands).
+
+### Does trusting someone give them my saddle and gear?
+
+No. `/horse trust` is a riding permission only. Trusted players still can't open the horse's gear screen, shear its saddle, open a cart's chest, or disown it. What they *can* do is ride the horse away, so only trust people you'd hand a lead to.
+
+### Where is my horse?
+
+Open the [roster](managing-your-horses) with <kbd>G</kbd> and select the horse. Its coordinates are printed under the 3D model, along with the dimension it's in on the list row.
 
 ### My horse won't come when I whistle.
 

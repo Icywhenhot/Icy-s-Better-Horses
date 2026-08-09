@@ -48,6 +48,7 @@ public class IcysBetterHorses implements ModInitializer {
         BhBiomeSpawns.register();
         BhHorseSpawnRules.installSpawnPlacementOverride();
         BhCriteria.init();
+        BhCommands.register();
         registerPackets();
         registerServerHandlers();
         registerEntityTracking();

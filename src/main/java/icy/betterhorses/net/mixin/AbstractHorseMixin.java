@@ -697,14 +697,13 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     }
 
-    // block non-owners from becoming the primary rider of an owned horse
+    // block untrusted players from becoming the primary rider of an owned horse
     @Inject(method = "doPlayerRide", at = @At("HEAD"), cancellable = true)
     private void bh_gateOwnerOnlyMount(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (self.level().isClientSide() || !BhConfig.horseExclusivityEnabled()) return;
-        UUID owner = this.bh_getOwner();
-        if (owner == null || owner.equals(player.getUUID())) return;
-        if (bh_ownerIsPrimaryPassenger(self, owner)) return;
+        if (this.bh_maySaddleUp(player.getUUID())) return;
+        if (this.bh_riderMayLeadPillion(self)) return;
         self.playSound(net.minecraft.sounds.SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
         if (player instanceof ServerPlayer serverPlayer) {
             serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_owner"));
@@ -716,7 +715,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         ci.cancel();
     }
 
-    // catch-all: if at any tick the primary rider isn't the owner of an owned horse, eject every passenger
+    // catch-all: if at any tick the primary rider may not ride this horse, eject every passenger
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_enforceOwnerPrimaryRider(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -738,11 +737,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             return;
         }
 
-        UUID owner = this.bh_getOwner();
-        if (owner == null) return;
+        if (!this.bh_isOwned()) return;
         Entity primary = passengers.get(0);
         if (!(primary instanceof net.minecraft.world.entity.player.Player)) return;
-        if (primary.getUUID().equals(owner)) return;
+        if (this.bh_maySaddleUp(primary.getUUID())) return;
         self.playSound(net.minecraft.sounds.SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
         for (Entity passenger : new java.util.ArrayList<>(passengers)) {
             passenger.stopRiding();
@@ -763,11 +761,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
 
         // defense in depth: even if HEAD-cancel from bh_gateOwnerOnlyMount didn't suppress this injector
-        UUID owner = this.bh_getOwner();
         if (BhConfig.horseExclusivityEnabled()
-                && owner != null
-                && !owner.equals(player.getUUID())
-                && !bh_ownerIsPrimaryPassenger(self, owner)) {
+                && !this.bh_maySaddleUp(player.getUUID())
+                && !this.bh_riderMayLeadPillion(self)) {
             ci.cancel();
             return;
         }
@@ -1232,17 +1228,18 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         if (!(passenger instanceof net.minecraft.world.entity.player.Player player)) {
             return false;
         }
-        boolean isOwner = owner.equals(player.getUUID());
+        boolean mayDrive = this.bh_maySaddleUp(player.getUUID());
         if (passengers.isEmpty()) {
-            return isOwner;
+            return mayDrive;
         }
         if (!multiRidingEnabled) {
             return false;
         }
-        if (isOwner) {
+        if (mayDrive) {
             return true;
         }
-        return passengers.get(0).getUUID().equals(owner);
+        // riding pillion is open to anyone, as long as someone allowed is holding the reins
+        return this.bh_maySaddleUp(passengers.get(0).getUUID());
     }
 
     // which bench seat a passenger sits
@@ -1281,10 +1278,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     }
 
+    // true when someone allowed on this horse already holds the reins, which is what opens the
+    // second seat to everyone else
     @Unique
-    private static boolean bh_ownerIsPrimaryPassenger(AbstractHorse horse, UUID owner) {
+    private boolean bh_riderMayLeadPillion(AbstractHorse horse) {
         java.util.List<Entity> passengers = horse.getPassengers();
-        return !passengers.isEmpty() && passengers.get(0).getUUID().equals(owner);
+        return !passengers.isEmpty() && this.bh_maySaddleUp(passengers.get(0).getUUID());
     }
 
     @Unique

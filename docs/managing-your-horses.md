@@ -26,12 +26,31 @@ Long lists scroll, with a *"Scroll for N more"* hint at the edge. Selecting a ho
 
 ---
 
-## What each entry shows
+## The preview pane
+
+Under the 3D model, three lines describe the selected horse:
+
+| Line | Meaning |
+|:---|:---|
+| **X, Y, Z** | Where the horse is standing right now |
+| **Bond N** | Current bond out of 100 |
+| **Home set** / **No home** | Whether the horse has a saved home location |
+
+### Coordinates
+
+The first line is the horse's block position, so you can write it down and go fetch a mount that's too far away to whistle — or too far away to whistle *across dimensions*.
+
+For a horse loaded near you the readout follows it live as it moves. For a **resting** horse it's the last place it was standing before its chunk unloaded, which is where it will still be when you get there.
+
+{: .note }
+> Coordinates are given in the horse's own dimension, shown in the list row next to its gender. A horse resting in the Nether at `120, 68, -340` is at Nether coordinates.
+
+---
+
+## What each list row shows
 
 | Label | Meaning |
 |:---|:---|
-| **Bond N** | Current bond out of 100 |
-| **Home set** / **No home** | Whether the horse has a saved home location |
 | **Resting** | The horse is in an unloaded chunk. It's safe and will be restored when called. |
 | **Active** | This is the horse your <kbd>P</kbd> whistle calls |
 
@@ -83,6 +102,7 @@ Permanently gives up the horse. A confirmation dialog appears, reading *"Are you
 ## Related pages
 
 - [Ownership & bonding](ownership-and-bonding): whistling and bond
+- [Commands](commands): letting other players ride your horses
 - [Command wheel](command-wheel): setting a home in the first place
 - [Horse Info screen](horse-info-screen): the detailed stat view
 - [Advancements](advancements): **Stable Genius** wants ten horses at once

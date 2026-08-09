@@ -9,14 +9,17 @@ import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.network.HorseRosterEntry;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 
 import org.jetbrains.annotations.Nullable;
@@ -95,7 +98,9 @@ public class HorseRosterScreen extends Screen {
     private static final int SET_ACTIVE_TEXT_COLOR = 0xFFEDE6DA;
     private static final int ACTIVE_TEXT_COLOR = 0xFF2A210A;
     private static final int SET_ACTIVE_FLASH_TINT = 0xFFE85C5C;
-    private static final int PREVIEW_TEXT_HEIGHT = 22;
+    // room under the model for three stacked lines: coordinates, bond, home
+    private static final int PREVIEW_TEXT_HEIGHT = 32;
+    private static final int PREVIEW_LINE_HEIGHT = 10;
     private static final float PREVIEW_FORWARD_OFFSET = 0.0625F;
     private static final int PREVIEW_MIN_SCALE = 14;
     private static final int PREVIEW_MAX_SCALE = 40;
@@ -464,14 +469,34 @@ public class HorseRosterScreen extends Screen {
         }
 
         // the details the rows no longer have room
+        int centerX = x + width / 2;
+        int line = modelBottom + 4;
+        BlockPos pos = currentPos(selected);
+        inkCentered(gfx, Component.translatable("screen.icys-better-horses.manage.coords",
+                pos.getX(), pos.getY(), pos.getZ()), centerX, line);
+        line += PREVIEW_LINE_HEIGHT;
         inkCentered(gfx, Component.translatable("screen.icys-better-horses.manage.bond", selected.bond()),
-                x + width / 2, modelBottom + 4);
+                centerX, line);
+        line += PREVIEW_LINE_HEIGHT;
         inkCentered(gfx, selected.hasHome()
                         ? Component.translatable("screen.icys-better-horses.manage.has_home")
                         : Component.translatable("screen.icys-better-horses.manage.no_home"),
-                x + width / 2, modelBottom + 14);
+                centerX, line);
 
         renderSetActiveButton(gfx, selected, x, width, mouseX, mouseY);
+    }
+
+    // the roster's position is a snapshot from when the screen opened; if the horse is loaded on this
+    // client too, read it straight off the live entity so a horse walking beside you stays accurate
+    private static BlockPos currentPos(HorseRosterEntry entry) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (entry.loaded() && minecraft.level != null) {
+            Entity live = minecraft.level.getEntity(entry.horseId());
+            if (live != null) {
+                return live.blockPosition();
+            }
+        }
+        return entry.pos();
     }
 
     // centre-draws shadowless dark ink, centeredText forces a shadow that doubles up on light parchment

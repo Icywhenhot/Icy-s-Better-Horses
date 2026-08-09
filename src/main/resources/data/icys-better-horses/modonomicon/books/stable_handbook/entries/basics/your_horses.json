@@ -1,0 +1,46 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:basics/your_horses",
+  "category": "icys-better-horses:basics",
+  "name": "The Horse Roster",
+  "icon": { "id": "minecraft:compass" },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": -4,
+  "y": 0,
+  "sort_number": 7,
+  "parents": [ { "entry": "icys-better-horses:basics/horse_info_screen" } ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "open",
+      "title": "Your Horses",
+      "show_title_separator": true,
+      "text": "Press your **Manage Horses** key to open the roster. It lists every horse registered to you, wherever it is - following you, parked at home, or standing in another dimension.\n\nA horse marked **Resting** is in an unloaded chunk. It's safe, and it still answers the whistle."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "preview",
+      "title": "The Preview Pane",
+      "show_title_separator": true,
+      "text": "Pick a horse and it appears in 3D on the right, so six chestnut mares stop looking alike.\n\nThree lines sit under the model:\n\n- Its **coordinates**, as X, Y, Z.\n- Its **bond**, out of 100.\n- Whether it has a **home** set."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "coords",
+      "title": "Finding a Horse",
+      "show_title_separator": true,
+      "text": "The coordinates are the fastest way to go fetch a mount that's too far off to whistle, or resting in another dimension.\n\nFor a horse loaded nearby, the numbers follow it as it moves. For a resting one, they're the last spot it stood in - which is exactly where you'll find it. They're always given in that horse's own dimension, shown beside its gender in the list."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "actions",
+      "title": "The Four Buttons",
+      "show_title_separator": true,
+      "text": "- **Set Active** - the horse your whistle calls from now on.\n- **Whistle** - calls it to you; it walks if it's close, teleports if it isn't.\n- **Send Home** - packs it off to its saved home.\n- **Disown** - gives it up for good, after a confirmation. Strip its gear first."
+    }
+  ]
+}

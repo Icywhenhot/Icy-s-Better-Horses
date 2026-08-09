@@ -23,6 +23,13 @@
     },
     {
       "type": "modonomicon:text",
+      "id": "trust",
+      "title": "Naming a Friend",
+      "show_title_separator": true,
+      "text": "To let one particular player ride on their own, type **/horse trust PlayerName**. It covers every horse you own, now and later, and **/horse untrust** takes it back.\n\nSee **Trusted Riders** for what that does and doesn't hand over."
+    },
+    {
+      "type": "modonomicon:text",
       "id": "toggle",
       "title": "Toggle It Off",
       "show_title_separator": true,

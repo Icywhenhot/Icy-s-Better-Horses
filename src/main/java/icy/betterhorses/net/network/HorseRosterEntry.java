@@ -1,5 +1,6 @@
 package icy.betterhorses.net.network;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.UUID;
@@ -19,6 +20,8 @@ public record HorseRosterEntry(
         boolean active,
         // identifier of the dimension the horse was last seen in, e.g
         String dimensionId,
+        // where the horse is standing, or last stood before its chunk unloaded
+        BlockPos pos,
         // everything below exists only so the client can rebuild a stand-in horse for the preview pane
         String entityTypeId,
         // variant ordinal (coat colour), or -1 for equines that don't have one
@@ -38,6 +41,7 @@ public record HorseRosterEntry(
         buf.writeBoolean(entry.hasHome());
         buf.writeBoolean(entry.active());
         buf.writeUtf(entry.dimensionId());
+        buf.writeBlockPos(entry.pos());
         buf.writeUtf(entry.entityTypeId());
         // +1 so the "absent" sentinel survives writeVarInt, which can't carry -1 cheaply
         buf.writeVarInt(entry.variantOrdinal() + 1);
@@ -57,6 +61,7 @@ public record HorseRosterEntry(
                 buf.readBoolean(),
                 buf.readBoolean(),
                 buf.readUtf(),
+                buf.readBlockPos(),
                 buf.readUtf(),
                 buf.readVarInt() - 1,
                 buf.readVarInt() - 1,

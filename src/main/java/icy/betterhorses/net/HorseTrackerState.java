@@ -49,7 +49,9 @@ public class HorseTrackerState extends SavedData {
             UUIDUtil.STRING_CODEC.listOf()
                     .optionalFieldOf("pending_disowns", List.of()).forGetter(state -> List.copyOf(state.pendingDisowns)),
             Codec.unboundedMap(UUIDUtil.STRING_CODEC, UUIDUtil.STRING_CODEC)
-                    .optionalFieldOf("active_horse_by_player", Map.of()).forGetter(state -> state.activeHorseByPlayer)
+                    .optionalFieldOf("active_horse_by_player", Map.of()).forGetter(state -> state.activeHorseByPlayer),
+            Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.STRING))
+                    .optionalFieldOf("trusted_by_player", Map.of()).forGetter(state -> state.trustedByPlayer)
     ).apply(instance, HorseTrackerState::new));
 
     public static final SavedDataType<HorseTrackerState> TYPE = new SavedDataType<>(
@@ -66,6 +68,8 @@ public class HorseTrackerState extends SavedData {
     private final Set<UUID> pendingDisowns;
     // the horse each player picked in the management screen
     private final Map<UUID, UUID> activeHorseByPlayer;
+    // owner -> the players they trust with their horses, mapped to the name last seen for each
+    private final Map<UUID, Map<UUID, String>> trustedByPlayer;
 
     // concurrent collections: parallel-ticking mods mutate these from multiple entity-tick threads
     public HorseTrackerState() {
@@ -75,6 +79,7 @@ public class HorseTrackerState extends SavedData {
         this.generations = new ConcurrentHashMap<>();
         this.pendingDisowns = ConcurrentHashMap.newKeySet();
         this.activeHorseByPlayer = new ConcurrentHashMap<>();
+        this.trustedByPlayer = new ConcurrentHashMap<>();
     }
 
     private HorseTrackerState(
@@ -83,7 +88,8 @@ public class HorseTrackerState extends SavedData {
             Map<UUID, CompoundTag> snapshots,
             Map<UUID, Integer> generations,
             List<UUID> pendingDisowns,
-            Map<UUID, UUID> activeHorseByPlayer) {
+            Map<UUID, UUID> activeHorseByPlayer,
+            Map<UUID, Map<UUID, String>> trustedByPlayer) {
         this.lastRiddenByPlayer = new ConcurrentHashMap<>(lastRiddenByPlayer);
         this.lastKnownPositions = new ConcurrentHashMap<>(lastKnownPositions);
         this.snapshots = new ConcurrentHashMap<>(snapshots);
@@ -91,6 +97,8 @@ public class HorseTrackerState extends SavedData {
         this.pendingDisowns = ConcurrentHashMap.newKeySet();
         this.pendingDisowns.addAll(pendingDisowns);
         this.activeHorseByPlayer = new ConcurrentHashMap<>(activeHorseByPlayer);
+        this.trustedByPlayer = new ConcurrentHashMap<>();
+        trustedByPlayer.forEach((owner, trusted) -> this.trustedByPlayer.put(owner, new ConcurrentHashMap<>(trusted)));
     }
 
     public static HorseTrackerState get(MinecraftServer server) {
@@ -173,6 +181,41 @@ public class HorseTrackerState extends SavedData {
         if (activeHorseByPlayer.values().removeIf(horseId::equals)) {
             setDirty();
         }
+    }
+
+    // trusted riders
+
+    // adds a player to an owner's trust list; false when they were already on it
+    public boolean trust(UUID ownerId, UUID trustedId, String trustedName) {
+        Map<UUID, String> trusted = trustedByPlayer.computeIfAbsent(ownerId, id -> new ConcurrentHashMap<>());
+        String previous = trusted.put(trustedId, trustedName);
+        setDirty();
+        // a rename still writes through, but it isn't a new grant
+        return previous == null;
+    }
+
+    // removes a player from an owner's trust list; false when they weren't on it
+    public boolean untrust(UUID ownerId, UUID trustedId) {
+        Map<UUID, String> trusted = trustedByPlayer.get(ownerId);
+        if (trusted == null || trusted.remove(trustedId) == null) {
+            return false;
+        }
+        if (trusted.isEmpty()) {
+            trustedByPlayer.remove(ownerId, trusted);
+        }
+        setDirty();
+        return true;
+    }
+
+    public boolean isTrusted(UUID ownerId, UUID playerId) {
+        Map<UUID, String> trusted = trustedByPlayer.get(ownerId);
+        return trusted != null && trusted.containsKey(playerId);
+    }
+
+    // this owner's trust list as an immutable snapshot of id -> last known name
+    public Map<UUID, String> getTrusted(UUID ownerId) {
+        Map<UUID, String> trusted = trustedByPlayer.get(ownerId);
+        return trusted == null ? Map.of() : Map.copyOf(trusted);
     }
 
     public void markPendingDisown(UUID horseId) {

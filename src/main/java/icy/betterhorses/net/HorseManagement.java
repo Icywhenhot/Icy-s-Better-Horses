@@ -68,6 +68,11 @@ public final class HorseManagement {
             String dimension = loaded != null
                     ? loaded.level().dimension().identifier().toString()
                     : (known == null ? "" : known.dimension().identifier().toString());
+            // a resting horse reports where it was standing when its chunk unloaded; the snapshot's
+            // own position is the fallback for the rare entry with no recorded sighting
+            BlockPos pos = loaded != null
+                    ? loaded.blockPosition()
+                    : (known == null ? horse.blockPosition() : known.pos());
 
             roster.add(new HorseRosterEntry(
                     horseId,
@@ -80,6 +85,7 @@ public final class HorseManagement {
                     data.bh_getHome() != null,
                     horseId.equals(activeHorseId),
                     dimension,
+                    pos,
                     EntityType.getKey(horse.getType()).toString(),
                     horse instanceof Horse coloured ? coloured.getVariant().ordinal() : -1,
                     horse instanceof Horse coloured ? coloured.getMarkings().ordinal() : -1,

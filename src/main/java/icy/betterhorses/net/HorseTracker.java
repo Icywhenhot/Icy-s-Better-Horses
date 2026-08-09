@@ -158,6 +158,30 @@ public final class HorseTracker {
         }
     }
 
+    // trusted riders: players an owner has allowed onto every horse they own
+
+    public static boolean trust(UUID ownerId, UUID trustedId, String trustedName) {
+        HorseTrackerState state = state();
+        return state != null && state.trust(ownerId, trustedId, trustedName);
+    }
+
+    public static boolean untrust(UUID ownerId, UUID trustedId) {
+        HorseTrackerState state = state();
+        return state != null && state.untrust(ownerId, trustedId);
+    }
+
+    // false on a client connected to a dedicated server, where no tracker state is attached; the
+    // server stays the authority on who may ride, so a client-side "no" only skips local prediction
+    public static boolean isTrusted(UUID ownerId, UUID playerId) {
+        HorseTrackerState state = state();
+        return state != null && state.isTrusted(ownerId, playerId);
+    }
+
+    public static Map<UUID, String> getTrusted(UUID ownerId) {
+        HorseTrackerState state = state();
+        return state == null ? Map.of() : state.getTrusted(ownerId);
+    }
+
     // queues a horse that was disowned while unloaded; it is released when its chunk next loads
     public static void markPendingDisown(UUID horseId) {
         HorseTrackerState state = state();

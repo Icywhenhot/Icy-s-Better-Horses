@@ -52,6 +52,14 @@ public interface IHorseData {
         return bh_getOwner() != null;
     }
 
+    // true when this player may take the reins: the owner, or someone the owner trusted with
+    // /horse trust. an unowned horse has nobody to gate it, so everyone passes
+    default boolean bh_maySaddleUp(@Nullable UUID playerId) {
+        UUID owner = bh_getOwner();
+        if (owner == null) return true;
+        return owner.equals(playerId) || (playerId != null && HorseTracker.isTrusted(owner, playerId));
+    }
+
     default boolean bh_isHitched() {
         return bh_getHitchpostPos() != null;
     }

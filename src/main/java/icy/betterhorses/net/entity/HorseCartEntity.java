@@ -778,17 +778,17 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         return false;
     }
 
-    // bench eligibility mirrors the horse's own owner-gating: only the owner drives
+    // bench eligibility mirrors the horse's own rider-gating: the owner and anyone they trust drive
     private boolean playerMayTakeBench(AbstractHorse boundHorse, Player player) {
         if (!BhConfig.horseExclusivityEnabled()) {
             return true;
         }
-        UUID owner = ((IHorseData) boundHorse).bh_getOwner();
-        if (owner == null || owner.equals(player.getUUID())) {
+        IHorseData data = (IHorseData) boundHorse;
+        if (data.bh_maySaddleUp(player.getUUID())) {
             return true;
         }
         List<Entity> passengers = boundHorse.getPassengers();
-        return !passengers.isEmpty() && passengers.get(0).getUUID().equals(owner);
+        return !passengers.isEmpty() && data.bh_maySaddleUp(passengers.get(0).getUUID());
     }
 
     @Override

@@ -1,0 +1,39 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:basics/trusted_riders",
+  "category": "icys-better-horses:basics",
+  "name": "Trusted Riders",
+  "icon": { "id": "minecraft:player_head" },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 4,
+  "y": 0,
+  "sort_number": 6,
+  "parents": [ { "entry": "icys-better-horses:basics/owner_bucking" } ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "trust",
+      "title": "Lend Out a Horse",
+      "show_title_separator": true,
+      "text": "Owner-only riding doesn't have to mean nobody else. Type **/horse trust PlayerName** and that player may ride every horse you own.\n\nTrust is stored per player, not per horse, so it also covers every horse you tame later. You never have to run it again for a new mount."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "limits",
+      "title": "Riding, Nothing More",
+      "show_title_separator": true,
+      "text": "A trusted rider may mount your horse, ride behind you, and take the reins of a cart.\n\nThey still **cannot** open its gear screen, shear off its saddle, open a cart's chest, give it commands, or disown it. Those stay yours alone."
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "revoke",
+      "title": "Taking It Back",
+      "show_title_separator": true,
+      "text": "**/horse untrust PlayerName** revokes it. If they're in the saddle at that moment, the horse bucks them off on the spot.\n\n**/horse trusted** lists everyone you currently trust.\n\nA trusted rider can ride your horse away, and you can't whistle it out from under them. Only trust people you'd hand a lead to."
+    }
+  ]
+}

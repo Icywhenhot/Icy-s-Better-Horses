@@ -30,10 +30,20 @@ The same protection covers the horse's inventory and its saddle:
 | Mount as primary rider | Bucked off |
 | Open the horse's gear screen | *"This horse won't let you access its gear."* |
 | Shear off the saddle | *"This horse refuses to let you remove its saddle."* |
-| Ride as a **second** rider | Allowed, but only while the owner is already in the saddle |
+| Ride as a **second** rider | Allowed, but only while an allowed rider is already in the saddle |
 
 {: .note }
 > Running a shared stable? Set `horse_exclusivity` to `no` in the config and any player can ride any owned horse. See [Configuration](configuration).
+
+### Letting a friend ride
+
+You don't have to choose between "nobody" and "everybody". Trust a specific player and they can ride every horse you own:
+
+```
+/horse trust Alex
+```
+
+Trust is granted per player, so it covers horses you tame later too, and `/horse untrust` takes it back — bucking them off if they happen to be riding at the time. It's a riding permission only: a trusted friend still can't open your horse's gear, shear its saddle, or disown it. See [Commands](commands) for the full breakdown.
 
 ---
 
@@ -99,6 +109,7 @@ Which horse answers is set from the [roster](managing-your-horses) using **Set A
 
 ## Related pages
 
+- [Commands](commands): trusting other players with your horses
 - [Command wheel](command-wheel): follow, stay, wander, and home commands
 - [Managing your horses](managing-your-horses): the roster screen
 - [Horse Info screen](horse-info-screen): reading a horse's stats
