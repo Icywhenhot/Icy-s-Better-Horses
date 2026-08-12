@@ -62,11 +62,14 @@ public abstract class AbstractHorseRendererMixin<
 
         if (!(entity instanceof IHorseData data)) {
             extState.bh_setStabilizerData(false, HorseStabilizerState.CLOSED, entity.getId(), partialTick);
-            extState.bh_setChestGear(false);
+            extState.bh_setChestGear(false, false);
             return;
         }
 
-        extState.bh_setChestGear(data.bh_hasChestGear());
+        // the synced gear flags, not bh_hasChestGear(): that reads the gear container, which only
+        // exists on the server, so on the client it always answered "no chest" and the pannier
+        // never drew
+        extState.bh_setChestGear(data.bh_hasGear(GearSlot.CHEST), data.bh_hasEnderChestGear());
 
         boolean hasStabilizer = data.bh_hasStabilizerItem();
         extState.bh_setStabilizerData(

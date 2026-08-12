@@ -13,7 +13,16 @@ public final class HorseStabilizerGeoRenderer
             DataTicket.create("icys_better_horses_stabilizer_wings_active", Boolean.class);
 
     public HorseStabilizerGeoRenderer() {
-        super(new HorseStabilizerGeoModel());
+        this(new HorseStabilizerGeoModel());
+    }
+
+    /**
+     * The stabilizer is one item but its look depends on which horse wears it, so the model is
+     * injectable. Wing hiding below works for every variant because they all name their wing
+     * bones {@code wingsL}/{@code wingsL2}.
+     */
+    public HorseStabilizerGeoRenderer(com.geckolib.model.GeoModel<HorseStabilizerAnimatable> model) {
+        super(model);
     }
 
     @Override

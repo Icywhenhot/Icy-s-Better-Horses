@@ -3,6 +3,7 @@
   "key.icys-better-horses.call": "Horse Whistle / Info",
   "key.icys-better-horses.radial": "Horse Command Wheel",
   "key.icys-better-horses.manage": "Manage Horses",
+  "key.icys-better-horses.rest_pose": "Freeze Horse Rest Pose (dev)",
 
   "screen.icys-better-horses.radial": "Horse Commands",
   "screen.icys-better-horses.manage": "Your Horses",
@@ -176,6 +177,22 @@
   "block.icys-better-horses.hitchpost": "Hitchpost",
 
   "entity.icys-better-horses.horse_cart": "Horse Cart",
+  "entity.icys-better-horses.icelandic_horse": "Icelandic Horse",
+  "item.icys-better-horses.icelandic_horse_spawn_egg": "Icelandic Horse Spawn Egg",
+  "entity.icys-better-horses.friesian_horse": "Friesian Horse",
+  "item.icys-better-horses.friesian_horse_spawn_egg": "Friesian Horse Spawn Egg",
+  "entity.icys-better-horses.appaloosa_horse": "Appaloosa Horse",
+  "item.icys-better-horses.appaloosa_horse_spawn_egg": "Appaloosa Horse Spawn Egg",
+  "entity.icys-better-horses.thoroughbred_horse": "Thoroughbred Horse",
+  "item.icys-better-horses.thoroughbred_horse_spawn_egg": "Thoroughbred Horse Spawn Egg",
+  "entity.icys-better-horses.american_paint_horse": "American Paint Horse",
+  "item.icys-better-horses.american_paint_horse_spawn_egg": "American Paint Horse Spawn Egg",
+  "entity.icys-better-horses.andalusian_horse": "Andalusian Horse",
+  "item.icys-better-horses.andalusian_horse_spawn_egg": "Andalusian Horse Spawn Egg",
+  "entity.icys-better-horses.mustang_horse": "Mustang Horse",
+  "item.icys-better-horses.mustang_horse_spawn_egg": "Mustang Horse Spawn Egg",
+  "entity.icys-better-horses.quarter_horse": "Quarter Horse",
+  "item.icys-better-horses.quarter_horse_spawn_egg": "Quarter Horse Spawn Egg",
 
   "tag.item.icys-better-horses.stable_handbook_ingredients": "Stable Handbook Ingredients"
 }

@@ -13,6 +13,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.equipment.Equippable;
 
 public final class ModItems {
@@ -47,6 +48,52 @@ public final class ModItems {
     public static final Item WHEEL = register("wheel",
             new Item(itemProperties("wheel")));
 
+    // --- breed spawn eggs -------------------------------------------------------------
+    // One per dedicated breed mob. Add the next breed's egg beside this one and drop it into
+    // BREED_SPAWN_EGGS; the creative tab and the item model then pick it up automatically.
+    public static final Item ICELANDIC_HORSE_SPAWN_EGG = register("icelandic_horse_spawn_egg",
+            new SpawnEggItem(itemProperties("icelandic_horse_spawn_egg")
+                    .spawnEgg(ModEntities.ICELANDIC_HORSE)));
+
+    public static final Item FRIESIAN_HORSE_SPAWN_EGG = register("friesian_horse_spawn_egg",
+            new SpawnEggItem(itemProperties("friesian_horse_spawn_egg")
+                    .spawnEgg(ModEntities.FRIESIAN_HORSE)));
+
+    public static final Item APPALOOSA_HORSE_SPAWN_EGG = register("appaloosa_horse_spawn_egg",
+            new SpawnEggItem(itemProperties("appaloosa_horse_spawn_egg")
+                    .spawnEgg(ModEntities.APPALOOSA_HORSE)));
+
+    public static final Item THOROUGHBRED_HORSE_SPAWN_EGG = register("thoroughbred_horse_spawn_egg",
+            new SpawnEggItem(itemProperties("thoroughbred_horse_spawn_egg")
+                    .spawnEgg(ModEntities.THOROUGHBRED_HORSE)));
+
+    public static final Item AMERICAN_PAINT_HORSE_SPAWN_EGG = register("american_paint_horse_spawn_egg",
+            new SpawnEggItem(itemProperties("american_paint_horse_spawn_egg")
+                    .spawnEgg(ModEntities.AMERICAN_PAINT_HORSE)));
+
+    public static final Item ANDALUSIAN_HORSE_SPAWN_EGG = register("andalusian_horse_spawn_egg",
+            new SpawnEggItem(itemProperties("andalusian_horse_spawn_egg")
+                    .spawnEgg(ModEntities.ANDALUSIAN_HORSE)));
+
+    public static final Item MUSTANG_HORSE_SPAWN_EGG = register("mustang_horse_spawn_egg",
+            new SpawnEggItem(itemProperties("mustang_horse_spawn_egg")
+                    .spawnEgg(ModEntities.MUSTANG_HORSE)));
+
+    public static final Item QUARTER_HORSE_SPAWN_EGG = register("quarter_horse_spawn_egg",
+            new SpawnEggItem(itemProperties("quarter_horse_spawn_egg")
+                    .spawnEgg(ModEntities.QUARTER_HORSE)));
+
+    /** Every breed spawn egg, in tab order. Extend as breeds get their own entity type. */
+    public static final java.util.List<Item> BREED_SPAWN_EGGS = java.util.List.of(
+            ICELANDIC_HORSE_SPAWN_EGG,
+            FRIESIAN_HORSE_SPAWN_EGG,
+            APPALOOSA_HORSE_SPAWN_EGG,
+            THOROUGHBRED_HORSE_SPAWN_EGG,
+            AMERICAN_PAINT_HORSE_SPAWN_EGG,
+            ANDALUSIAN_HORSE_SPAWN_EGG,
+            MUSTANG_HORSE_SPAWN_EGG,
+            QUARTER_HORSE_SPAWN_EGG);
+
     public static final CreativeModeTab STABLE_SUPPLIES_TAB = Registry.register(
             BuiltInRegistries.CREATIVE_MODE_TAB,
             Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "stable_supplies"),
@@ -63,6 +110,7 @@ public final class ModItems {
                         entries.accept(WHEEL);
                         entries.accept(HORSE_CART);
                         entries.accept(HITCHPOST);
+                        BREED_SPAWN_EGGS.forEach(entries::accept);
                     })
                     .build());
 

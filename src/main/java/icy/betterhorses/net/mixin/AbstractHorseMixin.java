@@ -94,6 +94,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique
     private static final EntityDataAccessor<Boolean> BH_CART_CHEST_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
+    // the chest gear slot takes a chest or an ender chest; the gear flags only say the slot is
+    // filled, so which of the two it is needs its own synced bit for the renderer to pick a hide
+    @Unique
+    private static final EntityDataAccessor<Boolean> BH_ENDER_CHEST_SYNCED =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
     @Unique
     private static final EntityDataAccessor<Optional<BlockPos>> BH_HITCHPOST_POS_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
@@ -304,6 +309,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public HorseBreed bh_getBreed() {
+        // a dedicated breed mob is its breed by definition. Answering here rather than at each
+        // write site means every reader - info screen, roster, handbook, breeding, advancements -
+        // is correct even for an entity loaded from a world saved before it had its own type.
+        if ((Object) this instanceof icy.betterhorses.net.entity.BhBreedEntity breedEntity) {
+            return breedEntity.bhFixedBreed();
+        }
         return HorseBreed.fromId(this.entityData.get(BH_BREED_SYNCED));
     }
 
@@ -443,6 +454,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         builder.define(BH_GEAR_FLAGS_SYNCED, 0);
         builder.define(BH_CART_SYNCED, false);
         builder.define(BH_CART_CHEST_SYNCED, false);
+        builder.define(BH_ENDER_CHEST_SYNCED, false);
         builder.define(BH_HITCHPOST_POS_SYNCED, Optional.empty());
         builder.define(BH_GENDER_SYNCED, 0);
         builder.define(BH_BREED_SYNCED, HorseBreed.UNKNOWN_SPECIES.ordinal());
@@ -539,6 +551,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         // always randomize gender on fresh spawn, default int 0 doesn't distinguish "unset" from MALE
         this.entityData.set(BH_GENDER_SYNCED, this.random.nextBoolean() ? 0 : 1);
 
+        // dedicated breed mobs are pinned by type, and must win even over a previously
+        // synced value, so this runs before the UNKNOWN_SPECIES early-out below
+        if ((Object) this instanceof icy.betterhorses.net.entity.BhBreedEntity breedEntity) {
+            this.entityData.set(BH_BREED_SYNCED, breedEntity.bhFixedBreed().ordinal());
+            this.entityData.set(BH_BREED_MIXED_SYNCED, false);
+            return;
+        }
+
         if (this.bh_getBreed() != HorseBreed.UNKNOWN_SPECIES) {
             return;
         }
@@ -555,6 +575,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique
     private void bh_assignBreedPreservingCoat() {
         AbstractHorse self = (AbstractHorse) (Object) this;
+        // a dedicated breed mob knows what it is; never guess from its coat
+        if (self instanceof icy.betterhorses.net.entity.BhBreedEntity breedEntity) {
+            this.entityData.set(BH_BREED_SYNCED, breedEntity.bhFixedBreed().ordinal());
+            this.entityData.set(BH_BREED_MIXED_SYNCED, false);
+            return;
+        }
         HorseBreed species = HorseBreed.speciesFor(self);
         if (species != null) {
             this.entityData.set(BH_BREED_SYNCED, species.ordinal());
@@ -1455,6 +1481,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.entityData.set(BH_GEAR_FLAGS_SYNCED, flags);
         this.entityData.set(BH_CART_SYNCED,
                 this.bh_gearContainer.getItem(GearSlot.STABILIZER.ordinal()).is(ModItems.HORSE_CART));
+        this.entityData.set(BH_ENDER_CHEST_SYNCED,
+                this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal()).is(Items.ENDER_CHEST));
+    }
+
+    @Override
+    public boolean bh_hasEnderChestGear() {
+        // synced for the same reason the cart flag is: the gear container itself never reaches the client
+        return this.entityData.get(BH_ENDER_CHEST_SYNCED);
     }
 
     @Override

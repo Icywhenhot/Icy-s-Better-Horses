@@ -65,6 +65,12 @@ public final class HorseChestLayer<S extends EquineRenderState, M extends Entity
         if (!(this.getParentModel() instanceof HorseModelAccessor parentModel)) {
             return;
         }
+        // A breed with its own chest model draws it in its own renderer, on its own animator.
+        // Without this the generic donkey pouch renders on top of it. Keyed off the shared
+        // base rather than a list of breed classes, so a new breed is covered automatically.
+        if (this.getParentModel() instanceof BhHorseModel) {
+            return;
+        }
 
         float opacity = BhRenderContext.currentOpacity();
         if (opacity <= 0.01F) {

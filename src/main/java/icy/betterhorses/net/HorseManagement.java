@@ -89,7 +89,9 @@ public final class HorseManagement {
                     EntityType.getKey(horse.getType()).toString(),
                     horse instanceof Horse coloured ? coloured.getVariant().ordinal() : -1,
                     horse instanceof Horse coloured ? coloured.getMarkings().ordinal() : -1,
-                    horse.isBaby()));
+                    horse.isBaby(),
+                    horse instanceof icy.betterhorses.net.entity.BhBreedHorse breedHorse
+                            ? breedHorse.bhCoat() : -1));
         }
         // named horses first and alphabetical, so the list doesn't reshuffle between openings
         roster.sort(Comparator

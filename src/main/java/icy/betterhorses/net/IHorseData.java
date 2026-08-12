@@ -105,8 +105,13 @@ public interface IHorseData {
     // 27-slot sub-inventory, only usable when chest gear is equipped
     SimpleContainer bh_getChestContainer();
 
-    // true when the chest gear item is in its gear slot
+    // true when the chest gear item is in its gear slot. server side only: it reads the gear
+    // container, which is never synced. On the client use bh_hasGear(GearSlot.CHEST) instead
     boolean bh_hasChestGear();
+
+    // true when that chest gear item is specifically an ender chest rather than a plain one.
+    // synced, so the renderer can pick between the two panniers on either side
+    boolean bh_hasEnderChestGear();
 
     // called by the menu when the chest gear slot is cleared, so contents can be dropped
     void bh_onChestGearRemoved(ItemStack previousChestGear);

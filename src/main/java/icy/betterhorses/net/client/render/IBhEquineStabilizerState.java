@@ -23,8 +23,11 @@ public interface IBhEquineStabilizerState {
 
     float bh_getOpacity();
 
-    void bh_setChestGear(boolean hasChestGear);
+    void bh_setChestGear(boolean hasChestGear, boolean enderChest);
 
     // true when a chest / ender chest sits in the horse's gear slot, so HorseChestLayer draws the pouch
     boolean bh_hasChestGear();
+
+    // true when that chest is an ender chest, which gets its own pannier texture
+    boolean bh_hasEnderChestGear();
 }

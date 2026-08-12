@@ -82,6 +82,13 @@ public final class HorsePreviewCache {
                     byOrdinal(Variant.values(), entry.variantOrdinal(), Variant.WHITE),
                     byOrdinal(Markings.values(), entry.markingsOrdinal(), Markings.NONE));
         }
+        // a dedicated breed mob's look comes from its own coat, not from Variant/Markings.
+        // The stand-in is built client-side and never synced, so without this it keeps the
+        // default index 0 and every horse previews as the breed's first coat.
+        if (horse instanceof icy.betterhorses.net.entity.BhBreedHorse breedHorse
+                && entry.breedCoat() >= 0) {
+            breedHorse.bhSetCoat(entry.breedCoat());
+        }
         horse.setBaby(entry.baby());
         horse.setCustomNameVisible(false);
         return horse;

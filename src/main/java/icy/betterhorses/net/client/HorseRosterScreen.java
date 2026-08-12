@@ -109,6 +109,10 @@ public class HorseRosterScreen extends Screen {
     // keeps the widest line clear of the dotted frame on both sides
     private static final int PREVIEW_TEXT_INSET = 8;
     private static final float PREVIEW_FORWARD_OFFSET = 0.0625F;
+    // The model box stops short of the art's dotted frame to leave room for the coordinate
+    // caption, so centring in that box leaves the horse riding high in the frame. This drops it
+    // back onto the frame's own centre. Model only - the placeholder captions stay put.
+    private static final int PREVIEW_MODEL_Y_NUDGE = 5;
     private static final int PREVIEW_MIN_SCALE = 14;
     private static final int PREVIEW_MAX_SCALE = 40;
     private static final int PREVIEW_PITCH_CLAMP = 8;
@@ -534,6 +538,10 @@ public class HorseRosterScreen extends Screen {
 
     private void renderPreviewModel(GuiGraphicsExtractor gfx, AbstractHorse preview,
                                     int x0, int y0, int x1, int y1, int mouseX, int mouseY) {
+        // shift the whole box rather than its centre, so the fitted scale below is unchanged
+        y0 += PREVIEW_MODEL_Y_NUDGE;
+        y1 += PREVIEW_MODEL_Y_NUDGE;
+
         float boxWidth = Math.max(0.1F, preview.getBbWidth());
         float boxHeight = Math.max(0.1F, preview.getBbHeight());
         int scaleFromHeight = (int) ((y1 - y0) * 0.55F / boxHeight);

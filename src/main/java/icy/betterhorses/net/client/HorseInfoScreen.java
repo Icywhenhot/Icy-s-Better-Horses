@@ -364,6 +364,11 @@ public class HorseInfoScreen extends Screen {
     }
 
     private static Component coatLabel(AbstractHorse horse) {
+        // dedicated breed mobs carry their own coat list, taken from their texture files -
+        // vanilla Variant/Markings say nothing about how they look
+        if (horse instanceof icy.betterhorses.net.entity.BhBreedHorse breedHorse) {
+            return breedHorse.bhCoats().displayName(breedHorse.bhCoat());
+        }
         if (!(horse instanceof Horse h)) {
             return Component.translatable("coat.icys-better-horses.none");
         }

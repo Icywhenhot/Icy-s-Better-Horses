@@ -5,7 +5,13 @@ import icy.betterhorses.net.client.HorseInfoScreen;
 import icy.betterhorses.net.client.HorseRosterScreen;
 import icy.betterhorses.net.client.HorseStabilizerSoundController;
 import icy.betterhorses.net.client.RadialMenuScreen;
+import icy.betterhorses.net.client.render.BhEquineGait;
+import icy.betterhorses.net.client.render.BhHorseModel;
+import icy.betterhorses.net.client.render.BhModelLayers;
+import icy.betterhorses.net.client.render.FriesianHorseRenderer;
 import icy.betterhorses.net.client.render.HorseCartRenderer;
+import icy.betterhorses.net.client.render.IcelandicHorseRenderer;
+import icy.betterhorses.net.client.render.MediumHorseRenderer;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
@@ -18,6 +24,7 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
@@ -39,6 +46,9 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
     public static KeyMapping CALL_KEY;
     public static KeyMapping RADIAL_KEY;
     public static KeyMapping MANAGE_KEY;
+    /** Dev tool: freezes custom horse models in their rest pose so animation bugs can be
+     *  told apart from geometry bugs without a rebuild. */
+    public static KeyMapping REST_POSE_KEY;
 
     // holding the call key fires OS key-repeat clicks
     private boolean callKeyWasDown = false;
@@ -61,7 +71,32 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_G,
                 CATEGORY));
 
+        REST_POSE_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.icys-better-horses.rest_pose",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_K,
+                CATEGORY));
+
         EntityRendererRegistry.register(ModEntities.HORSE_CART, HorseCartRenderer::new);
+
+        BhModelLayers.register();
+        EntityRendererRegistry.register(ModEntities.ICELANDIC_HORSE, context ->
+                new IcelandicHorseRenderer(context,
+                        BhModelLayers.ICELANDIC_HORSE,
+                        BhModelLayers.ICELANDIC_HORSE_BABY));
+        EntityRendererRegistry.register(ModEntities.FRIESIAN_HORSE, context ->
+                new FriesianHorseRenderer(context,
+                        BhModelLayers.FRIESIAN_HORSE,
+                        BhModelLayers.FRIESIAN_HORSE_BABY));
+
+        // The medium size class shares one renderer; each registration gets its own instance,
+        // and the breed only shows up in which coat texture the entity hands over.
+        EntityRendererRegistry.register(ModEntities.APPALOOSA_HORSE, MediumHorseRenderer::new);
+        EntityRendererRegistry.register(ModEntities.THOROUGHBRED_HORSE, MediumHorseRenderer::new);
+        EntityRendererRegistry.register(ModEntities.AMERICAN_PAINT_HORSE, MediumHorseRenderer::new);
+        EntityRendererRegistry.register(ModEntities.ANDALUSIAN_HORSE, MediumHorseRenderer::new);
+        EntityRendererRegistry.register(ModEntities.MUSTANG_HORSE, MediumHorseRenderer::new);
+        EntityRendererRegistry.register(ModEntities.QUARTER_HORSE, MediumHorseRenderer::new);
 
         registerClientHandlers();
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
@@ -78,8 +113,13 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                         payload.success(),
                         payload.messageKey())));
 
-        // a roster from the previous world must not survive into the next one
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> ClientHorseRoster.reset());
+        // a roster from the previous world must not survive into the next one.
+        // the same goes for per-entity gait state, which is keyed on entity id and would
+        // otherwise accumulate stale entries every time a world is left
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+            ClientHorseRoster.reset();
+            BhEquineGait.reset();
+        });
     }
 
     private void onClientTick(Minecraft client) {
@@ -106,6 +146,14 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
             if (client.gui.screen() == null) {
                 client.setScreenAndShow(new HorseRosterScreen());
             }
+        }
+
+        while (REST_POSE_KEY.consumeClick()) {
+            // one switch for every breed - they all run the same animator
+            BhHorseModel.DEBUG_REST_POSE = !BhHorseModel.DEBUG_REST_POSE;
+            client.player.sendOverlayMessage(Component.literal(
+                    "Horse rest pose: " + (BhHorseModel.DEBUG_REST_POSE
+                            ? "FROZEN (animation off)" : "animating")));
         }
     }
 
