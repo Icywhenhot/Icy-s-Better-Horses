@@ -6,7 +6,6 @@ import net.minecraft.resources.Identifier;
 
 import java.util.UUID;
 
-// server → client: the outcome of a management action
 public record HorseManageResultPayload(UUID horseId, int actionOrdinal, boolean success, String messageKey)
         implements CustomPacketPayload {
 

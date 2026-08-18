@@ -9,21 +9,6 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.function.Function;
 
-/**
- * Draws a piece of tack on a breed horse using our own model and our own texture.
- *
- * <p>This exists because {@code SimpleEquipmentLayer} cannot be told which texture to use.
- * It resolves one through vanilla's equipment-asset system: a vanilla saddle item points at
- * {@code minecraft:saddle}, which maps to {@code entity/equipment/horse_saddle/saddle.png}.
- * Handed our custom geometry that produced garbage, because the texture and the UVs came from
- * two different models.
- *
- * <p>The model passed in is a {@link BhHorseModel} — for a given breed, the same class as
- * that breed's horse body — so the tack runs the identical animator and cannot drift out of
- * step with the barrel it is strapped to.
- *
- * @param <M> the breed's model class, so a Friesian renderer cannot be handed Icelandic tack
- */
 public class BhTackLayer<S extends BhHorseRenderState, M extends BhHorseModel>
         extends RenderLayer<S, M> {
 
@@ -31,10 +16,6 @@ public class BhTackLayer<S extends BhHorseRenderState, M extends BhHorseModel>
     private final BhHorseModel babyModel;
     private final Function<S, Identifier> textureGetter;
 
-    /**
-     * General form: pick a texture from the render state, or return {@code null} to draw nothing.
-     * Used directly for gear that is a flag rather than an item, like the chest.
-     */
     public BhTackLayer(RenderLayerParent<S, M> parent,
                        BhHorseModel adultModel,
                        BhHorseModel babyModel,
@@ -45,12 +26,6 @@ public class BhTackLayer<S extends BhHorseRenderState, M extends BhHorseModel>
         this.textureGetter = textureGetter;
     }
 
-    /**
-     * Equipment form, for tack backed by an {@link ItemStack} on the render state.
-     *
-     * @param itemGetter    pulls the relevant stack off the render state (saddle, body armour)
-     * @param itemTexture   chooses a texture for that stack, or {@code null} to draw nothing
-     */
     public static <S extends BhHorseRenderState, M extends BhHorseModel> BhTackLayer<S, M> forItem(
             RenderLayerParent<S, M> parent,
             BhHorseModel adultModel,
@@ -72,7 +47,6 @@ public class BhTackLayer<S extends BhHorseRenderState, M extends BhHorseModel>
         }
 
         BhHorseModel model = state.isBaby ? babyModel : adultModel;
-        // pose the tack from the same state the body used, so every bone lines up
         model.setupAnim(state);
         renderColoredCutoutModel(model, texture, poseStack, collector, packedLight, state, -1, 0);
     }

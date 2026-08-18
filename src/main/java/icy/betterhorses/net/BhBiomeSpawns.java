@@ -14,7 +14,6 @@ import net.minecraft.world.level.biome.MobSpawnSettings;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-// adds EntityType.HORSE natural-spawn entries to every biome listed in any breed's spawn list
 public final class BhBiomeSpawns {
 
     private static final int HORSE_SPAWN_WEIGHT = 5;

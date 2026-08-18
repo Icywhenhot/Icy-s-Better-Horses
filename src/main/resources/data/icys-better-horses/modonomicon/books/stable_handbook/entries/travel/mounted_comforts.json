@@ -3,7 +3,9 @@
   "id": "icys-better-horses:travel/mounted_comforts",
   "category": "icys-better-horses:basics",
   "name": "Mounted Comforts",
-  "icon": { "id": "minecraft:feather" },
+  "icon": {
+    "id": "minecraft:feather"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -12,7 +14,11 @@
   "x": 4,
   "y": -2,
   "sort_number": 1,
-  "parents": [ { "entry": "icys-better-horses:travel/riding_improvements" } ],
+  "parents": [
+    {
+      "entry": "icys-better-horses:travel/riding_improvements"
+    }
+  ],
   "pages": [
     {
       "type": "modonomicon:text",
@@ -26,7 +32,7 @@
       "id": "step",
       "title": "Step Up & Mine Through",
       "show_title_separator": true,
-      "text": "- Step height is raised 10% so a galloping horse doesn't trip over slabs, paths, or full blocks.\n- Mounted block-breaking now matches on-foot speed for most blocks.\n- The remaining penalty is cut by 80%."
+      "text": "- Step height is raised by a tenth, so a galloping horse doesn't trip over slabs, paths, or full blocks.\n- Mounted block-breaking now matches on-foot speed for most blocks.\n- Whatever penalty is left after that is cut to a fifth."
     },
     {
       "type": "modonomicon:text",

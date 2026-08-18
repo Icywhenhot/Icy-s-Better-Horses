@@ -3,7 +3,9 @@
   "id": "icys-better-horses:breeds/american_paint",
   "category": "icys-better-horses:breeds",
   "name": "American Paint",
-  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "icon": {
+    "id": "icys-better-horses:american_paint_horse_spawn_egg"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -22,10 +24,15 @@
     },
     {
       "type": "modonomicon:text",
-      "id": "coat",
-      "title": "Coat",
+      "id": "ability",
+      "title": "Trail Blazer",
       "show_title_separator": true,
-      "text": "Always with **White Field** markings:\n\n- Brown + White Field\n- Black + White Field\n- Chestnut + White Field\n- Dark Brown + White Field\n- White + White Field\n- Creamy + White Field"
+      "text": "Ride with a **map in hand** and an American Paint fills it in over **twice the usual distance** from the path you are actually on.\n\nOne ride across unexplored country charts four times the area, which makes this the breed to be on when the job is finding out what is out there."
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "id": "coat",
+      "entity": "icys-better-horses:american_paint_horse"
     },
     {
       "type": "modonomicon:text",

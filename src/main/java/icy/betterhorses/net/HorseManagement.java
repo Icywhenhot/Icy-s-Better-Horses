@@ -23,18 +23,14 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// server-side brain behind the horse management screen (and the whistle keybind
 public final class HorseManagement {
 
-    // beyond this the whistle teleports instead of just asking the horse to walk over
     private static final double CALL_TELEPORT_DIST_SQ = 32.0 * 32.0;
 
-    // ids handed to materialize horses, which exist only to be read and thrown away
     private static final AtomicInteger scratchIds = new AtomicInteger();
 
     private HorseManagement() {}
 
-    // result of a management action: either success, or a failure with a message key for the screen
     public record Outcome(boolean ok, String messageKey) {
         public static final Outcome OK = new Outcome(true, "");
 
@@ -49,8 +45,6 @@ public final class HorseManagement {
     public static final String MSG_HAS_EQUIPMENT = MSG + "has_equipment";
     public static final String MSG_OTHER_DIMENSION = MSG + "other_dimension";
     public static final String MSG_FAILED = MSG + "failed";
-
-    // roster
 
     public static List<HorseRosterEntry> buildRoster(ServerPlayer player) {
         MinecraftServer server = ((ServerLevel) player.level()).getServer();
@@ -68,8 +62,6 @@ public final class HorseManagement {
             String dimension = loaded != null
                     ? loaded.level().dimension().identifier().toString()
                     : (known == null ? "" : known.dimension().identifier().toString());
-            // a resting horse reports where it was standing when its chunk unloaded; the snapshot's
-            // own position is the fallback for the rare entry with no recorded sighting
             BlockPos pos = loaded != null
                     ? loaded.blockPosition()
                     : (known == null ? horse.blockPosition() : known.pos());
@@ -93,7 +85,6 @@ public final class HorseManagement {
                     horse instanceof icy.betterhorses.net.entity.BhBreedHorse breedHorse
                             ? breedHorse.bhCoat() : -1));
         }
-        // named horses first and alphabetical, so the list doesn't reshuffle between openings
         roster.sort(Comparator
                 .comparing((HorseRosterEntry entry) -> entry.customName().isEmpty())
                 .thenComparing(entry -> entry.customName(), String.CASE_INSENSITIVE_ORDER)
@@ -101,9 +92,6 @@ public final class HorseManagement {
         return roster;
     }
 
-    // actions
-
-    // summons one specific horse, the roster's whistle button
     public static Outcome whistle(ServerPlayer player, UUID horseId) {
         MinecraftServer server = ((ServerLevel) player.level()).getServer();
         if (server == null) return Outcome.fail(MSG_FAILED);
@@ -127,7 +115,6 @@ public final class HorseManagement {
         return Outcome.OK;
     }
 
-    // teleports the horse to its home, or reports that it doesn't have one
     public static Outcome sendHome(ServerPlayer player, UUID horseId) {
         MinecraftServer server = ((ServerLevel) player.level()).getServer();
         if (server == null) return Outcome.fail(MSG_FAILED);
@@ -141,12 +128,10 @@ public final class HorseManagement {
             keepHomeChunkLoaded((ServerLevel) loaded.level(), home);
             loaded.teleportTo(home.getX() + 0.5D, home.getY(), home.getZ() + 0.5D);
             loaded.fallDistance = 0.0F;
-            // it is already standing on its home tile, so the arrival state is what it wants
             ((IHorseData) loaded).bh_setCommand(HorseCommand.STAY);
             return Outcome.OK;
         }
 
-        // unloaded: respawn it from its snapshot straight onto its home tile, in its own dimension
         CompoundTag snapshot = HorseTracker.getSnapshot(horseId);
         HorseTrackerState.KnownPosition known = HorseTracker.getLastKnownPosition(horseId);
         if (snapshot == null || known == null) return Outcome.fail(MSG_GONE);
@@ -166,12 +151,10 @@ public final class HorseManagement {
         return Outcome.OK;
     }
 
-    // home is usually nowhere near the player, so its chunk has to be loaded for the horse to land
     private static void keepHomeChunkLoaded(ServerLevel level, BlockPos home) {
         level.getChunkSource().addTicketWithRadius(ModTicketTypes.HORSE_TASK, ChunkPos.containing(home), 1);
     }
 
-    // picks the horse the whistle keybind calls from now
     public static Outcome setActive(ServerPlayer player, UUID horseId) {
         if (!ownsStoredHorse(player, horseId)) {
             return Outcome.fail(MSG_GONE);
@@ -180,7 +163,6 @@ public final class HorseManagement {
         return Outcome.OK;
     }
 
-    // gives the horse up for good, provided the player stripped it first
     public static Outcome disown(ServerPlayer player, UUID horseId) {
         MinecraftServer server = ((ServerLevel) player.level()).getServer();
         if (server == null) return Outcome.fail(MSG_FAILED);
@@ -201,7 +183,6 @@ public final class HorseManagement {
             return Outcome.fail(MSG_GONE);
         }
 
-        // the horse is resting in an unloaded chunk
         AbstractHorse snapshotHorse = materialize(server, horseId);
         if (snapshotHorse == null) return Outcome.fail(MSG_GONE);
         if (((IHorseData) snapshotHorse).bh_hasAnyEquipment()) {
@@ -216,13 +197,9 @@ public final class HorseManagement {
         return Outcome.OK;
     }
 
-    // shared whistle plumbing
-
-    // the untargeted whistle keybind: prefer the last horse this player rode
     public static void callNearestHorse(ServerPlayer player) {
         UUID playerId = player.getUUID();
 
-        // an explicit pick in the management screen always wins over "last ridden, else nearest"
         UUID activeHorseId = HorseTracker.getActiveHorseId(playerId);
         if (activeHorseId != null && HorseTracker.findAllStoredHorsesOwnedBy(playerId).contains(activeHorseId)) {
             whistle(player, activeHorseId);
@@ -242,7 +219,6 @@ public final class HorseManagement {
 
         UUID horseId = HorseTracker.getLastRiddenId(playerId);
         if (horseId == null || HorseTracker.getSnapshot(horseId) == null) {
-            // no usable last-ridden entry, fall back to any stored horse this player owns
             horseId = HorseTracker.findStoredHorseOwnedBy(playerId);
         }
         if (horseId == null) {
@@ -252,7 +228,6 @@ public final class HorseManagement {
         whistle(player, horseId);
     }
 
-    // whistling cancels whatever standing order the horse was on, the player wants it here, now
     public static void summonToPlayer(AbstractHorse horse, ServerPlayer player) {
         IHorseData data = (IHorseData) horse;
         if (data.bh_getBond() <= 0) return;
@@ -288,9 +263,6 @@ public final class HorseManagement {
         return nearest;
     }
 
-    // helpers
-
-    // the live entity for this horse if it is loaded anywhere and still belongs to the player
     private static @Nullable AbstractHorse findLoadedOwned(ServerPlayer player, UUID horseId) {
         AbstractHorse tracked = HorseTracker.getLoaded(horseId);
         if (tracked == null && player.level().getEntityInAnyDimension(horseId) instanceof AbstractHorse found) {
@@ -307,7 +279,6 @@ public final class HorseManagement {
         return HorseTracker.findAllStoredHorsesOwnedBy(player.getUUID()).contains(horseId);
     }
 
-    // deserialises a stored snapshot into a throwaway horse that is never added to the world
     private static @Nullable AbstractHorse materialize(MinecraftServer server, UUID horseId) {
         CompoundTag snapshot = HorseTracker.getSnapshot(horseId);
         if (snapshot == null) return null;
@@ -320,12 +291,10 @@ public final class HorseManagement {
                 snapshot, level, new EntitySpawnRequest(EntitySpawnReason.LOAD, true), EntityProcessor.NOP);
         if (!(entity instanceof AbstractHorse horse)) return null;
 
-        // 26.2 only assigns an entity id on world-add, and getId() throws until
         horse.setId(scratchIds.decrementAndGet());
         return horse;
     }
 
-    // spawns a fresh copy of a stored horse at the given spot and marks the stranded original stale
     private static @Nullable AbstractHorse respawnFromSnapshot(
             MinecraftServer server, UUID horseId, ServerLevel level, double x, double y, double z) {
         HorseTrackerState.KnownPosition known = HorseTracker.getLastKnownPosition(horseId);
@@ -361,14 +330,12 @@ public final class HorseManagement {
             IcysBetterHorses.LOGGER.warn("[whistle] failed to spawn respawned horse {}", horseId);
             return null;
         }
-        // committed only after the spawn succeeded
         HorseTracker.setGeneration(horseId, newGeneration);
         IcysBetterHorses.LOGGER.info("[whistle] respawned horse {} at {} {} {} in {} (generation {})",
                 horseId, x, y, z, level.dimension().identifier(), newGeneration);
         return horse;
     }
 
-    // turns a failed respawn into the most useful message for the player
     private static String respawnFailureKey(ServerPlayer player, UUID horseId) {
         HorseTrackerState.KnownPosition known = HorseTracker.getLastKnownPosition(horseId);
         if (known == null || HorseTracker.getSnapshot(horseId) == null) {

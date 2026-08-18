@@ -17,7 +17,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// grants +10 bond when a player names a tamed horse with a name tag
 @Mixin(Mob.class)
 public abstract class MobNameTagBondMixin {
 
@@ -58,7 +57,6 @@ public abstract class MobNameTagBondMixin {
             if (now == null || now.equals(this.bh$nameBeforeInteract)) {
                 return;
             }
-            // only the first nametag grants bond
             if (horseData.bh_hasReceivedNameTagBond()) {
                 return;
             }

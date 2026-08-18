@@ -14,7 +14,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// makes horses wearing the ModItems#HORSE_HOOVES gear walk on top of powdered snow instead of sinking
 @Mixin(PowderSnowBlock.class)
 public abstract class PowderSnowBlockMixin {
 

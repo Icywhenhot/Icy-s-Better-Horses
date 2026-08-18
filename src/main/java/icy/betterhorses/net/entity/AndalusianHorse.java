@@ -8,13 +8,11 @@ import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.level.Level;
 
-/**
- * The Andalusian: the Spanish baroque horse. Collected, agile, and built to turn.
- *
- * <p>Three coats, taken from the texture files rather than from vanilla coat genetics -
- * see {@link BhBreedCoats}.
- */
 public class AndalusianHorse extends MediumHorse {
+
+    private static final int COURAGE_TICKS = 3 * 20;
+
+    private boolean takingDamage;
 
     public AndalusianHorse(EntityType<? extends Horse> type, Level level) {
         super(type, level);
@@ -30,11 +28,37 @@ public class AndalusianHorse extends MediumHorse {
         return BhBreedCoats.ANDALUSIAN;
     }
 
-    /**
-     * A schooled riding horse: quick enough, jumps well, holds up. Same caveat as the other
-     * breeds - these belong in a per-breed traits table once there are enough breeds to
-     * balance against each other.
-     */
+    @Override
+    public void standIfPossible() {
+        if (takingDamage) {
+            return;
+        }
+        super.standIfPossible();
+    }
+
+    @Override
+    public boolean hurtServer(
+            net.minecraft.server.level.ServerLevel level,
+            net.minecraft.world.damagesource.DamageSource source,
+            float amount) {
+        boolean hurt;
+        takingDamage = true;
+        try {
+            hurt = super.hurtServer(level, source, amount);
+        } finally {
+            takingDamage = false;
+        }
+
+        if (hurt) {
+            BhBreedAbilities.grantResistance(this, COURAGE_TICKS);
+            net.minecraft.world.entity.player.Player rider = BhBreedAbilities.rider(this);
+            if (rider != null) {
+                BhBreedAbilities.grantResistance(rider, COURAGE_TICKS);
+            }
+        }
+        return hurt;
+    }
+
     public static AttributeSupplier.Builder createAttributes() {
         return AbstractHorse.createBaseHorseAttributes()
                 .add(Attributes.MAX_HEALTH, 25.0D)

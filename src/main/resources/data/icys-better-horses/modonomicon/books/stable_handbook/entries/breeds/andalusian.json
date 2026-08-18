@@ -3,7 +3,9 @@
   "id": "icys-better-horses:breeds/andalusian",
   "category": "icys-better-horses:breeds",
   "name": "Andalusian",
-  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "icon": {
+    "id": "icys-better-horses:andalusian_horse_spawn_egg"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -22,10 +24,15 @@
     },
     {
       "type": "modonomicon:text",
-      "id": "coat",
-      "title": "Coat",
+      "id": "ability",
+      "title": "Warhorse Courage",
       "show_title_separator": true,
-      "text": "- Gray\n- White\n- Black\n- Chestnut"
+      "text": "An Andalusian **never rears when it is hit**, so the rider keeps their aim through a fight.\n\nTaking damage also steadies the pair rather than panicking them: **Resistance I for 3 seconds**, on the horse and on whoever is in the saddle.\n\nIt still rears when it jumps, and standing idle. Only the flinch is gone."
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "id": "coat",
+      "entity": "icys-better-horses:andalusian_horse"
     },
     {
       "type": "modonomicon:text",

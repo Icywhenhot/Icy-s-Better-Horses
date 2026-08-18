@@ -3,7 +3,9 @@
   "id": "icys-better-horses:genetics/traits",
   "category": "icys-better-horses:basics",
   "name": "Traits at a Glance",
-  "icon": { "id": "minecraft:paper" },
+  "icon": {
+    "id": "minecraft:paper"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -12,7 +14,11 @@
   "x": -2,
   "y": 2,
   "sort_number": 0,
-  "parents": [ { "entry": "icys-better-horses:basics/ownership_and_bonding" } ],
+  "parents": [
+    {
+      "entry": "icys-better-horses:basics/ownership_and_bonding"
+    }
+  ],
   "pages": [
     {
       "type": "modonomicon:text",
@@ -27,13 +33,6 @@
       "title": "Where to See It",
       "show_title_separator": true,
       "text": "Press your **Horse Whistle** key while mounted to open the **Horse Info Screen** - gender, breed, coat, and stat bars are all there. Holding the **Upgraded Saddle** and looking at a horse also shows its gender and breed under its name."
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "existing",
-      "title": "Existing Horses",
-      "show_title_separator": true,
-      "text": "Horses already in your world aren't forced into a new look - the mod infers their breed from the coat they already wear, so an old palomino stays a palomino. Coats with no clean match are filed as **Mustang**."
     }
   ]
 }

@@ -45,7 +45,9 @@ To let one specific friend ride on their own, run `/horse trust <player>`. To le
 
 ### Does trusting someone give them my saddle and gear?
 
-No. `/horse trust` is a riding permission only. Trusted players still can't open the horse's gear screen, shear its saddle, open a cart's chest, or disown it. What they *can* do is ride the horse away, so only trust people you'd hand a lead to.
+Yes. `/horse trust` hands over everything short of ownership: riding, the gear screen, the saddlebags, a cart's chest, shearing the saddle, hitching, and the command wheel. The only thing a trusted player can't do is disown the horse.
+
+They can also ride it away and empty it, so only trust people you'd hand a lead to. See [Commands](commands#what-trust-actually-allows).
 
 ### Where is my horse?
 

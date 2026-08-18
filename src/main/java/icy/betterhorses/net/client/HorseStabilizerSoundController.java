@@ -179,7 +179,7 @@ public final class HorseStabilizerSoundController {
 
     private static final class StabilizerSoundInstance extends AbstractTickableSoundInstance {
         private static final int FADE_OUT_TICKS = 6;
-        private static final float BASE_VOLUME = 0.5F; // halved from 1.0
+        private static final float BASE_VOLUME = 0.5F;
 
         private final AbstractHorse horse;
         private boolean fadingOut = false;

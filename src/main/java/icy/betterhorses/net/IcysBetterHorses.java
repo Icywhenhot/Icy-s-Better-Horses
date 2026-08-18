@@ -1,11 +1,15 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.network.BhRearPayload;
+import icy.betterhorses.net.network.BhSteerModePayload;
 import icy.betterhorses.net.network.CallHorsePayload;
+import icy.betterhorses.net.network.HorseGearPayload;
 import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
+import icy.betterhorses.net.network.TrustSyncPayload;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -31,9 +35,9 @@ public class IcysBetterHorses implements ModInitializer {
 
     private static final int PASSIVE_BOND_INTERVAL_TICKS = 60 * 20;
 
-    // leftover copies of whistle-respawned horses, discarded on the tick after their chunk loads
+    private static final float COMMAND_ANSWER_CHANCE = 0.5F;
+
     private final List<AbstractHorse> staleHorses = new ArrayList<>();
-    // horses disowned while unloaded, released on the tick after their chunk loads
     private final List<AbstractHorse> pendingReleases = new ArrayList<>();
 
     @Override
@@ -48,9 +52,11 @@ public class IcysBetterHorses implements ModInitializer {
         BhBiomeSpawns.register();
         BhHorseSpawnRules.installSpawnPlacementOverride();
         BhCriteria.init();
+        icy.betterhorses.net.book.BhBookPages.init();
         BhCommands.register();
         registerPackets();
         registerServerHandlers();
+        registerJoinSync();
         registerEntityTracking();
         registerTickEvents();
         LOGGER.info("Icy's Better Horses initialized.");
@@ -61,8 +67,16 @@ public class IcysBetterHorses implements ModInitializer {
         PayloadTypeRegistry.serverboundPlay().register(CallHorsePayload.TYPE, new CallHorsePayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(OpenHorseRosterPayload.TYPE, new OpenHorseRosterPayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(HorseManagePayload.TYPE, new HorseManagePayload.StreamCodec());
+        PayloadTypeRegistry.serverboundPlay().register(HorseGearPayload.TYPE, new HorseGearPayload.StreamCodec());
+        PayloadTypeRegistry.serverboundPlay().register(BhSteerModePayload.TYPE, new BhSteerModePayload.StreamCodec());
+        PayloadTypeRegistry.serverboundPlay().register(BhRearPayload.TYPE, new BhRearPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(HorseRosterSyncPayload.TYPE, new HorseRosterSyncPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(HorseManageResultPayload.TYPE, new HorseManageResultPayload.StreamCodec());
+        PayloadTypeRegistry.clientboundPlay().register(TrustSyncPayload.TYPE, new TrustSyncPayload.StreamCodec());
+    }
+
+    public static void sendTrustList(ServerPlayer player) {
+        ServerPlayNetworking.send(player, new TrustSyncPayload(HorseTracker.getTrustingOwners(player.getUUID())));
     }
 
     private void registerServerHandlers() {
@@ -75,6 +89,23 @@ public class IcysBetterHorses implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(CallHorsePayload.TYPE, (payload, context) -> {
             ServerPlayer player = context.player();
             context.server().execute(() -> handleCallHorse(player));
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(HorseGearPayload.TYPE, (payload, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() ->
+                    handleGearShift(player, payload.horseId(), payload.gear(), payload.gaitGear()));
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(BhSteerModePayload.TYPE, (payload, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() ->
+                    handleSteerMode(player, payload.horseId(), payload.freeSteer()));
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(BhRearPayload.TYPE, (payload, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() -> handleRear(player, payload.horseId()));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(OpenHorseRosterPayload.TYPE, (payload, context) -> {
@@ -115,7 +146,6 @@ public class IcysBetterHorses implements ModInitializer {
             if (action == HorseManageAction.WHISTLE) {
                 playWhistle(player);
             }
-            // the roster changed (a horse loaded, moved dimension, or is gone entirely), resend
             sendRoster(player);
         }
     }
@@ -136,6 +166,20 @@ public class IcysBetterHorses implements ModInitializer {
             }
             data.bh_setCommand(command);
         }
+
+        playCommandAnswer(horse);
+    }
+
+    private static void playCommandAnswer(AbstractHorse horse) {
+        if (horse.getRandom().nextFloat() >= COMMAND_ANSWER_CHANCE) {
+            return;
+        }
+        net.minecraft.sounds.SoundEvent sound = horse.getRandom().nextBoolean()
+                ? ModSounds.HORSE_NEIGH
+                : ModSounds.HORSE_SNORT;
+        horse.level().playSound(
+                null, horse.getX(), horse.getY(), horse.getZ(),
+                sound, horse.getSoundSource(), 1.0F, 1.0F);
     }
 
     private void handleCallHorse(ServerPlayer player) {
@@ -154,18 +198,21 @@ public class IcysBetterHorses implements ModInitializer {
                 player.getZ(),
                 ModSounds.CALL_WHISTLE,
                 SoundSource.PLAYERS,
-                0.5F, // volume halved from 1.0
+                0.5F,
                 1.0F);
+    }
+
+    private void registerJoinSync() {
+        net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register(
+                (handler, sender, server) -> sendTrustList(handler.getPlayer()));
     }
 
     private void registerEntityTracking() {
         ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
             if (entity instanceof AbstractHorse horse && ((IHorseData) horse).bh_isOwned()) {
                 if (HorseTracker.consumePendingDisown(horse.getUUID())) {
-                    // disowned while its chunk was unloaded; release it next tick, outside the load callback
                     pendingReleases.add(horse);
                 } else if (HorseTracker.isStale(horse)) {
-                    // leftover copy of a whistle-respawned horse; discard next tick, outside the load callback
                     staleHorses.add(horse);
                 } else {
                     HorseTracker.register(horse);
@@ -189,7 +236,6 @@ public class IcysBetterHorses implements ModInitializer {
             applyPendingReleases();
         });
         ServerLifecycleEvents.SERVER_STARTED.register(HorseTracker::attach);
-        // snapshot horses before the final world save so nothing is stale after a restart
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> HorseTracker.recordLoadedPositions());
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             staleHorses.clear();
@@ -240,6 +286,51 @@ public class IcysBetterHorses implements ModInitializer {
         }
     }
 
+    private void handleGearShift(ServerPlayer player, int horseId, int gear, int gaitGear) {
+        if (!(player.level().getEntity(horseId) instanceof AbstractHorse horse)
+                || horse.getControllingPassenger() != player) {
+            return;
+        }
+        ((IHorseData) horse).bh_setGear(gear);
+        ((IHorseData) horse).bh_setGaitGear(gaitGear);
+    }
+
+    /**
+     * Same guard as {@link #handleGearShift}: only whoever is actually holding the reins may
+     * change how the horse is steered. Without the controlling-passenger check any client could
+     * flip a stranger's horse into manual steering from across the map.
+     */
+    private void handleSteerMode(ServerPlayer player, int horseId, boolean freeSteer) {
+        if (!(player.level().getEntity(horseId) instanceof AbstractHorse horse)
+                || horse.getControllingPassenger() != player) {
+            return;
+        }
+        ((IHorseData) horse).bh_setFreeSteer(freeSteer);
+    }
+
+    /**
+     * Rears a horse on the rider's command.
+     *
+     * <p>Goes through vanilla's {@code standIfPossible} rather than setting the flag directly, so
+     * the mid-air guard in {@code AbstractHorseMixin} still applies - a horse cannot rear off
+     * nothing, and one that tried would fight the jump animation for the whole pose.
+     *
+     * <p>Refused while the horse is already standing. {@code setStanding} restarts the 20 tick
+     * counter every call, and standing makes the horse immobile, so a held key would otherwise
+     * pin a ridden horse in place for as long as it was held.
+     */
+    private void handleRear(ServerPlayer player, int horseId) {
+        AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
+        if (horse == null || horse.isStanding()) {
+            return;
+        }
+        // Someone else's mount is not yours to rear, trusted or not.
+        if (horse.getControllingPassenger() != null && horse.getControllingPassenger() != player) {
+            return;
+        }
+        horse.standIfPossible();
+    }
+
     private AbstractHorse findCommandHorse(ServerPlayer player, int horseId, double radius) {
         ServerLevel serverLevel = (ServerLevel) player.level();
         if (!(serverLevel.getEntity(horseId) instanceof AbstractHorse horse)) {
@@ -252,8 +343,7 @@ public class IcysBetterHorses implements ModInitializer {
             return null;
         }
 
-        UUID owner = ((IHorseData) horse).bh_getOwner();
-        if (owner != null && !owner.equals(player.getUUID())) {
+        if (!((IHorseData) horse).bh_mayHandle(player.getUUID())) {
             return null;
         }
 

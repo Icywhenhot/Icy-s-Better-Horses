@@ -138,12 +138,10 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             final GearSlot type = slot;
             this.addSlot(new Slot(gear, slot.ordinal(), BH_GEAR_SLOT_X + slot.ordinal() * 18, BH_GEAR_SLOT_Y) {
                 @Override public boolean mayPlace(ItemStack stack) {
-                    // a chest-laden cart is welded in: block swapping it for a stabilizer too
                     if (type == GearSlot.STABILIZER
                             && HorseInventoryMenuMixin.this.bh_isCartSlotLocked()) {
                         return false;
                     }
-                    // the stabilizer is horse-only; mules, donkeys and skeleton/zombie horses can't wear
                     if (type == GearSlot.STABILIZER
                             && stack.is(icy.betterhorses.net.ModItems.HORSE_STABILIZER)
                             && !(horse instanceof net.minecraft.world.entity.animal.equine.Horse)) {
@@ -166,7 +164,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                     if (type == GearSlot.CHEST) {
                         HorseInventoryMenuMixin.this.bh_handleChestGearChange(previousStack, stack, data);
                     }
-                    // refresh the player-inventory y shift the moment the chest-gear slot is populated
                     if (type == GearSlot.CHEST) {
                         HorseInventoryMenuMixin.this.bh_refreshLayout();
                     }
@@ -234,7 +231,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
     @Override
     public boolean bh_isCartSlotLocked() {
-        // both flags are synced, so this answers the same on the client
         return this.bh_horse != null
                 && ((IHorseData) this.bh_horse).bh_hasCartGear()
                 && ((IHorseData) this.bh_horse).bh_hasCartChest();

@@ -2,7 +2,6 @@ package icy.betterhorses.net;
 
 import net.minecraft.world.entity.SpawnGroupData;
 
-// spawn group data carried between sibling horses spawned in the same natural-spawn group
 public final class BhHorseGroupData implements SpawnGroupData {
     private final HorseBreed breed;
     @SuppressWarnings("unused")

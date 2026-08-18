@@ -3,7 +3,9 @@
   "id": "icys-better-horses:breeds/mustang",
   "category": "icys-better-horses:breeds",
   "name": "Mustang",
-  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "icon": {
+    "id": "icys-better-horses:mustang_horse_spawn_egg"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -22,10 +24,15 @@
     },
     {
       "type": "modonomicon:text",
-      "id": "coat",
-      "title": "Coat",
+      "id": "ability",
+      "title": "Wild Instincts",
       "show_title_separator": true,
-      "text": "- Dark Brown\n- Brown\n- Chestnut\n- Black\n- Dark Brown + White\n- Chestnut + White Field"
+      "text": "A horse that lived feral notices what a stabled one misses.\n\n**Hostile alert.** Anything hostile within **15 blocks** - through walls, in the dark - gets an angry snort and a **glowing outline for 3 seconds**. You hear that something is there, and you see where.\n\n**Self-sufficient.** It heals steadily on its own, with no hay or apples needed."
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "id": "coat",
+      "entity": "icys-better-horses:mustang_horse"
     },
     {
       "type": "modonomicon:text",

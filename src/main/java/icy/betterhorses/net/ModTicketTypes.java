@@ -7,13 +7,11 @@ import net.minecraft.server.level.TicketType;
 
 public final class ModTicketTypes {
 
-    // keeps chunks loaded and simulating around a horse carrying out an order in otherwise-unloaded
     public static final TicketType HORSE_TASK = register("horse_task", new TicketType(
             200L,
             TicketType.FLAG_LOADING | TicketType.FLAG_SIMULATION | TicketType.FLAG_KEEP_DIMENSION_ACTIVE));
 
     public static void init() {
-        // trigger static registration
     }
 
     private static TicketType register(String path, TicketType type) {

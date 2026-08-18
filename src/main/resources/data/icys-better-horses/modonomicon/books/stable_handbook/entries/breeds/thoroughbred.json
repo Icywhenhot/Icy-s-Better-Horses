@@ -3,7 +3,9 @@
   "id": "icys-better-horses:breeds/thoroughbred",
   "category": "icys-better-horses:breeds",
   "name": "Thoroughbred",
-  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "icon": {
+    "id": "icys-better-horses:thoroughbred_horse_spawn_egg"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -22,10 +24,15 @@
     },
     {
       "type": "modonomicon:text",
-      "id": "coat",
-      "title": "Coat",
+      "id": "ability",
+      "title": "Sprint Burst",
       "show_title_separator": true,
-      "text": "- Brown\n- Chestnut\n- Black\n- Dark Brown\n- Brown + White\n- Chestnut + White"
+      "text": "Hold a **gallop** over level ground for **3 seconds** and the Thoroughbred finds a second gear: **Speed II for 5 seconds**, then 10 seconds before it can do it again.\n\nIt has to be a gallop - riding on W, or in top gear. A held walk, trot or canter never earns it, no matter how long you hold it.\n\nThe boost lands on the rider as well as the horse, so the effect icon on your HUD tells you it fired."
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "id": "coat",
+      "entity": "icys-better-horses:thoroughbred_horse"
     },
     {
       "type": "modonomicon:text",

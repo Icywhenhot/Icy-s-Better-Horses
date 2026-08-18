@@ -24,9 +24,9 @@
     {
       "type": "modonomicon:text",
       "id": "limits",
-      "title": "Riding, Nothing More",
+      "title": "Everything But Giving It Away",
       "show_title_separator": true,
-      "text": "A trusted rider may mount your horse, ride behind you, and take the reins of a cart.\n\nThey still **cannot** open its gear screen, shear off its saddle, open a cart's chest, give it commands, or disown it. Those stay yours alone."
+      "text": "A trusted rider is treated as you are. They may mount your horse, ride behind you, take the reins of a cart, open its gear screen, use its saddlebags and the cart's chest, fit a cart or stabilizer, shear its saddle, hitch it, and give it commands.\n\nThe one thing they **cannot** do is disown it. Releasing a horse stays with its owner, so nobody you trust can give your horse away."
     },
     {
       "type": "modonomicon:text",

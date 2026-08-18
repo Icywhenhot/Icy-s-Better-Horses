@@ -11,7 +11,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-// 1.21.5+ replaced isSaddled() / isSaddleable() / equipSaddle(...) with the generic equipment-slot
 public class UpgradedSaddleItem extends Item {
     public UpgradedSaddleItem(Properties properties) {
         super(properties);

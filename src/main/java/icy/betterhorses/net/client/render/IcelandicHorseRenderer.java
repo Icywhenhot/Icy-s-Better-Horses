@@ -1,5 +1,8 @@
 package icy.betterhorses.net.client.render;
 
+import icy.betterhorses.net.BhGears;
+import icy.betterhorses.net.HorseCommand;
+import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.IcelandicHorse;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.AbstractHorseRenderer;
@@ -9,18 +12,8 @@ import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
-/**
- * Renderer for the Icelandic horse.
- *
- * <p>Extends {@link AbstractHorseRenderer} rather than a bespoke renderer so the mod's
- * existing {@code AbstractHorseRendererMixin} still applies - that is what attaches the
- * stabilizer wings, the chest layer and the cart reins. {@link IcelandicHorseModel}
- * implements {@code HorseModelAccessor} for the same reason: the stabilizer layer asks the
- * parent model for its body bone, and would otherwise fail the cast.
- */
 public class IcelandicHorseRenderer
         extends AbstractHorseRenderer<IcelandicHorse, IcelandicHorseRenderState, IcelandicHorseModel> {
-
 
     public IcelandicHorseRenderer(EntityRendererProvider.Context context,
                                   ModelLayerLocation adultLayer,
@@ -29,10 +22,6 @@ public class IcelandicHorseRenderer
                 new IcelandicHorseModel(context.bakeLayer(adultLayer)),
                 new IcelandicHorseModel(context.bakeLayer(babyLayer)));
 
-        // AbstractHorseRenderer adds no equipment layers - vanilla's HorseRenderer does that,
-        // and it is final so it cannot be extended. These use BhTackLayer rather than
-        // SimpleEquipmentLayer because the latter cannot be told which texture to use and
-        // resolves a vanilla one through the equipment-asset system instead.
         this.addLayer(BhTackLayer.<IcelandicHorseRenderState, IcelandicHorseModel>forItem(this,
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_SADDLE)),
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_SADDLE_BABY)),
@@ -45,8 +34,7 @@ public class IcelandicHorseRenderer
                 state -> state.bodyArmorItem,
                 IcelandicTackTextures::armor));
 
-        // The chest is the mod's own gear rather than an EquipmentSlot item, so it is driven by
-        // the flag the renderer mixin already puts on the render state.
+
         this.addLayer(new BhTackLayer<>(this,
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_CHEST)),
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_CHEST_BABY)),
@@ -72,12 +60,30 @@ public class IcelandicHorseRenderer
         state.coatTexture = entity.bhCoats().texture(entity.bhCoat());
         state.hurt = entity.hurtTime > 0 ? entity.hurtTime / 10.0F : 0.0F;
 
-        // a stable per-entity offset: two horses side by side must not breathe in sync.
-        // derived from the id rather than random() so it survives across frames.
+        state.bodyYaw = entity.getYRot();
+        state.healthFraction = entity.getMaxHealth() > 0.0F
+                ? Mth.clamp(entity.getHealth() / entity.getMaxHealth(), 0.0F, 1.0F)
+                : 1.0F;
+
         state.phaseOffset = (entity.getId() * 0.6180339887F % 1.0F) * Mth.TWO_PI;
 
-        // gait weights have to be integrated over time, so they live outside the state
-        BhEquineGait.get(entity.getId()).advance(state, state.ageInTicks);
+        state.gaitedBlend = 1.0F;
+
+        IHorseData data = (IHorseData) entity;
+        int gear = data.bh_getGaitGear();
+        boolean following = data.bh_isOwned() && data.bh_getCommand() == HorseCommand.FOLLOW;
+        state.toltRequest = state.isRidden
+                ? (gear == BhGears.TOLT_LOW_GEAR || gear == BhGears.TOLT_HIGH_GEAR ? 1.0F : 0.0F)
+                : (following ? 1.0F : 0.0F);
+
+        state.commandedToStay =
+                ((IHorseData) entity).bh_getCommand() == HorseCommand.STAY;
+
+        state.entityId = entity.getId();
+
+        BhEquineGait.fillJumpInputs(entity, state);
+        BhEquineGait gait = BhEquineGait.get(entity.getId());
+        gait.advance(state, state.ageInTicks);
     }
 
     @Override

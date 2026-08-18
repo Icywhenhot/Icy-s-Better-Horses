@@ -24,7 +24,6 @@ public record CallHorsePayload() implements CustomPacketPayload {
 
         @Override
         public void encode(FriendlyByteBuf buf, CallHorsePayload value) {
-            // no data
         }
     }
 }

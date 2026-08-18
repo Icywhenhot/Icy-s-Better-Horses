@@ -24,5 +24,26 @@
         "stream": true
       }
     ]
+  },
+  "horse_angry_snort": {
+    "subtitle": "subtitles.icys-better-horses.horse_angry_snort",
+    "sounds": [
+      "icys-better-horses:horse/angry_snort"
+    ]
+  },
+  "horse_neigh": {
+    "subtitle": "subtitles.icys-better-horses.horse_neigh",
+    "sounds": [
+      "icys-better-horses:horse/neigh1",
+      "icys-better-horses:horse/neigh2",
+      "icys-better-horses:horse/neigh3",
+      "icys-better-horses:horse/neigh4"
+    ]
+  },
+  "horse_snort": {
+    "subtitle": "subtitles.icys-better-horses.horse_snort",
+    "sounds": [
+      "icys-better-horses:horse/snort1"
+    ]
   }
 }

@@ -12,7 +12,7 @@ import java.util.UUID;
 public class HorseFollowOwnerGoal extends Goal {
 
     private static final double FOLLOW_SPEED = 1.2;
-    private static final double STOP_DIST_SQ = 9.0; // 3 blocks
+    private static final double STOP_DIST_SQ = 9.0;
 
     private final AbstractHorse horse;
     private Player owner;

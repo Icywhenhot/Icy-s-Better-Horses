@@ -37,7 +37,6 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.UUID;
 
-// standalone hitch post block that keeps its own tethered-horse state instead of delegating
 public class HitchpostBlock extends BaseEntityBlock {
 
     public static final MapCodec<HitchpostBlock> CODEC = simpleCodec(HitchpostBlock::new);
@@ -128,7 +127,6 @@ public class HitchpostBlock extends BaseEntityBlock {
         }
     }
 
-    // 1.21.5+ replaces onRemove with affectNeighborsAfterRemoval
     @Override
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         releaseHorseAtPost(level, pos);
@@ -252,8 +250,9 @@ public class HitchpostBlock extends BaseEntityBlock {
         UUID playerId = player.getUUID();
         net.minecraft.world.entity.EntityReference<net.minecraft.world.entity.LivingEntity> ownerRef = horse.getOwnerReference();
         UUID ownerId = ownerRef == null ? null : ownerRef.getUUID();
-        UUID modOwnerId = ((IHorseData) horse).bh_getOwner();
-        return playerId.equals(ownerId) || playerId.equals(modOwnerId);
+        IHorseData data = (IHorseData) horse;
+        return playerId.equals(ownerId)
+                || (data.bh_isOwned() && data.bh_mayHandle(playerId));
     }
 
     private static Vec3 chooseAnchor(BlockPos pos, BlockState state, AbstractHorse horse) {

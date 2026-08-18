@@ -15,7 +15,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// 1.21.11 moved horse saddle acceptance into the shared package-private ArmorSlot
 @Mixin(targets = "net/minecraft/world/inventory/ArmorSlot")
 public abstract class HorseSaddleSlotMixin extends Slot {
 
@@ -25,12 +24,10 @@ public abstract class HorseSaddleSlotMixin extends Slot {
     @Shadow @Final
     private EquipmentSlot slot;
 
-    // never used; satisfies compiler so `this` exposes slot members
     private HorseSaddleSlotMixin() {
         super(null, 0, 0, 0);
     }
 
-    // the saddle carries the gear slots the cart hangs off, so it stays put until the cart is unhitched
     @Inject(method = "mayPickup", at = @At("HEAD"), cancellable = true)
     private void bh_holdSaddleWhileCartHitched(Player player, CallbackInfoReturnable<Boolean> cir) {
         if (this.slot == EquipmentSlot.SADDLE

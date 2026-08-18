@@ -10,12 +10,9 @@ import com.geckolib.renderer.GeoEntityRenderer;
 import com.geckolib.renderer.base.BoneSnapshots;
 import com.geckolib.renderer.base.RenderPassInfo;
 
-// GeckoLib entity renderer for the cart
 public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, EntityRenderState> {
 
-    // bone holding the cargo chest in horse_cart.geo.json
     private static final String CHEST_BONE = "chest";
-    // carries the cart's chest state into the render pass
     private static final DataTicket<Boolean> HAS_CHEST =
             DataTicket.create("bh_cart_has_chest", Boolean.class);
 
@@ -23,7 +20,6 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, 
         super(context, new HorseCartGeoModel());
     }
 
-    // the model always contains the chest; an unloaded cart simply skips that bone
     @Override
     public void adjustModelBonesForRender(RenderPassInfo<EntityRenderState> pass, BoneSnapshots snapshots) {
         super.adjustModelBonesForRender(pass, snapshots);
@@ -33,7 +29,6 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, 
         }
     }
 
-    // draw the cart at the horse's interpolated position and yaw rather than its own
     @Override
     public void extractRenderState(HorseCartEntity entity, EntityRenderState state, float partialTick) {
         super.extractRenderState(entity, state, partialTick);

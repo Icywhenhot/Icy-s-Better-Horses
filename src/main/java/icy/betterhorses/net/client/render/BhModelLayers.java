@@ -4,7 +4,6 @@ import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.resources.Identifier;
 
-/** Model layers for the mod's own equine models. */
 public final class BhModelLayers {
 
     public static final ModelLayerLocation ICELANDIC_HORSE = layer("icelandic_horse", "main");
@@ -25,8 +24,6 @@ public final class BhModelLayers {
     public static final ModelLayerLocation FRIESIAN_CHEST = layer("friesian_horse", "chest");
     public static final ModelLayerLocation FRIESIAN_CHEST_BABY = layer("friesian_horse", "chest_baby");
 
-    // The medium size class. Keyed on the size, not a breed: appaloosa, thoroughbred and
-    // american paint are one mesh in three coats, so they bake one set of layers between them.
     public static final ModelLayerLocation MEDIUM_HORSE = layer("medium_horse", "main");
     public static final ModelLayerLocation MEDIUM_HORSE_BABY = layer("medium_horse", "baby");
     public static final ModelLayerLocation MEDIUM_SADDLE = layer("medium_horse", "saddle");
@@ -39,14 +36,11 @@ public final class BhModelLayers {
     private BhModelLayers() {}
 
     public static void register() {
-        // adult and baby share one definition - AgeableMobRenderer scales foals, so a separate
-        // baby mesh is only worth building if the proportions should actually differ
         ModelLayerRegistry.registerModelLayer(
                 ICELANDIC_HORSE, IcelandicHorseGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(
                 ICELANDIC_HORSE_BABY, IcelandicHorseGeometry::createBodyLayer);
 
-        // tack, generated from the same Blockbench sources retargeted onto the horse rig
         ModelLayerRegistry.registerModelLayer(
                 ICELANDIC_SADDLE, IcelandicSaddleGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(

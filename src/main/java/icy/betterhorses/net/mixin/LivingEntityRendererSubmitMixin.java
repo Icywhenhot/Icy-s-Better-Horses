@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-// the vanilla RenderLayer.submit(PoseStack, SubmitNodeCollector, int, s, float
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityRendererSubmitMixin {
 

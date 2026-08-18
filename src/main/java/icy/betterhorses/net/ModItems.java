@@ -26,7 +26,6 @@ public final class ModItems {
     public static final Item HORSE_HOOVES = register("horse_hooves_gear",
             new Item(itemProperties("horse_hooves_gear").stacksTo(1).enchantable(15)));
 
-    // keep the original medkit id so existing worlds keep their saved item stacks
     public static final Item HORSE_MEDKIT = register("horse_medkit_gear",
             new Item(itemProperties("horse_medkit_gear").stacksTo(1)));
 
@@ -39,18 +38,12 @@ public final class ModItems {
     public static final Item HORSE_STABILIZER = register("horse_stabilizer_gear",
             new Item(itemProperties("horse_stabilizer_gear").stacksTo(1)));
 
-    // shares the stabilizer gear slot; equipping it spawns the pulled cart entity behind the horse,
-    // or right-click a block to stand one up in the world on its own
     public static final Item HORSE_CART = register("horse_cart_gear",
             new icy.betterhorses.net.item.HorseCartItem(itemProperties("horse_cart_gear").stacksTo(1)));
 
-    // crafting component used to build the horse cart
     public static final Item WHEEL = register("wheel",
             new Item(itemProperties("wheel")));
 
-    // --- breed spawn eggs -------------------------------------------------------------
-    // One per dedicated breed mob. Add the next breed's egg beside this one and drop it into
-    // BREED_SPAWN_EGGS; the creative tab and the item model then pick it up automatically.
     public static final Item ICELANDIC_HORSE_SPAWN_EGG = register("icelandic_horse_spawn_egg",
             new SpawnEggItem(itemProperties("icelandic_horse_spawn_egg")
                     .spawnEgg(ModEntities.ICELANDIC_HORSE)));
@@ -83,7 +76,6 @@ public final class ModItems {
             new SpawnEggItem(itemProperties("quarter_horse_spawn_egg")
                     .spawnEgg(ModEntities.QUARTER_HORSE)));
 
-    /** Every breed spawn egg, in tab order. Extend as breeds get their own entity type. */
     public static final java.util.List<Item> BREED_SPAWN_EGGS = java.util.List.of(
             ICELANDIC_HORSE_SPAWN_EGG,
             FRIESIAN_HORSE_SPAWN_EGG,
@@ -101,7 +93,6 @@ public final class ModItems {
                     .title(Component.translatable("itemGroup.icys-better-horses.stable_supplies"))
                     .icon(() -> new ItemStack(UPGRADED_SADDLE))
                     .displayItems((parameters, entries) -> {
-                        // the stable handbook (a modonomicon book item) is injected into this tab automatically via
                         entries.accept(UPGRADED_SADDLE);
                         entries.accept(HORSE_HOOVES);
                         entries.accept(HORSE_MEDKIT);

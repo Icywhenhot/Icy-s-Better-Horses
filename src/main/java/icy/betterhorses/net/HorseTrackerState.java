@@ -26,10 +26,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-// world-saved half of the horse tracker: which horse each player last rode
 public class HorseTrackerState extends SavedData {
 
-    // where an owned horse was last seen, used for the same-dimension check when whistling
     public record KnownPosition(ResourceKey<Level> dimension, BlockPos pos) {
         static final Codec<KnownPosition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ResourceKey.codec(Registries.DIMENSION).fieldOf("dimension").forGetter(KnownPosition::dimension),
@@ -64,14 +62,10 @@ public class HorseTrackerState extends SavedData {
     private final Map<UUID, KnownPosition> lastKnownPositions;
     private final Map<UUID, CompoundTag> snapshots;
     private final Map<UUID, Integer> generations;
-    // horses disowned while their chunk was unloaded
     private final Set<UUID> pendingDisowns;
-    // the horse each player picked in the management screen
     private final Map<UUID, UUID> activeHorseByPlayer;
-    // owner -> the players they trust with their horses, mapped to the name last seen for each
     private final Map<UUID, Map<UUID, String>> trustedByPlayer;
 
-    // concurrent collections: parallel-ticking mods mutate these from multiple entity-tick threads
     public HorseTrackerState() {
         this.lastRiddenByPlayer = new ConcurrentHashMap<>();
         this.lastKnownPositions = new ConcurrentHashMap<>();
@@ -114,7 +108,6 @@ public class HorseTrackerState extends SavedData {
         return lastRiddenByPlayer.get(playerId);
     }
 
-    // records both the horse's position and a full NBT snapshot the whistle can respawn
     public void recordHorse(AbstractHorse horse) {
         UUID horseId = horse.getUUID();
         lastKnownPositions.put(horseId, new KnownPosition(horse.level().dimension(), horse.blockPosition()));
@@ -125,7 +118,6 @@ public class HorseTrackerState extends SavedData {
         setDirty();
     }
 
-    // drops the position and snapshot of a horse that died, was discarded, or was disowned
     public void forgetHorse(UUID horseId) {
         boolean removed = lastKnownPositions.remove(horseId) != null;
         removed |= snapshots.remove(horseId) != null;
@@ -142,7 +134,6 @@ public class HorseTrackerState extends SavedData {
         return snapshots.get(horseId);
     }
 
-    // fallback lookup when no last-ridden entry exists: any stored horse owned by this player
     public @Nullable UUID findStoredHorseOwnedBy(UUID playerId) {
         for (Map.Entry<UUID, CompoundTag> entry : snapshots.entrySet()) {
             if (isOwnedBy(entry.getValue(), playerId)) {
@@ -152,7 +143,6 @@ public class HorseTrackerState extends SavedData {
         return null;
     }
 
-    // every horse this player owns that has a stored snapshot, the source list for the roster screen
     public List<UUID> findAllStoredHorsesOwnedBy(UUID playerId) {
         List<UUID> owned = new ArrayList<>();
         for (Map.Entry<UUID, CompoundTag> entry : snapshots.entrySet()) {
@@ -176,25 +166,19 @@ public class HorseTrackerState extends SavedData {
         return activeHorseByPlayer.get(playerId);
     }
 
-    // drops a horse from every player's active slot, called when it is disowned or dies
     public void clearActiveHorse(UUID horseId) {
         if (activeHorseByPlayer.values().removeIf(horseId::equals)) {
             setDirty();
         }
     }
 
-    // trusted riders
-
-    // adds a player to an owner's trust list; false when they were already on it
     public boolean trust(UUID ownerId, UUID trustedId, String trustedName) {
         Map<UUID, String> trusted = trustedByPlayer.computeIfAbsent(ownerId, id -> new ConcurrentHashMap<>());
         String previous = trusted.put(trustedId, trustedName);
         setDirty();
-        // a rename still writes through, but it isn't a new grant
         return previous == null;
     }
 
-    // removes a player from an owner's trust list; false when they weren't on it
     public boolean untrust(UUID ownerId, UUID trustedId) {
         Map<UUID, String> trusted = trustedByPlayer.get(ownerId);
         if (trusted == null || trusted.remove(trustedId) == null) {
@@ -212,10 +196,19 @@ public class HorseTrackerState extends SavedData {
         return trusted != null && trusted.containsKey(playerId);
     }
 
-    // this owner's trust list as an immutable snapshot of id -> last known name
     public Map<UUID, String> getTrusted(UUID ownerId) {
         Map<UUID, String> trusted = trustedByPlayer.get(ownerId);
         return trusted == null ? Map.of() : Map.copyOf(trusted);
+    }
+
+    public java.util.List<UUID> getTrustingOwners(UUID playerId) {
+        java.util.List<UUID> owners = new java.util.ArrayList<>();
+        trustedByPlayer.forEach((ownerId, trusted) -> {
+            if (trusted.containsKey(playerId)) {
+                owners.add(ownerId);
+            }
+        });
+        return owners;
     }
 
     public void markPendingDisown(UUID horseId) {
@@ -224,7 +217,6 @@ public class HorseTrackerState extends SavedData {
         }
     }
 
-    // true (once) when this horse was disowned while unloaded and still needs to be released
     public boolean consumePendingDisown(UUID horseId) {
         if (pendingDisowns.remove(horseId)) {
             setDirty();

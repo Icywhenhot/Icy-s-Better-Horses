@@ -6,12 +6,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-/**
- * Maps an equipped tack item to the Icelandic texture that should be drawn for it.
- *
- * <p>Vanilla's equipment-asset system is bypassed entirely here, because it paints our custom
- * geometry with vanilla textures at vanilla UVs.
- */
 public final class IcelandicTackTextures {
 
     private static final String BASE = "textures/entity/horse/icelandic/";
@@ -34,23 +28,14 @@ public final class IcelandicTackTextures {
         return Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, BASE + name + ".png");
     }
 
-    /**
-     * The pannier drawn when the chest gear is equipped. The slot takes either a chest or an
-     * ender chest, and the two read very differently in the world, so they get their own hides.
-     */
     public static Identifier chest(boolean ender) {
         return ender ? ENDER_CHEST : CHEST;
     }
 
-    /** The mod's upgraded saddle gets its own look; anything else saddle-shaped uses the plain one. */
     public static Identifier saddle(ItemStack stack) {
         return stack.is(ModItems.UPGRADED_SADDLE) ? SADDLE_UPGRADED : SADDLE;
     }
 
-    /**
-     * All six vanilla tiers now have their own Icelandic texture, so nothing falls back.
-     * Iron remains the default for any tier a future Minecraft version adds.
-     */
     public static Identifier armor(ItemStack stack) {
         if (stack.is(Items.LEATHER_HORSE_ARMOR)) {
             return ARMOR_LEATHER;

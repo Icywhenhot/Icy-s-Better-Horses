@@ -102,7 +102,7 @@ Keybinds are also rebindable the normal way in **Options → Controls**.
 ```
 
 {: .tip }
-> Before reaching for this, consider leaving exclusivity on and having players run `/horse trust <player>` for the friends they actually ride with. It keeps gear and disowning protected while still sharing the horses. See [Commands](commands).
+> Before reaching for this, consider leaving exclusivity on and having players run `/horse trust <player>` for the friends they actually ride with. Trusted players get everything except disowning, so ownership itself stays protected. See [Commands](commands).
 
 **Vanilla-flavoured.** Keep the breeds, bonding, and riding fixes but drop the gadgets:
 

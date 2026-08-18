@@ -15,14 +15,13 @@ import java.util.EnumSet;
 public class HorseReturnHomeGoal extends Goal {
 
     private static final double RETURN_SPEED = 1.0;
-    private static final double ARRIVED_DIST_SQ = 4.0; // 2 blocks
-    // the horse walks off toward home for this long so the departure looks natural
+    private static final double ARRIVED_DIST_SQ = 4.0;
     private static final double NATURAL_WALK_DISTANCE = 32.0;
     private static final double NATURAL_WALK_DIST_SQ = NATURAL_WALK_DISTANCE * NATURAL_WALK_DISTANCE;
-    private static final int TICKET_RADIUS = 3; // keeps the horse's own chunk entity-ticking with a 1-chunk margin
+    private static final int TICKET_RADIUS = 3;
     private static final int TICKET_REFRESH_INTERVAL_TICKS = 20;
     private static final int STUCK_CHECK_INTERVAL_TICKS = 100;
-    private static final double STUCK_MIN_PROGRESS_SQ = 2.25; // 1.5 blocks of net movement per check window
+    private static final double STUCK_MIN_PROGRESS_SQ = 2.25;
 
     private final AbstractHorse horse;
 
@@ -92,7 +91,6 @@ public class HorseReturnHomeGoal extends Goal {
 
     @Override
     public void stop() {
-        // the chunk ticket is left to expire on its own shortly after
         walkStartPos = null;
         ticketChunk = null;
         lastProgressPos = null;
@@ -104,18 +102,15 @@ public class HorseReturnHomeGoal extends Goal {
         Vec3 homeCenter = Vec3.atBottomCenterOf(home);
         Vec3 target = homeCenter;
         if (horse.distanceToSqr(homeCenter) > NATURAL_WALK_DIST_SQ) {
-            // home is far: aim the walk leg at a nearby waypoint in home's direction instead of home itself
             Vec3 direction = homeCenter.subtract(horse.position()).normalize();
             target = horse.position().add(direction.scale(NATURAL_WALK_DISTANCE));
         }
         boolean reached = horse.getNavigation().moveTo(target.x, target.y, target.z, RETURN_SPEED);
         if (!reached) {
-            // teleport fallback when pathfinding fails (e.g
             teleportHome();
         }
     }
 
-    // true once the horse has covered the natural-looking stretch and home is still far off
     private boolean hasWalkedNaturalLeg() {
         if (walkStartPos == null || horse.isVehicle() || horse.isLeashed()) return false;
         if (horse.position().distanceToSqr(walkStartPos) < NATURAL_WALK_DIST_SQ) return false;
@@ -123,7 +118,6 @@ public class HorseReturnHomeGoal extends Goal {
         return home != null && horse.distanceToSqr(Vec3.atBottomCenterOf(home)) > NATURAL_WALK_DIST_SQ;
     }
 
-    // self-sustaining chunk ticket: keeps the horse ticking so the walk-off leg (and the teleport
     private void refreshChunkTicket() {
         if (!(horse.level() instanceof ServerLevel serverLevel)) return;
         ticketChunk = horse.chunkPosition();
@@ -131,7 +125,6 @@ public class HorseReturnHomeGoal extends Goal {
         serverLevel.getChunkSource().addTicketWithRadius(ModTicketTypes.HORSE_TASK, ticketChunk, TICKET_RADIUS);
     }
 
-    // a horse that is boxed in (fences, pens, water edges) never reports a failed path
     private boolean checkStuck() {
         if (horse.isVehicle() || horse.isLeashed()) {
             stuckCheckCooldown = STUCK_CHECK_INTERVAL_TICKS;
@@ -153,7 +146,6 @@ public class HorseReturnHomeGoal extends Goal {
         BlockPos home = ((IHorseData) horse).bh_getHome();
         if (home == null) return;
         if (horse.level() instanceof ServerLevel serverLevel) {
-            // make sure the destination is loaded so the horse lands and gets saved there properly
             serverLevel.getChunkSource().addTicketWithRadius(ModTicketTypes.HORSE_TASK, ChunkPos.containing(home), 1);
         }
         horse.teleportTo(home.getX() + 0.5, home.getY(), home.getZ() + 0.5);

@@ -25,7 +25,6 @@ public final class ModEntities {
             "horse_cart",
             EntityType.Builder.of(HorseCartEntity::new, MobCategory.MISC)
                     .sized(HorseCartEntity.WIDTH, HorseCartEntity.HEIGHT)
-                    // tight tracking so the cart stays glued to the horse with minimal sync lag
                     .clientTrackingRange(11)
                     .updateInterval(1)
                     .build(key("horse_cart")));
@@ -34,9 +33,6 @@ public final class ModEntities {
             "icelandic_horse",
             EntityType.Builder.<IcelandicHorse>of(IcelandicHorse::new, MobCategory.CREATURE)
                     .sized(IcelandicHorse.WIDTH, IcelandicHorse.HEIGHT)
-                    // without these the rider sits at the entity origin instead of on the
-                    // saddle, and mobs aim at the wrong height. vanilla horse uses
-                    // 1.52 / 1.44375 against a 1.6 tall body; scaled for a 1.45 pony
                     .eyeHeight(IcelandicHorse.HEIGHT * 0.95F)
                     .passengerAttachments(IcelandicHorse.HEIGHT * 0.90F)
                     .clientTrackingRange(10)
@@ -46,16 +42,11 @@ public final class ModEntities {
             "friesian_horse",
             EntityType.Builder.<FriesianHorse>of(FriesianHorse::new, MobCategory.CREATURE)
                     .sized(FriesianHorse.WIDTH, FriesianHorse.HEIGHT)
-                    // same ratios as the Icelandic against a taller body: 0.90 puts the
-                    // rider just above the barrel, which on a Friesian is bb y=25
                     .eyeHeight(FriesianHorse.HEIGHT * 0.95F)
                     .passengerAttachments(FriesianHorse.HEIGHT * 0.90F)
                     .clientTrackingRange(10)
                     .build(key("friesian_horse")));
 
-    // --- the medium size class -------------------------------------------------------
-    // One mesh, three breeds. They share MediumHorse.WIDTH/HEIGHT because they share the
-    // model; only their coats and their stat blocks differ.
     public static final EntityType<AppaloosaHorse> APPALOOSA_HORSE =
             registerMedium("appaloosa_horse", AppaloosaHorse::new);
     public static final EntityType<ThoroughbredHorse> THOROUGHBRED_HORSE =
@@ -73,8 +64,6 @@ public final class ModEntities {
             String path, EntityType.EntityFactory<T> factory) {
         return register(path, EntityType.Builder.of(factory, MobCategory.CREATURE)
                 .sized(MediumHorse.WIDTH, MediumHorse.HEIGHT)
-                // without these the rider sits at the entity origin instead of on the
-                // saddle, and mobs aim at the wrong height
                 .eyeHeight(MediumHorse.HEIGHT * 0.95F)
                 .passengerAttachments(MediumHorse.HEIGHT * 0.90F)
                 .clientTrackingRange(10)
@@ -82,8 +71,6 @@ public final class ModEntities {
     }
 
     public static void init() {
-        // registration happens in the static field initializers; touching the class triggers it.
-        // attributes must be registered separately or the entity fails to spawn
         FabricDefaultAttributeRegistry.register(ICELANDIC_HORSE, IcelandicHorse.createAttributes());
         FabricDefaultAttributeRegistry.register(FRIESIAN_HORSE, FriesianHorse.createAttributes());
         FabricDefaultAttributeRegistry.register(APPALOOSA_HORSE, AppaloosaHorse.createAttributes());

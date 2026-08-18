@@ -3,7 +3,6 @@ package icy.betterhorses.net.client.render;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.jetbrains.annotations.Nullable;
 
-// per-thread holder for the active CameraRenderState
 public final class BhRenderContext {
     private static final ThreadLocal<CameraRenderState> CAMERA = new ThreadLocal<>();
     private static final ThreadLocal<Float> OPACITY = ThreadLocal.withInitial(() -> 1.0F);

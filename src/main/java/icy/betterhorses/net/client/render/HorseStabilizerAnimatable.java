@@ -16,7 +16,6 @@ import com.geckolib.util.GeckoLibUtil;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-// GeckoLib-driven animation state holder for the stabilizer wings
 public final class HorseStabilizerAnimatable implements GeoAnimatable {
     private static final RawAnimation DEPLOY_AND_GLIDE = RawAnimation.begin()
             .then("animation", LoopType.PLAY_ONCE)
@@ -24,8 +23,20 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
     private static final RawAnimation GLIDE_LOOP = RawAnimation.begin().thenLoop("wingflap");
     private static final Map<AbstractHorse, HorseStabilizerAnimatable> INSTANCES = new WeakHashMap<>();
 
+    /**
+     * Render-time lookup, keyed by entity id because a render state carries the id and not the
+     * entity.
+     *
+     * <p>Ids are recycled: tear a level down and rebuild it - which Flashback does on every
+     * backward scrub - and a fresh horse can be handed the id of a dead one. Scanning
+     * {@link #INSTANCES} for a matching id, as this used to, could then match a stale entry that
+     * had not been collected yet and animate the new horse with a dead one's wing state. This map
+     * is restamped from the live entity in {@link #syncFromHorse}, which the renderer calls for
+     * that horse in the same frame as the lookup, so the newest binding always wins.
+     */
+    private static final Map<Integer, HorseStabilizerAnimatable> BY_ID = new java.util.HashMap<>();
+
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
-    // GeckoLib 5 changed the AnimationController ctor: there's no leading this animatable parameter
     private final AnimationController<HorseStabilizerAnimatable> controller =
             new AnimationController<>("stabilizer", 0, this::animationPredicate);
 
@@ -38,21 +49,21 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
         return INSTANCES.computeIfAbsent(horse, ignored -> new HorseStabilizerAnimatable());
     }
 
-    // look up the animatable for a horse by its entity id
     public static @Nullable HorseStabilizerAnimatable getById(int entityId) {
-        for (Map.Entry<AbstractHorse, HorseStabilizerAnimatable> entry : INSTANCES.entrySet()) {
-            if (entry.getKey().getId() == entityId) {
-                return entry.getValue();
-            }
-        }
-        return null;
+        return BY_ID.get(entityId);
+    }
+
+    /** Drops every cached animatable. Called on disconnect so ids never carry across worlds. */
+    public static void reset() {
+        INSTANCES.clear();
+        BY_ID.clear();
     }
 
     public void syncFromHorse(AbstractHorse horse, HorseStabilizerState state) {
         this.horse = horse;
+        BY_ID.put(horse.getId(), this);
 
         boolean nextActive = state != HorseStabilizerState.CLOSED;
-        // GeckoLib 5: forceAnimationReset() and stop() were unified into reset()
         if (nextActive && !this.active) {
             this.deploySequenceRequested = true;
             this.controller.reset();

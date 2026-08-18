@@ -4,7 +4,6 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
-// client → server: "send me my horse roster" (screen opened, or refreshed after an action)
 public record OpenHorseRosterPayload() implements CustomPacketPayload {
 
     public static final Type<OpenHorseRosterPayload> TYPE =
@@ -23,7 +22,6 @@ public record OpenHorseRosterPayload() implements CustomPacketPayload {
 
         @Override
         public void encode(FriendlyByteBuf buf, OpenHorseRosterPayload value) {
-            // no data
         }
     }
 }

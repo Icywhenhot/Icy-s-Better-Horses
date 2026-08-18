@@ -3,7 +3,9 @@
   "id": "icys-better-horses:breeds/friesian",
   "category": "icys-better-horses:breeds",
   "name": "Friesian",
-  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "icon": {
+    "id": "icys-better-horses:friesian_horse_spawn_egg"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -22,10 +24,15 @@
     },
     {
       "type": "modonomicon:text",
-      "id": "coat",
-      "title": "Coat",
+      "id": "ability",
+      "title": "Majestic Presence",
       "show_title_separator": true,
-      "text": "- Black\n\nOnly one coat. Friesians are always black."
+      "text": "Get into the saddle and whatever is chasing you **gives up on the spot** - wolves, polar bears, bees, iron golems, anything neutral within 24 blocks. Mounting a Friesian ends the chase.\n\nWhile you ride, it keeps them off you: neutral mobs within 12 blocks drop a grudge before it starts. That standing calm won't call off a fight you picked - anything you actually struck stays angry - but the mounting one will."
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "id": "coat",
+      "entity": "icys-better-horses:friesian_horse"
     },
     {
       "type": "modonomicon:text",

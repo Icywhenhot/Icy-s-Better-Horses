@@ -23,25 +23,20 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// makes riding in the cart's bed as safe as riding in a boat
 @Mixin(Mob.class)
 public abstract class MobCartPassengerMixin {
 
     @Shadow @Final protected GoalSelector goalSelector;
 
-    // true while this mob is being carried by a cart, in the bed, or riding shotgun on the bench
     @Unique
     private boolean bh_isCartCargo() {
         Entity vehicle = ((Mob) (Object) this).getVehicle();
         if (vehicle instanceof HorseCartEntity) {
             return true;
         }
-        // bench cargo is a passenger of the horse itself, not of the cart behind
         return vehicle instanceof AbstractHorse horse && ((IHorseData) horse).bh_hasCartGear();
     }
 
-    // sneak click a carried mob to set it down. the cart's own sneak click can't reach the one riding
-    // shotgun, since clicking it hits the mob's hitbox and never the cart's
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     private void bh_setDownOnSneakClick(
             Player player, InteractionHand hand, Vec3 hitPos, CallbackInfoReturnable<InteractionResult> cir) {
@@ -53,7 +48,6 @@ public abstract class MobCartPassengerMixin {
         if (!self.level().isClientSide()) {
             HorseCartEntity cart = this.bh_carryingCart();
             if (cart != null) {
-                // steps it clear of the bed too, so the auto boarder doesn't just pick it back up
                 cart.setDown(self);
             } else {
                 self.stopRiding();
@@ -62,7 +56,6 @@ public abstract class MobCartPassengerMixin {
         cir.setReturnValue(InteractionResult.SUCCESS);
     }
 
-    // the cart doing the carrying, whether this mob rides the cart itself or the horse pulling it
     @Unique
     private @Nullable HorseCartEntity bh_carryingCart() {
         Entity vehicle = ((Mob) (Object) this).getVehicle();
@@ -72,7 +65,6 @@ public abstract class MobCartPassengerMixin {
         return vehicle instanceof AbstractHorse horse ? ((IHorseData) horse).bh_getCartEntity() : null;
     }
 
-    // mirrors what vanilla does for boats: a carried mob stops trying to jump
     @Inject(method = "updateControlFlags", at = @At("TAIL"))
     private void bh_dropJumpFlagInCart(CallbackInfo ci) {
         if (this.bh_isCartCargo()) {

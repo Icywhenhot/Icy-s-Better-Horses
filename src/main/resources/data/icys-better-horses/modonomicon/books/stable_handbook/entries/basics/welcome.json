@@ -3,7 +3,9 @@
   "id": "icys-better-horses:basics/welcome",
   "category": "icys-better-horses:basics",
   "name": "Welcome to the Barn",
-  "icon": { "id": "minecraft:book" },
+  "icon": {
+    "id": "minecraft:book"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -26,13 +28,6 @@
       "title": "It's Yours",
       "show_title_separator": true,
       "text": "Tame a horse and it's registered to you right away. From there you can bond with it, equip it, and give it commands."
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "start",
-      "title": "Where to Start",
-      "show_title_separator": true,
-      "text": "New here? Begin with **Claiming a Mount**. The **Tack Room** lists every craft and **Breeds** is a field guide to all fifteen.\n\nBack here in **Barn Door Basics**, **The Horse Roster** finds a mount you've mislaid and **Trusted Riders** lends one to a friend. **Traits at a Glance** and **Breeding Rules** cover bloodlines, while **Trail Tricks** and **Mounted Comforts** collect the riding improvements."
     }
   ]
 }

@@ -8,17 +8,27 @@ import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.level.Level;
 
-/**
- * The Appaloosa: the spotted Nez Perce horse. Tough, sure-footed high-country stock.
- *
- * <p>Four coats, taken from the texture files rather than from vanilla coat genetics -
- * see {@link BhBreedCoats}. The spots are painted into each coat, so unlike a vanilla
- * horse there is no separate markings layer to combine.
- */
 public class AppaloosaHorse extends MediumHorse {
+
+    private static final int NIGHT_VISION_TICKS = 300;
+    private static final int NIGHT_VISION_REFRESH_TICKS = 100;
 
     public AppaloosaHorse(EntityType<? extends Horse> type, Level level) {
         super(type, level);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.level().isClientSide() || this.tickCount % NIGHT_VISION_REFRESH_TICKS != 0) {
+            return;
+        }
+
+        net.minecraft.world.entity.player.Player rider = BhBreedAbilities.rider(this);
+        if (rider != null && BhBreedAbilities.isDarkOutside(this)) {
+            BhBreedAbilities.applyQuietEffect(
+                    rider, net.minecraft.world.effect.MobEffects.NIGHT_VISION, NIGHT_VISION_TICKS, 0);
+        }
     }
 
     @Override
@@ -31,11 +41,6 @@ public class AppaloosaHorse extends MediumHorse {
         return BhBreedCoats.APPALOOSA;
     }
 
-    /**
-     * Hardy and a strong jumper, bred over rough country, but not quick. Same caveat as
-     * the other breeds - these belong in a per-breed traits table once there are enough
-     * breeds to balance against each other.
-     */
     public static AttributeSupplier.Builder createAttributes() {
         return AbstractHorse.createBaseHorseAttributes()
                 .add(Attributes.MAX_HEALTH, 26.0D)

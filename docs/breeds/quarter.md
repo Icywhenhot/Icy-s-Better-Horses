@@ -15,16 +15,24 @@ Stocky and broad-chested, very fast over short distances. A reliable all-purpose
 
 ---
 
+## Breed ability: Explosive Burst
+
+Named for outrunning anything over a quarter mile, and it's the first two seconds that earn the name. A Quarter Horse has **no acceleration delay**: ask it to go and it's already going, where every other horse spends about a second winding up.
+
+It does not raise the top speed — only how quickly the horse reaches it. For bolting, dodging, and short sprints, nothing else compares.
+
 ## Coats
+
+3 coats, each its own texture — these breeds don't use vanilla's coat and marking system.
 
 | Coat |
 |:---|
-| Chestnut |
-| Chestnut + White |
 | Brown |
-| Brown + White |
-| Black + White |
-| Creamy + White |
+| Brown with Socks |
+| Light Brown |
+
+{: .note }
+> The handbook shows these as a live model you can page through. If a coat is added to the mod, it appears there without the page being edited.
 
 ## Where to find them
 

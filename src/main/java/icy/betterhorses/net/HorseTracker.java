@@ -13,11 +13,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-// server-side registry of all loaded, owned horses
 public final class HorseTracker {
 
     private static final Map<UUID, AbstractHorse> ownedHorses = new ConcurrentHashMap<>();
-    // resolved once on the main thread at attach(); reused everywhere so no hot path calls overworld()
     private static @Nullable HorseTrackerState cachedState;
 
     private HorseTracker() {}
@@ -27,7 +25,6 @@ public final class HorseTracker {
         IcysBetterHorses.LOGGER.info("[whistle] tracker attached: {}", cachedState.describe());
     }
 
-    // in-memory state must not leak into the next world when a singleplayer world is switched
     public static void detach() {
         cachedState = null;
         ownedHorses.clear();
@@ -37,7 +34,6 @@ public final class HorseTracker {
         return cachedState;
     }
 
-    // true for a leftover copy of a horse that has since been respawned elsewhere by the whistle
     public static boolean isStale(AbstractHorse horse) {
         HorseTrackerState state = state();
         return state != null
@@ -54,16 +50,13 @@ public final class HorseTracker {
     }
 
     public static void unregister(AbstractHorse horse) {
-        // two-arg remove: a stale copy being discarded must not evict the live horse's entry
         ownedHorses.remove(horse.getUUID(), horse);
         HorseTrackerState state = state();
         if (state == null || isStale(horse)) return;
 
-        // a plain chunk unload reports removalReason == null and isAlive() == true, the horse is NOT gone
         Entity.RemovalReason reason = horse.getRemovalReason();
         boolean destroyed = (reason != null && reason.shouldDestroy()) || !horse.isAlive();
         if (destroyed) {
-            // died or was discarded, no longer respawnable by the whistle
             state.forgetHorse(horse.getUUID());
             IcysBetterHorses.LOGGER.info("[whistle] forgot horse {} (destroyed, removalReason={})",
                     horse.getUUID(), reason);
@@ -74,7 +67,6 @@ public final class HorseTracker {
         }
     }
 
-    // explicit disown: the player gave the horse up, so drop it and its respawn snapshot
     public static void disown(AbstractHorse horse) {
         ownedHorses.remove(horse.getUUID(), horse);
         HorseTrackerState state = state();
@@ -83,7 +75,6 @@ public final class HorseTracker {
         IcysBetterHorses.LOGGER.info("[whistle] disowned horse {}", horse.getUUID());
     }
 
-    // drops a stored horse's snapshot without touching a live entity
     public static void forgetStoredHorse(UUID horseId) {
         HorseTrackerState state = state();
         if (state != null) {
@@ -158,8 +149,6 @@ public final class HorseTracker {
         }
     }
 
-    // trusted riders: players an owner has allowed onto every horse they own
-
     public static boolean trust(UUID ownerId, UUID trustedId, String trustedName) {
         HorseTrackerState state = state();
         return state != null && state.trust(ownerId, trustedId, trustedName);
@@ -170,8 +159,6 @@ public final class HorseTracker {
         return state != null && state.untrust(ownerId, trustedId);
     }
 
-    // false on a client connected to a dedicated server, where no tracker state is attached; the
-    // server stays the authority on who may ride, so a client-side "no" only skips local prediction
     public static boolean isTrusted(UUID ownerId, UUID playerId) {
         HorseTrackerState state = state();
         return state != null && state.isTrusted(ownerId, playerId);
@@ -182,7 +169,11 @@ public final class HorseTracker {
         return state == null ? Map.of() : state.getTrusted(ownerId);
     }
 
-    // queues a horse that was disowned while unloaded; it is released when its chunk next loads
+    public static java.util.List<UUID> getTrustingOwners(UUID playerId) {
+        HorseTrackerState state = state();
+        return state == null ? java.util.List.of() : state.getTrustingOwners(playerId);
+    }
+
     public static void markPendingDisown(UUID horseId) {
         HorseTrackerState state = state();
         if (state != null) {
@@ -207,7 +198,6 @@ public final class HorseTracker {
         }
     }
 
-    // called periodically so a crash (which skips unload events) still leaves reasonably fresh snapshots
     public static void recordLoadedPositions() {
         HorseTrackerState state = state();
         if (state == null) return;

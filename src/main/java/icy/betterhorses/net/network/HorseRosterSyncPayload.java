@@ -6,7 +6,6 @@ import net.minecraft.resources.Identifier;
 
 import java.util.List;
 
-// server → client: the player's full horse roster, resent after every action that changes
 public record HorseRosterSyncPayload(List<HorseRosterEntry> entries) implements CustomPacketPayload {
 
     public static final Type<HorseRosterSyncPayload> TYPE =

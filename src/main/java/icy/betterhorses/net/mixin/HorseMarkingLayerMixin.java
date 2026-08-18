@@ -41,7 +41,6 @@ public abstract class HorseMarkingLayerMixin extends RenderLayer<HorseRenderStat
         }
     }
 
-    // fade the coat pattern along with the rest of the horse when the rider looks down
     @Redirect(
             method = "submit(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/client/renderer/entity/state/HorseRenderState;FF)V",
             at = @At(

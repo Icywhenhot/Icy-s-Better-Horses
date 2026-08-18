@@ -23,7 +23,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.Optional;
 
-// 1.21.11 vanilla Horse.finalizeSpawn replaces its groupData parameter with a freshly-built
 @Mixin(Horse.class)
 public abstract class HorseFinalizeSpawnMixin {
 
@@ -56,7 +55,6 @@ public abstract class HorseFinalizeSpawnMixin {
         Horse self = (Horse) (Object) this;
         IHorseData data = (IHorseData) self;
 
-        // skip breed/coat application when an NBT-restored breed already exists (e.g
         if (data.bh_getBreed() != HorseBreed.UNKNOWN_SPECIES) {
             this.bh_pendingGroupBreed = null;
             return;
@@ -70,7 +68,6 @@ public abstract class HorseFinalizeSpawnMixin {
         data.bh_setBreed(breed);
         data.bh_setMixedBreed(false);
 
-        // re-roll the coat from the breed's allowed list
         HorseBreed.Coat coat = breed.rollCoat(self.getRandom());
         if (coat != null) {
             ((HorseAccessor) self).bh_setVariantAndMarkings(coat.color(), coat.markings());
@@ -85,7 +82,6 @@ public abstract class HorseFinalizeSpawnMixin {
                     reason, self.blockPosition(), biomeId, breed, coat);
         }
 
-        // propagate breed to the next sibling in this spawn group
         cir.setReturnValue(new BhHorseGroupData(breed, cir.getReturnValue()));
     }
 

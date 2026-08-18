@@ -7,7 +7,6 @@ import net.minecraft.util.Mth;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-// adds stabilizer-related fields onto vanilla EquineRenderState so the data the live entity carries
 @Mixin(EquineRenderState.class)
 public abstract class EquineRenderStateMixin implements IBhEquineStabilizerState {
 

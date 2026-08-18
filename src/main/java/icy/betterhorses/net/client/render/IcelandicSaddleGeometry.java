@@ -8,19 +8,6 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 
-/**
- * Geometry for the Icelandic horse's saddle.
- *
- * <p>GENERATED from
- * {@code blockbench/horses/icelandic/saddle.bbmodel}
- * via the Fresh-Animations rig. Do not hand-edit: re-run the generator instead, which
- * verifies every cube round-trips back to the Blockbench source.
- *
- * <p>The part names deliberately mirror the CEM rig rather than vanilla's, because
- * the animator drives a finer skeleton than vanilla exposes: vanilla lumps head,
- * ears, mouth, neck and mane into one swivelling container, which cannot express an
- * arching neck or a muzzle that chews independently.
- */
 public final class IcelandicSaddleGeometry {
 
     public static final int TEXTURE_WIDTH = 64;

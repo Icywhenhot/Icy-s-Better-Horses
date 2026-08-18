@@ -25,9 +25,7 @@ public final class ModBlocks {
                     .sound(SoundType.WOOD)
                     .noOcclusion()));
 
-    // called from IcysBetterHorses#onInitialize() before block entity and item setup so that the rest
     public static void init() {
-        // registering happens via static initializer; touching the class triggers
     }
 
     private static Block register(String path, Block block) {

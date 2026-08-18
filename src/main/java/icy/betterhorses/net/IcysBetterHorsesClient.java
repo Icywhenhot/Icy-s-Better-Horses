@@ -1,20 +1,25 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.client.ClientHorseRoster;
+import icy.betterhorses.net.client.ClientTrustCache;
+import icy.betterhorses.net.client.HorseGearController;
 import icy.betterhorses.net.client.HorseInfoScreen;
 import icy.betterhorses.net.client.HorseRosterScreen;
 import icy.betterhorses.net.client.HorseStabilizerSoundController;
 import icy.betterhorses.net.client.RadialMenuScreen;
 import icy.betterhorses.net.client.render.BhEquineGait;
 import icy.betterhorses.net.client.render.BhHorseModel;
+import icy.betterhorses.net.client.render.BhJumpDebug;
 import icy.betterhorses.net.client.render.BhModelLayers;
 import icy.betterhorses.net.client.render.FriesianHorseRenderer;
 import icy.betterhorses.net.client.render.HorseCartRenderer;
 import icy.betterhorses.net.client.render.IcelandicHorseRenderer;
 import icy.betterhorses.net.client.render.MediumHorseRenderer;
+import icy.betterhorses.net.network.BhRearPayload;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
+import icy.betterhorses.net.network.TrustSyncPayload;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -38,7 +43,6 @@ import java.util.UUID;
 
 public class IcysBetterHorsesClient implements ClientModInitializer {
 
-    // KeyMapping's category is a typed record; register our own so both binds group under "Icy's better
     private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
             Identifier.fromNamespaceAndPath("icys-better-horses", "general"));
     private static final double RADIAL_REACH = 12.0D;
@@ -46,11 +50,11 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
     public static KeyMapping CALL_KEY;
     public static KeyMapping RADIAL_KEY;
     public static KeyMapping MANAGE_KEY;
-    /** Dev tool: freezes custom horse models in their rest pose so animation bugs can be
-     *  told apart from geometry bugs without a rebuild. */
+    public static KeyMapping GEAR_KEY;
+    public static KeyMapping REAR_KEY;
+    public static KeyMapping JUMP_DEBUG_KEY;
     public static KeyMapping REST_POSE_KEY;
 
-    // holding the call key fires OS key-repeat clicks
     private boolean callKeyWasDown = false;
 
     @Override
@@ -71,6 +75,28 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_G,
                 CATEGORY));
 
+        GEAR_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.icys-better-horses.gear",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_V,
+                CATEGORY));
+
+        // H, not something more mnemonic. R is the command wheel and every other letter a rider
+        // would reach for is spoken for: vanilla holds P (social interactions), G (quick actions),
+        // E, F, Q, T, C and X, and the mod holds P, R, G, V, J and K. F3+H is the advanced-tooltip
+        // toggle, but that needs the F3 modifier held, so a bare H press is genuinely free.
+        REAR_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.icys-better-horses.rear",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_H,
+                CATEGORY));
+
+        JUMP_DEBUG_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.icys-better-horses.jump_debug",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_J,
+                CATEGORY));
+
         REST_POSE_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.icys-better-horses.rest_pose",
                 InputConstants.Type.KEYSYM,
@@ -89,14 +115,17 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                         BhModelLayers.FRIESIAN_HORSE,
                         BhModelLayers.FRIESIAN_HORSE_BABY));
 
-        // The medium size class shares one renderer; each registration gets its own instance,
-        // and the breed only shows up in which coat texture the entity hands over.
         EntityRendererRegistry.register(ModEntities.APPALOOSA_HORSE, MediumHorseRenderer::new);
         EntityRendererRegistry.register(ModEntities.THOROUGHBRED_HORSE, MediumHorseRenderer::new);
         EntityRendererRegistry.register(ModEntities.AMERICAN_PAINT_HORSE, MediumHorseRenderer::new);
         EntityRendererRegistry.register(ModEntities.ANDALUSIAN_HORSE, MediumHorseRenderer::new);
         EntityRendererRegistry.register(ModEntities.MUSTANG_HORSE, MediumHorseRenderer::new);
         EntityRendererRegistry.register(ModEntities.QUARTER_HORSE, MediumHorseRenderer::new);
+
+        com.klikli_dev.modonomicon.client.render.page.PageRendererRegistry.registerPageRenderer(
+                icy.betterhorses.net.book.BhBreedCoatsPage.ID,
+                page -> new icy.betterhorses.net.client.book.BhBreedCoatsPageRenderer(
+                        (icy.betterhorses.net.book.BhBreedCoatsPage) page));
 
         registerClientHandlers();
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
@@ -113,12 +142,17 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                         payload.success(),
                         payload.messageKey())));
 
-        // a roster from the previous world must not survive into the next one.
-        // the same goes for per-entity gait state, which is keyed on entity id and would
-        // otherwise accumulate stale entries every time a world is left
+        ClientPlayNetworking.registerGlobalReceiver(TrustSyncPayload.TYPE, (payload, context) ->
+                context.client().execute(() -> ClientTrustCache.set(payload.trustingOwners())));
+
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             ClientHorseRoster.reset();
+            ClientTrustCache.reset();
+            HorseGearController.INSTANCE.reset();
+            icy.betterhorses.net.client.HorseSteerModeController.INSTANCE.reset();
             BhEquineGait.reset();
+            icy.betterhorses.net.client.render.BhRiderMotion.reset();
+            icy.betterhorses.net.client.render.HorseStabilizerAnimatable.reset();
         });
     }
 
@@ -135,7 +169,6 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
             }
         }
         callKeyWasDown = callKeyDown;
-        // drain queued key-repeat clicks so they can't fire extra whistles
         while (CALL_KEY.consumeClick()) {}
 
         while (RADIAL_KEY.consumeClick()) {
@@ -148,13 +181,60 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
             }
         }
 
-        while (REST_POSE_KEY.consumeClick()) {
-            // one switch for every breed - they all run the same animator
-            BhHorseModel.DEBUG_REST_POSE = !BhHorseModel.DEBUG_REST_POSE;
-            client.player.sendOverlayMessage(Component.literal(
-                    "Horse rest pose: " + (BhHorseModel.DEBUG_REST_POSE
-                            ? "FROZEN (animation off)" : "animating")));
+        while (GEAR_KEY.consumeClick()) {
+            bh_shiftGear(client);
         }
+
+        while (REAR_KEY.consumeClick()) {
+            bh_tryRear(client);
+        }
+
+        while (JUMP_DEBUG_KEY.consumeClick()) {
+            BhJumpDebug.cycle();
+        }
+
+        while (REST_POSE_KEY.consumeClick()) {
+            BhHorseModel.DEBUG_REST_POSE = !BhHorseModel.DEBUG_REST_POSE;
+            BhJumpDebug.banner(BhHorseModel.DEBUG_REST_POSE
+                    ? "rest pose: frozen"
+                    : "rest pose: animating");
+        }
+    }
+
+    private static void bh_shiftGear(Minecraft client) {
+        LocalPlayer player = client.player;
+        if (player == null || client.gui.screen() != null) {
+            return;
+        }
+        if (!(player.getControlledVehicle() instanceof AbstractHorse horse)
+                || horse.getControllingPassenger() != player) {
+            return;
+        }
+
+        HorseGearController.INSTANCE.shiftUp(horse);
+    }
+
+    /**
+     * Rears the horse the player is riding, or - dismounted - the tamed one under the crosshair,
+     * so the key works both from the saddle and from the ground.
+     *
+     * <p>Only picks the horse and asks. The rear itself is vanilla entity state the server owns,
+     * and the server re-checks range, taming and permission before granting it.
+     */
+    private static void bh_tryRear(Minecraft client) {
+        LocalPlayer player = client.player;
+        if (player == null || client.gui.screen() != null) {
+            return;
+        }
+
+        AbstractHorse horse = (player.getControlledVehicle() instanceof AbstractHorse mount)
+                ? mount
+                : bh_lookedAtHorse(player);
+        if (horse == null) {
+            return;
+        }
+
+        ClientPlayNetworking.send(new BhRearPayload(horse.getId()));
     }
 
     private static void bh_tryOpenRadial(Minecraft client) {
@@ -167,7 +247,9 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
             return;
         }
         UUID owner = ((IHorseData) horse).bh_getOwner();
-        if (owner != null && !owner.equals(player.getUUID())) {
+        if (owner != null
+                && !owner.equals(player.getUUID())
+                && !ClientTrustCache.isTrustedBy(owner)) {
             return;
         }
         client.setScreenAndShow(new RadialMenuScreen(horse.getId()));

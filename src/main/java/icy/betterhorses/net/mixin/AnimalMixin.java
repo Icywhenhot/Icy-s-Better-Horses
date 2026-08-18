@@ -34,7 +34,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Animal.class)
 public abstract class AnimalMixin {
 
-    // vanilla checkAnimalSpawnRules only allows spawning on blocks in BlockTags.ANIMALS_SPAWNABLE_ON
     @Inject(method = "checkAnimalSpawnRules", at = @At("HEAD"), cancellable = true)
     private static void bh_relaxHorseGroundCheck(EntityType<? extends Animal> type,
                                                  LevelAccessor level,
@@ -82,10 +81,8 @@ public abstract class AnimalMixin {
         IHorseData partnerData = (IHorseData) partnerHorse;
         IHorseData childData = (IHorseData) childHorse;
 
-        // gender: random for the child
         childData.bh_setGender(self.getRandom().nextBoolean() ? HorseGender.MALE : HorseGender.FEMALE);
 
-        // breed inheritance, only meaningful if both parents are real horses (not donkey/mule mixes)
         HorseBreed selfBreed = selfData.bh_getBreed();
         HorseBreed partnerBreed = partnerData.bh_getBreed();
         if (selfBreed.isRealBreed() && partnerBreed.isRealBreed()) {
@@ -98,21 +95,17 @@ public abstract class AnimalMixin {
                 childData.bh_setMixedBreed(true);
             }
         } else {
-            // cross-species (e.g. horse + donkey -> mule). use the placeholder for the child's species
             HorseBreed species = HorseBreed.speciesFor(childHorse);
             childData.bh_setBreed(species != null ? species : HorseBreed.UNKNOWN_SPECIES);
             childData.bh_setMixedBreed(false);
         }
 
-        // stat inheritance: child = max(parent1, parent2) + random delta in display units (blocks/sec
         bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.MAX_HEALTH, VANILLA_MAX_HEALTH, HEALTH_DISPLAY_PER_RAW);
         bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.MOVEMENT_SPEED, VANILLA_MAX_SPEED, SPEED_DISPLAY_PER_RAW);
         bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.JUMP_STRENGTH, VANILLA_MAX_JUMP, JUMP_DISPLAY_PER_RAW);
 
-        // ensure max-health change actually heals the child to its new ceiling
         childHorse.setHealth(childHorse.getMaxHealth());
 
-        // coat follows breed: roll a coat from the child's assigned breed's allowed list
         if (childHorse instanceof Horse childHorseEntity) {
             HorseBreed childBreed = childData.bh_getBreed();
             HorseBreed.Coat coat = childBreed.rollCoat(self.getRandom());
@@ -128,17 +121,14 @@ public abstract class AnimalMixin {
         this.bh_breeder = null;
     }
 
-    // vanilla horse base attribute ceilings, these are the caps breeding can never exceed
     private static final double VANILLA_MAX_HEALTH = 30.0D;
     private static final double VANILLA_MAX_SPEED = 0.3375D;
     private static final double VANILLA_MAX_JUMP = 1.0D;
 
-    // display_value = raw * factor
     private static final double SPEED_DISPLAY_PER_RAW = 43.2D;
     private static final double JUMP_DISPLAY_PER_RAW = 6.0D;
     private static final double HEALTH_DISPLAY_PER_RAW = 1.0D;
 
-    // variance is uniform in display units: at worst 0.5 worse than the better parent, at best 1.0 better
     private static final double VARIANCE_DISPLAY_MIN = -0.5D;
     private static final double VARIANCE_DISPLAY_MAX = 1.0D;
 

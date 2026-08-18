@@ -11,8 +11,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.phys.Vec3;
 
-// the cart gear. slots into an upgraded saddle to hitch a cart behind a horse, or gets put straight
-// down in the world as a standalone cart
 public class HorseCartItem extends Item {
 
     public HorseCartItem(Properties properties) {
@@ -21,7 +19,6 @@ public class HorseCartItem extends Item {
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        // only off the top of a block, so a cart can't be pinned to a wall or a ceiling
         if (context.getClickedFace() != Direction.UP) {
             return InteractionResult.PASS;
         }
@@ -31,13 +28,11 @@ public class HorseCartItem extends Item {
             return InteractionResult.PASS;
         }
         if (!(context.getLevel() instanceof ServerLevel level)) {
-            // claim the click on the client too, or it swings without anything appearing
             return InteractionResult.SUCCESS;
         }
 
         BlockPos above = context.getClickedPos().above();
         Vec3 pos = new Vec3(above.getX() + 0.5D, above.getY(), above.getZ() + 0.5D);
-        // faces away from the player, so it stands the way they were looking when they set it down
         HorseCartEntity cart = HorseCartEntity.place(level, pos, player.getYRot() + 180.0F);
         if (cart == null) {
             return InteractionResult.PASS;

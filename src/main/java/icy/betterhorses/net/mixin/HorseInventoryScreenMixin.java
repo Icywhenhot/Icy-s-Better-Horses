@@ -65,10 +65,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final int BH_STATS_TEXT_Y = 38;
     @Unique private static final int BH_STATS_LINE_SPACING = 10;
     @Unique private static final int BH_TEXT_COLOR = 0xFF404040;
-    // peak opacity of the locked-cart-slot flash: strong enough to read, weak enough to see through
     @Unique private static final float BH_LOCK_FLASH_ALPHA = 0.65F;
 
-    // pseudo-constructor required for compilation, never actually called at runtime
     protected HorseInventoryScreenMixin(AbstractMountInventoryMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
     }
@@ -84,7 +82,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         if (!(menu instanceof HorseInventoryLayoutAccess layoutAccess) || !(mount instanceof AbstractHorse)) {
             return;
         }
-        // pre-size the screen so AbstractContainerScreen.init() centers topPos against the right imageHeight
         ((AbstractContainerScreenAccessor) (Object) this).bh_setImageHeight(
                 layoutAccess.bh_hasChestStorageLayout()
                         ? BH_EXTENDED_IMAGE_HEIGHT
@@ -118,7 +115,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
                 this.imageWidth,
                 BH_VANILLA_IMAGE_HEIGHT - BH_TOP_SECTION_HEIGHT);
 
-        // 1.21.11 split horse slot rendering: vanilla draws an 18x18 "container/slot" sprite for the slot
         if (horse.canUseSlot(EquipmentSlot.SADDLE)) {
             gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SLOT_SPRITE, x + 7, y + 17, 18, 18);
         }
@@ -155,7 +151,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         this.bh_drawGearPanel(gfx);
     }
 
-    // bond label and speed/jump stat lines are drawn at the very end of render() so they sit on top
     @Inject(method = "extractRenderState", at = @At("TAIL"))
     private void bh_drawTextOverlay(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
         AbstractHorse horse = this.bh_getHorseOrNull();
@@ -191,7 +186,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     private void bh_drawBondLabel(GuiGraphicsExtractor gfx, AbstractHorse horse) {
         String text = "Bond: " + ((IHorseData) horse).bh_getBond();
         int textWidth = this.font.width(text);
-        // shadow=false: with the dark-grey BH_TEXT_COLOR the offset shadow looks like a doubled duplicate
         gfx.text(this.font, text,
                 this.leftPos + this.imageWidth - textWidth - 8,
                 this.topPos + 6,
@@ -201,9 +195,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
     @Unique
     private void bh_drawStatsLines(GuiGraphicsExtractor gfx, AbstractHorse horse) {
-        // horse base speed 0.225 * 43.2 ~= 9.7 blk/s (matches vanilla roughly)
         double speedBps = horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * 43.2D;
-        // base horse jump 0.7 yields ~3.2 block height; linear fit within vanilla jump range
         double jumpBlk = Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D);
         String speedText = String.format(java.util.Locale.ROOT, "Speed: %.1f blk/s", speedBps);
         String jumpText = String.format(java.util.Locale.ROOT, "Jump:  %.1f blk", jumpBlk);
@@ -233,9 +225,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         this.bh_drawGearHint(gfx, x, y, GearSlot.CHEST, Items.CHEST);
         this.bh_drawGearHint(gfx, x, y, GearSlot.HOOVES, ModItems.HORSE_HOOVES);
         this.bh_drawGearHint(gfx, x, y, GearSlot.MEDKIT, ModItems.HORSE_MEDKIT);
-        // the stabilizer slot is shared with the horse cart, so the ghost alternates between the two.
-        // only on a real horse though: mules, donkeys and the undead sort can't wear a stabilizer, and
-        // offering one they'll never be allowed to fit just reads as a bug
         Item stabilizerSlotHint = this.bh_mountTakesStabilizer() && (System.currentTimeMillis() / 1000L) % 2L == 0L
                 ? ModItems.HORSE_STABILIZER
                 : ModItems.HORSE_CART;
@@ -244,7 +233,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         this.bh_drawLockedSlotFlash(gfx);
     }
 
-    // red wash over the cart slot for a moment after it has refused a click
     @Unique
     private void bh_drawLockedSlotFlash(GuiGraphicsExtractor gfx) {
         float intensity = BhSlotFlash.intensity();
@@ -253,7 +241,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
             return;
         }
 
-        // read the position off the slot itself so this works for any of them, gear or saddle
         Slot slot = this.menu.slots.get(flashed);
         int slotX = this.leftPos + slot.x;
         int slotY = this.topPos + slot.y;
@@ -289,7 +276,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         gfx.fill(innerLeft, y + height - 1, innerRight, y + height, BH_MIDDLE_SHADOW);
     }
 
-    // 1.21.11 removed gfx.setColor (the old way to tint a renderItem call)
     @Unique
     private void bh_drawGearHint(GuiGraphicsExtractor gfx, int x, int y, GearSlot slot, Item item) {
         int slotIndex = this.bh_getGearSlotIndex(slot.ordinal());
@@ -300,11 +286,9 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int iconX = x + slot.ordinal() * 18 + 1;
         int iconY = y + 1;
         gfx.item(new ItemStack(item), iconX, iconY);
-        // translucent wash. ARGB: alpha 0xA0 (~63%), warm-grey RGB matching old BH_HINT_TINT
         gfx.fill(iconX, iconY, iconX + 16, iconY + 16, 0xA0B7AB99);
     }
 
-    // helper for the new 1.21.11 blit signature
     @Unique
     private static void bh_blitGui(GuiGraphicsExtractor gfx, Identifier texture,
                                    int x, int y, int u, int v, int width, int height) {
@@ -316,7 +300,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         return this.menu.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE);
     }
 
-    // stabilizers are horse-only, matching the gear slot's own mayPlace rule
     @Unique
     private boolean bh_mountTakesStabilizer() {
         return this.mount instanceof net.minecraft.world.entity.animal.equine.Horse;

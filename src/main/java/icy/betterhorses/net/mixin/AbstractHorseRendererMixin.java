@@ -32,7 +32,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.ArrayList;
 import java.util.List;
 
-// adds the stabilizer wing layer to every AbstractHorseRenderer
 @Mixin(AbstractHorseRenderer.class)
 public abstract class AbstractHorseRendererMixin<
         T extends AbstractHorse,
@@ -50,7 +49,6 @@ public abstract class AbstractHorseRendererMixin<
         this.addLayer(new HorseChestLayer<>(this));
     }
 
-    // capture the current stabilizer flag/state from the live horse onto the render state
     @Inject(method = "extractRenderState", at = @At("TAIL"))
     private void bh_captureStabilizerState(T entity, S state, float partialTick, CallbackInfo ci) {
         IBhEquineStabilizerState extState = (IBhEquineStabilizerState) state;
@@ -66,9 +64,6 @@ public abstract class AbstractHorseRendererMixin<
             return;
         }
 
-        // the synced gear flags, not bh_hasChestGear(): that reads the gear container, which only
-        // exists on the server, so on the client it always answered "no chest" and the pannier
-        // never drew
         extState.bh_setChestGear(data.bh_hasGear(GearSlot.CHEST), data.bh_hasEnderChestGear());
 
         boolean hasStabilizer = data.bh_hasStabilizerItem();
@@ -84,34 +79,23 @@ public abstract class AbstractHorseRendererMixin<
     @Unique private static final double BH_REIN_SIDE = 0.15D;
     @Unique private static final double BH_REIN_HEAD_HEIGHT = 1.45D;
     @Unique private static final double BH_REIN_HEAD_FORWARD = 0.75D;
-    // measured up from the driver's feet. 0.9 put the ropes at face height, so they sit half a block
-    // lower now, around where hands actually rest
     @Unique private static final double BH_REIN_HAND_HEIGHT = 0.4D;
 
-    // draws a pair of reins from the horse's head back to the driver's hands whenever a cart is hitched
     @Inject(method = "extractRenderState", at = @At("TAIL"))
     private void bh_extractCartReins(T entity, S state, float partialTick, CallbackInfo ci) {
         if (!(entity instanceof IHorseData data) || !data.bh_hasCartGear()) {
             return;
         }
-        // whoever actually has the reins. a mob riding shotgun isn't holding anything
         if (entity.getControllingPassenger() == null) {
             return;
         }
 
-        // the horse's interpolated *body* yaw, not getYRot(partialTick). on a player-controlled horse
-        // getYRot is rewritten every frame from the mouse and still steps at tick boundaries, which is
-        // what made the reins snap while the cart glided. body yaw is what the horse's own body
-        // renders with, and what the cart is glued to, so everything moves as one piece
         float bodyYaw = Mth.rotLerp(partialTick, entity.yBodyRotO, entity.yBodyRot);
         float radians = -bodyYaw * ((float) Math.PI / 180.0F);
         Vec3 horsePos = entity.getPosition(partialTick);
-        // the driver's hands come off that same transform rather than off the driver's own
-        // interpolated position, which is a tick behind and computed from the raw yaw
         Vec3 driverPos = horsePos.add(HorseCartEntity.benchSeatOffset(0, bodyYaw));
         Level level = entity.level();
 
-        // null (not an empty list) when the entity isn't leashed
         List<EntityRenderState.LeashState> reins = state.leashStates == null
                 ? new ArrayList<>()
                 : new ArrayList<>(state.leashStates);

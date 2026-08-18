@@ -6,7 +6,6 @@ import net.minecraft.resources.Identifier;
 import com.geckolib.model.GeoModel;
 import com.geckolib.renderer.base.GeoRenderState;
 
-// GeoModel for the pulled cart entity
 public final class HorseCartGeoModel extends GeoModel<HorseCartEntity> {
     private static final Identifier MODEL =
             Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_cart");

@@ -7,7 +7,7 @@ has_children: true
 # Breeds
 {: .no_toc }
 
-Fifteen real-world breeds, each with its own coat palette and biome range.
+Fifteen real-world breeds, each with its own coat palette, biome range, and — once implemented — a unique ability.
 {: .fs-5 .fw-300 }
 
 1. TOC
@@ -30,23 +30,23 @@ Donkeys, mules, skeleton horses, and zombie horses don't get a real breed. They 
 
 ## All fifteen at a glance
 
-| Breed | Build | Coats | Markings | Common biomes |
-|:---|:---|:---:|:---|:---|
-| [Thoroughbred](thoroughbred) | Light riding | 6 | None | Plains, Sunflower Plains, Meadow… |
-| [Arabian](arabian) | Light riding | 6 | None | Desert, Badlands, Eroded Badlands… |
-| [Quarter Horse](quarter) | Stock | 6 | None | Plains, Sunflower Plains, Savanna… |
-| [Friesian](friesian) | Baroque | 1 | Black only | Dark Forest, Forest, Old Growth Spruce Taiga… |
-| [Andalusian](andalusian) | Baroque | 4 | None | Meadow, Cherry Grove, Flower Forest… |
-| [Percheron](percheron) | Draft | 3 | None | Old Growth Spruce Taiga, Forest, Meadow… |
-| [Clydesdale](clydesdale) | Draft | 4 | Always white field | Windswept Hills, Windswept Gravelly Hills, Windswept Forest… |
-| [Shire](shire) | Draft | 4 | Always white field | Forest, Birch Forest, Old Growth Birch Forest… |
-| [Belgian](belgian) | Draft | 4 | None | Taiga, Old Growth Spruce Taiga, Old Growth Pine Taiga… |
-| [Icelandic](icelandic) | Pony | 6 | None | Snowy Plains, Snowy Taiga, Ice Spikes… |
-| [Mustang](mustang) | Feral | 6 | None | Plains, Savanna, Windswept Hills… |
-| [Haflinger](haflinger) | Pony | 3 | None | Snowy Slopes, Grove, Meadow… |
-| [Morgan](morgan) | Light riding | 5 | None | Plains, Sunflower Plains, Forest… |
-| [American Paint](american-paint) | Stock | 6 | Always white field | Plains, Sunflower Plains, Savanna… |
-| [Appaloosa](appaloosa) | Stock | 6 | Always spotted | Plains, Wooded Badlands, Savanna Plateau… |
+| Breed | Build | Ability | Coats | Markings | Common biomes |
+|:---|:---|:---|:---:|:---|:---|
+| [Thoroughbred](thoroughbred) | Light riding | Sprint Burst | 3 | Own textures | Plains, Sunflower Plains, Meadow… |
+| [Arabian](arabian) | Light riding | — | 6 | None | Desert, Badlands, Eroded Badlands… |
+| [Quarter Horse](quarter) | Stock | Explosive Burst | 3 | Own textures | Plains, Sunflower Plains, Savanna… |
+| [Friesian](friesian) | Baroque | Majestic Presence | 2 | Own textures | Dark Forest, Forest, Old Growth Spruce Taiga… |
+| [Andalusian](andalusian) | Baroque | Warhorse Courage | 3 | Own textures | Meadow, Cherry Grove, Flower Forest… |
+| [Percheron](percheron) | Draft | — | 3 | None | Old Growth Spruce Taiga, Forest, Meadow… |
+| [Clydesdale](clydesdale) | Draft | — | 4 | Always white field | Windswept Hills, Windswept Gravelly Hills, Windswept Forest… |
+| [Shire](shire) | Draft | — | 4 | Always white field | Forest, Birch Forest, Old Growth Birch Forest… |
+| [Belgian](belgian) | Draft | — | 4 | None | Taiga, Old Growth Spruce Taiga, Old Growth Pine Taiga… |
+| [Icelandic](icelandic) | Pony | Sure-Footed | 4 | Own textures | Snowy Plains, Snowy Taiga, Ice Spikes… |
+| [Mustang](mustang) | Feral | Wild Instincts | 3 | Own textures | Plains, Savanna, Windswept Hills… |
+| [Haflinger](haflinger) | Pony | — | 3 | None | Snowy Slopes, Grove, Meadow… |
+| [Morgan](morgan) | Light riding | — | 5 | None | Plains, Sunflower Plains, Forest… |
+| [American Paint](american-paint) | Stock | Trail Blazer | 3 | Own textures | Plains, Sunflower Plains, Savanna… |
+| [Appaloosa](appaloosa) | Stock | Scout's Vision | 4 | Own textures | Plains, Wooded Badlands, Savanna Plateau… |
 
 ---
 

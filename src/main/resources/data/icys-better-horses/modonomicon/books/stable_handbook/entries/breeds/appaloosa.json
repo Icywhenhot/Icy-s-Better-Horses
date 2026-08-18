@@ -3,7 +3,9 @@
   "id": "icys-better-horses:breeds/appaloosa",
   "category": "icys-better-horses:breeds",
   "name": "Appaloosa",
-  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "icon": {
+    "id": "icys-better-horses:appaloosa_horse_spawn_egg"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -22,10 +24,15 @@
     },
     {
       "type": "modonomicon:text",
-      "id": "coat",
-      "title": "Coat",
+      "id": "ability",
+      "title": "Scout's Vision",
       "show_title_separator": true,
-      "text": "Always with **Dots** markings:\n\n- White + Black Dots\n- Gray + Black Dots\n- Chestnut + White Dots\n- Brown + White Dots\n- Black + White Dots\n- Dark Brown + White Dots"
+      "text": "After dark, the rider sees as the horse does: **Night Vision while mounted at night**, and through a thunderstorm dark enough to pass for it.\n\nIt comes on quietly - no swirling particles, no icon - and fades on its own once the sun is back up."
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "id": "coat",
+      "entity": "icys-better-horses:appaloosa_horse"
     },
     {
       "type": "modonomicon:text",

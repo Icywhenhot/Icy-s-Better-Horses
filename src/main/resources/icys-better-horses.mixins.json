@@ -14,6 +14,7 @@
 		"HorseInventoryMenuMixin",
 		"HorseSaddleSlotMixin",
 		"LeafPassthroughMixin",
+		"MapItemMixin",
 		"LivingEntityMixin",
 		"MobCartPassengerMixin",
 		"MobNameTagBondMixin",
@@ -34,7 +35,9 @@
 		"HorseInventoryScreenMixin",
 		"HorseModelAccessor",
 		"KeyboardInputMixin",
+		"LivingEntityRenderStateRiderMixin",
 		"LivingEntityRendererMixin",
+		"LivingEntityRendererRiderMixin",
 		"LivingEntityRendererSubmitMixin"
 	],
 	"injectors": {

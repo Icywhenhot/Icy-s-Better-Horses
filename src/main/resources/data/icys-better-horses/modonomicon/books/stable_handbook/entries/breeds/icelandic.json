@@ -3,7 +3,9 @@
   "id": "icys-better-horses:breeds/icelandic",
   "category": "icys-better-horses:breeds",
   "name": "Icelandic",
-  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "icon": {
+    "id": "icys-better-horses:icelandic_horse_spawn_egg"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -22,10 +24,15 @@
     },
     {
       "type": "modonomicon:text",
-      "id": "coat",
-      "title": "Coat",
+      "id": "ability",
+      "title": "Sure-Footed",
       "show_title_separator": true,
-      "text": "- Chestnut + White Field\n- Brown + White Field\n- Black + White\n- Gray + White Field\n- Creamy + White Field\n- Dark Brown + White"
+      "text": "Bred on scree and lava fields, an Icelandic **takes no fall damage at all from under 12 blocks** - and neither does its rider, since a horse absorbs the landing for both of you.\n\nPast twelve blocks it falls like anything else. This is footing, not flight."
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "id": "coat",
+      "entity": "icys-better-horses:icelandic_horse"
     },
     {
       "type": "modonomicon:text",

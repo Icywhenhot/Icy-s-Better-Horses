@@ -20,7 +20,7 @@ Everything the mod adds to chat lives under one root command. No operator permis
 
 | Command | What it does |
 |:---|:---|
-| `/horse trust <player>` | Lets that player ride every horse you own |
+| `/horse trust <player>` | Lets that player ride and handle every horse you own |
 | `/horse untrust <player>` | Takes the permission back |
 | `/horse trusted` | Lists everyone you currently trust |
 
@@ -38,7 +38,7 @@ All three are player-only. Running them from the server console or a command blo
 
 Alex, if they're online, sees:
 
-> \<your name\> trusts you with their horses. You can ride them now.
+> \<your name\> trusts you with their horses. You can ride them and handle their gear now.
 
 Trust is stored **per player, not per horse**. One `/horse trust` covers every horse you own now *and* every horse you tame later — you never have to re-run it when you claim a new mount.
 
@@ -51,23 +51,25 @@ The list is saved with the world, so it survives restarts. It's also symmetric-f
 
 ## What trust actually allows
 
-Trust is a **riding** permission and nothing more.
+A trusted player is treated as you are, with **one** exception: they can't give your horse away.
 
 | Action by a trusted player | Allowed? |
 |:---|:---|
 | Mount the horse and ride it | **Yes** |
 | Ride as a second rider | **Yes** |
 | Take the reins of a [horse cart](equipment/horse-cart) | **Yes** |
-| Open the horse's gear screen | No |
-| Shear off the saddle | No |
-| Open a cart's chest | No |
-| Use the [command wheel](command-wheel) on it | No |
-| Whistle it, send it home, or disown it | No |
+| Open the horse's gear screen | **Yes** |
+| Use its saddlebags and a cart's chest | **Yes** |
+| Fit a cart or stabilizer by hand | **Yes** |
+| Shear off the saddle | **Yes** |
+| Tie it to a [hitchpost](equipment/hitchpost) | **Yes** |
+| Use the [command wheel](command-wheel) on it | **Yes** |
+| Disown it | No |
+
+Disowning stays with the owner. Everything else — the gear screen, the storage hanging off it, the commands — is open, because a riding companion who can't open the saddlebags on a trip isn't much of one.
 
 {: .warning }
-> A trusted rider can ride your horse **away**, and while they're in the saddle you can't whistle it back out from under them. Trust people you'd hand a lead to.
-
-Because trust only affects riding, a friend still can't strip your Netherite-barded stallion or empty its chest. Those stay owner-only regardless.
+> This is a lot of permission. A trusted rider can ride your horse **away**, empty its chest, and strip its armour, and while they're in the saddle you can't whistle it back out from under them. Trust people you'd hand a lead to.
 
 ---
 

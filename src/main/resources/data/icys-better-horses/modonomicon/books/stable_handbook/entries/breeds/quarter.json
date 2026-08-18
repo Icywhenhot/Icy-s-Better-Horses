@@ -3,7 +3,9 @@
   "id": "icys-better-horses:breeds/quarter",
   "category": "icys-better-horses:breeds",
   "name": "Quarter Horse",
-  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "icon": {
+    "id": "icys-better-horses:quarter_horse_spawn_egg"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -22,10 +24,15 @@
     },
     {
       "type": "modonomicon:text",
-      "id": "coat",
-      "title": "Coat",
+      "id": "ability",
+      "title": "Explosive Burst",
       "show_title_separator": true,
-      "text": "- Chestnut\n- Chestnut + White\n- Brown\n- Brown + White\n- Black + White\n- Creamy + White"
+      "text": "Named for outrunning anything over a quarter mile, and it is the first two seconds that earn the name. A Quarter Horse has **no acceleration delay**: ask it to go and it is already going, where any other horse spends a second winding up.\n\nIt does not raise the top speed - only how fast it gets there. For dodging, bolting and short sprints, nothing else compares."
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "id": "coat",
+      "entity": "icys-better-horses:quarter_horse"
     },
     {
       "type": "modonomicon:text",

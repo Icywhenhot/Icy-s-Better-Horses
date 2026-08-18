@@ -15,19 +15,25 @@ Known for its leopard-spot pattern, the only breed whose coat always carries dot
 
 ---
 
+## Breed ability: Scout's Vision
+
+After dark, the rider sees as the horse does: **Night Vision while mounted at night**, and through a thunderstorm dark enough to pass for one.
+
+It comes on quietly — no swirling particles, no HUD icon — is refreshed while you ride so it never flickers, and fades on its own once the sun is up.
+
 ## Coats
 
-{: .note }
-> Always carries **spotted** markings, the only breed that does.
+4 coats, each its own texture — these breeds don't use vanilla's coat and marking system.
 
 | Coat |
 |:---|
-| White + Black Dots |
-| Gray + Black Dots |
-| Chestnut + White Dots |
-| Brown + White Dots |
-| Black + White Dots |
-| Dark Brown + White Dots |
+| Black |
+| Brown |
+| Gray |
+| White |
+
+{: .note }
+> The handbook shows these as a live model you can page through. If a coat is added to the mod, it appears there without the page being edited.
 
 ## Where to find them
 

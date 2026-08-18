@@ -41,7 +41,6 @@ public abstract class EntityMixin {
     @Unique private static final double BH_MOUNTED_STEP_HEIGHT_BONUS = 0.1D;
     @Unique private static final double BH_MOUNTED_BREAK_SPEED_BONUS = 5.0D;
 
-    // cart riders never suffocate
     @Inject(method = "isInWall", at = @At("HEAD"), cancellable = true)
     private void bh_cartRidersDoNotSuffocate(CallbackInfoReturnable<Boolean> cir) {
         if (((Entity) (Object) this).getVehicle() instanceof HorseCartEntity) {
@@ -60,7 +59,6 @@ public abstract class EntityMixin {
             return;
         }
 
-        // track the ride here rather than in doPlayerRide, this hook fires for every mount path in 26.2
         if (player.getUUID().equals(((IHorseData) horse).bh_getOwner())) {
             HorseTracker.setLastRidden(player.getUUID(), horse);
         }
@@ -104,7 +102,6 @@ public abstract class EntityMixin {
         }
     }
 
-    // dismounting hands the horse back to itself: it wanders around the spot it was left
     @Inject(method = "removeVehicle", at = @At("HEAD"))
     private void bh_wanderAfterDismount(CallbackInfo ci) {
         Entity self = (Entity) (Object) this;
@@ -117,7 +114,6 @@ public abstract class EntityMixin {
             return;
         }
 
-        // also recorded here because taming completes mid-ride: the mount hook saw an unowned horse
         HorseTracker.setLastRidden(player.getUUID(), horse);
         data.bh_setWanderCenter(horse.blockPosition());
         data.bh_setCommand(HorseCommand.WANDER);
@@ -141,7 +137,6 @@ public abstract class EntityMixin {
         }
 
         ItemStack held = player.getItemInHand(hand);
-        // shears are the other way a saddle comes off, so the cart has to hold it on here too
         boolean cartHitched = held.is(Items.SHEARS)
                 && !player.isSecondaryUseActive()
                 && ((IHorseData) horse).bh_hasCartGear()
@@ -166,7 +161,7 @@ public abstract class EntityMixin {
         }
 
         IHorseData data = (IHorseData) horse;
-        if (data.bh_getOwner() == null || data.bh_getOwner().equals(player.getUUID())) {
+        if (data.bh_mayHandle(player.getUUID())) {
             return false;
         }
 

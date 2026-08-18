@@ -39,7 +39,6 @@ public abstract class LivingEntityMixin extends Entity {
     @Shadow
     protected abstract float getDamageAfterMagicAbsorb(DamageSource source, float amount);
 
-    // 1.21.5+ widened actuallyHurt to take a ServerLevel as its first parameter
     @Inject(method = "actuallyHurt", at = @At("HEAD"))
     private void bh_queueHorseMedkit(ServerLevel level, DamageSource source, float amount, CallbackInfo ci) {
         this.bh_triggerHorseMedkitAfterDamage = false;
@@ -99,7 +98,6 @@ public abstract class LivingEntityMixin extends Entity {
         gear.setItem(GearSlot.MEDKIT.ordinal(), ItemStack.EMPTY);
         gear.setChanged();
 
-        // 1.21.11 MobEffects rename: HEAL → INSTANT_HEALTH, DAMAGE_RESISTANCE → RESISTANCE
         self.addEffect(new MobEffectInstance(MobEffects.REGENERATION, BH_MEDKIT_EFFECT_DURATION, 0));
         self.addEffect(new MobEffectInstance(MobEffects.INSTANT_HEALTH, 1, 0));
         self.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, BH_MEDKIT_EFFECT_DURATION, 0));

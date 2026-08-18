@@ -15,16 +15,28 @@ A short, shaggy, cold-hardy pony from Iceland, known for an unusually smooth ext
 
 ---
 
+## Breed ability: Sure-Footed
+
+Bred on scree and lava fields, an Icelandic **takes no fall damage at all from under 12 blocks** — and neither do you, because a horse absorbs the landing for its rider.
+
+Past twelve blocks it falls like any other horse. This is footing, not flight.
+
+{: .tip }
+> Twelve blocks covers nearly every drop you meet coming down a mountain, which makes the slowest breed in the mod the most comfortable one to explore rough terrain on.
+
 ## Coats
+
+4 coats, each its own texture — these breeds don't use vanilla's coat and marking system.
 
 | Coat |
 |:---|
-| Chestnut + White Field |
-| Brown + White Field |
-| Black + White |
-| Gray + White Field |
-| Creamy + White Field |
-| Dark Brown + White |
+| Black |
+| Brown |
+| Brown and White |
+| White |
+
+{: .note }
+> The handbook shows these as a live model you can page through. If a coat is added to the mod, it appears there without the page being edited.
 
 ## Where to find them
 

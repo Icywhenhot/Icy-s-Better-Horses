@@ -13,26 +13,19 @@ import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fc;
 import org.joml.Vector2f;
 
-// arbitrary translucent 2D geometry for the GUI, curves, rings, wedges
 public final class BhVector {
 
-    // angular resolution of curves
     private static final double ANGLE_STEP = Math.toRadians(3.0D);
-    // width of the alpha fade band, in GUI pixels
     public static final float FEATHER = 1.0F;
 
     private BhVector() {}
 
-    // mesh
-
-    // accumulates quads. reused per frame: build, submit, discard
     public static final class Builder {
 
         private float[] xy = new float[1024];
         private int[] colors = new int[512];
         private int vertices;
 
-        // adds one quad. corners go in order around the perimeter, and the direction matters
         public void quad(float x0, float y0, int c0, float x1, float y1, int c1,
                          float x2, float y2, int c2, float x3, float y3, int c3) {
             ensure(4);
@@ -65,7 +58,6 @@ public final class BhVector {
         }
     }
 
-    // hands the built geometry to the GUI render state
     public static void submit(GuiGraphicsExtractor gfx, Builder builder) {
         if (builder.isEmpty()) return;
 
@@ -79,7 +71,6 @@ public final class BhVector {
                 .addGuiElement(new MeshRenderState(xy, colors, pose, bounds(xy, pose)));
     }
 
-    // screen-space AABB of the transformed geometry; the render state uses it for sorting and culling
     private static ScreenRectangle bounds(float[] xy, Matrix3x2fc pose) {
         float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;
         float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
@@ -122,21 +113,16 @@ public final class BhVector {
         }
     }
 
-    // shapes
-
-    // an annular wedge: the area between innerRadius and outerRadius, from startAngle to endAngle (radians
     public static void wedge(Builder builder, float cx, float cy, float innerRadius, float outerRadius,
                              double startAngle, double endAngle, int color, float feather) {
         arc(builder, cx, cy, innerRadius, outerRadius, startAngle, endAngle, color, feather, false);
     }
 
-    // a complete ring, as wedge but closed, so only the inner and outer edges are feathered
     public static void ring(Builder builder, float cx, float cy, float innerRadius, float outerRadius,
                             int color, float feather) {
         arc(builder, cx, cy, innerRadius, outerRadius, 0.0D, Math.PI * 2.0D, color, feather, true);
     }
 
-    // a filled disc: a ring with no hole, so only the outer edge is feathered
     public static void disc(Builder builder, float cx, float cy, float radius, int color, float feather) {
         arc(builder, cx, cy, 0f, radius, 0.0D, Math.PI * 2.0D, color, feather, true);
     }
@@ -146,7 +132,6 @@ public final class BhVector {
         double span = endAngle - startAngle;
         if (span <= 0.0D || outerRadius <= innerRadius) return;
 
-        // radial bands. a hole gets a feather on its inner edge; a solid disc starts opaque at the centre
         float radialFeather = Math.min(feather, (outerRadius - innerRadius) * 0.45F);
         boolean solid = innerRadius <= 0.01F;
         float[] radii = solid
@@ -154,7 +139,6 @@ public final class BhVector {
                 : new float[]{innerRadius, innerRadius + radialFeather, outerRadius - radialFeather, outerRadius};
         float[] radialAlpha = solid ? new float[]{1f, 1f, 0f} : new float[]{0f, 1f, 1f, 0f};
 
-        // angle samples: the two feather steps at the ends, then even steps across the middle
         double angularFeather = closed ? 0.0D
                 : Math.min(span * 0.45D, feather / Math.max(1.0F, (innerRadius + outerRadius) * 0.5F));
         int steps = Math.max(1, (int) Math.ceil(span / ANGLE_STEP));
@@ -184,7 +168,6 @@ public final class BhVector {
                 int cFar0 = scaleAlpha(color, radialAlpha[band + 1] * edge0);
                 int cFar1 = scaleAlpha(color, radialAlpha[band + 1] * edge1);
                 int cNear1 = scaleAlpha(color, radialAlpha[band] * edge1);
-                // wound to match vanilla's ColoredRectangleRenderState, (x0,y0) (x0,y1) (x1,y1) (x1
                 builder.quad(
                         cx + cos0 * rNear, cy + sin0 * rNear, cNear0,
                         cx + cos1 * rNear, cy + sin1 * rNear, cNear1,
@@ -194,7 +177,6 @@ public final class BhVector {
         }
     }
 
-    // 1 inside the wedge, ramping to 0 across the feather band at either straight edge
     private static float edgeAlpha(double angle, double startAngle, double endAngle, double feather) {
         if (feather <= 0.0D) return 1f;
         double fromStart = (angle - startAngle) / feather;
@@ -202,7 +184,6 @@ public final class BhVector {
         return (float) (BhAnim.clamp01((float) fromStart) * BhAnim.clamp01((float) toEnd));
     }
 
-    // ARGB with its alpha multiplied by k (0..1)
     public static int scaleAlpha(int argb, float k) {
         int alpha = Math.round(((argb >>> 24) & 0xFF) * BhAnim.clamp01(k));
         return (alpha << 24) | (argb & 0xFFFFFF);

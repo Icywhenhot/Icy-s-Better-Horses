@@ -15,19 +15,27 @@ Bold patchwork coats are the signature. Same all-purpose build as the Quarter Ho
 
 ---
 
-## Coats
+## Breed ability: Trail Blazer
+
+Ride with a **map in hand** and an American Paint fills it in over **twice the usual distance** from the path you're actually on — four times the area per ride.
+
+This is the breed to be on when the job is finding out what's out there.
 
 {: .note }
-> Always carries **White Field** markings.
+> The wider scan costs proportionally more work per tick, and only while a map is actually in hand. Put the map away and the horse is an ordinary all-rounder again.
+
+## Coats
+
+3 coats, each its own texture — these breeds don't use vanilla's coat and marking system.
 
 | Coat |
 |:---|
-| Brown + White Field |
-| Black + White Field |
-| Chestnut + White Field |
-| Dark Brown + White Field |
-| White + White Field |
-| Creamy + White Field |
+| Black |
+| Brown |
+| Chestnut |
+
+{: .note }
+> The handbook shows these as a live model you can page through. If a coat is added to the mod, it appears there without the page being edited.
 
 ## Where to find them
 

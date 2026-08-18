@@ -8,7 +8,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-// client-side mirror of the player's horse roster, plus the most recent action result
 public final class ClientHorseRoster {
 
     public static final long FLASH_MS = 2600L;
@@ -27,7 +26,6 @@ public final class ClientHorseRoster {
 
     public static void setEntries(List<HorseRosterEntry> newEntries) {
         entries = List.copyOf(newEntries);
-        // coats, ages and the roster itself can all have changed; rebuild previews on demand
         HorsePreviewCache.clear();
     }
 
@@ -72,7 +70,6 @@ public final class ClientHorseRoster {
         flashExpiresAt = 0L;
     }
 
-    // true while this specific button should be drawn in the error colour
     public static boolean isFlashing(UUID horseId, HorseManageAction action) {
         return isFlashing() && action == flashAction && horseId.equals(flashHorseId);
     }
@@ -94,12 +91,10 @@ public final class ClientHorseRoster {
         return isFlashing() ? flashMessageKey : "";
     }
 
-    // milliseconds since the current flash started, or -1 when nothing is flashing
     public static long flashElapsedMs() {
         return isFlashing() ? FLASH_MS - (flashExpiresAt - System.currentTimeMillis()) : -1L;
     }
 
-    // true exactly once, for the screen that is waiting on this specific action to go through
     public static boolean consumeSuccess(UUID horseId, HorseManageAction action) {
         if (action != successAction || !horseId.equals(successHorseId)) {
             return false;
@@ -109,7 +104,6 @@ public final class ClientHorseRoster {
         return true;
     }
 
-    // called on disconnect so a new world doesn't inherit the previous one's roster
     public static void reset() {
         entries = List.of();
         HorsePreviewCache.clear();

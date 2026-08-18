@@ -22,7 +22,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// 1.21.11 moved mount shift-click logic up from HorseInventoryMenu to AbstractMountInventoryMenu
 @Mixin(AbstractMountInventoryMenu.class)
 public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerMenu {
 
@@ -59,8 +58,6 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
             return;
         }
 
-        // shift-clicking moves items without consulting mayPickup, so anything a hitched cart holds
-        // shut has to be turned away here too
         boolean lockedCart = index == gearStartIndex + GearSlot.STABILIZER.ordinal()
                 && layoutAccess.bh_isCartSlotLocked();
         boolean lockedSaddle = index == 0 && layoutAccess.bh_isSaddleSlotLocked();

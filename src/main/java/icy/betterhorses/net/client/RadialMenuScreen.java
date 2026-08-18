@@ -27,19 +27,13 @@ public class RadialMenuScreen extends Screen {
     private static final int LABEL_RADIUS = 78;
     private static final double SEGMENT_GAP_RADIANS = Math.toRadians(2.5D);
 
-    // tinted to the rest of the mod's UI rather than the old cool blue-grey
     private static final int BASE_BACKGROUND_COLOR = 0x55140D07;
-    // light brown, for the ring the wedges sit
     private static final int RING_BACKDROP_COLOR = 0x4C5A3A1C;
-    // thin warm arcs along the ring's inner and outer edges, the detail that reads as a lit rim
     private static final int RING_RIM_COLOR = 0x66A37236;
-    // parchment, for the five command panels
     private static final int SEGMENT_COLOR = 0x4CE0C1A6;
     private static final int SEGMENT_HOVER_COLOR = 0x99F2DFC4;
-    // each segment's own outer rim, warming and brightening as it's hovered
     private static final int SEGMENT_RIM_COLOR = 0x40CCA989;
     private static final int SEGMENT_RIM_HOVER_COLOR = 0xB2FFF0D8;
-    // light red, for the hub
     private static final int CENTER_DISC_COLOR = 0x66A83B18;
     private static final int CENTER_RIM_COLOR = 0x80BF360C;
     private static final int CENTER_DOT_COLOR = 0x99F2DFC4;
@@ -48,10 +42,9 @@ public class RadialMenuScreen extends Screen {
     private static final int LABEL_COLOR = 0xFFEBD9BE;
     private static final int LABEL_HOVER_COLOR = 0xFFFFFFFF;
 
-    // thickness of the rim arcs, and how far a hovered wedge swells outward
     private static final float RIM_THICKNESS = 1.5F;
     private static final float HOVER_PUSH = 4F;
-    private static final float HOVER_TAU = 0.05F;   // hover fade time-constant; smaller = snappier
+    private static final float HOVER_TAU = 0.05F;
 
     private final int horseId;
     private int hoveredIndex = -1;
@@ -88,7 +81,6 @@ public class RadialMenuScreen extends Screen {
         hoveredIndex = (dist >= RING_INNER && dist <= RING_OUTER)
                 ? bh_angleToIndex(Math.atan2(dy, dx)) : -1;
 
-        // entrance: the wheel blooms outward from the centre over a dimmed, blurred world
         float t = BhAnim.clamp01((System.currentTimeMillis() - bhOpenMs) / 200f);
         gfx.fill(0, 0, width, height, BhAnim.fade(BASE_BACKGROUND_COLOR, t));
         hover.beginFrame(HOVER_TAU);
@@ -107,12 +99,10 @@ public class RadialMenuScreen extends Screen {
         double segAngle = Math.PI * 2.0D / SEGMENT_COUNT;
         float[] hoverAmount = new float[SEGMENT_COUNT];
         for (int i = 0; i < SEGMENT_COUNT; i++) {
-            // hover fades in and out through the shared spring, so the highlight never snaps
             hoverAmount[i] = hover.get(i, i == hoveredIndex, 1f);
             double start = segAngle * i - Math.PI / 2.0D - segAngle / 2.0D + SEGMENT_GAP_RADIANS;
             double end = start + segAngle - SEGMENT_GAP_RADIANS * 2.0D;
 
-            // a hovered wedge swells outward a few pixels as well as brightening
             float outer = RING_OUTER + HOVER_PUSH * hoverAmount[i];
             int fill = bh_mixColor(SEGMENT_COLOR, SEGMENT_HOVER_COLOR, hoverAmount[i]);
             int rim = bh_mixColor(SEGMENT_RIM_COLOR, SEGMENT_RIM_HOVER_COLOR, hoverAmount[i]);
@@ -140,7 +130,6 @@ public class RadialMenuScreen extends Screen {
         pose.popMatrix();
     }
 
-    // channel-wise blend of two ARGB colours, k 0 = first, 1 = second
     private static int bh_mixColor(int from, int to, float k) {
         float m = BhAnim.clamp01(k);
         int out = 0;
@@ -152,7 +141,6 @@ public class RadialMenuScreen extends Screen {
         return out;
     }
 
-    // maps a mouse angle to a segment index (segment 0 centered on "up")
     private int bh_angleToIndex(double angle) {
         double segAngle = Math.PI * 2.0D / SEGMENT_COUNT;
         double adjusted = angle + Math.PI / 2.0D + segAngle / 2.0D;

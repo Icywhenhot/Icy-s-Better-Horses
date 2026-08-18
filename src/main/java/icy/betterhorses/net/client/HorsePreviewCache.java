@@ -23,17 +23,14 @@ import java.util.HashSet;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// stand-in horses for the management screen's preview pane
 public final class HorsePreviewCache {
 
     private static final Map<UUID, AbstractHorse> cache = new HashMap<>();
 
-    // 26.2 leaves an entity's id at 0 until it is added to a level
     private static final AtomicInteger previewIds = new AtomicInteger();
 
     private HorsePreviewCache() {}
 
-    // previews that threw while rendering; the pane falls back to a placeholder for these
     private static final Set<UUID> broken = new HashSet<>();
 
     public static @Nullable AbstractHorse getOrBuild(HorseRosterEntry entry) {
@@ -49,7 +46,6 @@ public final class HorsePreviewCache {
         return built;
     }
 
-    // a preview horse is a synthetic entity handed to the full entity render pipeline
     public static void markBroken(UUID horseId, Throwable error) {
         if (broken.add(horseId)) {
             cache.remove(horseId);
@@ -82,9 +78,6 @@ public final class HorsePreviewCache {
                     byOrdinal(Variant.values(), entry.variantOrdinal(), Variant.WHITE),
                     byOrdinal(Markings.values(), entry.markingsOrdinal(), Markings.NONE));
         }
-        // a dedicated breed mob's look comes from its own coat, not from Variant/Markings.
-        // The stand-in is built client-side and never synced, so without this it keeps the
-        // default index 0 and every horse previews as the breed's first coat.
         if (horse instanceof icy.betterhorses.net.entity.BhBreedHorse breedHorse
                 && entry.breedCoat() >= 0) {
             breedHorse.bhSetCoat(entry.breedCoat());
@@ -98,7 +91,6 @@ public final class HorsePreviewCache {
         return ordinal >= 0 && ordinal < values.length ? values[ordinal] : fallback;
     }
 
-    // called whenever the roster changes, so a re-coloured or disowned horse doesn't linger
     public static void clear() {
         cache.clear();
         broken.clear();
