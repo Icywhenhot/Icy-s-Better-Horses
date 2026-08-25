@@ -3,7 +3,11 @@
   "id": "icys-better-horses:breeds/shire",
   "category": "icys-better-horses:breeds",
   "name": "Shire",
-  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "icon": {
+    "texture": "icys-better-horses:textures/gui/saddle_node.png",
+    "width": 16,
+    "height": 16
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -18,14 +22,14 @@
       "id": "about",
       "title": "Shire",
       "show_title_separator": true,
-      "text": "England's largest draft horse - taller than a Clydesdale and just as patient. Usually black or brown with white field markings."
+      "text": "England's largest draft horse - taller than a Clydesdale and just as patient. Heavy feathering on all four legs is the breed's signature."
     },
     {
       "type": "modonomicon:text",
       "id": "coat",
       "title": "Coat",
       "show_title_separator": true,
-      "text": "Always with **Field** markings:\n\n- Black + White Field\n- Brown + White Field\n- Gray + White Field\n- Dark Brown + White Field"
+      "text": "Black, brown, bay and grey are the recognised colours. Chestnut is refused by the British stud book and accepted elsewhere, which makes it a rare sight.\n\n- Black\n- Bay\n- Brown\n- Dark Brown\n- Grey\n- Chestnut *(rare)*\n- Blue Roan *(rare)*\n- Bay with Blaze *(rare)*"
     },
     {
       "type": "modonomicon:text",

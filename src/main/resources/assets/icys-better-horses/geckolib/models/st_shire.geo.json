@@ -1,0 +1,451 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.st_shire",
+				"texture_width": 128,
+				"texture_height": 128,
+				"visible_bounds_width": 4,
+				"visible_bounds_height": 4,
+				"visible_bounds_offset": [
+					0,
+					1,
+					0
+				]
+			},
+			"bones": [
+				{
+					"name": "bone",
+					"pivot": [
+						0,
+						10,
+						0
+					]
+				},
+				{
+					"name": "brace",
+					"pivot": [
+						0,
+						21,
+						-13
+					],
+					"parent": "bone",
+					"cubes": [
+						{
+							"origin": [
+								-6,
+								19,
+								-10
+							],
+							"size": [
+								12,
+								12,
+								20
+							],
+							"uv": [
+								26,
+								65
+							],
+							"inflate": 0.2
+						}
+					]
+				},
+				{
+					"name": "wingsL",
+					"pivot": [
+						6,
+						31,
+						-7
+					],
+					"parent": "brace",
+					"cubes": [
+						{
+							"origin": [
+								6,
+								30,
+								-8
+							],
+							"size": [
+								14,
+								1,
+								2
+							],
+							"uv": [
+								52,
+								0
+							]
+						},
+						{
+							"origin": [
+								6,
+								31,
+								-6
+							],
+							"size": [
+								14,
+								0,
+								14
+							],
+							"uv": [
+								0,
+								27
+							]
+						}
+					]
+				},
+				{
+					"name": "bone2",
+					"pivot": [
+						20,
+						31,
+						-7
+					],
+					"parent": "wingsL",
+					"cubes": [
+						{
+							"origin": [
+								20,
+								30,
+								-8
+							],
+							"size": [
+								16,
+								1,
+								2
+							],
+							"uv": [
+								52,
+								3
+							],
+							"mirror": true
+						},
+						{
+							"origin": [
+								20,
+								31,
+								-6
+							],
+							"size": [
+								16,
+								0,
+								14
+							],
+							"uv": [
+								0,
+								41
+							]
+						}
+					]
+				},
+				{
+					"name": "wingsL2",
+					"pivot": [
+						-6,
+						31,
+						-7
+					],
+					"parent": "brace",
+					"cubes": [
+						{
+							"origin": [
+								-20,
+								30,
+								-8
+							],
+							"size": [
+								14,
+								1,
+								2
+							],
+							"uv": [
+								52,
+								0
+							],
+							"mirror": true
+						},
+						{
+							"origin": [
+								-20,
+								31,
+								-6
+							],
+							"size": [
+								14,
+								0,
+								14
+							],
+							"uv": [
+								0,
+								27
+							],
+							"mirror": true
+						}
+					]
+				},
+				{
+					"name": "bone3",
+					"pivot": [
+						-20,
+						31,
+						-7
+					],
+					"parent": "wingsL2",
+					"cubes": [
+						{
+							"origin": [
+								-36,
+								30,
+								-8
+							],
+							"size": [
+								16,
+								1,
+								2
+							],
+							"uv": [
+								52,
+								3
+							]
+						},
+						{
+							"origin": [
+								-36,
+								31,
+								-6
+							],
+							"size": [
+								16,
+								0,
+								14
+							],
+							"uv": [
+								0,
+								41
+							],
+							"mirror": true
+						}
+					]
+				},
+				{
+					"name": "canister left",
+					"pivot": [
+						6,
+						29,
+						7
+					],
+					"parent": "bone",
+					"cubes": [
+						{
+							"origin": [
+								6,
+								28,
+								4
+							],
+							"size": [
+								2,
+								1,
+								6
+							],
+							"uv": [
+								52,
+								41
+							]
+						},
+						{
+							"origin": [
+								6,
+								22,
+								4
+							],
+							"size": [
+								2,
+								1,
+								6
+							],
+							"uv": [
+								52,
+								48
+							]
+						},
+						{
+							"origin": [
+								6,
+								23,
+								3
+							],
+							"size": [
+								3,
+								5,
+								3
+							],
+							"uv": [
+								16,
+								55
+							]
+						},
+						{
+							"origin": [
+								6,
+								23,
+								3
+							],
+							"size": [
+								3,
+								5,
+								3
+							],
+							"uv": [
+								40,
+								55
+							],
+							"inflate": 0.1
+						},
+						{
+							"origin": [
+								6,
+								23,
+								8
+							],
+							"size": [
+								3,
+								5,
+								3
+							],
+							"uv": [
+								28,
+								55
+							]
+						},
+						{
+							"origin": [
+								6,
+								23,
+								8
+							],
+							"size": [
+								3,
+								5,
+								3
+							],
+							"uv": [
+								52,
+								55
+							],
+							"inflate": 0.1
+						}
+					]
+				},
+				{
+					"name": "canister right",
+					"pivot": [
+						-6,
+						29,
+						7
+					],
+					"parent": "bone",
+					"cubes": [
+						{
+							"origin": [
+								-8,
+								28,
+								4
+							],
+							"size": [
+								2,
+								1,
+								6
+							],
+							"uv": [
+								52,
+								16
+							]
+						},
+						{
+							"origin": [
+								-8,
+								22,
+								4
+							],
+							"size": [
+								2,
+								1,
+								6
+							],
+							"uv": [
+								0,
+								55
+							]
+						},
+						{
+							"origin": [
+								-9,
+								23,
+								3
+							],
+							"size": [
+								3,
+								5,
+								3
+							],
+							"uv": [
+								56,
+								23
+							]
+						},
+						{
+							"origin": [
+								-9,
+								23,
+								3
+							],
+							"size": [
+								3,
+								5,
+								3
+							],
+							"uv": [
+								56,
+								31
+							],
+							"inflate": 0.1
+						},
+						{
+							"origin": [
+								-9,
+								23,
+								8
+							],
+							"size": [
+								3,
+								5,
+								3
+							],
+							"uv": [
+								0,
+								62
+							]
+						},
+						{
+							"origin": [
+								-9,
+								23,
+								8
+							],
+							"size": [
+								3,
+								5,
+								3
+							],
+							"uv": [
+								12,
+								63
+							],
+							"inflate": 0.1
+						}
+					]
+				}
+			]
+		}
+	]
+}

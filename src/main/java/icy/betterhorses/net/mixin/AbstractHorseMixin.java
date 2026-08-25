@@ -127,21 +127,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     private static final EntityDataAccessor<Integer> BH_GAIT_GEAR_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
 
-    /**
-     * True while the rider is in third person and steering the horse manually with A/D instead of
-     * pointing it with the camera.
-     *
-     * <p>Synced, and it has to be: which camera the rider is using is knowledge only their client
-     * has, but {@code getRiddenRotation} runs on both sides. Leave it client-only and the server
-     * keeps snapping the horse to the rider's view every tick while the client insists otherwise,
-     * which reads as the horse fighting the mouse. Not persisted - it is a property of the
-     * current ride, not of the animal.
-     */
     @Unique
     private static final EntityDataAccessor<Boolean> BH_FREE_STEER_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
 
-    // volatile: parallel-ticking mods read this from worker threads
     @Unique private volatile @Nullable UUID bh_owner = null;
     @Unique private HorseCommand bh_command = HorseCommand.FOLLOW;
     @Unique private @Nullable BlockPos bh_home = null;
@@ -167,9 +156,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private @Nullable Vec3 bh_lastFrostWalkerPos = null;
     @Unique private @Nullable HorseCartEntity bh_cartEntity = null;
     @Unique private static final float BH_HURT_NEIGH_CHANCE = 0.3F;
-    /** Ticks between graze rolls, replacing vanilla's 300. @see #bh_grazeLessOften */
     @Unique private static final int BH_GRAZE_ROLL_INTERVAL = 1200;
-    /** How long after taking a hit a horse has better things to do than eat. */
     @Unique private static final int BH_GRAZE_HURT_COOLDOWN_TICKS = 200;
     @Unique private int bh_grazeBlockedUntilTick = 0;
     @Unique private int bh_gear = 0;
@@ -193,11 +180,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private static final double BH_REAR_PASSENGER_Z_OFFSET = -0.35D;
     @Unique private static final float BH_FREE_CAMERA_ANGLE_THRESHOLD = 90.0F;
 
-    /** Degrees per tick A/D turn the horse in third person. 4.5 is 90 deg/s at full deflection. */
     @Unique private static final float BH_MANUAL_TURN_DEGREES_PER_TICK = 4.5F;
-    /** Blocks per tick counted as "full gallop" for the turn-rate falloff below. */
     @Unique private static final float BH_MANUAL_TURN_FULL_SPEED = 0.35F;
-    /** How much of the turn rate is lost at full gallop - a running horse does not pivot. */
     @Unique private static final float BH_MANUAL_TURN_SPEED_FALLOFF = 0.45F;
     @Unique private static final double BH_WATER_HORIZONTAL_BOOST = 1.125D;
     @Unique private static final double BH_FROST_WALKER_SAMPLE_STEP = 0.75D;
@@ -759,25 +743,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                 ModSounds.HORSE_NEIGH, self.getSoundSource(), 1.0F, 1.0F);
     }
 
-    /**
-     * Vanilla rolls a 1-in-300 chance every tick a horse stands on grass, so an idle horse starts
-     * a 50-tick graze roughly every 15 seconds and spends about a seventh of its life nose-down.
-     * One roll a minute still reads as "horses graze" without it being the only thing they do.
-     */
     @ModifyConstant(method = "aiStep", constant = @Constant(intValue = 300))
     private int bh_grazeLessOften(int vanillaInterval) {
         return BH_GRAZE_ROLL_INTERVAL;
     }
 
-    /**
-     * Gates vanilla's whole grazing block. Grazing is idle behaviour: a horse that was just hit
-     * has somewhere else to be, and one following you or walking home is working, not pasturing.
-     * Only a horse told to wander or stay - or a wild one that answers to nobody - grazes.
-     *
-     * <p>Returning false skips the eat timer as well as the start roll, so a horse already
-     * mid-graze when the answer flips has to be stopped here. Leave the flag set and it chews
-     * forever. Vanilla stops it the same way when a leash yanks the horse off its grass.
-     */
     @Redirect(
             method = "aiStep",
             at = @At(
@@ -810,11 +780,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         return command == HorseCommand.WANDER || command == HorseCommand.STAY;
     }
 
-    /**
-     * Damage buys the cooldown; {@link #bh_gateGrazing} spends it on the next tick, which is also
-     * what cuts an in-progress graze short. Nothing in vanilla clears the eat flag when a horse is
-     * hurt - it keeps chewing while it flees.
-     */
     @Inject(method = "hurtServer", at = @At("RETURN"))
     private void bh_stopGrazingWhenHurt(
             ServerLevel level,
@@ -834,8 +799,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                 bh_setGear(0);
                 bh_setGaitGear(0);
             }
-            // Manual steering is a property of the ride, not the animal. Leave it set and the
-            // next rider mounts into third-person controls while sitting in first person.
             bh_setFreeSteer(false);
         }
     }
@@ -1081,16 +1044,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     private void bh_tickStabilizer(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
 
-        // Who is allowed to decide the wing state. The server always is; a client only when it
-        // actually drives this horse - i.e. the rider's own mount.
-        //
-        // Everyone else - other players in multiplayer, and Flashback's replay client - has no
-        // real physics for this horse: its position arrives as packets, so getDeltaMovement() and
-        // fallDistance read as a horse standing still. Letting those clients recompute meant they
-        // recomputed CLOSED every tick and wrote it over the value the server had synced, which is
-        // why the glide was visible (position is synced) but the wings never opened. The state is
-        // synced entity data and has been all along; it was being clobbered on arrival, not
-        // missing from the wire.
         boolean serverSide = !self.level().isClientSide();
         boolean simulates = serverSide || self.isLocalInstanceAuthoritative();
 
@@ -1124,8 +1077,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             }
         }
 
-        // Server only: an entityData.set on a client touches that client's copy alone, so a client
-        // write is at best a one-tick prediction and at worst the overwrite described above.
         if (serverSide) {
             this.bh_setStabilizerState(state);
         }
@@ -1283,7 +1234,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             if (distance > 1.0D) {
                 self.playSound(SoundEvents.HORSE_LAND, 0.4F, 1.0F);
             }
-            // Same rule as bh_tickStabilizer: the server owns the synced value.
             if (!self.level().isClientSide()) {
                 this.bh_setStabilizerState(landingState);
             }
@@ -1346,21 +1296,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         goalSelector.addGoal(3, new HorseWanderBoundsGoal(self));
     }
 
-    /**
-     * Drops vanilla's rear-only rider shift - {@code (0, 0.15, -0.7) * standAnimO}, tacked onto the
-     * attachment point - so the rear goes through {@code BhRiderMotion} like every other motion.
-     *
-     * <p>It is the one place vanilla moves the rider for an animation, and it is tuned for
-     * vanilla's rear, which tips the whole animal about the hind hooves: the rider slides 0.7
-     * blocks down the back because in vanilla the back really goes there. Ours pitches the barrel
-     * about mid-body with the hinds planted, and {@code publishRiderMotion} already tracks the
-     * saddle through it. Leaving both in place moved the rider twice - about 1.15 blocks back
-     * instead of 0.45 - which is what tore them off the horse at full rear.
-     *
-     * <p>Removing it rather than retuning it is also what keeps the camera still. An attachment
-     * point is real entity position, so it drives the rider's point of view; {@code BhRiderMotion}
-     * is render-only for exactly that reason. See its class doc.
-     */
+    @Unique private Vec3 bh_rearSeatShift = Vec3.ZERO;
+
     @Redirect(
             method = "getPassengerAttachmentPoint",
             at = @At(
@@ -1368,7 +1305,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                     target = "Lnet/minecraft/world/phys/Vec3;add(Lnet/minecraft/world/phys/Vec3;)"
                             + "Lnet/minecraft/world/phys/Vec3;"))
     private Vec3 bh_noRearRiderShift(Vec3 attachment, Vec3 rearOffset) {
-        return attachment;
+        Vec3 applied = rearOffset.scale(icy.betterhorses.net.BhRiderSeat.REAR_CAMERA_FOLLOW);
+        this.bh_rearSeatShift = applied;
+        return attachment.add(applied);
     }
 
     @Inject(method = "getPassengerAttachmentPoint", at = @At("RETURN"), cancellable = true)
@@ -1380,9 +1319,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         AbstractHorse self = (AbstractHorse) (Object) this;
 
         if (((IHorseData) this).bh_hasCartGear()) {
+            icy.betterhorses.net.BhRiderSeat.publish(self.getId(), Vec3.ZERO);
             cir.setReturnValue(
                     HorseCartEntity.benchSeatOffset(bh_benchSeatIndex(self, passenger), self.getYRot()));
             return;
+        }
+
+        Vec3 lift = new Vec3(0.0D, icy.betterhorses.net.BhRiderSeat.seatLift(self), 0.0D);
+        icy.betterhorses.net.BhRiderSeat.publish(self.getId(), this.bh_rearSeatShift.add(lift));
+        if (lift.y != 0.0D) {
+            cir.setReturnValue(cir.getReturnValue().add(lift));
         }
 
         if (!BhConfig.multiRidingEnabled() || self.getPassengers().size() <= 1) {
@@ -1407,28 +1353,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
         AbstractHorse self = (AbstractHorse) (Object) this;
 
-        // Third person: the camera never steers, A and D do.
-        //
-        // The pitch is dropped to 0 rather than vanilla's xRot/2. Vanilla leans the horse by half
-        // the rider's pitch, which is harmless while the view and the horse point the same way -
-        // but with a free camera it would tip the animal every time you glanced at the sky.
-        //
-        // The turn rate eases off as the horse gets moving, because a galloping animal does not
-        // pivot like a standing one, and being able to spin on the spot at a gallop is the thing
-        // that makes A/D steering feel like driving a tank.
         if (this.bh_isFreeSteer()) {
             float speed = (float) self.getDeltaMovement().horizontalDistance();
             float turnScale = 1.0F - BH_MANUAL_TURN_SPEED_FALLOFF
                     * Mth.clamp(speed / BH_MANUAL_TURN_FULL_SPEED, 0.0F, 1.0F);
-            // xxa is positive to the left, and yaw increases to the right, hence the minus.
             float yaw = self.getYRot()
                     - player.xxa * BH_MANUAL_TURN_DEGREES_PER_TICK * turnScale;
             cir.setReturnValue(new Vec2(0.0F, Mth.wrapDegrees(yaw)));
             return;
         }
 
-        // First person keeps vanilla steering, except while standing completely still, where
-        // looking around should not drag the animal round with it.
         if (player.xxa != 0.0F || player.zza != 0.0F) {
             return;
         }
@@ -1456,8 +1390,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
         Vec3 input = cir.getReturnValue();
         if (input.x != 0.0D) {
-            // A and D are turning the horse now. Letting them keep their vanilla sideways shove
-            // as well makes it crab away from the direction it is pointing.
             cir.setReturnValue(new Vec3(0.0D, input.y, input.z));
         }
     }
@@ -1567,38 +1499,18 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     }
 
-    /** Descent measured off the horse's own position, in blocks, since it last had footing. */
     @Unique
     private double bh_stabilizerFall;
 
-    /** Blocks moved vertically in the last tick, negative going down. */
     @Unique
     private double bh_stabilizerStepY;
 
-    /** The tick before that, so one jittered packet cannot read as "stopped falling". */
     @Unique
     private double bh_stabilizerPrevStepY;
 
-    /** Our own sample of the horse's height on the previous tick. NaN until first sampled. */
     @Unique
     private double bh_stabilizerLastY = Double.NaN;
 
-    /**
-     * Measures the fall from the horse's position rather than from its physics fields.
-     *
-     * <p>A horse a player is riding is client-authoritative: the rider's client drives it and the
-     * server takes its position from packets. So server-side {@code getDeltaMovement()} is stale
-     * and {@code fallDistance} barely accumulates - the server saw a horse that was never
-     * descending, and only noticed the fall as it ended. That is why the wings snapped open at the
-     * last instant instead of at four blocks. Position is what those packets do carry, so the
-     * descent is measured from that instead.
-     *
-     * <p>The height is sampled into our own field rather than read from {@code yOld}, because
-     * {@code yOld} is stamped by the level's tick loop while the vehicle's position is applied
-     * during packet handling, and nothing fixes the order of those two - stamp after apply and the
-     * difference is a flat zero for the whole fall. Sampling at the same point of every tick and
-     * differencing against the previous sample is true regardless of when the packet landed.
-     */
     @Unique
     private void bh_trackStabilizerDescent(AbstractHorse horse) {
         double y = horse.getY();
@@ -1616,11 +1528,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Unique
     private HorseStabilizerState bh_computeStabilizerState(AbstractHorse horse) {
-        // Whichever reading shows the steeper descent. The position delta is the reliable one for
-        // a ridden horse, the motion vector for a riderless one falling under server physics, and
-        // taking the lowest means neither case has to be special-cased. The previous tick's step
-        // is in there because vehicle packets arrive unevenly: a tick that receives none reads as
-        // zero descent, which alone would trip the deploy gate and shut the wings mid-fall.
         double verticalSpeed = Math.min(
                 horse.getDeltaMovement().y,
                 Math.min(this.bh_stabilizerStepY, this.bh_stabilizerPrevStepY));
@@ -1786,18 +1693,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.doPlayerRide(player);
     }
 
-    /**
-     * Vanilla rears the horse on every jump: both {@code handleStartJump} and
-     * {@code onPlayerJump} call {@code standIfPossible()} before anything else happens. That is
-     * the entire jump animation in vanilla - the horse stands up, then the takeoff and landing
-     * are whatever the physics happen to look like.
-     *
-     * <p>We animate the jump properly in {@code BhHorseModel}, so the rear has to go. Redirecting
-     * only the {@code standIfPossible} call leaves the rest of both methods intact: the jump
-     * sound still plays, {@code allowStandSliding} is still set, and {@code onPlayerJump} still
-     * stores the pending jump scale that decides how high the horse actually goes. Rearing for
-     * every other reason - ambient standing, refusing an untamed rider - is untouched.
-     */
     @Redirect(
             method = "handleStartJump(I)V",
             at = @At(
@@ -1805,17 +1700,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                     target = "Lnet/minecraft/world/entity/animal/equine/AbstractHorse;"
                             + "standIfPossible()V"))
     private void bh_noRearOnStartJump(AbstractHorse horse) {
-        // deliberately empty: the jump animation replaces the rear
     }
 
-    /**
-     * A horse in mid-air cannot rear, and one that tries fights the jump animation for the whole
-     * pose. The two jump redirects above stop the jump itself from rearing, but they do not stop
-     * an ambient stand or a hit landing mid-flight from starting one.
-     *
-     * <p>The client end of this is the {@code rearWeight} clamp in {@code BhEquineGait}, which
-     * handles the case this cannot see - a rear already running when the rider starts charging.
-     */
     @Inject(method = "standIfPossible", at = @At("HEAD"), cancellable = true)
     private void bh_noRearInMidair(CallbackInfo ci) {
         if (!((AbstractHorse) (Object) this).onGround()) {
@@ -1823,7 +1709,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     }
 
-    /** @see #bh_noRearOnStartJump - split in two so a miss on either one fails loudly. */
     @Redirect(
             method = "onPlayerJump(I)V",
             at = @At(
@@ -1831,6 +1716,5 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                     target = "Lnet/minecraft/world/entity/animal/equine/AbstractHorse;"
                             + "standIfPossible()V"))
     private void bh_noRearOnPlayerJump(AbstractHorse horse) {
-        // deliberately empty: the jump animation replaces the rear
     }
 }

@@ -14,7 +14,7 @@ public class MediumHorseRenderer<T extends MediumHorse>
     public MediumHorseRenderer(EntityRendererProvider.Context context) {
         super(context,
                 new MediumHorseModel(context.bakeLayer(BhModelLayers.MEDIUM_HORSE)),
-                new MediumHorseModel(context.bakeLayer(BhModelLayers.MEDIUM_HORSE_BABY)));
+                new MediumFoalModel(context.bakeLayer(BhModelLayers.MEDIUM_HORSE_BABY)));
 
         this.addLayer(BhTackLayer.<MediumHorseRenderState, MediumHorseModel>forItem(this,
                 new MediumHorseModel(context.bakeLayer(BhModelLayers.MEDIUM_SADDLE)),
@@ -51,7 +51,7 @@ public class MediumHorseRenderer<T extends MediumHorse>
 
         state.onGround = entity.onGround();
         state.isPassenger = entity.isPassenger();
-        state.coatTexture = entity.bhCoats().texture(entity.bhCoat());
+        state.coatTexture = entity.bhCoats().texture(entity.bhCoat(), entity.isBaby());
         state.hurt = entity.hurtTime > 0 ? entity.hurtTime / 10.0F : 0.0F;
 
         state.bodyYaw = entity.getYRot();

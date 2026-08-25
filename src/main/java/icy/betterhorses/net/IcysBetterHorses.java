@@ -295,11 +295,6 @@ public class IcysBetterHorses implements ModInitializer {
         ((IHorseData) horse).bh_setGaitGear(gaitGear);
     }
 
-    /**
-     * Same guard as {@link #handleGearShift}: only whoever is actually holding the reins may
-     * change how the horse is steered. Without the controlling-passenger check any client could
-     * flip a stranger's horse into manual steering from across the map.
-     */
     private void handleSteerMode(ServerPlayer player, int horseId, boolean freeSteer) {
         if (!(player.level().getEntity(horseId) instanceof AbstractHorse horse)
                 || horse.getControllingPassenger() != player) {
@@ -308,23 +303,11 @@ public class IcysBetterHorses implements ModInitializer {
         ((IHorseData) horse).bh_setFreeSteer(freeSteer);
     }
 
-    /**
-     * Rears a horse on the rider's command.
-     *
-     * <p>Goes through vanilla's {@code standIfPossible} rather than setting the flag directly, so
-     * the mid-air guard in {@code AbstractHorseMixin} still applies - a horse cannot rear off
-     * nothing, and one that tried would fight the jump animation for the whole pose.
-     *
-     * <p>Refused while the horse is already standing. {@code setStanding} restarts the 20 tick
-     * counter every call, and standing makes the horse immobile, so a held key would otherwise
-     * pin a ridden horse in place for as long as it was held.
-     */
     private void handleRear(ServerPlayer player, int horseId) {
         AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
         if (horse == null || horse.isStanding()) {
             return;
         }
-        // Someone else's mount is not yours to rear, trusted or not.
         if (horse.getControllingPassenger() != null && horse.getControllingPassenger() != player) {
             return;
         }

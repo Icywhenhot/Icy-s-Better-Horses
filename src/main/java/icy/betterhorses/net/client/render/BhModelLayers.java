@@ -33,13 +33,31 @@ public final class BhModelLayers {
     public static final ModelLayerLocation MEDIUM_CHEST = layer("medium_horse", "chest");
     public static final ModelLayerLocation MEDIUM_CHEST_BABY = layer("medium_horse", "chest_baby");
 
+    public static final ModelLayerLocation PERCHERON_HORSE = layer("percheron_horse", "main");
+    public static final ModelLayerLocation PERCHERON_HORSE_BABY = layer("percheron_horse", "baby");
+    public static final ModelLayerLocation PERCHERON_SADDLE = layer("percheron_horse", "saddle");
+    public static final ModelLayerLocation PERCHERON_SADDLE_BABY = layer("percheron_horse", "saddle_baby");
+    public static final ModelLayerLocation PERCHERON_ARMOR = layer("percheron_horse", "armor");
+    public static final ModelLayerLocation PERCHERON_ARMOR_BABY = layer("percheron_horse", "armor_baby");
+    public static final ModelLayerLocation PERCHERON_CHEST = layer("percheron_horse", "chest");
+    public static final ModelLayerLocation PERCHERON_CHEST_BABY = layer("percheron_horse", "chest_baby");
+
+    public static final ModelLayerLocation SHIRE_HORSE = layer("shire_horse", "main");
+    public static final ModelLayerLocation SHIRE_HORSE_BABY = layer("shire_horse", "baby");
+    public static final ModelLayerLocation SHIRE_SADDLE = layer("shire_horse", "saddle");
+    public static final ModelLayerLocation SHIRE_SADDLE_BABY = layer("shire_horse", "saddle_baby");
+    public static final ModelLayerLocation SHIRE_ARMOR = layer("shire_horse", "armor");
+    public static final ModelLayerLocation SHIRE_ARMOR_BABY = layer("shire_horse", "armor_baby");
+    public static final ModelLayerLocation SHIRE_CHEST = layer("shire_horse", "chest");
+    public static final ModelLayerLocation SHIRE_CHEST_BABY = layer("shire_horse", "chest_baby");
+
     private BhModelLayers() {}
 
     public static void register() {
         ModelLayerRegistry.registerModelLayer(
                 ICELANDIC_HORSE, IcelandicHorseGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(
-                ICELANDIC_HORSE_BABY, IcelandicHorseGeometry::createBodyLayer);
+                ICELANDIC_HORSE_BABY, IcelandicFoalGeometry::createBodyLayer);
 
         ModelLayerRegistry.registerModelLayer(
                 ICELANDIC_SADDLE, IcelandicSaddleGeometry::createBodyLayer);
@@ -57,7 +75,7 @@ public final class BhModelLayers {
         ModelLayerRegistry.registerModelLayer(
                 FRIESIAN_HORSE, FriesianHorseGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(
-                FRIESIAN_HORSE_BABY, FriesianHorseGeometry::createBodyLayer);
+                FRIESIAN_HORSE_BABY, FriesianFoalGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(
                 FRIESIAN_SADDLE, FriesianSaddleGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(
@@ -74,7 +92,7 @@ public final class BhModelLayers {
         ModelLayerRegistry.registerModelLayer(
                 MEDIUM_HORSE, MediumHorseGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(
-                MEDIUM_HORSE_BABY, MediumHorseGeometry::createBodyLayer);
+                MEDIUM_HORSE_BABY, MediumFoalGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(
                 MEDIUM_SADDLE, MediumSaddleGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(
@@ -87,6 +105,43 @@ public final class BhModelLayers {
                 MEDIUM_CHEST, MediumChestGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(
                 MEDIUM_CHEST_BABY, MediumChestGeometry::createBodyLayer);
+
+        ModelLayerRegistry.registerModelLayer(
+                PERCHERON_HORSE, PercheronHorseGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                PERCHERON_HORSE_BABY, PercheronFoalGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                PERCHERON_SADDLE, PercheronSaddleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                PERCHERON_SADDLE_BABY, PercheronSaddleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                PERCHERON_ARMOR, PercheronArmorGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                PERCHERON_ARMOR_BABY, PercheronArmorGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                PERCHERON_CHEST, PercheronChestGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                PERCHERON_CHEST_BABY, PercheronChestGeometry::createBodyLayer);
+
+        ModelLayerRegistry.registerModelLayer(
+                SHIRE_HORSE, ShireHorseGeometry::createBodyLayer);
+        // The Shire foal IS the Percheron foal: one shared large-breed foal
+        // mesh, the same file rather than a copy, so the same geometry is baked
+        // here. There is deliberately no ShireFoalGeometry to drift from it.
+        ModelLayerRegistry.registerModelLayer(
+                SHIRE_HORSE_BABY, PercheronFoalGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                SHIRE_SADDLE, ShireSaddleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                SHIRE_SADDLE_BABY, ShireSaddleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                SHIRE_ARMOR, ShireArmorGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                SHIRE_ARMOR_BABY, ShireArmorGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                SHIRE_CHEST, ShireChestGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                SHIRE_CHEST_BABY, ShireChestGeometry::createBodyLayer);
     }
 
     private static ModelLayerLocation layer(String path, String name) {

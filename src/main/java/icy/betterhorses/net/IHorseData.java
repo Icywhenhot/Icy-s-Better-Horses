@@ -66,11 +66,6 @@ public interface IHorseData {
     int bh_getGaitGear();
     void bh_setGaitGear(int gear);
 
-    /**
-     * True while the rider is in third person, where the camera is free and the horse is steered
-     * with A/D instead of by pointing the view. Synced from the riding client - see
-     * {@code BhSteerModePayload}.
-     */
     boolean bh_isFreeSteer();
     void bh_setFreeSteer(boolean freeSteer);
 

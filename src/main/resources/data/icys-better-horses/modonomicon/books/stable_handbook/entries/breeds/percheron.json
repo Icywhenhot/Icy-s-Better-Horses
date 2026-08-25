@@ -1,38 +1,40 @@
 {
-  "type": "modonomicon:content",
-  "id": "icys-better-horses:breeds/percheron",
-  "category": "icys-better-horses:breeds",
-  "name": "Percheron",
-  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
-  "background": {
-    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
-    "width": 26,
-    "height": 26
+ "type": "modonomicon:content",
+ "id": "icys-better-horses:breeds/percheron",
+ "category": "icys-better-horses:breeds",
+ "name": "Percheron",
+ "icon": {
+  "texture": "icys-better-horses:textures/gui/saddle_node.png",
+  "width": 16,
+  "height": 16
+ },
+ "background": {
+  "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+  "width": 26,
+  "height": 26
+ },
+ "x": -4,
+ "y": 0,
+ "sort_number": 5,
+ "pages": [
+  {
+   "type": "modonomicon:text",
+   "id": "about",
+   "title": "Percheron",
+   "show_title_separator": true,
+   "text": "A French draft breed - heavy and muscular, but graceful for its size."
   },
-  "x": -4,
-  "y": 0,
-  "sort_number": 5,
-  "pages": [
-    {
-      "type": "modonomicon:text",
-      "id": "about",
-      "title": "Percheron",
-      "show_title_separator": true,
-      "text": "A French draft breed - heavy and muscular, but graceful for its size."
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "coat",
-      "title": "Coat",
-      "show_title_separator": true,
-      "text": "- Gray\n- Black\n- White"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "biomes",
-      "title": "Where They Live",
-      "show_title_separator": true,
-      "text": "Old farmland and temperate forest:\n\n- Old Growth Spruce Taiga\n- Forest\n- Meadow\n- Plains"
-    }
-  ]
+  {
+   "type": "icys-better-horses:breed_coats",
+   "id": "coat",
+   "entity": "icys-better-horses:percheron_horse"
+  },
+  {
+   "type": "modonomicon:text",
+   "id": "biomes",
+   "title": "Where They Live",
+   "show_title_separator": true,
+   "text": "Old farmland and temperate forest:\n\n- Old Growth Spruce Taiga\n- Forest\n- Meadow\n- Plains"
+  }
+ ]
 }

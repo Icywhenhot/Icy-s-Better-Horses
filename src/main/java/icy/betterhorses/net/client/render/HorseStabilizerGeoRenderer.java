@@ -34,10 +34,6 @@ public final class HorseStabilizerGeoRenderer
         renderState.addGeckolibData(OPACITY, BhRenderContext.currentOpacity());
     }
 
-    // The horse fades out from under the rider when they look down (BhMountedHorseVisibility), and
-    // the brace has to fade with it. Both halves are needed: the colour carries the alpha, and a
-    // cutout render type would throw that alpha away at the alpha test, leaving the brace solid on
-    // a see-through horse.
     @Override
     public int getRenderColor(HorseStabilizerAnimatable animatable, Void relatedObject, float partialTick) {
         return BhMountedHorseVisibility.applyOpacity(

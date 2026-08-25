@@ -15,50 +15,96 @@ public final class BhBreedCoats {
 
     public static final BhBreedCoats ICELANDIC = new BhBreedCoats(
             "icelandic",
-            List.of("black", "brown", "brown_and_white", "white"));
+            List.of("black", "brown", "brown_and_white", "white",
+                    "palomino", "silver_dapple", "blue_dun", "black_pinto"),
+            true);
 
     public static final BhBreedCoats FRIESIAN = new BhBreedCoats(
             "friesian",
-            List.of("black", "star"));
+            List.of("black", "star"),
+            true);
 
     public static final BhBreedCoats APPALOOSA = new BhBreedCoats(
             "appaloosa",
-            List.of("black", "brown", "gray", "white"));
+            List.of("black", "brown", "gray", "white"),
+            true);
 
     public static final BhBreedCoats THOROUGHBRED = new BhBreedCoats(
             "thoroughbred",
-            List.of("brown", "dark_brown", "red"));
+            List.of("brown", "dark_brown", "red",
+                    "blood_bay", "jet_black", "chestnut_chrome",
+                    "steel_grey"),
+            true);
 
     public static final BhBreedCoats AMERICAN_PAINT = new BhBreedCoats(
             "american_paint",
-            List.of("black", "brown", "chestnut"));
+            List.of("black", "brown", "chestnut",
+                    "liver_chestnut", "buckskin", "blue_roan", "red_roan",
+                    "blood_bay"),
+            true);
 
     public static final BhBreedCoats ANDALUSIAN = new BhBreedCoats(
             "andalusian",
-            List.of("bay", "gray", "white"));
+            List.of("bay", "gray", "white",
+                    "azabache", "dark_bay", "flaxen_chestnut", "rose_grey",
+                    "pearl"),
+            true);
 
     public static final BhBreedCoats MUSTANG = new BhBreedCoats(
             "mustang",
-            List.of("brown", "chestnut", "white"));
+            List.of("brown", "chestnut", "white",
+                    "black", "mealy_bay", "strawberry_roan", "kiger_dun",
+                    "iron_grey"),
+            true);
 
     public static final BhBreedCoats QUARTER = new BhBreedCoats(
             "quarter",
-            List.of("brown", "brown_with_socks", "light_brown"));
+            List.of("brown", "brown_with_socks", "light_brown",
+                    "sorrel", "dapple_grey", "red_dun", "liver_chestnut",
+                    "grullo"),
+            true);
+
+    public static final BhBreedCoats PERCHERON = new BhBreedCoats(
+            "percheron",
+            List.of("gray", "black", "white",
+                    "dapple_grey", "bay", "chestnut", "liver_chestnut",
+                    "blue_roan"),
+            true);
+
+    // Order is the registry's and must only ever be APPENDED to: the index is
+    // saved on the entity, so inserting rewrites the coat of every existing horse.
+    // `black` first because it is the coat Icy painted by hand; the other seven
+    // are generated from it.
+    public static final BhBreedCoats SHIRE = new BhBreedCoats(
+            "shire",
+            List.of("black", "bay", "brown", "dark_brown",
+                    "grey", "chestnut", "blue_roan", "bay_blaze"),
+            true);
 
     private final String folder;
     private final List<String> coatIds;
     private final List<Identifier> textures;
+    private final List<Identifier> foalTextures;
 
     private BhBreedCoats(String folder, List<String> coatIds) {
+        this(folder, coatIds, false);
+    }
+
+    private BhBreedCoats(String folder, List<String> coatIds, boolean hasFoalCoats) {
         if (coatIds.isEmpty()) {
             throw new IllegalArgumentException("breed " + folder + " needs at least one coat");
         }
         this.folder = folder;
         this.coatIds = List.copyOf(coatIds);
-        this.textures = this.coatIds.stream()
+        this.textures = texturesIn(folder, this.coatIds);
+        this.foalTextures = hasFoalCoats ? texturesIn(folder + "/baby", this.coatIds) : null;
+    }
+
+    private static List<Identifier> texturesIn(String path, List<String> ids) {
+        return ids.stream()
                 .map(id -> Identifier.fromNamespaceAndPath(
                         IcysBetterHorses.MOD_ID,
-                        "textures/entity/horse/" + folder + "/" + id + ".png"))
+                        "textures/entity/horse/" + path + "/" + id + ".png"))
                 .toList();
     }
 
@@ -80,6 +126,12 @@ public final class BhBreedCoats {
 
     public Identifier texture(int index) {
         return textures.get(clamp(index));
+    }
+
+    public Identifier texture(int index, boolean baby) {
+        return baby && foalTextures != null
+                ? foalTextures.get(clamp(index))
+                : textures.get(clamp(index));
     }
 
     public Component displayName(int index) {

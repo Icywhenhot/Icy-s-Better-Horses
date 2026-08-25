@@ -7,7 +7,7 @@ nav_order: 8
 # Shire
 {: .no_toc }
 
-England's largest draft horse, taller than a Clydesdale and just as patient. Usually black or brown with white field markings.
+England's largest draft horse, taller than a Clydesdale and just as patient. Usually black, bay, brown or grey, with heavy feathering on all four legs.
 {: .fs-5 .fw-300 }
 
 1. TOC
@@ -18,14 +18,19 @@ England's largest draft horse, taller than a Clydesdale and just as patient. Usu
 ## Coats
 
 {: .note }
-> Always carries **White Field** markings.
+> Heavy leg **feathering** is the breed's signature. White markings are common but
+> not universal, and large white body patches are outside the breed standard.
 
-| Coat |
-|:---|
-| Black + White Field |
-| Brown + White Field |
-| Gray + White Field |
-| Dark Brown + White Field |
+| Coat | |
+|:---|:---|
+| Black | |
+| Bay | |
+| Brown | |
+| Dark Brown | |
+| Grey | |
+| Chestnut | rare — refused by the British stud book |
+| Blue Roan | rare |
+| Bay with Blaze | rare — blaze and four white stockings |
 
 ## Where to find them
 

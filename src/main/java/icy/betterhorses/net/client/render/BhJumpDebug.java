@@ -4,20 +4,6 @@ import icy.betterhorses.net.IcysBetterHorses;
 
 import java.util.Locale;
 
-/**
- * Telemetry for the jump animation.
- *
- * <p>Off by default. The "Jump Animation Debug" key cycles OFF -> EVENTS -> EVENTS_AND_HUD:
- *
- * <ul>
- *   <li>{@code EVENTS} logs one line per takeoff / apex / touchdown / settle to the game log.</li>
- *   <li>{@code EVENTS_AND_HUD} additionally draws the live weights over the crosshair, so a
- *       screen recording carries its own numbers and a frame of a GIF can be read directly.</li>
- * </ul>
- *
- * <p>The HUD follows one horse at a time - whichever jumped most recently - because two horses
- * writing to one panel is unreadable.
- */
 public final class BhJumpDebug {
 
     public static final int OFF = 0;
@@ -32,7 +18,6 @@ public final class BhJumpDebug {
     private static String hudLine3 = "";
     private static long hudStamp = 0L;
 
-    /** Live for four seconds after the last update, so the panel clears itself. */
     private static final long HUD_LINGER_MILLIS = 4000L;
     private static final long BANNER_MILLIS = 2500L;
 
@@ -55,11 +40,6 @@ public final class BhJumpDebug {
         return level;
     }
 
-    /**
-     * A short message shown in the panel for a couple of seconds. The action bar moved in 26.2
-     * and this panel already exists, so dev toggles report through it rather than chasing the
-     * new API for two strings.
-     */
     public static void banner(String message) {
         banner = message;
         bannerStamp = System.currentTimeMillis();
@@ -89,7 +69,6 @@ public final class BhJumpDebug {
                 entityId, f(verticalSpeed), f(gather), f(launchPower), ridden);
     }
 
-    /** Logged once per flight, the frame the vertical speed crosses zero. */
     public static void apex(int entityId, float airSeconds, float peakRise) {
         if (!logging()) {
             return;
@@ -98,12 +77,6 @@ public final class BhJumpDebug {
                 entityId, f(airSeconds), f(peakRise));
     }
 
-    /**
-     * @param handoffSeconds the frame delta the impact clock started on. This is the number that
-     *                       proves there is no gap between flight and landing: the impact curve
-     *                       begins at 0 on this frame and the reach weight is still carrying the
-     *                       flight pose, so the two overlap rather than cut.
-     */
     public static void touchdown(int entityId, float airSeconds, float fallSpeed,
                                  float impactPower, float carriedReach, float handoffSeconds) {
         if (!logging()) {
@@ -123,7 +96,6 @@ public final class BhJumpDebug {
         IcysBetterHorses.LOGGER.info("[jump] #{} DONE  total={}s", entityId, f(totalSeconds));
     }
 
-    /** Called every frame from the gait while any jump weight is non-zero. */
     public static void sample(int entityId, BhHorseRenderState state, float airSeconds) {
         if (!hud() || (hudEntityId != -1 && hudEntityId != entityId)) {
             return;

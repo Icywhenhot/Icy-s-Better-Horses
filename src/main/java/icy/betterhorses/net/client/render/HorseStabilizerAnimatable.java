@@ -23,17 +23,6 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
     private static final RawAnimation GLIDE_LOOP = RawAnimation.begin().thenLoop("wingflap");
     private static final Map<AbstractHorse, HorseStabilizerAnimatable> INSTANCES = new WeakHashMap<>();
 
-    /**
-     * Render-time lookup, keyed by entity id because a render state carries the id and not the
-     * entity.
-     *
-     * <p>Ids are recycled: tear a level down and rebuild it - which Flashback does on every
-     * backward scrub - and a fresh horse can be handed the id of a dead one. Scanning
-     * {@link #INSTANCES} for a matching id, as this used to, could then match a stale entry that
-     * had not been collected yet and animate the new horse with a dead one's wing state. This map
-     * is restamped from the live entity in {@link #syncFromHorse}, which the renderer calls for
-     * that horse in the same frame as the lookup, so the newest binding always wins.
-     */
     private static final Map<Integer, HorseStabilizerAnimatable> BY_ID = new java.util.HashMap<>();
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -53,7 +42,6 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
         return BY_ID.get(entityId);
     }
 
-    /** Drops every cached animatable. Called on disconnect so ids never carry across worlds. */
     public static void reset() {
         INSTANCES.clear();
         BY_ID.clear();

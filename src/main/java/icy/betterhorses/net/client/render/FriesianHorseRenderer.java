@@ -17,7 +17,7 @@ public class FriesianHorseRenderer
                                  ModelLayerLocation babyLayer) {
         super(context,
                 new FriesianHorseModel(context.bakeLayer(adultLayer)),
-                new FriesianHorseModel(context.bakeLayer(babyLayer)));
+                new FriesianFoalModel(context.bakeLayer(babyLayer)));
 
         this.addLayer(BhTackLayer.<FriesianHorseRenderState, FriesianHorseModel>forItem(this,
                 new FriesianHorseModel(context.bakeLayer(BhModelLayers.FRIESIAN_SADDLE)),
@@ -54,7 +54,7 @@ public class FriesianHorseRenderer
 
         state.onGround = entity.onGround();
         state.isPassenger = entity.isPassenger();
-        state.coatTexture = entity.bhCoats().texture(entity.bhCoat());
+        state.coatTexture = entity.bhCoats().texture(entity.bhCoat(), entity.isBaby());
         state.hurt = entity.hurtTime > 0 ? entity.hurtTime / 10.0F : 0.0F;
 
         state.bodyYaw = entity.getYRot();

@@ -12,6 +12,8 @@ import icy.betterhorses.net.client.render.BhHorseModel;
 import icy.betterhorses.net.client.render.BhJumpDebug;
 import icy.betterhorses.net.client.render.BhModelLayers;
 import icy.betterhorses.net.client.render.FriesianHorseRenderer;
+import icy.betterhorses.net.client.render.PercheronHorseRenderer;
+import icy.betterhorses.net.client.render.ShireHorseRenderer;
 import icy.betterhorses.net.client.render.HorseCartRenderer;
 import icy.betterhorses.net.client.render.IcelandicHorseRenderer;
 import icy.betterhorses.net.client.render.MediumHorseRenderer;
@@ -81,10 +83,6 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_V,
                 CATEGORY));
 
-        // H, not something more mnemonic. R is the command wheel and every other letter a rider
-        // would reach for is spoken for: vanilla holds P (social interactions), G (quick actions),
-        // E, F, Q, T, C and X, and the mod holds P, R, G, V, J and K. F3+H is the advanced-tooltip
-        // toggle, but that needs the F3 modifier held, so a bare H press is genuinely free.
         REAR_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.icys-better-horses.rear",
                 InputConstants.Type.KEYSYM,
@@ -122,6 +120,16 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         EntityRendererRegistry.register(ModEntities.MUSTANG_HORSE, MediumHorseRenderer::new);
         EntityRendererRegistry.register(ModEntities.QUARTER_HORSE, MediumHorseRenderer::new);
 
+        EntityRendererRegistry.register(ModEntities.PERCHERON_HORSE, context ->
+                new PercheronHorseRenderer(context,
+                        BhModelLayers.PERCHERON_HORSE,
+                        BhModelLayers.PERCHERON_HORSE_BABY));
+
+        EntityRendererRegistry.register(ModEntities.SHIRE_HORSE, context ->
+                new ShireHorseRenderer(context,
+                        BhModelLayers.SHIRE_HORSE,
+                        BhModelLayers.SHIRE_HORSE_BABY));
+
         com.klikli_dev.modonomicon.client.render.page.PageRendererRegistry.registerPageRenderer(
                 icy.betterhorses.net.book.BhBreedCoatsPage.ID,
                 page -> new icy.betterhorses.net.client.book.BhBreedCoatsPageRenderer(
@@ -152,6 +160,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
             icy.betterhorses.net.client.HorseSteerModeController.INSTANCE.reset();
             BhEquineGait.reset();
             icy.betterhorses.net.client.render.BhRiderMotion.reset();
+            icy.betterhorses.net.BhRiderSeat.reset();
             icy.betterhorses.net.client.render.HorseStabilizerAnimatable.reset();
         });
     }
@@ -214,13 +223,6 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         HorseGearController.INSTANCE.shiftUp(horse);
     }
 
-    /**
-     * Rears the horse the player is riding, or - dismounted - the tamed one under the crosshair,
-     * so the key works both from the saddle and from the ground.
-     *
-     * <p>Only picks the horse and asks. The rear itself is vanilla entity state the server owns,
-     * and the server re-checks range, taming and permission before granting it.
-     */
     private static void bh_tryRear(Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || client.gui.screen() != null) {

@@ -2,8 +2,11 @@ package icy.betterhorses.net.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
@@ -46,8 +49,30 @@ public class BhTackLayer<S extends BhHorseRenderState, M extends BhHorseModel>
             return;
         }
 
+        float opacity = BhRenderContext.currentOpacity();
+        if (opacity <= 0.01F) {
+            return;
+        }
+
         BhHorseModel model = state.isBaby ? babyModel : adultModel;
         model.setupAnim(state);
-        renderColoredCutoutModel(model, texture, poseStack, collector, packedLight, state, -1, 0);
+
+        if (opacity >= 1.0F) {
+            renderColoredCutoutModel(model, texture, poseStack, collector, packedLight, state, -1, 0);
+            return;
+        }
+
+        RenderType renderType = RenderTypes.entityTranslucent(texture);
+        collector.submitModel(
+                model,
+                state,
+                poseStack,
+                renderType,
+                packedLight,
+                LivingEntityRenderer.getOverlayCoords(state, 0.0F),
+                BhMountedHorseVisibility.applyOpacity(-1, opacity),
+                null,
+                state.outlineColor,
+                null);
     }
 }

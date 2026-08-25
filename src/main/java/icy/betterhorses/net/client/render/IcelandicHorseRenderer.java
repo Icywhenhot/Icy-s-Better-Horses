@@ -20,7 +20,7 @@ public class IcelandicHorseRenderer
                                   ModelLayerLocation babyLayer) {
         super(context,
                 new IcelandicHorseModel(context.bakeLayer(adultLayer)),
-                new IcelandicHorseModel(context.bakeLayer(babyLayer)));
+                new IcelandicFoalModel(context.bakeLayer(babyLayer)));
 
         this.addLayer(BhTackLayer.<IcelandicHorseRenderState, IcelandicHorseModel>forItem(this,
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_SADDLE)),
@@ -57,7 +57,7 @@ public class IcelandicHorseRenderer
 
         state.onGround = entity.onGround();
         state.isPassenger = entity.isPassenger();
-        state.coatTexture = entity.bhCoats().texture(entity.bhCoat());
+        state.coatTexture = entity.bhCoats().texture(entity.bhCoat(), entity.isBaby());
         state.hurt = entity.hurtTime > 0 ? entity.hurtTime / 10.0F : 0.0F;
 
         state.bodyYaw = entity.getYRot();

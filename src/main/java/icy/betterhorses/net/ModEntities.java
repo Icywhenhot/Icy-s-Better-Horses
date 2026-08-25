@@ -8,7 +8,9 @@ import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.entity.IcelandicHorse;
 import icy.betterhorses.net.entity.MediumHorse;
 import icy.betterhorses.net.entity.MustangHorse;
+import icy.betterhorses.net.entity.PercheronHorse;
 import icy.betterhorses.net.entity.QuarterHorse;
+import icy.betterhorses.net.entity.ShireHorse;
 import icy.betterhorses.net.entity.ThoroughbredHorse;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.core.Registry;
@@ -60,6 +62,22 @@ public final class ModEntities {
     public static final EntityType<QuarterHorse> QUARTER_HORSE =
             registerMedium("quarter_horse", QuarterHorse::new);
 
+    public static final EntityType<PercheronHorse> PERCHERON_HORSE =
+            register("percheron_horse", EntityType.Builder.of(PercheronHorse::new, MobCategory.CREATURE)
+                    .sized(PercheronHorse.WIDTH, PercheronHorse.HEIGHT)
+                    .eyeHeight(PercheronHorse.HEIGHT * 0.95F)
+                    .passengerAttachments(PercheronHorse.HEIGHT * 0.90F)
+                    .clientTrackingRange(10)
+                    .build(key("percheron_horse")));
+
+    public static final EntityType<ShireHorse> SHIRE_HORSE =
+            register("shire_horse", EntityType.Builder.of(ShireHorse::new, MobCategory.CREATURE)
+                    .sized(ShireHorse.WIDTH, ShireHorse.HEIGHT)
+                    .eyeHeight(ShireHorse.HEIGHT * 0.95F)
+                    .passengerAttachments(ShireHorse.HEIGHT * 0.90F)
+                    .clientTrackingRange(10)
+                    .build(key("shire_horse")));
+
     private static <T extends MediumHorse> EntityType<T> registerMedium(
             String path, EntityType.EntityFactory<T> factory) {
         return register(path, EntityType.Builder.of(factory, MobCategory.CREATURE)
@@ -79,6 +97,8 @@ public final class ModEntities {
         FabricDefaultAttributeRegistry.register(ANDALUSIAN_HORSE, AndalusianHorse.createAttributes());
         FabricDefaultAttributeRegistry.register(MUSTANG_HORSE, MustangHorse.createAttributes());
         FabricDefaultAttributeRegistry.register(QUARTER_HORSE, QuarterHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(PERCHERON_HORSE, PercheronHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(SHIRE_HORSE, ShireHorse.createAttributes());
     }
 
     private static <T extends net.minecraft.world.entity.Entity> EntityType<T> register(

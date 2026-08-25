@@ -76,6 +76,14 @@ public final class ModItems {
             new SpawnEggItem(itemProperties("quarter_horse_spawn_egg")
                     .spawnEgg(ModEntities.QUARTER_HORSE)));
 
+    public static final Item PERCHERON_HORSE_SPAWN_EGG = register("percheron_horse_spawn_egg",
+            new SpawnEggItem(itemProperties("percheron_horse_spawn_egg")
+                    .spawnEgg(ModEntities.PERCHERON_HORSE)));
+
+    public static final Item SHIRE_HORSE_SPAWN_EGG = register("shire_horse_spawn_egg",
+            new SpawnEggItem(itemProperties("shire_horse_spawn_egg")
+                    .spawnEgg(ModEntities.SHIRE_HORSE)));
+
     public static final java.util.List<Item> BREED_SPAWN_EGGS = java.util.List.of(
             ICELANDIC_HORSE_SPAWN_EGG,
             FRIESIAN_HORSE_SPAWN_EGG,
@@ -84,7 +92,9 @@ public final class ModItems {
             AMERICAN_PAINT_HORSE_SPAWN_EGG,
             ANDALUSIAN_HORSE_SPAWN_EGG,
             MUSTANG_HORSE_SPAWN_EGG,
-            QUARTER_HORSE_SPAWN_EGG);
+            QUARTER_HORSE_SPAWN_EGG,
+            PERCHERON_HORSE_SPAWN_EGG,
+            SHIRE_HORSE_SPAWN_EGG);
 
     public static final CreativeModeTab STABLE_SUPPLIES_TAB = Registry.register(
             BuiltInRegistries.CREATIVE_MODE_TAB,

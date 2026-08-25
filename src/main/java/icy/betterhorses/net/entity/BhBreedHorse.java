@@ -70,15 +70,21 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
     public net.minecraft.world.entity.AgeableMob getBreedOffspring(
             net.minecraft.server.level.ServerLevel level,
             net.minecraft.world.entity.AgeableMob partner) {
-        if (partner instanceof BhBreedHorse other && other.getType() == this.getType()) {
+        if (partner instanceof BhBreedHorse other) {
+            boolean sameBreed = other.getType() == this.getType();
+            BhBreedHorse source = sameBreed || this.random.nextBoolean() ? this : other;
             net.minecraft.world.entity.Entity created =
-                    this.getType().create(level, net.minecraft.world.entity.EntitySpawnReason.BREEDING);
+                    source.getType().create(level, net.minecraft.world.entity.EntitySpawnReason.BREEDING);
             if (!(created instanceof BhBreedHorse foal)) {
                 return null;
             }
-            ((icy.betterhorses.net.IHorseData) foal).bh_setBreed(bhFixedBreed());
-            ((icy.betterhorses.net.IHorseData) foal).bh_setMixedBreed(false);
-            foal.bhInheritCoat(this, other);
+            ((icy.betterhorses.net.IHorseData) foal).bh_setBreed(source.bhFixedBreed());
+            ((icy.betterhorses.net.IHorseData) foal).bh_setMixedBreed(!sameBreed);
+            if (sameBreed) {
+                foal.bhInheritCoat(this, other);
+            } else {
+                foal.bhSetCoat(source.bhCoat());
+            }
             return foal;
         }
         return super.getBreedOffspring(level, partner);
