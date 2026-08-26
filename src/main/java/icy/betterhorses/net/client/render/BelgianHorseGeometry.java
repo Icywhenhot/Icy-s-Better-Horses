@@ -46,7 +46,7 @@ public final class BelgianHorseGeometry {
         PartDefinition p_neck3 = p_neck2.addOrReplaceChild(
                 "neck3",
                 CubeListBuilder.create()
-                        .texOffs(-1, 104).addBox(-3.0F, -12.0F, -4.0F, 6.0F, 16.0F, 8.0F),
+                        .texOffs(0, 104).addBox(-3.0F, -12.0F, -4.0F, 6.0F, 16.0F, 8.0F),
                 PartPose.offset(0.0F, 0.0F, 0.0F));
 
         PartDefinition p_head2 = p_neck2.addOrReplaceChild(
