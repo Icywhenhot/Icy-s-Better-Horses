@@ -30,7 +30,7 @@ public final class HorseSteerModeController {
         }
 
         boolean freeSteer = !Minecraft.getInstance().options.getCameraType().isFirstPerson();
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
 
         boolean horseChanged = horse.getId() != trackedHorseId;
         if (!horseChanged && freeSteer == sentFreeSteer && data.bh_isFreeSteer() == freeSteer) {
@@ -41,5 +41,9 @@ public final class HorseSteerModeController {
         sentFreeSteer = freeSteer;
         data.bh_setFreeSteer(freeSteer);
         ClientPlayNetworking.send(new BhSteerModePayload(horse.getId(), freeSteer));
+    }
+
+    static {
+        BhClientCaches.register(INSTANCE::reset);
     }
 }

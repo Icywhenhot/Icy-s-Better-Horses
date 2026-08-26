@@ -2,16 +2,6 @@ package icy.betterhorses.net.client.render;
 
 import net.minecraft.client.model.geom.ModelPart;
 
-/**
- * The Belgian foal.
- *
- * <p>The same mesh as the Percheron and Shire foals -- {@code belgian
- * baby.bbmodel} is byte-for-byte the Percheron's file -- so the same gait: it
- * reads {@link BhLargeFoalGait} rather than carrying its own copy of the
- * numbers. This class exists only because {@code AbstractHorseRenderer} types
- * its adult and baby models to one class, so the Belgian's baby must be a
- * {@link BelgianHorseModel}.
- */
 public class BelgianFoalModel extends BelgianHorseModel {
 
     public BelgianFoalModel(ModelPart root) {

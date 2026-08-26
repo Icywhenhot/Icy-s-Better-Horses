@@ -111,4 +111,8 @@ public final class ClientHorseRoster {
         successAction = null;
         clearFlash();
     }
+
+    static {
+        BhClientCaches.register(ClientHorseRoster::reset);
+    }
 }

@@ -11,6 +11,8 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
+import net.minecraft.client.gui.screens.Screen;
 
 public class BhModMenuIntegration implements ModMenuApi {
 
@@ -22,7 +24,7 @@ public class BhModMenuIntegration implements ModMenuApi {
         return BhModMenuIntegration::buildScreen;
     }
 
-    private static net.minecraft.client.gui.screens.Screen buildScreen(net.minecraft.client.gui.screens.Screen parent) {
+    private static Screen buildScreen(Screen parent) {
         ConfigBuilder builder = ConfigBuilder.create()
                 .setParentScreen(parent)
                 .setTitle(Component.translatable("config.icys-better-horses.title"));
@@ -69,7 +71,7 @@ public class BhModMenuIntegration implements ModMenuApi {
         return builder.build();
     }
 
-    private static me.shedaniel.clothconfig2.api.AbstractConfigListEntry<Boolean> bh_toggle(
+    private static AbstractConfigListEntry<Boolean> bh_toggle(
             ConfigEntryBuilder eb, String key, boolean[] values, int index) {
         return eb.startBooleanToggle(Component.translatable("config.icys-better-horses." + key), values[index])
                 .setDefaultValue(true)

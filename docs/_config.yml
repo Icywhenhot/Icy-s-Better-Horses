@@ -8,15 +8,12 @@ baseurl: /Icy-s-Better-Horses
 
 theme: just-the-docs
 
-# Jekyll applies no layout unless one is named, so without this every page
-# except index.md (which sets layout: home) renders as bare unstyled HTML.
 defaults:
   - scope:
       path: ""
     values:
       layout: default
 
-# Sidebar / navigation
 nav_external_links:
   - title: Source on GitHub
     url: https://github.com/Icywhenhot/Icy-s-Better-Horses
@@ -26,7 +23,6 @@ aux_links:
   GitHub: https://github.com/Icywhenhot/Icy-s-Better-Horses
 aux_links_new_tab: true
 
-# Appearance
 color_scheme: bh
 search_enabled: true
 search:
@@ -43,7 +39,6 @@ heading_anchors: true
 back_to_top: true
 back_to_top_text: "Back to top"
 
-# Footer
 footer_content: >-
   Icy's Better Horses is released under CC0. Documentation generated from the
   mod source and the in-game Stable Handbook.
@@ -57,7 +52,6 @@ gh_edit_branch: "26.2-fab"
 gh_edit_source: docs
 gh_edit_view_mode: "tree"
 
-# Callouts
 callouts_level: quiet
 callouts:
   note:
@@ -79,7 +73,7 @@ exclude:
   - vendor/
   - .jekyll-cache/
   - _site/
-  # Developer notes that predate the wiki. They live here but are not pages.
+
   - horse-stabilizer-model-guide.md
   - horse-ui-art-guide.md
 

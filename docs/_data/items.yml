@@ -1,7 +1,3 @@
-# Display name + sprite for every item that appears in a crafting grid.
-# Sprites live in assets/items/ and are generated from the mod's own textures
-# and the vanilla block/item textures.
-
 diamond:               { name: Diamond,                 sprite: diamond }
 saddle:                { name: Saddle,                  sprite: saddle }
 copper_ingot:          { name: Copper Ingot,            sprite: copper_ingot }

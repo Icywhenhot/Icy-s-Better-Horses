@@ -23,4 +23,8 @@ public final class ClientTrustCache {
     public static void reset() {
         TRUSTING_OWNERS.clear();
     }
+
+    static {
+        BhClientCaches.register(ClientTrustCache::reset);
+    }
 }

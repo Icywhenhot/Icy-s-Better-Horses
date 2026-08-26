@@ -15,6 +15,10 @@ import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.entity.animal.equine.Markings;
 import net.minecraft.world.entity.animal.equine.Variant;
+import icy.betterhorses.net.entity.BhBreedHorse;
+import java.util.Locale;
+import net.minecraft.resources.Identifier;
+import org.lwjgl.glfw.GLFW;
 
 public class HorseInfoScreen extends Screen {
 
@@ -144,7 +148,7 @@ public class HorseInfoScreen extends Screen {
         Component title = horse.hasCustomName() ? horse.getCustomName() : getTitle();
         gfx.text(font, title, left + PANEL_WIDTH / 2 - font.width(title) / 2, top + TITLE_Y, VALUE_COLOR, false);
 
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         int y = top + CONTENT_TOP;
 
         drawLabel(gfx, font, left + PADDING, y,
@@ -172,21 +176,21 @@ public class HorseInfoScreen extends Screen {
         double speedBlocksPerSec = horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * SPEED_DISPLAY_FACTOR * statP;
         drawStatRow(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.speed"),
-                String.format(java.util.Locale.ROOT, "%.1f blk/s", speedBlocksPerSec),
+                String.format(Locale.ROOT, "%.1f blk/s", speedBlocksPerSec),
                 speedBlocksPerSec / SPEED_MAX);
         y += ROW_HEIGHT;
 
         double jumpBlocks = Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D) * statP;
         drawStatRow(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.jump"),
-                String.format(java.util.Locale.ROOT, "%.2f blk", jumpBlocks),
+                String.format(Locale.ROOT, "%.2f blk", jumpBlocks),
                 jumpBlocks / JUMP_MAX);
         y += ROW_HEIGHT;
 
         double health = horse.getMaxHealth() * statP;
         drawStatRow(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.health"),
-                String.format(java.util.Locale.ROOT, "%.1f HP", health),
+                String.format(Locale.ROOT, "%.1f HP", health),
                 health / HEALTH_MAX);
 
         renderDisownSection(gfx, font, left, top, mouseX, mouseY);
@@ -244,8 +248,8 @@ public class HorseInfoScreen extends Screen {
         BhAnim.enter(pose, BhAnim.easeOutBack(t), cx + CONFIRM_WIDTH / 2f, cy + CONFIRM_HEIGHT / 2f, 6f, 0.9f);
         BhScreenDraw.panelTexture(gfx, cx, cy, CONFIRM_WIDTH, CONFIRM_HEIGHT, BhScreenDraw.SCREEN_CONFIRM_TEXTURE, t);
 
-        Component name = horse.hasCustomName() ? horse.getCustomName() : ((IHorseData) horse).bh_getBreed()
-                .displayName(((IHorseData) horse).bh_isMixedBreed());
+        Component name = horse.hasCustomName() ? horse.getCustomName() : IHorseData.of(horse).bh_getBreed()
+                .displayName(IHorseData.of(horse).bh_isMixedBreed());
         gfx.centeredText(font, Component.translatable("screen.icys-better-horses.manage.confirm_title"),
                 cx + CONFIRM_WIDTH / 2, cy + 12, BhScreenDraw.TEXT);
         gfx.centeredText(font, Component.translatable("screen.icys-better-horses.manage.confirm_body", name),
@@ -263,7 +267,7 @@ public class HorseInfoScreen extends Screen {
         pose.popMatrix();
     }
 
-    private void confirmButton(GuiGraphicsExtractor gfx, Font font, net.minecraft.resources.Identifier texture,
+    private void confirmButton(GuiGraphicsExtractor gfx, Font font, Identifier texture,
                                int x, int y, Object key, String labelKey, int textColor, boolean hovered) {
         float ly = lift.get(key, hovered, LIFT_PX);
         BhScreenDraw.textureShadow(gfx, texture, x, y, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT, ly, 1f);
@@ -334,7 +338,7 @@ public class HorseInfoScreen extends Screen {
     @Override
     public boolean keyPressed(KeyEvent event) {
         if (confirmingDisown) {
-            if (event.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) {
+            if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
                 confirmingDisown = false;
             }
             return true;
@@ -343,7 +347,7 @@ public class HorseInfoScreen extends Screen {
     }
 
     private static Component coatLabel(AbstractHorse horse) {
-        if (horse instanceof icy.betterhorses.net.entity.BhBreedHorse breedHorse) {
+        if (horse instanceof BhBreedHorse breedHorse) {
             return breedHorse.bhCoats().displayName(breedHorse.bhCoat());
         }
         if (!(horse instanceof Horse h)) {
@@ -356,7 +360,7 @@ public class HorseInfoScreen extends Screen {
             return colorComponent;
         }
         Component markingsComponent = Component.translatable(
-                "coat.icys-better-horses.markings." + markings.name().toLowerCase(java.util.Locale.ROOT));
+                "coat.icys-better-horses.markings." + markings.name().toLowerCase(Locale.ROOT));
         return Component.translatable("coat.icys-better-horses.combined", colorComponent, markingsComponent);
     }
 

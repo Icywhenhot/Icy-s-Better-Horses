@@ -15,6 +15,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import org.jetbrains.annotations.Nullable;
+import net.minecraft.client.Minecraft;
 
 public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage> {
 
@@ -154,7 +155,7 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
             return;
         }
 
-        var minecraft = net.minecraft.client.Minecraft.getInstance();
+        var minecraft = Minecraft.getInstance();
         if (minecraft.level == null) {
             return;
         }

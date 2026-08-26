@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import icy.betterhorses.net.entity.BhBreedHorse;
 
 public final class HorsePreviewCache {
 
@@ -78,7 +79,7 @@ public final class HorsePreviewCache {
                     byOrdinal(Variant.values(), entry.variantOrdinal(), Variant.WHITE),
                     byOrdinal(Markings.values(), entry.markingsOrdinal(), Markings.NONE));
         }
-        if (horse instanceof icy.betterhorses.net.entity.BhBreedHorse breedHorse
+        if (horse instanceof BhBreedHorse breedHorse
                 && entry.breedCoat() >= 0) {
             breedHorse.bhSetCoat(entry.breedCoat());
         }

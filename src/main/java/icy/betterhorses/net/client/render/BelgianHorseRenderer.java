@@ -9,19 +9,8 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
-/**
- * The Belgian Draft, the third breed on the large rig.
- *
- * <p>The foal is the shared large-breed foal, and here that is not a judgement
- * call: {@code belgian baby.bbmodel} is byte-for-byte the Percheron's file. So
- * the baby layer bakes {@code PercheronFoalGeometry} and the coats come from the
- * Belgian's own foal atlases, transferred onto exactly that mesh.
- *
- * <p>The tack baby layers still bake adult geometry, for a different reason:
- * foals wear no tack, so those layers never draw at all.
- */
 public class BelgianHorseRenderer
-        extends AbstractHorseRenderer<BelgianHorse, BelgianHorseRenderState, BelgianHorseModel> {
+        extends AbstractHorseRenderer<BelgianHorse, BhHorseRenderState, BelgianHorseModel> {
 
     public BelgianHorseRenderer(EntityRendererProvider.Context context,
                                   ModelLayerLocation adultLayer,
@@ -30,17 +19,17 @@ public class BelgianHorseRenderer
                 new BelgianHorseModel(context.bakeLayer(adultLayer)),
                 new BelgianFoalModel(context.bakeLayer(babyLayer)));
 
-        this.addLayer(BhTackLayer.<BelgianHorseRenderState, BelgianHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, BelgianHorseModel>forItem(this,
                 new BelgianHorseModel(context.bakeLayer(BhModelLayers.BELGIAN_SADDLE)),
                 new BelgianHorseModel(context.bakeLayer(BhModelLayers.BELGIAN_SADDLE_BABY)),
                 state -> state.saddle,
-                BelgianTackTextures::saddle));
+                BhTackTextures.BELGIAN::saddle));
 
-        this.addLayer(BhTackLayer.<BelgianHorseRenderState, BelgianHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, BelgianHorseModel>forItem(this,
                 new BelgianHorseModel(context.bakeLayer(BhModelLayers.BELGIAN_ARMOR)),
                 new BelgianHorseModel(context.bakeLayer(BhModelLayers.BELGIAN_ARMOR_BABY)),
                 state -> state.bodyArmorItem,
-                BelgianTackTextures::armor));
+                BhTackTextures.BELGIAN::armor));
 
         this.addLayer(new BhTackLayer<>(this,
                 new BelgianHorseModel(context.bakeLayer(BhModelLayers.BELGIAN_CHEST)),
@@ -48,18 +37,18 @@ public class BelgianHorseRenderer
                 state -> {
                     IBhEquineStabilizerState bhState = (IBhEquineStabilizerState) (Object) state;
                     return bhState.bh_hasChestGear()
-                            ? BelgianTackTextures.chest(bhState.bh_hasEnderChestGear())
+                            ? BhTackTextures.BELGIAN.chest(bhState.bh_hasEnderChestGear())
                             : null;
                 }));
     }
 
     @Override
-    public BelgianHorseRenderState createRenderState() {
-        return new BelgianHorseRenderState();
+    public BhHorseRenderState createRenderState() {
+        return new BhHorseRenderState();
     }
 
     @Override
-    public void extractRenderState(BelgianHorse entity, BelgianHorseRenderState state, float partialTick) {
+    public void extractRenderState(BelgianHorse entity, BhHorseRenderState state, float partialTick) {
         super.extractRenderState(entity, state, partialTick);
 
         state.onGround = entity.onGround();
@@ -77,17 +66,15 @@ public class BelgianHorseRenderer
         state.riddenHeadDrop = 20.0F * Mth.DEG_TO_RAD;
 
         state.commandedToStay =
-                ((IHorseData) entity).bh_getCommand() == HorseCommand.STAY;
+                IHorseData.of(entity).bh_getCommand() == HorseCommand.STAY;
 
         state.entityId = entity.getId();
 
-        BhEquineGait.fillJumpInputs(entity, state);
-        BhEquineGait gait = BhEquineGait.get(entity.getId());
-        gait.advance(state, state.ageInTicks);
+        BhEquineGait.advanceFor(entity, state);
     }
 
     @Override
-    public Identifier getTextureLocation(BelgianHorseRenderState state) {
+    public Identifier getTextureLocation(BhHorseRenderState state) {
         return state.coatTexture;
     }
 }

@@ -13,6 +13,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
+import java.util.Locale;
 
 public class BhBreedCoatsPage extends BookPage {
 
@@ -53,6 +54,6 @@ public class BhBreedCoatsPage extends BookPage {
 
     @Override
     public boolean matchesQuery(String query, Level level) {
-        return entityId.toLowerCase(java.util.Locale.ROOT).contains(query);
+        return entityId.toLowerCase(Locale.ROOT).contains(query);
     }
 }

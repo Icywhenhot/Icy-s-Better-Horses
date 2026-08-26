@@ -1,5 +1,7 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.client.BhClientCaches;
+
 import icy.betterhorses.net.entity.PercheronHorse;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.phys.Vec3;
@@ -35,5 +37,9 @@ public final class BhRiderSeat {
 
     public static void reset() {
         APPLIED.clear();
+    }
+
+    static {
+        BhClientCaches.register(BhRiderSeat::reset);
     }
 }

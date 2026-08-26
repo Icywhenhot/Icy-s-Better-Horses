@@ -1,8 +1,5 @@
 name: Deploy wiki to GitHub Pages
 
-# The wiki lives in docs/ on the active development branch, so it stays in sync
-# with the code it documents. When development moves to a new Minecraft version,
-# update the branch name below.
 on:
   push:
     branches: ["26.2-fab"]
@@ -16,7 +13,6 @@ permissions:
   pages: write
   id-token: write
 
-# Allow one concurrent deployment; don't cancel a run that is mid-deploy.
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -32,8 +28,7 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
         with:
-          # turns Pages on for the repo on the first run, so no manual
-          # Settings -> Pages toggle is needed
+
           enablement: true
 
       - name: Set up Ruby

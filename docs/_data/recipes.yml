@@ -1,6 +1,3 @@
-# Crafting recipes, mirroring src/main/resources/data/icys-better-horses/recipe/*.json
-# An empty string is an empty slot. Keys index into _data/items.yml.
-
 upgraded_saddle:
   result: upgraded_saddle
   shape:

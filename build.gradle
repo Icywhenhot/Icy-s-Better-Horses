@@ -35,11 +35,10 @@ repositories {
 }
 
 dependencies {
-	// To change the versions see the gradle.properties file
+
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
 	testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
@@ -47,12 +46,8 @@ dependencies {
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.0"
 	implementation "maven.modrinth:geckolib:${project.geckolib_version_id}"
 
-	// Guidebook library. Patchouli still has no 26.2 Fabric build, so this branch uses Modonomicon.
-	// Pinned by Modrinth version id (see gradle.properties) because the Fabric and NeoForge
-	// builds share the version_number "26.2-2.2.0" and the bare string resolves to NeoForge.
 	implementation "maven.modrinth:modonomicon:${project.modonomicon_version_id}"
 
-	// In-game config: ModMenu entry + Cloth Config screen. Dev-only (matches this branch's non-remap loom convention), not shipped.
 	implementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 	implementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
 		exclude group: "net.fabricmc.fabric-api"
@@ -74,9 +69,7 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.named("runClient", JavaExec).configure {
 	if (System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("windows")) {
-		// Minecraft 26.x can hang indefinitely in OSHI's WMI hardware probe on some
-		// Windows setups before the client window appears. Bound the query so dev
-		// launches continue instead of stalling inside CrashReport.preload().
+
 		jvmArgs "-Doshi.util.wmi.timeout=5000"
 	}
 }
@@ -86,9 +79,7 @@ test {
 }
 
 java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
+
 	withSourcesJar()
 
 	sourceCompatibility = JavaVersion.VERSION_25
@@ -104,7 +95,6 @@ jar {
 	}
 }
 
-// configure the maven publication
 publishing {
 	publications {
 		create("mavenJava", MavenPublication) {
@@ -112,11 +102,7 @@ publishing {
 		}
 	}
 
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
 	repositories {
-		// Add repositories to publish to here.
-		// Notice: This block does NOT have the same function as the block in the top level.
-		// The repositories here will be used for publishing your artifact, not for
-		// retrieving dependencies.
+
 	}
 }

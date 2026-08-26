@@ -53,7 +53,7 @@ public final class HorseGearController {
         }
 
         int effectiveGear = forwardDown || backDown ? 0 : selectedGear;
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         if (effectiveGear != appliedGear
                 || data.bh_getGear() != effectiveGear
                 || data.bh_getGaitGear() != selectedGear) {
@@ -65,7 +65,7 @@ public final class HorseGearController {
 
     private void apply(AbstractHorse horse, int gear) {
         appliedGear = gear;
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         data.bh_setGear(gear);
         data.bh_setGaitGear(selectedGear);
         ClientPlayNetworking.send(new HorseGearPayload(horse.getId(), gear, selectedGear));
@@ -78,5 +78,9 @@ public final class HorseGearController {
         public boolean geared() {
             return this == GEARED;
         }
+    }
+
+    static {
+        BhClientCaches.register(INSTANCE::reset);
     }
 }

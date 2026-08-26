@@ -1,7 +1,3 @@
-// Pixelify Sans for headings: pixel-styled like Minecraft's UI type, but with
-// real proportions so headings stay legible at documentation sizes. Self-hosted,
-// so there is no Google Fonts dependency. Paths are relative to the compiled
-// stylesheet in assets/css/, which keeps them correct under the site baseurl.
 @font-face {
   font-family: "Pixelify Sans";
   font-style: normal;
@@ -26,7 +22,6 @@
 
 $bh-display: "Pixelify Sans", ui-monospace, "Segoe UI", system-ui, sans-serif;
 
-// Headings only. Body copy, navigation and tables keep the readable sans.
 .main-content {
   h1,
   h2,
@@ -55,7 +50,6 @@ $bh-display: "Pixelify Sans", ui-monospace, "Segoe UI", system-ui, sans-serif;
   letter-spacing: 0.01em;
 }
 
-// Pixel faces sit optically small next to the body sans, so nudge them up.
 .main-content h1 {
   font-size: 2.05rem !important;
   line-height: 1.2;
@@ -68,8 +62,6 @@ $bh-display: "Pixelify Sans", ui-monospace, "Segoe UI", system-ui, sans-serif;
 .main-content h3 {
   font-size: 1.12rem !important;
 }
-
-// Crafting grid, styled after the in-game crafting table.
 
 .craft {
   display: flex;

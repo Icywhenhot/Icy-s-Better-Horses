@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.UUID;
+import org.lwjgl.glfw.GLFW;
 
 public class HorseRosterScreen extends Screen {
 
@@ -566,7 +567,7 @@ public class HorseRosterScreen extends Screen {
         pose.popMatrix();
     }
 
-    private void confirmButton(GuiGraphicsExtractor gfx, net.minecraft.resources.Identifier texture,
+    private void confirmButton(GuiGraphicsExtractor gfx, Identifier texture,
                                int x, int y, Object key, String labelKey, int textColor, boolean hovered) {
         float ly = lift.get(key, hovered, LIFT_PX);
         BhScreenDraw.textureShadow(gfx, texture, x, y, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT, ly, 1f);
@@ -690,7 +691,7 @@ public class HorseRosterScreen extends Screen {
     @Override
     public boolean keyPressed(KeyEvent event) {
         if (confirmingDisownOf != null) {
-            if (event.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) {
+            if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
                 confirmingDisownOf = null;
             }
             return true;
