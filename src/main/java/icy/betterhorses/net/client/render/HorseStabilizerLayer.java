@@ -37,6 +37,12 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
     private static final Variant SHIRE = new Variant(
             new HorseStabilizerGeoRenderer(new ShireStabilizerGeoModel()), 24.0D / 16.0D, 0.0D);
 
+    // Same derivation again: the Belgian brace is modelled in the horse's own
+    // Blockbench space, and its half-width (6.5) and floor (y 16) match the
+    // Belgian body cube exactly, so feetY is 24/16 and zOffset 0.
+    private static final Variant BELGIAN = new Variant(
+            new HorseStabilizerGeoRenderer(new BelgianStabilizerGeoModel()), 24.0D / 16.0D, 0.0D);
+
     private static final java.util.Map<net.minecraft.world.entity.EntityType<?>, Variant> BY_TYPE =
             java.util.Map.ofEntries(
                     java.util.Map.entry(icy.betterhorses.net.ModEntities.ICELANDIC_HORSE, ICELANDIC),
@@ -48,7 +54,14 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
                     java.util.Map.entry(icy.betterhorses.net.ModEntities.MUSTANG_HORSE, MEDIUM),
                     java.util.Map.entry(icy.betterhorses.net.ModEntities.QUARTER_HORSE, MEDIUM),
                     java.util.Map.entry(icy.betterhorses.net.ModEntities.PERCHERON_HORSE, PERCHERON),
-                    java.util.Map.entry(icy.betterhorses.net.ModEntities.SHIRE_HORSE, SHIRE));
+                    java.util.Map.entry(icy.betterhorses.net.ModEntities.SHIRE_HORSE, SHIRE),
+                    java.util.Map.entry(icy.betterhorses.net.ModEntities.BELGIAN_HORSE, BELGIAN),
+                    // The Clydesdale takes the PERCHERON variant outright, not a
+                    // variant of its own: the brace is modelled against a body
+                    // cube (x +/-6, y 16..28) this breed carries byte for byte,
+                    // and it sits well clear of the feathering, which tops out
+                    // at y 11. Same model, same texture, same 24/16 anchor.
+                    java.util.Map.entry(icy.betterhorses.net.ModEntities.CLYDESDALE_HORSE, PERCHERON));
 
     private static Variant variantFor(EquineRenderState state) {
         return BY_TYPE.getOrDefault(state.entityType, GENERIC);

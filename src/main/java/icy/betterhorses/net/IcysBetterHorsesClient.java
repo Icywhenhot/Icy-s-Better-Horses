@@ -13,6 +13,8 @@ import icy.betterhorses.net.client.render.BhJumpDebug;
 import icy.betterhorses.net.client.render.BhModelLayers;
 import icy.betterhorses.net.client.render.FriesianHorseRenderer;
 import icy.betterhorses.net.client.render.PercheronHorseRenderer;
+import icy.betterhorses.net.client.render.BelgianHorseRenderer;
+import icy.betterhorses.net.client.render.ClydesdaleHorseRenderer;
 import icy.betterhorses.net.client.render.ShireHorseRenderer;
 import icy.betterhorses.net.client.render.HorseCartRenderer;
 import icy.betterhorses.net.client.render.IcelandicHorseRenderer;
@@ -129,6 +131,16 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                 new ShireHorseRenderer(context,
                         BhModelLayers.SHIRE_HORSE,
                         BhModelLayers.SHIRE_HORSE_BABY));
+
+        EntityRendererRegistry.register(ModEntities.BELGIAN_HORSE, context ->
+                new BelgianHorseRenderer(context,
+                        BhModelLayers.BELGIAN_HORSE,
+                        BhModelLayers.BELGIAN_HORSE_BABY));
+
+        EntityRendererRegistry.register(ModEntities.CLYDESDALE_HORSE, context ->
+                new ClydesdaleHorseRenderer(context,
+                        BhModelLayers.CLYDESDALE_HORSE,
+                        BhModelLayers.CLYDESDALE_HORSE_BABY));
 
         com.klikli_dev.modonomicon.client.render.page.PageRendererRegistry.registerPageRenderer(
                 icy.betterhorses.net.book.BhBreedCoatsPage.ID,

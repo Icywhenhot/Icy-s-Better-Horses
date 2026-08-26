@@ -51,6 +51,23 @@ public final class BhModelLayers {
     public static final ModelLayerLocation SHIRE_CHEST = layer("shire_horse", "chest");
     public static final ModelLayerLocation SHIRE_CHEST_BABY = layer("shire_horse", "chest_baby");
 
+    public static final ModelLayerLocation BELGIAN_HORSE = layer("belgian_horse", "main");
+    public static final ModelLayerLocation BELGIAN_HORSE_BABY = layer("belgian_horse", "baby");
+    public static final ModelLayerLocation BELGIAN_SADDLE = layer("belgian_horse", "saddle");
+    public static final ModelLayerLocation BELGIAN_SADDLE_BABY = layer("belgian_horse", "saddle_baby");
+    public static final ModelLayerLocation BELGIAN_ARMOR = layer("belgian_horse", "armor");
+    public static final ModelLayerLocation BELGIAN_ARMOR_BABY = layer("belgian_horse", "armor_baby");
+    public static final ModelLayerLocation BELGIAN_CHEST = layer("belgian_horse", "chest");
+    public static final ModelLayerLocation BELGIAN_CHEST_BABY = layer("belgian_horse", "chest_baby");
+
+    // The Clydesdale declares only its own body. Its saddle, armour and chest
+    // are the PERCHERON's layers, baked straight from those constants in
+    // ClydesdaleHorseRenderer -- every cube that tack sits on is byte-identical
+    // between the two meshes, and a second set of constants pointing at the
+    // same geometry is just something to drift.
+    public static final ModelLayerLocation CLYDESDALE_HORSE = layer("clydesdale_horse", "main");
+    public static final ModelLayerLocation CLYDESDALE_HORSE_BABY = layer("clydesdale_horse", "baby");
+
     private BhModelLayers() {}
 
     public static void register() {
@@ -142,6 +159,35 @@ public final class BhModelLayers {
                 SHIRE_CHEST, ShireChestGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(
                 SHIRE_CHEST_BABY, ShireChestGeometry::createBodyLayer);
+
+        ModelLayerRegistry.registerModelLayer(
+                BELGIAN_HORSE, BelgianHorseGeometry::createBodyLayer);
+        // The Belgian foal IS the Percheron foal, and not by choice: Icy's
+        // `belgian baby.bbmodel` is byte-for-byte the Percheron's file. The
+        // same geometry is baked here, and there is deliberately no
+        // BelgianFoalGeometry to drift from it -- exactly as for the Shire.
+        ModelLayerRegistry.registerModelLayer(
+                BELGIAN_HORSE_BABY, PercheronFoalGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                BELGIAN_SADDLE, BelgianSaddleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                BELGIAN_SADDLE_BABY, BelgianSaddleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                BELGIAN_ARMOR, BelgianArmorGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                BELGIAN_ARMOR_BABY, BelgianArmorGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                BELGIAN_CHEST, BelgianChestGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                BELGIAN_CHEST_BABY, BelgianChestGeometry::createBodyLayer);
+
+        ModelLayerRegistry.registerModelLayer(
+                CLYDESDALE_HORSE, ClydesdaleHorseGeometry::createBodyLayer);
+        // The shared large-breed foal again. The Clydesdale has no baby model
+        // of its own at all, so unlike the Shire and the Belgian there is not
+        // even a duplicate to choose between.
+        ModelLayerRegistry.registerModelLayer(
+                CLYDESDALE_HORSE_BABY, PercheronFoalGeometry::createBodyLayer);
     }
 
     private static ModelLayerLocation layer(String path, String name) {
