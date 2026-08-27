@@ -1,5 +1,7 @@
 package icy.betterhorses.net.client.render;
 
+import icy.betterhorses.net.client.BhClientCaches;
+
 import icy.betterhorses.net.HorseStabilizerState;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import org.jetbrains.annotations.Nullable;
@@ -15,6 +17,7 @@ import com.geckolib.util.GeckoLibUtil;
 
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.HashMap;
 
 public final class HorseStabilizerAnimatable implements GeoAnimatable {
     private static final RawAnimation DEPLOY_AND_GLIDE = RawAnimation.begin()
@@ -23,7 +26,7 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
     private static final RawAnimation GLIDE_LOOP = RawAnimation.begin().thenLoop("wingflap");
     private static final Map<AbstractHorse, HorseStabilizerAnimatable> INSTANCES = new WeakHashMap<>();
 
-    private static final Map<Integer, HorseStabilizerAnimatable> BY_ID = new java.util.HashMap<>();
+    private static final Map<Integer, HorseStabilizerAnimatable> BY_ID = new HashMap<>();
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private final AnimationController<HorseStabilizerAnimatable> controller =
@@ -97,5 +100,9 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
         }
 
         return PlayState.CONTINUE;
+    }
+
+    static {
+        BhClientCaches.register(HorseStabilizerAnimatable::reset);
     }
 }

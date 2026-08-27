@@ -4,6 +4,9 @@ import icy.betterhorses.net.mixin.HorseModelAccessor;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
+import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.List;
+import java.util.Map;
 
 public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
         implements HorseModelAccessor {
@@ -54,12 +57,12 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
     private static ModelPart childOrEmpty(ModelPart parent, String name) {
         return parent.hasChild(name)
                 ? parent.getChild(name)
-                : new ModelPart(java.util.List.of(), java.util.Map.of());
+                : new ModelPart(List.of(), Map.of());
     }
 
     private static float measureSnoutReach(ModelPart snout, float snoutZ, float fallback) {
         final float[] minZ = {Float.MAX_VALUE};
-        snout.visit(new com.mojang.blaze3d.vertex.PoseStack(), (pose, path, index, cube) -> {
+        snout.visit(new PoseStack(), (pose, path, index, cube) -> {
             if (path.contains("rein")) {
                 return;
             }
@@ -67,7 +70,6 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
         });
         return minZ[0] == Float.MAX_VALUE ? fallback : -(snoutZ + minZ[0]);
     }
-
 
     protected float gaitScale(boolean front) {
         return 1.0F;
@@ -83,7 +85,7 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
 
     private static float measureLegLever(ModelPart part, float fallback) {
         final float[] top = {Float.MAX_VALUE};
-        part.visit(new com.mojang.blaze3d.vertex.PoseStack(),
+        part.visit(new PoseStack(),
                 (pose, path, index, cube) -> top[0] = Math.min(top[0], cube.minY));
         return top[0] == Float.MAX_VALUE ? fallback : -top[0];
     }
@@ -159,6 +161,8 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
     private static final float GROUND_Y = 24.0F;
 
     private static final float ARC_PIVOT_Y = 11.0F;
+
+    private static final float NECK_REST_TILT = 12.0F * Mth.DEG_TO_RAD;
 
     private static final float GRAZE_DROP_PIXELS = 3.5F;
     private static final float GRAZE_PITCH = 12.0F * Mth.DEG_TO_RAD;
@@ -245,9 +249,6 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
 
         final float stay = state.stayWeight;
         final float settle = state.mountSettle;
-        final float restL = state.restLeftHind;
-        final float restR = state.restRightHind;
-        final float restAny = Math.max(restL, restR);
         final float feed = Mth.clamp(state.feedingAnimation, 0.0F, 1.0F);
         final float chewing = Math.max(graze, feed);
         final float flinch = state.hurt * state.hurt
@@ -278,7 +279,6 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
               + (-4.7F - Mth.cos(rearT) / 6.0F) * rear * frameScale
               + 2.0F * land
               + 1.3F * settle
-              + 0.35F * restAny
               + 0.5F * limpStand
               + GRAZE_DROP_PIXELS * graze * frameScale
               + 1.0F * skid
@@ -312,7 +312,6 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
         body.zRot = bodyRest.zRot()
               + (-1.5F * Mth.cos(Mth.PI / 4.0F + stampT)) * Mth.DEG_TO_RAD * (stampBR - stampFL)
               + Mth.sin(shakeT * 0.85F) * 0.11F * wetShake
-              + (2.5F * Mth.DEG_TO_RAD) * (restR - restL)
               + (5.0F * Mth.DEG_TO_RAD) * pivotDir * pivot
               + (4.0F * Mth.DEG_TO_RAD) * soreSign * limp
               + (5.5F * Mth.DEG_TO_RAD) * soreSign * limpStand
@@ -330,6 +329,7 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
               * (1.0F - graze) * (1.0F - rear);
 
         float neckPitch = -bodyPitch
+              + NECK_REST_TILT * (1.0F - graze)
               + viewDuck
               + (20.0F * speed * (1.0F - 0.4F * tolt) * Mth.DEG_TO_RAD)
               + Mth.cos(breath) / 80.0F
@@ -604,22 +604,19 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
                            * speed * 1.2F) * run
                         + (Mth.sin(st) / 2.0F
                            + Mth.clamp(Mth.cos(st) / 3.0F, -NINTH_PI, 0.0F)) * swim
-                        + landBack
-                        + (13.0F * Mth.DEG_TO_RAD) * restL;
+                        + landBack;
                     reach = (((-Mth.sin(ls + Mth.sin(ls) / 4.5F) + 1.0F / 6.5F) * trot
                               + Mth.cos(ls - Mth.cos(ls) / 2.5F) * (1.0F - trot))
                              * 6.5F * moveClamped) * walk
                           + (Mth.sin(ls) * 8.0F * speed) * run
                           + (Mth.sin(st) * 6.0F) * swim
                           - toltEngage
-                          + braceBack
-                          - 1.1F * restL;
+                          + braceBack;
                     lift = Mth.clamp((-1.7F * trot
                             + (-Mth.cos(ls) * trot - Mth.sin(ls) * (1.0F - trot))
                               * 2.0F * move * notRearing) * walk
                           + (-2.3F * speed + Mth.cos(ls) * 2.0F * speed) * run * 1.2F
-                          + (-2.0F + Mth.cos(st) * 1.5F) * swim, -4.0F, 0.0F)
-                          - 1.3F * restL;
+                          + (-2.0F + Mth.cos(st) * 1.5F) * swim, -4.0F, 0.0F);
                 }
                 default -> {
                     float w = Mth.sin(ls - Mth.sin(ls) / 4.5F) * trot
@@ -635,8 +632,7 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
                         + (-Mth.sin(st) / 2.0F
                            + Mth.clamp(-Mth.cos(st) / 3.0F, -NINTH_PI, 0.0F)) * swim
                         + landBack
-                        + (-6.0F * stampRoll) * Mth.DEG_TO_RAD * stampBR
-                        + (13.0F * Mth.DEG_TO_RAD) * restR;
+                        + (-6.0F * stampRoll) * Mth.DEG_TO_RAD * stampBR;
                     reach = (((Mth.sin(ls - Mth.sin(ls) / 4.5F) + 1.0F / 6.5F) * trot
                               - Mth.cos(ls + Mth.cos(ls) / 2.5F) * (1.0F - trot))
                              * 6.5F * moveClamped) * walk
@@ -644,20 +640,17 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
                           + (-Mth.sin(st) * 6.0F) * swim
                           - toltEngage
                           + (-stampRoll * 1.5F) * stampBR
-                          + braceBack
-                          - 1.1F * restR;
+                          + braceBack;
                     lift = Mth.clamp((-1.7F * trot
                             + (Mth.cos(ls) * trot + Mth.sin(ls) * (1.0F - trot))
                               * 2.0F * move * notRearing) * walk
                           + (-2.3F * speed + Mth.sin(rl) * 2.0F * speed) * run * 1.2F
                           + (-2.0F - Mth.cos(st) * 1.5F) * swim
-                          + (stampSwing * 2.0F - 0.8F) * stampBR, -4.0F, 0.0F)
-                          - 1.3F * restR;
+                          + (stampSwing * 2.0F - 0.8F) * stampBR, -4.0F, 0.0F);
                 }
             }
 
             final boolean front = i < 2;
-
 
             final float airborneDamp = 1.0F - 0.80F * jFlight;
             rot *= airborneDamp;

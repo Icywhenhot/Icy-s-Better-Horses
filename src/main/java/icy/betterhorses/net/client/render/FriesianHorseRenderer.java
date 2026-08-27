@@ -10,7 +10,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 public class FriesianHorseRenderer
-        extends AbstractHorseRenderer<FriesianHorse, FriesianHorseRenderState, FriesianHorseModel> {
+        extends AbstractHorseRenderer<FriesianHorse, BhHorseRenderState, FriesianHorseModel> {
 
     public FriesianHorseRenderer(EntityRendererProvider.Context context,
                                  ModelLayerLocation adultLayer,
@@ -19,18 +19,17 @@ public class FriesianHorseRenderer
                 new FriesianHorseModel(context.bakeLayer(adultLayer)),
                 new FriesianFoalModel(context.bakeLayer(babyLayer)));
 
-        this.addLayer(BhTackLayer.<FriesianHorseRenderState, FriesianHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, FriesianHorseModel>forItem(this,
                 new FriesianHorseModel(context.bakeLayer(BhModelLayers.FRIESIAN_SADDLE)),
                 new FriesianHorseModel(context.bakeLayer(BhModelLayers.FRIESIAN_SADDLE_BABY)),
                 state -> state.saddle,
-                FriesianTackTextures::saddle));
+                BhTackTextures.FRIESIAN::saddle));
 
-        this.addLayer(BhTackLayer.<FriesianHorseRenderState, FriesianHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, FriesianHorseModel>forItem(this,
                 new FriesianHorseModel(context.bakeLayer(BhModelLayers.FRIESIAN_ARMOR)),
                 new FriesianHorseModel(context.bakeLayer(BhModelLayers.FRIESIAN_ARMOR_BABY)),
                 state -> state.bodyArmorItem,
-                FriesianTackTextures::armor));
-
+                BhTackTextures.FRIESIAN::armor));
 
         this.addLayer(new BhTackLayer<>(this,
                 new FriesianHorseModel(context.bakeLayer(BhModelLayers.FRIESIAN_CHEST)),
@@ -38,18 +37,18 @@ public class FriesianHorseRenderer
                 state -> {
                     IBhEquineStabilizerState bhState = (IBhEquineStabilizerState) (Object) state;
                     return bhState.bh_hasChestGear()
-                            ? FriesianTackTextures.chest(bhState.bh_hasEnderChestGear())
+                            ? BhTackTextures.FRIESIAN.chest(bhState.bh_hasEnderChestGear())
                             : null;
                 }));
     }
 
     @Override
-    public FriesianHorseRenderState createRenderState() {
-        return new FriesianHorseRenderState();
+    public BhHorseRenderState createRenderState() {
+        return new BhHorseRenderState();
     }
 
     @Override
-    public void extractRenderState(FriesianHorse entity, FriesianHorseRenderState state, float partialTick) {
+    public void extractRenderState(FriesianHorse entity, BhHorseRenderState state, float partialTick) {
         super.extractRenderState(entity, state, partialTick);
 
         state.onGround = entity.onGround();
@@ -65,17 +64,15 @@ public class FriesianHorseRenderer
         state.phaseOffset = (entity.getId() * 0.6180339887F % 1.0F) * Mth.TWO_PI;
 
         state.commandedToStay =
-                ((IHorseData) entity).bh_getCommand() == HorseCommand.STAY;
+                IHorseData.of(entity).bh_getCommand() == HorseCommand.STAY;
 
         state.entityId = entity.getId();
 
-        BhEquineGait.fillJumpInputs(entity, state);
-        BhEquineGait gait = BhEquineGait.get(entity.getId());
-        gait.advance(state, state.ageInTicks);
+        BhEquineGait.advanceFor(entity, state);
     }
 
     @Override
-    public Identifier getTextureLocation(FriesianHorseRenderState state) {
+    public Identifier getTextureLocation(BhHorseRenderState state) {
         return state.coatTexture;
     }
 }

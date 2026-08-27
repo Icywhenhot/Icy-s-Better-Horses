@@ -8,6 +8,7 @@ import com.geckolib.renderer.base.RenderPassInfo;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
+import com.geckolib.model.GeoModel;
 
 public final class HorseStabilizerGeoRenderer
         extends GeoObjectRenderer<HorseStabilizerAnimatable, Void, GeoRenderState.Impl> {
@@ -20,7 +21,7 @@ public final class HorseStabilizerGeoRenderer
         this(new HorseStabilizerGeoModel());
     }
 
-    public HorseStabilizerGeoRenderer(com.geckolib.model.GeoModel<HorseStabilizerAnimatable> model) {
+    public HorseStabilizerGeoRenderer(GeoModel<HorseStabilizerAnimatable> model) {
         super(model);
     }
 

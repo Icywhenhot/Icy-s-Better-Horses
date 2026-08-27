@@ -1,5 +1,7 @@
 package icy.betterhorses.net.client.render;
 
+import icy.betterhorses.net.client.BhClientCaches;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,5 +25,9 @@ public record BhRiderMotion(float right, float up, float forward, float pitch, f
 
     public boolean isRest() {
         return right == 0.0F && up == 0.0F && forward == 0.0F && pitch == 0.0F && roll == 0.0F;
+    }
+
+    static {
+        BhClientCaches.register(BhRiderMotion::reset);
     }
 }

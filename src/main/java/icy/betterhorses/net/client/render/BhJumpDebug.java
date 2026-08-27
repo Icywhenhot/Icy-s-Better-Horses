@@ -3,6 +3,7 @@ package icy.betterhorses.net.client.render;
 import icy.betterhorses.net.IcysBetterHorses;
 
 import java.util.Locale;
+import icy.betterhorses.net.client.BhClientCaches;
 
 public final class BhJumpDebug {
 
@@ -139,5 +140,9 @@ public final class BhJumpDebug {
 
     private static String f(float value) {
         return String.format(Locale.ROOT, "%.3f", value);
+    }
+
+    static {
+        BhClientCaches.register(BhJumpDebug::reset);
     }
 }

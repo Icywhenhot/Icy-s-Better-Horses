@@ -1,10 +1,11 @@
 package icy.betterhorses.net.client.render;
 
 import net.minecraft.client.renderer.entity.state.EquineRenderState;
+import net.minecraft.resources.Identifier;
 
-public abstract class BhHorseRenderState extends EquineRenderState {
+public class BhHorseRenderState extends EquineRenderState {
 
-    public net.minecraft.resources.Identifier coatTexture;
+    public Identifier coatTexture;
 
     public float phaseOffset;
 
@@ -84,13 +85,9 @@ public abstract class BhHorseRenderState extends EquineRenderState {
     public boolean commandedToStay;
     public float stayWeight;
 
-    public float restLeftHind;
-    public float restRightHind;
-
     public float mountSettle;
 
     public float bankWeight;
-
 
     public float skidWeight;
 
@@ -101,4 +98,13 @@ public abstract class BhHorseRenderState extends EquineRenderState {
     public float pivotPhase;
     public float pivotDir;
     public float backWeight;
+
+    private BhEquineGait gait;
+
+    BhEquineGait gaitFor(int entityId) {
+        if (gait == null || gait.entityId() != entityId) {
+            gait = new BhEquineGait(entityId);
+        }
+        return gait;
+    }
 }

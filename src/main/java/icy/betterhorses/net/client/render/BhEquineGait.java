@@ -1,9 +1,9 @@
 package icy.betterhorses.net.client.render;
 
 import net.minecraft.util.Mth;
-
-import java.util.HashMap;
-import java.util.Map;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
 
 public final class BhEquineGait {
 
@@ -29,12 +29,6 @@ public final class BhEquineGait {
     private static final float STAY_IN_PER_SECOND = 1.5F;
     private static final float STAY_OUT_PER_SECOND = 3.0F;
 
-    private static final float REST_SETTLE_SECONDS = 6.0F;
-    private static final float REST_IN_PER_SECOND = 0.25F;
-    private static final float REST_OUT_PER_SECOND = 1.2F;
-    private static final float REST_SWAP_TICKS = 700.0F;
-    private static final float REST_DECAY_MULTIPLIER = 3.0F;
-
     private static final float EXERTION_IN_PER_SECOND = 1.0F / 6.0F;
     private static final float EXERTION_OUT_PER_SECOND = 1.0F / 10.0F;
     private static final float EAR_FLICK_DECAY_PER_SECOND = 3.0F;
@@ -56,9 +50,6 @@ public final class BhEquineGait {
     private static final float BACK_SPEED_TRIGGER = 0.012F;
     private static final float BACK_IN_PER_SECOND = 2.5F;
     private static final float BACK_OUT_PER_SECOND = 4.0F;
-
-
-
 
     private static final float SKID_PER_SECOND = 1.5F;
     private static final float SKID_DROP_TRIGGER = 4.0F;
@@ -92,8 +83,6 @@ public final class BhEquineGait {
     private static final float JUMP_RISE_OUT_PER_SECOND = 5.0F;
     private static final float ARC_LAG_SECONDS = 0.10F;
 
-    private static final Map<Integer, BhEquineGait> ACTIVE = new HashMap<>();
-
     private final float random01;
 
     private final float leadSign;
@@ -126,9 +115,6 @@ public final class BhEquineGait {
     private float waterShakeTimer;
     private float waterShake;
     private float stay;
-    private float restStillSeconds;
-    private float restLeftHind;
-    private float restRightHind;
     private float bank;
     private float pivot;
     private float pivotPhase;
@@ -166,13 +152,13 @@ public final class BhEquineGait {
 
     private boolean jumpSeeded;
 
-    private BhEquineGait(int entityId) {
+    BhEquineGait(int entityId) {
         this.entityId = entityId;
         this.random01 = Math.abs(entityId * 0.6180339887F % 1.0F);
         this.leadSign = Math.abs(entityId * 0.7548776662F % 1.0F) > 0.5F ? 1.0F : -1.0F;
     }
 
-    public static void fillJumpInputs(net.minecraft.world.entity.Entity entity,
+    public static void fillJumpInputs(Entity entity,
                                       BhHorseRenderState state) {
         state.verticalSpeed = (float) (entity.getY() - entity.yOld);
 
@@ -181,8 +167,8 @@ public final class BhEquineGait {
         float yawRad = entity.getYRot() * Mth.DEG_TO_RAD;
         state.forwardSpeed = (float) (dx * -Mth.sin(yawRad) + dz * Mth.cos(yawRad));
 
-        net.minecraft.client.Minecraft client = net.minecraft.client.Minecraft.getInstance();
-        net.minecraft.client.player.LocalPlayer player = client.player;
+        Minecraft client = Minecraft.getInstance();
+        LocalPlayer player = client.player;
         state.jumpChargeInput = player != null
                 && player.getVehicle() == entity
                 && client.options.keyJump.isDown()
@@ -190,13 +176,14 @@ public final class BhEquineGait {
                 : 0.0F;
     }
 
-    public static BhEquineGait get(int entityId) {
-        return ACTIVE.computeIfAbsent(entityId, BhEquineGait::new);
+    int entityId() {
+        return entityId;
     }
 
-    public static void reset() {
-        ACTIVE.clear();
-        BhJumpDebug.reset();
+    public static void advanceFor(Entity entity,
+                                  BhHorseRenderState state) {
+        fillJumpInputs(entity, state);
+        state.gaitFor(entity.getId()).advance(state, state.ageInTicks);
     }
 
     public void advance(BhHorseRenderState state, float ageInTicks) {
@@ -269,7 +256,6 @@ public final class BhEquineGait {
 
         final float idle = Math.max(0.0F, 1.0F - limbSpeed * 6.0F);
         final float move = Math.min(1.0F, limbSpeed * 6.0F);
-
 
         state.walkWeight = walk;
         state.trotWeight = trotOut;
@@ -471,23 +457,6 @@ public final class BhEquineGait {
                 0.0F, Math.max(0.0F, 1.0F - move));
         state.stayWeight = stay;
 
-        boolean canRest = idle > 0.9F && state.onGround && !state.isInWater
-                && !state.isRidden && rear <= 0.0F && graze <= 0.0F;
-        restStillSeconds = canRest
-                ? restStillSeconds + deltaSeconds
-                : Math.max(0.0F, restStillSeconds - deltaSeconds * REST_DECAY_MULTIPLIER);
-        boolean settled = restStillSeconds > REST_SETTLE_SECONDS;
-        boolean rightsTurn = ((int) (ageInTicks / REST_SWAP_TICKS) & 1) == 0;
-        restLeftHind = Mth.clamp(restLeftHind
-                + ((settled && !rightsTurn) ? REST_IN_PER_SECOND : -REST_OUT_PER_SECOND)
-                        * deltaSeconds, 0.0F, 1.0F);
-        restRightHind = Mth.clamp(restRightHind
-                + ((settled && rightsTurn) ? REST_IN_PER_SECOND : -REST_OUT_PER_SECOND)
-                        * deltaSeconds, 0.0F, 1.0F);
-        state.restLeftHind = restLeftHind;
-        state.restRightHind = restRightHind;
-
-
         wetness = Mth.clamp(
                 wetness + (state.isInWater ? WETNESS_IN_PER_SECOND : -WETNESS_OUT_PER_SECOND)
                         * deltaSeconds,
@@ -568,7 +537,6 @@ public final class BhEquineGait {
         state.idleTimer = (phase + ageK + Mth.sin(phase + ageK / 33.0F) * 9.0F) / 18.0F;
 
     }
-
 
     public static float arcPitch(BhHorseRenderState state) {
         return (-16.0F * state.jumpRise
