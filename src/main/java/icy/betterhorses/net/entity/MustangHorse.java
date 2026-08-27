@@ -7,6 +7,13 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.level.Level;
+import icy.betterhorses.net.ModSounds;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 public class MustangHorse extends MediumHorse {
 
@@ -19,7 +26,7 @@ public class MustangHorse extends MediumHorse {
 
     private int alertCooldownTicks;
     private int glowExpiryTick;
-    private final java.util.List<java.util.UUID> glowingSensed = new java.util.ArrayList<>();
+    private final List<UUID> glowingSensed = new ArrayList<>();
 
     public MustangHorse(EntityType<? extends Horse> type, Level level) {
         super(type, level);
@@ -28,7 +35,7 @@ public class MustangHorse extends MediumHorse {
     @Override
     public void tick() {
         super.tick();
-        if (!(this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel)) {
+        if (!(this.level() instanceof ServerLevel serverLevel)) {
             return;
         }
 
@@ -46,7 +53,7 @@ public class MustangHorse extends MediumHorse {
         if (alertCooldownTicks > 0 || this.tickCount % ALERT_INTERVAL_TICKS != 0) {
             return;
         }
-        java.util.List<net.minecraft.world.entity.LivingEntity> hostiles =
+        List<LivingEntity> hostiles =
                 BhBreedAbilities.hostilesNearby(this, ALERT_RADIUS);
         if (hostiles.isEmpty()) {
             return;
@@ -56,12 +63,12 @@ public class MustangHorse extends MediumHorse {
         this.level().playSound(
                 null,
                 this.getX(), this.getY(), this.getZ(),
-                icy.betterhorses.net.ModSounds.HORSE_ANGRY_SNORT,
+                ModSounds.HORSE_ANGRY_SNORT,
                 this.getSoundSource(),
                 1.0F,
                 1.0F);
 
-        for (net.minecraft.world.entity.LivingEntity hostile : hostiles) {
+        for (LivingEntity hostile : hostiles) {
             if (BhBreedAbilities.startGlowing(hostile)) {
                 glowingSensed.add(hostile.getUUID());
             }
@@ -71,9 +78,9 @@ public class MustangHorse extends MediumHorse {
         }
     }
 
-    private void clearAlertGlow(net.minecraft.server.level.ServerLevel level) {
-        for (java.util.UUID id : glowingSensed) {
-            if (level.getEntity(id) instanceof net.minecraft.world.entity.Entity entity) {
+    private void clearAlertGlow(ServerLevel level) {
+        for (UUID id : glowingSensed) {
+            if (level.getEntity(id) instanceof Entity entity) {
                 entity.setGlowingTag(false);
             }
         }
@@ -82,8 +89,8 @@ public class MustangHorse extends MediumHorse {
     }
 
     @Override
-    public void remove(net.minecraft.world.entity.Entity.RemovalReason reason) {
-        if (this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel && glowExpiryTick != 0) {
+    public void remove(Entity.RemovalReason reason) {
+        if (this.level() instanceof ServerLevel serverLevel && glowExpiryTick != 0) {
             clearAlertGlow(serverLevel);
         }
         super.remove(reason);

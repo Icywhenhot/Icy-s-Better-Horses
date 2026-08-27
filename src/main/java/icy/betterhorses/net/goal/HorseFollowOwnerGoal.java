@@ -25,7 +25,7 @@ public class HorseFollowOwnerGoal extends Goal {
     @Override
     public boolean canUse() {
         if (horse.isVehicle()) return false;
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         if (!data.bh_isOwned() || data.bh_getCommand() != HorseCommand.FOLLOW) return false;
         UUID ownerId = data.bh_getOwner();
         owner = horse.level().getPlayerByUUID(ownerId);
@@ -35,7 +35,7 @@ public class HorseFollowOwnerGoal extends Goal {
     @Override
     public boolean canContinueToUse() {
         if (owner == null || !owner.isAlive()) return false;
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         return data.bh_getCommand() == HorseCommand.FOLLOW
                 && horse.distanceToSqr(owner) > STOP_DIST_SQ;
     }

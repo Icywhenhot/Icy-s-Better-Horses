@@ -2,7 +2,6 @@ package icy.betterhorses.net.client.render;
 
 import net.minecraft.client.model.geom.ModelPart;
 
-/** The large-breed foal on the Percheron's rig. Gait lives in {@link BhLargeFoalGait}. */
 public class PercheronFoalModel extends PercheronHorseModel {
 
     public PercheronFoalModel(ModelPart root) {

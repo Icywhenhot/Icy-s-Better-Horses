@@ -1,6 +1,5 @@
 package icy.betterhorses.net.client.render;
 
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -8,19 +7,6 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 
-/**
- * Geometry for the Shire horse's armor.
- *
- * <p>GENERATED from
- * {@code blockbench/horses/Large/shire/Armor shire.bbmodel}
- * via the Fresh-Animations rig. Do not hand-edit: re-run the generator instead, which
- * verifies every cube round-trips back to the Blockbench source.
- *
- * <p>The part names deliberately mirror the CEM rig rather than vanilla's, because
- * the animator drives a finer skeleton than vanilla exposes: vanilla lumps head,
- * ears, mouth, neck and mane into one swivelling container, which cannot express an
- * arching neck or a muzzle that chews independently.
- */
 public final class ShireArmorGeometry {
 
     public static final int TEXTURE_WIDTH = 128;

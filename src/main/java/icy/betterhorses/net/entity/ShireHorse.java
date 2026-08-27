@@ -8,16 +8,6 @@ import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.level.Level;
 
-/**
- * England's largest draft horse, and the tallest thing in the mod.
- *
- * <p>WIDTH is the Percheron's unchanged: the two share a barrel box, 12 wide, and
- * the extra unit the Shire carries on each side is leg feathering, which is hair
- * rather than something a collision box should catch on.
- *
- * <p>HEIGHT is derived, not chosen. The Shire mesh is the Percheron's raised 3
- * model units, so its hitbox is the Percheron's 1.95 plus 3/16 of a block.
- */
 public class ShireHorse extends BhBreedHorse {
 
     public static final float WIDTH = 1.5234375F;
@@ -37,11 +27,6 @@ public class ShireHorse extends BhBreedHorse {
         return BhBreedCoats.SHIRE;
     }
 
-    /**
-     * Heavier and steadier than the Percheron: more health, a little less speed
-     * and a little less jump. Same STEP_HEIGHT -- both are tall enough to walk
-     * over a block.
-     */
     public static AttributeSupplier.Builder createAttributes() {
         return AbstractHorse.createBaseHorseAttributes()
                 .add(Attributes.MAX_HEALTH, 36.0D)

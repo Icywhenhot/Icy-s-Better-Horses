@@ -8,6 +8,14 @@ import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import icy.betterhorses.net.IHorseData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.level.ServerLevelAccessor;
 
 public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
 
@@ -50,12 +58,12 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
     }
 
     @Override
-    public net.minecraft.world.entity.SpawnGroupData finalizeSpawn(
-            net.minecraft.world.level.ServerLevelAccessor level,
-            net.minecraft.world.DifficultyInstance difficulty,
-            net.minecraft.world.entity.EntitySpawnReason reason,
-            net.minecraft.world.entity.SpawnGroupData groupData) {
-        net.minecraft.world.entity.SpawnGroupData result =
+    public SpawnGroupData finalizeSpawn(
+            ServerLevelAccessor level,
+            DifficultyInstance difficulty,
+            EntitySpawnReason reason,
+            SpawnGroupData groupData) {
+        SpawnGroupData result =
                 super.finalizeSpawn(level, difficulty, reason, groupData);
         bhSetCoat(bhCoats().roll(this.random));
         return result;
@@ -67,19 +75,19 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
     }
 
     @Override
-    public net.minecraft.world.entity.AgeableMob getBreedOffspring(
-            net.minecraft.server.level.ServerLevel level,
-            net.minecraft.world.entity.AgeableMob partner) {
+    public AgeableMob getBreedOffspring(
+            ServerLevel level,
+            AgeableMob partner) {
         if (partner instanceof BhBreedHorse other) {
             boolean sameBreed = other.getType() == this.getType();
             BhBreedHorse source = sameBreed || this.random.nextBoolean() ? this : other;
-            net.minecraft.world.entity.Entity created =
-                    source.getType().create(level, net.minecraft.world.entity.EntitySpawnReason.BREEDING);
+            Entity created =
+                    source.getType().create(level, EntitySpawnReason.BREEDING);
             if (!(created instanceof BhBreedHorse foal)) {
                 return null;
             }
-            ((icy.betterhorses.net.IHorseData) foal).bh_setBreed(source.bhFixedBreed());
-            ((icy.betterhorses.net.IHorseData) foal).bh_setMixedBreed(!sameBreed);
+            ((IHorseData) foal).bh_setBreed(source.bhFixedBreed());
+            ((IHorseData) foal).bh_setMixedBreed(!sameBreed);
             if (sameBreed) {
                 foal.bhInheritCoat(this, other);
             } else {

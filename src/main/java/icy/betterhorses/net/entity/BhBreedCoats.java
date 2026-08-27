@@ -71,24 +71,14 @@ public final class BhBreedCoats {
                     "blue_roan"),
             true);
 
-    // Order is the registry's and must only ever be APPENDED to: the index is
-    // saved on the entity, so inserting rewrites the coat of every existing horse.
-    // `black` first because it is the coat Icy painted by hand; the other seven
-    // are generated from it.
     public static final BhBreedCoats SHIRE = new BhBreedCoats(
             "shire",
             List.of("black", "bay", "brown", "dark_brown",
                     "grey", "chestnut", "blue_roan", "bay_blaze",
-                    // APPENDED, never inserted. These three are the same coats
-                    // as black, brown and blue_roan under Icy's white
-                    // feathering, which on this breed is a whole second look.
+
                     "black_feather", "brown_feather", "roan_feather"),
             true);
 
-    // Same rule: APPEND only. `black` first because it is the coat Icy painted
-    // by hand; the other eight are generated from it and then hand-finished.
-    // This order is also build_foal.py FOALS[belgian] order -- a foal atlas is
-    // looked up by the same index as its parent, so the two must not drift.
     public static final BhBreedCoats BELGIAN = new BhBreedCoats(
             "belgian",
             List.of("black", "flaxen_sorrel", "dark_sorrel", "mahogany_bay",
@@ -96,12 +86,6 @@ public final class BhBreedCoats {
                     "smoky_black"),
             true);
 
-    // APPEND only, as ever. EIGHT here and no black: the all-black art this
-    // breed was generated from was scaffolding for looking at the mesh, and it
-    // is not one of the Clydesdale's colours -- it lives outside the coat
-    // folder now so it cannot be rolled. This order is also build_foal.py's
-    // FOALS[clydesdale] order; a foal atlas is looked up by the same index as
-    // its parent, so the two must not drift.
     public static final BhBreedCoats CLYDESDALE = new BhBreedCoats(
             "clydesdale",
             List.of("bay_sabino", "seal_brown", "black_sabino", "red_bay",

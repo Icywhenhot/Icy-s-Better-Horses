@@ -39,7 +39,7 @@ public class HorseReturnHomeGoal extends Goal {
     @Override
     public boolean canUse() {
         if (horse.isVehicle()) return false;
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         if (!data.bh_isOwned() || data.bh_getCommand() != HorseCommand.RETURN_HOME) return false;
         BlockPos home = data.bh_getHome();
         if (home == null) {
@@ -51,7 +51,7 @@ public class HorseReturnHomeGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         if (data.bh_getCommand() != HorseCommand.RETURN_HOME) return false;
         BlockPos home = data.bh_getHome();
         if (home == null) return false;
@@ -97,7 +97,7 @@ public class HorseReturnHomeGoal extends Goal {
     }
 
     private void navigateHome() {
-        BlockPos home = ((IHorseData) horse).bh_getHome();
+        BlockPos home = IHorseData.of(horse).bh_getHome();
         if (home == null) return;
         Vec3 homeCenter = Vec3.atBottomCenterOf(home);
         Vec3 target = homeCenter;
@@ -114,7 +114,7 @@ public class HorseReturnHomeGoal extends Goal {
     private boolean hasWalkedNaturalLeg() {
         if (walkStartPos == null || horse.isVehicle() || horse.isLeashed()) return false;
         if (horse.position().distanceToSqr(walkStartPos) < NATURAL_WALK_DIST_SQ) return false;
-        BlockPos home = ((IHorseData) horse).bh_getHome();
+        BlockPos home = IHorseData.of(horse).bh_getHome();
         return home != null && horse.distanceToSqr(Vec3.atBottomCenterOf(home)) > NATURAL_WALK_DIST_SQ;
     }
 
@@ -143,12 +143,12 @@ public class HorseReturnHomeGoal extends Goal {
     }
 
     private void teleportHome() {
-        BlockPos home = ((IHorseData) horse).bh_getHome();
+        BlockPos home = IHorseData.of(horse).bh_getHome();
         if (home == null) return;
         if (horse.level() instanceof ServerLevel serverLevel) {
             serverLevel.getChunkSource().addTicketWithRadius(ModTicketTypes.HORSE_TASK, ChunkPos.containing(home), 1);
         }
         horse.teleportTo(home.getX() + 0.5, home.getY(), home.getZ() + 0.5);
-        ((IHorseData) horse).bh_setCommand(HorseCommand.STAY);
+        IHorseData.of(horse).bh_setCommand(HorseCommand.STAY);
     }
 }

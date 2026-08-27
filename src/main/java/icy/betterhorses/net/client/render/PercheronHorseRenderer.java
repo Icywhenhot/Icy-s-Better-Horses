@@ -10,7 +10,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 public class PercheronHorseRenderer
-        extends AbstractHorseRenderer<PercheronHorse, PercheronHorseRenderState, PercheronHorseModel> {
+        extends AbstractHorseRenderer<PercheronHorse, BhHorseRenderState, PercheronHorseModel> {
 
     public PercheronHorseRenderer(EntityRendererProvider.Context context,
                                   ModelLayerLocation adultLayer,
@@ -19,17 +19,17 @@ public class PercheronHorseRenderer
                 new PercheronHorseModel(context.bakeLayer(adultLayer)),
                 new PercheronFoalModel(context.bakeLayer(babyLayer)));
 
-        this.addLayer(BhTackLayer.<PercheronHorseRenderState, PercheronHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, PercheronHorseModel>forItem(this,
                 new PercheronHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_SADDLE)),
                 new PercheronHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_SADDLE_BABY)),
                 state -> state.saddle,
-                PercheronTackTextures::saddle));
+                BhTackTextures.PERCHERON::saddle));
 
-        this.addLayer(BhTackLayer.<PercheronHorseRenderState, PercheronHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, PercheronHorseModel>forItem(this,
                 new PercheronHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_ARMOR)),
                 new PercheronHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_ARMOR_BABY)),
                 state -> state.bodyArmorItem,
-                PercheronTackTextures::armor));
+                BhTackTextures.PERCHERON::armor));
 
         this.addLayer(new BhTackLayer<>(this,
                 new PercheronHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_CHEST)),
@@ -37,18 +37,18 @@ public class PercheronHorseRenderer
                 state -> {
                     IBhEquineStabilizerState bhState = (IBhEquineStabilizerState) (Object) state;
                     return bhState.bh_hasChestGear()
-                            ? PercheronTackTextures.chest(bhState.bh_hasEnderChestGear())
+                            ? BhTackTextures.PERCHERON.chest(bhState.bh_hasEnderChestGear())
                             : null;
                 }));
     }
 
     @Override
-    public PercheronHorseRenderState createRenderState() {
-        return new PercheronHorseRenderState();
+    public BhHorseRenderState createRenderState() {
+        return new BhHorseRenderState();
     }
 
     @Override
-    public void extractRenderState(PercheronHorse entity, PercheronHorseRenderState state, float partialTick) {
+    public void extractRenderState(PercheronHorse entity, BhHorseRenderState state, float partialTick) {
         super.extractRenderState(entity, state, partialTick);
 
         state.onGround = entity.onGround();
@@ -66,17 +66,15 @@ public class PercheronHorseRenderer
         state.riddenHeadDrop = 20.0F * Mth.DEG_TO_RAD;
 
         state.commandedToStay =
-                ((IHorseData) entity).bh_getCommand() == HorseCommand.STAY;
+                IHorseData.of(entity).bh_getCommand() == HorseCommand.STAY;
 
         state.entityId = entity.getId();
 
-        BhEquineGait.fillJumpInputs(entity, state);
-        BhEquineGait gait = BhEquineGait.get(entity.getId());
-        gait.advance(state, state.ageInTicks);
+        BhEquineGait.advanceFor(entity, state);
     }
 
     @Override
-    public Identifier getTextureLocation(PercheronHorseRenderState state) {
+    public Identifier getTextureLocation(BhHorseRenderState state) {
         return state.coatTexture;
     }
 }

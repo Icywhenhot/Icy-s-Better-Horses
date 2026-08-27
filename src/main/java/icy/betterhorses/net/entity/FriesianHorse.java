@@ -7,6 +7,11 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.NeutralMob;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.AABB;
 
 public class FriesianHorse extends BhBreedHorse {
 
@@ -40,7 +45,7 @@ public class FriesianHorse extends BhBreedHorse {
             return;
         }
 
-        net.minecraft.world.entity.player.Player rider = BhBreedAbilities.rider(this);
+        Player rider = BhBreedAbilities.rider(this);
 
         if (rider != null && !hadRider) {
             calmNeutralMobs(rider, MOUNT_CALM_RADIUS, true);
@@ -53,19 +58,19 @@ public class FriesianHorse extends BhBreedHorse {
     }
 
     private void calmNeutralMobs(
-            net.minecraft.world.entity.player.Player rider, double radius, boolean includeProvoked) {
-        net.minecraft.world.phys.AABB box = this.getBoundingBox().inflate(radius);
-        for (net.minecraft.world.entity.Mob mob
-                : this.level().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, box)) {
-            if (!(mob instanceof net.minecraft.world.entity.NeutralMob neutral)) {
+            Player rider, double radius, boolean includeProvoked) {
+        AABB box = this.getBoundingBox().inflate(radius);
+        for (Mob mob
+                : this.level().getEntitiesOfClass(Mob.class, box)) {
+            if (!(mob instanceof NeutralMob neutral)) {
                 continue;
             }
-            net.minecraft.world.entity.LivingEntity target = mob.getTarget();
+            LivingEntity target = mob.getTarget();
             if (target != rider && target != this) {
                 continue;
             }
             if (!includeProvoked) {
-                net.minecraft.world.entity.LivingEntity attacker = mob.getLastHurtByMob();
+                LivingEntity attacker = mob.getLastHurtByMob();
                 if (attacker == rider || attacker == this) {
                     continue;
                 }

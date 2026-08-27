@@ -7,6 +7,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.player.Player;
 
 public class AppaloosaHorse extends MediumHorse {
 
@@ -24,10 +26,10 @@ public class AppaloosaHorse extends MediumHorse {
             return;
         }
 
-        net.minecraft.world.entity.player.Player rider = BhBreedAbilities.rider(this);
+        Player rider = BhBreedAbilities.rider(this);
         if (rider != null && BhBreedAbilities.isDarkOutside(this)) {
             BhBreedAbilities.applyQuietEffect(
-                    rider, net.minecraft.world.effect.MobEffects.NIGHT_VISION, NIGHT_VISION_TICKS, 0);
+                    rider, MobEffects.NIGHT_VISION, NIGHT_VISION_TICKS, 0);
         }
     }
 

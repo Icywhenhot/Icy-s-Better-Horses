@@ -8,10 +8,12 @@ import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import net.minecraft.core.Holder;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.Entity;
 
 public final class BhBreedAbilities {
 
@@ -76,7 +78,7 @@ public final class BhBreedAbilities {
 
     public static void applyQuietEffect(
             LivingEntity target,
-            net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect,
+            Holder<MobEffect> effect,
             int durationTicks,
             int amplifier) {
         MobEffectInstance existing = target.getEffect(effect);
@@ -97,7 +99,7 @@ public final class BhBreedAbilities {
         applyQuietEffect(target, MobEffects.RESISTANCE, durationTicks, 0);
     }
 
-    public static boolean startGlowing(net.minecraft.world.entity.Entity entity) {
+    public static boolean startGlowing(Entity entity) {
         if (entity.isCurrentlyGlowing()) {
             return false;
         }

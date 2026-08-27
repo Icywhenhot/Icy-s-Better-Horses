@@ -7,6 +7,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.level.Level;
+import icy.betterhorses.net.BhGears;
+import icy.betterhorses.net.IHorseData;
+import net.minecraft.world.entity.player.Player;
 
 public class ThoroughbredHorse extends MediumHorse {
 
@@ -45,7 +48,7 @@ public class ThoroughbredHorse extends MediumHorse {
             return;
         }
 
-        net.minecraft.world.entity.player.Player rider = BhBreedAbilities.rider(this);
+        Player rider = BhBreedAbilities.rider(this);
         if (rider == null || !isGallopingGear() || !movement.isRunningFlat()) {
             flatRunTicks = Math.max(0, flatRunTicks - WIND_UP_DECAY);
             return;
@@ -66,8 +69,8 @@ public class ThoroughbredHorse extends MediumHorse {
     }
 
     private boolean isGallopingGear() {
-        int gear = ((icy.betterhorses.net.IHorseData) this).bh_getGear();
-        return gear == 0 || gear == icy.betterhorses.net.BhGears.TOP_GEAR;
+        int gear = ((IHorseData) this).bh_getGear();
+        return gear == 0 || gear == BhGears.TOP_GEAR;
     }
 
     @Override

@@ -7,6 +7,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.player.Player;
 
 public class AndalusianHorse extends MediumHorse {
 
@@ -38,8 +41,8 @@ public class AndalusianHorse extends MediumHorse {
 
     @Override
     public boolean hurtServer(
-            net.minecraft.server.level.ServerLevel level,
-            net.minecraft.world.damagesource.DamageSource source,
+            ServerLevel level,
+            DamageSource source,
             float amount) {
         boolean hurt;
         takingDamage = true;
@@ -51,7 +54,7 @@ public class AndalusianHorse extends MediumHorse {
 
         if (hurt) {
             BhBreedAbilities.grantResistance(this, COURAGE_TICKS);
-            net.minecraft.world.entity.player.Player rider = BhBreedAbilities.rider(this);
+            Player rider = BhBreedAbilities.rider(this);
             if (rider != null) {
                 BhBreedAbilities.grantResistance(rider, COURAGE_TICKS);
             }

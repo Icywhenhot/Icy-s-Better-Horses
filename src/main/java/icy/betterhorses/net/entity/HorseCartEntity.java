@@ -53,6 +53,8 @@ import com.geckolib.util.GeckoLibUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public final class HorseCartEntity extends Entity implements GeoEntity {
 
@@ -202,14 +204,14 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
         AbstractHorse boundHorse = this.resolveHorse();
         if (boundHorse == null || !boundHorse.isAlive() || boundHorse.isRemoved()
-                || !((IHorseData) boundHorse).bh_hasCartGear()) {
+                || !IHorseData.of(boundHorse).bh_hasCartGear()) {
             this.closeChestViewers();
             this.discard();
             return;
         }
         this.followHorse(boundHorse);
         this.updateRollSpeed();
-        this.entityData.set(DATA_HAS_CHEST, ((IHorseData) boundHorse).bh_hasCartChest());
+        this.entityData.set(DATA_HAS_CHEST, IHorseData.of(boundHorse).bh_hasCartChest());
         this.updateChestViewers();
         this.tryBoardNearbyMobs();
         this.tendPassengers();
@@ -503,7 +505,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
         boolean benchHasRoom = boundHorse.getPassengers().size() < 2;
         if (benchHasRoom && this.playerMayTakeBench(boundHorse, player)) {
-            ((IHorseData) boundHorse).bh_ridePlayer(player);
+            IHorseData.of(boundHorse).bh_ridePlayer(player);
             return InteractionResult.CONSUME;
         }
         if (this.rearSeatsFree()) {
@@ -522,14 +524,14 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             return this.placedChest;
         }
         AbstractHorse boundHorse = this.resolveHorse();
-        return boundHorse == null ? null : ((IHorseData) boundHorse).bh_getCartChestContainer();
+        return boundHorse == null ? null : IHorseData.of(boundHorse).bh_getCartChestContainer();
     }
 
     private void setChestAttached(boolean attached) {
         if (!this.isPlaced()) {
             AbstractHorse boundHorse = this.resolveHorse();
             if (boundHorse != null) {
-                ((IHorseData) boundHorse).bh_setCartChest(attached);
+                IHorseData.of(boundHorse).bh_setCartChest(attached);
             }
         }
         this.entityData.set(DATA_HAS_CHEST, attached);
@@ -575,7 +577,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         if (!this.isPlaced()) {
             AbstractHorse boundHorse = this.resolveHorse();
             if (boundHorse != null) {
-                ((IHorseData) boundHorse).bh_dropCartChest();
+                IHorseData.of(boundHorse).bh_dropCartChest();
             }
             this.entityData.set(DATA_HAS_CHEST, false);
             return;
@@ -642,7 +644,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         if (boundHorse == null || !BhConfig.horseExclusivityEnabled()) {
             return true;
         }
-        if (((IHorseData) boundHorse).bh_mayHandle(player.getUUID())) {
+        if (IHorseData.of(boundHorse).bh_mayHandle(player.getUUID())) {
             return true;
         }
 
@@ -658,7 +660,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         if (!BhConfig.horseExclusivityEnabled()) {
             return true;
         }
-        IHorseData data = (IHorseData) boundHorse;
+        IHorseData data = IHorseData.of(boundHorse);
         if (data.bh_maySaddleUp(player.getUUID())) {
             return true;
         }
@@ -812,9 +814,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     public record BhCartSlot(int slot, ItemStack stack) {
-        public static final com.mojang.serialization.Codec<BhCartSlot> CODEC =
-                com.mojang.serialization.codecs.RecordCodecBuilder.create(instance -> instance.group(
-                        com.mojang.serialization.Codec.INT.fieldOf("Slot").forGetter(BhCartSlot::slot),
+        public static final Codec<BhCartSlot> CODEC =
+                RecordCodecBuilder.create(instance -> instance.group(
+                        Codec.INT.fieldOf("Slot").forGetter(BhCartSlot::slot),
                         ItemStack.CODEC.fieldOf("Item").forGetter(BhCartSlot::stack)
                 ).apply(instance, BhCartSlot::new));
     }

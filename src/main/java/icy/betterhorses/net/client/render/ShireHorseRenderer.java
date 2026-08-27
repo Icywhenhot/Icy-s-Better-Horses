@@ -9,19 +9,8 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
-/**
- * The Shire, the second breed on the large rig.
- *
- * <p>The foal is the shared large-breed foal -- the Percheron's mesh, the same
- * file rather than a copy -- so the baby layer bakes {@code PercheronFoalGeometry}
- * and the coats come from the Shire's own foal atlases, which were transferred
- * onto exactly that mesh.
- *
- * <p>The tack baby layers still bake adult geometry, for a different reason:
- * foals wear no tack, so those layers never draw at all.
- */
 public class ShireHorseRenderer
-        extends AbstractHorseRenderer<ShireHorse, ShireHorseRenderState, ShireHorseModel> {
+        extends AbstractHorseRenderer<ShireHorse, BhHorseRenderState, ShireHorseModel> {
 
     public ShireHorseRenderer(EntityRendererProvider.Context context,
                                   ModelLayerLocation adultLayer,
@@ -30,17 +19,17 @@ public class ShireHorseRenderer
                 new ShireHorseModel(context.bakeLayer(adultLayer)),
                 new ShireFoalModel(context.bakeLayer(babyLayer)));
 
-        this.addLayer(BhTackLayer.<ShireHorseRenderState, ShireHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, ShireHorseModel>forItem(this,
                 new ShireHorseModel(context.bakeLayer(BhModelLayers.SHIRE_SADDLE)),
                 new ShireHorseModel(context.bakeLayer(BhModelLayers.SHIRE_SADDLE_BABY)),
                 state -> state.saddle,
-                ShireTackTextures::saddle));
+                BhTackTextures.SHIRE::saddle));
 
-        this.addLayer(BhTackLayer.<ShireHorseRenderState, ShireHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, ShireHorseModel>forItem(this,
                 new ShireHorseModel(context.bakeLayer(BhModelLayers.SHIRE_ARMOR)),
                 new ShireHorseModel(context.bakeLayer(BhModelLayers.SHIRE_ARMOR_BABY)),
                 state -> state.bodyArmorItem,
-                ShireTackTextures::armor));
+                BhTackTextures.SHIRE::armor));
 
         this.addLayer(new BhTackLayer<>(this,
                 new ShireHorseModel(context.bakeLayer(BhModelLayers.SHIRE_CHEST)),
@@ -48,18 +37,18 @@ public class ShireHorseRenderer
                 state -> {
                     IBhEquineStabilizerState bhState = (IBhEquineStabilizerState) (Object) state;
                     return bhState.bh_hasChestGear()
-                            ? ShireTackTextures.chest(bhState.bh_hasEnderChestGear())
+                            ? BhTackTextures.SHIRE.chest(bhState.bh_hasEnderChestGear())
                             : null;
                 }));
     }
 
     @Override
-    public ShireHorseRenderState createRenderState() {
-        return new ShireHorseRenderState();
+    public BhHorseRenderState createRenderState() {
+        return new BhHorseRenderState();
     }
 
     @Override
-    public void extractRenderState(ShireHorse entity, ShireHorseRenderState state, float partialTick) {
+    public void extractRenderState(ShireHorse entity, BhHorseRenderState state, float partialTick) {
         super.extractRenderState(entity, state, partialTick);
 
         state.onGround = entity.onGround();
@@ -77,17 +66,15 @@ public class ShireHorseRenderer
         state.riddenHeadDrop = 20.0F * Mth.DEG_TO_RAD;
 
         state.commandedToStay =
-                ((IHorseData) entity).bh_getCommand() == HorseCommand.STAY;
+                IHorseData.of(entity).bh_getCommand() == HorseCommand.STAY;
 
         state.entityId = entity.getId();
 
-        BhEquineGait.fillJumpInputs(entity, state);
-        BhEquineGait gait = BhEquineGait.get(entity.getId());
-        gait.advance(state, state.ageInTicks);
+        BhEquineGait.advanceFor(entity, state);
     }
 
     @Override
-    public Identifier getTextureLocation(ShireHorseRenderState state) {
+    public Identifier getTextureLocation(BhHorseRenderState state) {
         return state.coatTexture;
     }
 }

@@ -7,13 +7,11 @@ import icy.betterhorses.net.entity.IcelandicHorse;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.AbstractHorseRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.layers.SimpleEquipmentLayer;
-import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 public class IcelandicHorseRenderer
-        extends AbstractHorseRenderer<IcelandicHorse, IcelandicHorseRenderState, IcelandicHorseModel> {
+        extends AbstractHorseRenderer<IcelandicHorse, BhHorseRenderState, IcelandicHorseModel> {
 
     public IcelandicHorseRenderer(EntityRendererProvider.Context context,
                                   ModelLayerLocation adultLayer,
@@ -22,18 +20,17 @@ public class IcelandicHorseRenderer
                 new IcelandicHorseModel(context.bakeLayer(adultLayer)),
                 new IcelandicFoalModel(context.bakeLayer(babyLayer)));
 
-        this.addLayer(BhTackLayer.<IcelandicHorseRenderState, IcelandicHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, IcelandicHorseModel>forItem(this,
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_SADDLE)),
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_SADDLE_BABY)),
                 state -> state.saddle,
-                IcelandicTackTextures::saddle));
+                BhTackTextures.ICELANDIC::saddle));
 
-        this.addLayer(BhTackLayer.<IcelandicHorseRenderState, IcelandicHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, IcelandicHorseModel>forItem(this,
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_ARMOR)),
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_ARMOR_BABY)),
                 state -> state.bodyArmorItem,
-                IcelandicTackTextures::armor));
-
+                BhTackTextures.ICELANDIC::armor));
 
         this.addLayer(new BhTackLayer<>(this,
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_CHEST)),
@@ -41,18 +38,18 @@ public class IcelandicHorseRenderer
                 state -> {
                     IBhEquineStabilizerState bhState = (IBhEquineStabilizerState) (Object) state;
                     return bhState.bh_hasChestGear()
-                            ? IcelandicTackTextures.chest(bhState.bh_hasEnderChestGear())
+                            ? BhTackTextures.ICELANDIC.chest(bhState.bh_hasEnderChestGear())
                             : null;
                 }));
     }
 
     @Override
-    public IcelandicHorseRenderState createRenderState() {
-        return new IcelandicHorseRenderState();
+    public BhHorseRenderState createRenderState() {
+        return new BhHorseRenderState();
     }
 
     @Override
-    public void extractRenderState(IcelandicHorse entity, IcelandicHorseRenderState state, float partialTick) {
+    public void extractRenderState(IcelandicHorse entity, BhHorseRenderState state, float partialTick) {
         super.extractRenderState(entity, state, partialTick);
 
         state.onGround = entity.onGround();
@@ -69,7 +66,7 @@ public class IcelandicHorseRenderer
 
         state.gaitedBlend = 1.0F;
 
-        IHorseData data = (IHorseData) entity;
+        IHorseData data = IHorseData.of(entity);
         int gear = data.bh_getGaitGear();
         boolean following = data.bh_isOwned() && data.bh_getCommand() == HorseCommand.FOLLOW;
         state.toltRequest = state.isRidden
@@ -77,17 +74,15 @@ public class IcelandicHorseRenderer
                 : (following ? 1.0F : 0.0F);
 
         state.commandedToStay =
-                ((IHorseData) entity).bh_getCommand() == HorseCommand.STAY;
+                IHorseData.of(entity).bh_getCommand() == HorseCommand.STAY;
 
         state.entityId = entity.getId();
 
-        BhEquineGait.fillJumpInputs(entity, state);
-        BhEquineGait gait = BhEquineGait.get(entity.getId());
-        gait.advance(state, state.ageInTicks);
+        BhEquineGait.advanceFor(entity, state);
     }
 
     @Override
-    public Identifier getTextureLocation(IcelandicHorseRenderState state) {
+    public Identifier getTextureLocation(BhHorseRenderState state) {
         return state.coatTexture;
     }
 }
