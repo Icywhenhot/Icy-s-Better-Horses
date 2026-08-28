@@ -19,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Locale;
+import icy.betterhorses.net.client.render.BhJumpDebug;
 
 @Mixin(Gui.class)
 public abstract class GuiMixin {
@@ -36,7 +37,7 @@ public abstract class GuiMixin {
 
     @Inject(method = "extractRenderState", at = @At("TAIL"))
     private void bh_renderJumpDebugHud(DeltaTracker deltaTracker, boolean blurEnabled, boolean renderHud, CallbackInfo ci) {
-        String[] lines = icy.betterhorses.net.client.render.BhJumpDebug.hudLines();
+        String[] lines = BhJumpDebug.hudLines();
         if (lines == null || this.minecraft.level == null || this.minecraft.gui.screen() != null) {
             return;
         }
@@ -86,7 +87,7 @@ public abstract class GuiMixin {
         String jumpValue = String.format(Locale.ROOT, "%.1f",
                 Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D));
 
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         Component title = Component.translatable("hud.icys-better-horses.horse_stats");
         Component genderLine = Component.translatable("hud.icys-better-horses.gender", data.bh_getGender().displayName());
         Component breedLine = Component.translatable("hud.icys-better-horses.breed", data.bh_getBreed().displayName(data.bh_isMixedBreed()));

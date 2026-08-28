@@ -7,10 +7,22 @@ import icy.betterhorses.net.BhCriteria;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.HorseGender;
-import icy.betterhorses.net.HorseStabilizerLogic;
 import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.HorseTracker;
+import icy.betterhorses.net.BhHorseInteraction;
+import icy.betterhorses.net.BhHorseStorage;
+import icy.betterhorses.net.BhHorseTraits;
+import icy.betterhorses.net.BhHorseSteering;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.feature.CartRig;
+import icy.betterhorses.net.feature.FrostHooves;
+import icy.betterhorses.net.feature.HitchTether;
+import icy.betterhorses.net.feature.HorseFeature;
+import icy.betterhorses.net.feature.RiderGate;
+import icy.betterhorses.net.feature.Stabilizer;
+import icy.betterhorses.net.feature.SpeedRecord;
+import icy.betterhorses.net.feature.SaddleWatch;
+import icy.betterhorses.net.feature.SwimBoost;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.item.HitchpostBlock;
@@ -25,7 +37,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -37,21 +48,14 @@ import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -68,6 +72,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
 import java.util.UUID;
+import icy.betterhorses.net.BhRiderSeat;
+import icy.betterhorses.net.entity.BhBreedEntity;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ServerLevelAccessor;
 
 @Mixin(AbstractHorse.class)
 public abstract class AbstractHorseMixin extends Animal implements IHorseData {
@@ -82,7 +97,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     private EntityReference<LivingEntity> owner;
 
     @Shadow
-    protected abstract void doPlayerRide(net.minecraft.world.entity.player.Player player);
+    protected abstract void doPlayerRide(Player player);
 
     @Unique
     private static final EntityDataAccessor<Integer> BH_BOND_SYNCED =
@@ -136,7 +151,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private @Nullable BlockPos bh_home = null;
     @Unique private @Nullable BlockPos bh_wanderCenter = null;
     @Unique private @Nullable BlockPos bh_hitchpostPos = null;
-    @Unique private @Nullable Vec3 bh_hitchAnchor = null;
     @Unique private int bh_bond = 0;
     @Unique private boolean bh_nameTagBondReceived = false;
     @Unique private int bh_generation = 0;
@@ -151,41 +165,31 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(27);
     @Unique private static final int BH_CART_CHEST_SIZE = 54;
     @Unique private final SimpleContainer bh_cartChestContainer = new SimpleContainer(BH_CART_CHEST_SIZE);
-    @Unique private boolean bh_hadUpgradedSaddle = false;
     @Unique private boolean bh_fedGoldenAppleThisTick = false;
-    @Unique private @Nullable Vec3 bh_lastFrostWalkerPos = null;
-    @Unique private @Nullable HorseCartEntity bh_cartEntity = null;
     @Unique private static final float BH_HURT_NEIGH_CHANCE = 0.3F;
     @Unique private static final int BH_GRAZE_ROLL_INTERVAL = 1200;
     @Unique private static final int BH_GRAZE_HURT_COOLDOWN_TICKS = 200;
     @Unique private int bh_grazeBlockedUntilTick = 0;
     @Unique private int bh_gear = 0;
-    @Unique private boolean bh_cartFrozen = false;
-    @Unique private float bh_cartFrozenYaw = 0.0F;
-    @Unique private @Nullable Vec3 bh_cartFrozenPos = null;
+
+    @Unique private final SaddleWatch bh_saddle = new SaddleWatch();
+    @Unique private final CartRig bh_cartRig = new CartRig();
+    @Unique private final HitchTether bh_hitch = new HitchTether();
 
     @Unique
-    private static final Identifier BH_SPEED_ID =
-            Identifier.fromNamespaceAndPath("icys-better-horses", "bond_speed");
-    @Unique
-    private static final Identifier BH_JUMP_ID =
-            Identifier.fromNamespaceAndPath("icys-better-horses", "bond_jump");
+    private final HorseFeature[] bh_features = {
+            bh_saddle,
+            (horse, data) -> bh_clearGearWhenUnridden(horse),
+            new SpeedRecord(),
+            new RiderGate(),
+            new Stabilizer(),
+            bh_cartRig,
+            new SwimBoost(),
+            new FrostHooves(),
+            bh_hitch,
+    };
+
     @Unique private static final float BH_HOOVES_FALL_DAMAGE_MULTIPLIER = 0.5F;
-    @Unique private static final double BH_SPEED_DISPLAY_FACTOR = 43.2D;
-    @Unique private static final double BH_STABILIZER_HALF_OPEN_DESCENT_SPEED = -0.35D;
-    @Unique private static final double BH_STABILIZER_MAX_DESCENT_SPEED = -0.125D;
-    @Unique private static final double BH_STABILIZER_SMOOTHING = 0.35D;
-    @Unique private static final double BH_STABILIZER_HALF_OPEN_SMOOTHING = 0.2D;
-    @Unique private static final double BH_FRONT_PASSENGER_Z_OFFSET = 0.35D;
-    @Unique private static final double BH_REAR_PASSENGER_Z_OFFSET = -0.35D;
-    @Unique private static final float BH_FREE_CAMERA_ANGLE_THRESHOLD = 90.0F;
-
-    @Unique private static final float BH_MANUAL_TURN_DEGREES_PER_TICK = 4.5F;
-    @Unique private static final float BH_MANUAL_TURN_FULL_SPEED = 0.35F;
-    @Unique private static final float BH_MANUAL_TURN_SPEED_FALLOFF = 0.45F;
-    @Unique private static final double BH_WATER_HORIZONTAL_BOOST = 1.125D;
-    @Unique private static final double BH_FROST_WALKER_SAMPLE_STEP = 0.75D;
-    @Unique private static final double BH_FROST_WALKER_RESET_DISTANCE = 8.0D;
 
     protected AbstractHorseMixin(EntityType<? extends Animal> type, Level level) {
         super(type, level);
@@ -266,9 +270,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Override
     public void bh_setHitchpostPos(@Nullable BlockPos pos) {
         this.bh_hitchpostPos = pos == null ? null : pos.immutable();
-        this.bh_hitchAnchor = this.bh_hitchpostPos == null
+        this.bh_hitch.anchorAt(this.bh_hitchpostPos == null
                 ? null
-                : ((AbstractHorse) (Object) this).position();
+                : ((AbstractHorse) (Object) this).position());
         this.entityData.set(BH_HITCHPOST_POS_SYNCED, Optional.ofNullable(this.bh_hitchpostPos));
     }
 
@@ -293,7 +297,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (self.level().isClientSide()) return;
         UUID owner = this.bh_getOwner();
-        net.minecraft.server.MinecraftServer server = self.level().getServer();
+        MinecraftServer server = self.level().getServer();
         if (owner == null || server == null) return;
         BhCriteria.fire(server.getPlayerList().getPlayer(owner), key);
     }
@@ -330,7 +334,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public HorseBreed bh_getBreed() {
-        if ((Object) this instanceof icy.betterhorses.net.entity.BhBreedEntity breedEntity) {
+        if ((Object) this instanceof BhBreedEntity breedEntity) {
             return breedEntity.bhFixedBreed();
         }
         return HorseBreed.fromId(this.entityData.get(BH_BREED_SYNCED));
@@ -400,14 +404,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!(self.level() instanceof ServerLevel serverLevel)) return;
         bh_dropCartChest();
-        bh_dropContainerContents(self, serverLevel, bh_gearContainer);
+        BhHorseStorage.dropContainerContents(self, serverLevel, bh_gearContainer);
         bh_dropChestContents();
         bh_syncGearFlags();
     }
 
     @Override
     public @Nullable HorseCartEntity bh_getCartEntity() {
-        return bh_cartEntity;
+        return this.bh_cartRig.cart();
     }
 
     @Override
@@ -432,7 +436,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             return;
         }
         bh_setCartChest(false);
-        bh_dropContainerContents(self, serverLevel, bh_cartChestContainer);
+        BhHorseStorage.dropContainerContents(self, serverLevel, bh_cartChestContainer);
         self.spawnAtLocation(serverLevel, new ItemStack(Items.CHEST));
     }
 
@@ -498,10 +502,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         if (bh_hitchpostPos != null) {
             output.store("BH_Hitchpost", BlockPos.CODEC, bh_hitchpostPos);
         }
-        bh_writeContainer(output.list("BH_Gear", BhSlotEntry.CODEC), bh_gearContainer);
-        bh_writeContainer(output.list("BH_Chest", BhSlotEntry.CODEC), bh_chestContainer);
+        BhHorseStorage.writeContainer(output.list("BH_Gear", BhHorseStorage.SlotEntry.CODEC), bh_gearContainer);
+        BhHorseStorage.writeContainer(output.list("BH_Chest", BhHorseStorage.SlotEntry.CODEC), bh_chestContainer);
         output.putBoolean("BH_CartChestOn", this.entityData.get(BH_CART_CHEST_SYNCED));
-        bh_writeContainer(output.list("BH_CartChest", BhSlotEntry.CODEC), bh_cartChestContainer);
+        BhHorseStorage.writeContainer(output.list("BH_CartChest", BhHorseStorage.SlotEntry.CODEC), bh_cartChestContainer);
         output.putInt("BH_Gender", this.entityData.get(BH_GENDER_SYNCED));
         output.putInt("BH_Breed", this.entityData.get(BH_BREED_SYNCED));
         output.putBoolean("BH_BreedMixed", this.entityData.get(BH_BREED_MIXED_SYNCED));
@@ -525,24 +529,23 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         bh_wanderCenter = input.read("BH_WanderCenter", BlockPos.CODEC).orElse(null);
         bh_hitchpostPos = input.read("BH_Hitchpost", BlockPos.CODEC).orElse(null);
         if (bh_home == null) {
-            bh_home = bh_readLegacyBlockPos(input, "BH_Home");
+            bh_home = BhHorseStorage.readLegacyBlockPos(input, "BH_Home");
         }
         if (bh_wanderCenter == null) {
-            bh_wanderCenter = bh_readLegacyBlockPos(input, "BH_WanderCenter");
+            bh_wanderCenter = BhHorseStorage.readLegacyBlockPos(input, "BH_WanderCenter");
         }
         if (bh_hitchpostPos == null) {
-            bh_hitchpostPos = bh_readLegacyBlockPos(input, "BH_Hitchpost");
+            bh_hitchpostPos = BhHorseStorage.readLegacyBlockPos(input, "BH_Hitchpost");
         }
-        bh_hitchAnchor = null;
         this.entityData.set(BH_HITCHPOST_POS_SYNCED, Optional.ofNullable(bh_hitchpostPos));
         bh_applyBondAttributes();
-        bh_readContainer(input.listOrEmpty("BH_Gear", BhSlotEntry.CODEC), bh_gearContainer);
-        bh_readContainer(input.listOrEmpty("BH_Chest", BhSlotEntry.CODEC), bh_chestContainer);
+        BhHorseStorage.readContainer(input.listOrEmpty("BH_Gear", BhHorseStorage.SlotEntry.CODEC), bh_gearContainer);
+        BhHorseStorage.readContainer(input.listOrEmpty("BH_Chest", BhHorseStorage.SlotEntry.CODEC), bh_chestContainer);
         this.entityData.set(BH_CART_CHEST_SYNCED, input.getBooleanOr("BH_CartChestOn", false));
-        bh_readContainer(input.listOrEmpty("BH_CartChest", BhSlotEntry.CODEC), bh_cartChestContainer);
-        bh_restoreUpgradedSaddle(input);
+        BhHorseStorage.readContainer(input.listOrEmpty("BH_CartChest", BhHorseStorage.SlotEntry.CODEC), bh_cartChestContainer);
+        BhHorseStorage.restoreUpgradedSaddle(inventory, input);
         bh_syncGearFlags();
-        bh_hadUpgradedSaddle = this.bh_hasUpgradedSaddle();
+        bh_afterLoad();
 
         Optional<Integer> savedGender = input.getInt("BH_Gender");
         if (savedGender.isPresent()) {
@@ -560,14 +563,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Inject(method = "finalizeSpawn", at = @At("TAIL"))
-    private void bh_assignTraitsOnSpawn(net.minecraft.world.level.ServerLevelAccessor level,
-                                        net.minecraft.world.DifficultyInstance difficulty,
-                                        net.minecraft.world.entity.EntitySpawnReason reason,
-                                        @Nullable net.minecraft.world.entity.SpawnGroupData groupData,
-                                        CallbackInfoReturnable<net.minecraft.world.entity.SpawnGroupData> cir) {
+    private void bh_assignTraitsOnSpawn(ServerLevelAccessor level,
+                                        DifficultyInstance difficulty,
+                                        EntitySpawnReason reason,
+                                        @Nullable SpawnGroupData groupData,
+                                        CallbackInfoReturnable<SpawnGroupData> cir) {
         this.entityData.set(BH_GENDER_SYNCED, this.random.nextBoolean() ? 0 : 1);
 
-        if ((Object) this instanceof icy.betterhorses.net.entity.BhBreedEntity breedEntity) {
+        if ((Object) this instanceof BhBreedEntity breedEntity) {
             this.entityData.set(BH_BREED_SYNCED, breedEntity.bhFixedBreed().ordinal());
             this.entityData.set(BH_BREED_MIXED_SYNCED, false);
             return;
@@ -587,100 +590,15 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Unique
     private void bh_assignBreedPreservingCoat() {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self instanceof icy.betterhorses.net.entity.BhBreedEntity breedEntity) {
-            this.entityData.set(BH_BREED_SYNCED, breedEntity.bhFixedBreed().ordinal());
-            this.entityData.set(BH_BREED_MIXED_SYNCED, false);
-            return;
-        }
-        HorseBreed species = HorseBreed.speciesFor(self);
-        if (species != null) {
-            this.entityData.set(BH_BREED_SYNCED, species.ordinal());
-            this.entityData.set(BH_BREED_MIXED_SYNCED, false);
-            return;
-        }
-        HorseBreed picked = HorseBreed.MUSTANG;
-        if (self instanceof Horse horse) {
-            java.util.List<HorseBreed> matches = HorseBreed.breedsMatchingCoat(horse.getVariant(), horse.getMarkings());
-            if (!matches.isEmpty()) {
-                picked = matches.get(this.random.nextInt(matches.size()));
-            }
-        }
+        HorseBreed picked = BhHorseTraits.pickBreed((AbstractHorse) (Object) this, this.random);
         this.entityData.set(BH_BREED_SYNCED, picked.ordinal());
         this.entityData.set(BH_BREED_MIXED_SYNCED, false);
     }
 
-    @Unique
-    private void bh_writeContainer(ValueOutput.TypedOutputList<BhSlotEntry> list, SimpleContainer container) {
-        for (int i = 0; i < container.getContainerSize(); i++) {
-            ItemStack stack = container.getItem(i);
-            if (stack.isEmpty()) continue;
-            list.add(new BhSlotEntry(i, stack));
-        }
-    }
-
-    @Unique
-    private void bh_readContainer(ValueInput.TypedInputList<BhSlotEntry> list, SimpleContainer container) {
-        container.clearContent();
-        for (BhSlotEntry entry : list) {
-            int slot = entry.slot();
-            if (slot < 0 || slot >= container.getContainerSize()) continue;
-            container.setItem(slot, entry.stack());
-        }
-    }
-
-    @Unique
-    private void bh_restoreUpgradedSaddle(ValueInput input) {
-        if (inventory == null || !inventory.getItem(0).isEmpty()) {
-            return;
-        }
-        ItemStack saddle = input.read("SaddleItem", ItemStack.CODEC).orElse(ItemStack.EMPTY);
-        if (saddle.is(ModItems.UPGRADED_SADDLE)) {
-            inventory.setItem(0, saddle);
-        }
-    }
-
-    @Unique
-    private static @Nullable BlockPos bh_readLegacyBlockPos(ValueInput input, String keyPrefix) {
-        Optional<Integer> x = input.getInt(keyPrefix + "X");
-        Optional<Integer> y = input.getInt(keyPrefix + "Y");
-        Optional<Integer> z = input.getInt(keyPrefix + "Z");
-        if (x.isEmpty() || y.isEmpty() || z.isEmpty()) {
-            return null;
-        }
-
-        return new BlockPos(x.get(), y.get(), z.get());
-    }
-
-    @Unique
-    public record BhSlotEntry(int slot, ItemStack stack) {
-        public static final com.mojang.serialization.Codec<BhSlotEntry> CODEC =
-                com.mojang.serialization.codecs.RecordCodecBuilder.create(instance -> instance.group(
-                        com.mojang.serialization.Codec.INT.fieldOf("Slot").forGetter(BhSlotEntry::slot),
-                        ItemStack.CODEC.fieldOf("Item").forGetter(BhSlotEntry::stack)
-                ).apply(instance, BhSlotEntry::new));
-    }
-
     @Inject(method = "createInventory", at = @At("TAIL"))
     private void bh_onCreateInventory(CallbackInfo ci) {
-        this.bh_hadUpgradedSaddle = this.bh_hasUpgradedSaddle();
+        bh_afterInventoryChange();
         this.bh_syncGearFlags();
-    }
-
-    @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_pollUpgradedSaddleRemoval(CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self.level().isClientSide()) {
-            return;
-        }
-        if (self.isRemoved()) {
-            return;
-        }
-        boolean hasUpgradedSaddle = this.bh_hasUpgradedSaddle();
-        if (this.bh_hadUpgradedSaddle && !hasUpgradedSaddle) {
-            this.bh_onUpgradedSaddleRemoved(ItemStack.EMPTY);
-        }
-        this.bh_hadUpgradedSaddle = hasUpgradedSaddle;
     }
 
     @Override
@@ -720,7 +638,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Inject(method = "getRiddenSpeed", at = @At("RETURN"), cancellable = true)
     private void bh_applyGearSpeed(
-            net.minecraft.world.entity.player.Player rider,
+            Player rider,
             CallbackInfoReturnable<Float> cir) {
         if (bh_gear > 0) {
             cir.setReturnValue(cir.getReturnValueF() * BhGears.speed(bh_gear));
@@ -729,8 +647,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Inject(method = "hurtServer", at = @At("RETURN"))
     private void bh_neighWhenHurt(
-            net.minecraft.server.level.ServerLevel level,
-            net.minecraft.world.damagesource.DamageSource source,
+            ServerLevel level,
+            DamageSource source,
             float amount,
             CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -793,8 +711,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_clearGearWhenUnridden(CallbackInfo ci) {
-        if (((AbstractHorse) (Object) this).getControllingPassenger() == null) {
+    private void bh_tick(CallbackInfo ci) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        for (HorseFeature feature : this.bh_features) {
+            feature.tick(self, this);
+        }
+    }
+
+    @Unique
+    private void bh_clearGearWhenUnridden(AbstractHorse self) {
+        if (self.getControllingPassenger() == null) {
             if (bh_gear != 0) {
                 bh_setGear(0);
                 bh_setGaitGear(0);
@@ -803,26 +729,13 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     }
 
-    @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_trackTopSpeed(CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self.level().isClientSide() || self.tickCount % 20 != 0) {
-            return;
-        }
-        if (!(self.getControllingPassenger() instanceof ServerPlayer rider)) {
-            return;
-        }
-        long blocksPerSecond = Math.round(self.getAttributeValue(Attributes.MOVEMENT_SPEED) * BH_SPEED_DISPLAY_FACTOR);
-        BhCriteria.fire(rider, BhCriteria.TOP_SPEED, (int) blocksPerSecond);
-    }
-
     @Inject(method = "fedFood", at = @At("HEAD"))
-    private void bh_markGoldenAppleFeed(net.minecraft.world.entity.player.Player player, ItemStack stack, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
+    private void bh_markGoldenAppleFeed(Player player, ItemStack stack, CallbackInfoReturnable<InteractionResult> cir) {
         this.bh_fedGoldenAppleThisTick = stack.is(Items.GOLDEN_APPLE);
     }
 
     @Inject(method = "fedFood", at = @At("RETURN"))
-    private void bh_rewardGoldenAppleBond(net.minecraft.world.entity.player.Player player, ItemStack stack, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
+    private void bh_rewardGoldenAppleBond(Player player, ItemStack stack, CallbackInfoReturnable<InteractionResult> cir) {
         try {
             AbstractHorse self = (AbstractHorse) (Object) this;
             if (!this.bh_fedGoldenAppleThisTick || self.level().isClientSide() || !cir.getReturnValue().consumesAction()) {
@@ -830,33 +743,19 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             }
 
             this.bh_setBond(this.bh_getBond() + 2);
-
-            if (self.isInLove()) {
-                HorseGender myGender = this.bh_getGender();
-                java.util.List<AbstractHorse> nearby = self.level().getEntitiesOfClass(
-                        AbstractHorse.class,
-                        self.getBoundingBox().inflate(8.0D),
-                        h -> h != self && h.isInLove() && ((IHorseData) h).bh_getGender() == myGender);
-                if (!nearby.isEmpty()) {
-                    self.resetLove();
-                    if (player instanceof ServerPlayer serverPlayer) {
-                        serverPlayer.sendSystemMessage(Component.translatable(
-                                "message.icys-better-horses.same_gender_breed"));
-                    }
-                }
-            }
+            BhHorseTraits.blockSameGenderBreeding(self, this, player);
         } finally {
             this.bh_fedGoldenAppleThisTick = false;
         }
     }
 
     @Inject(method = "doPlayerRide", at = @At("HEAD"), cancellable = true)
-    private void bh_gateOwnerOnlyMount(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
+    private void bh_gateOwnerOnlyMount(Player player, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (self.level().isClientSide() || !BhConfig.horseExclusivityEnabled()) return;
         if (this.bh_maySaddleUp(player.getUUID())) return;
-        if (this.bh_riderMayLeadPillion(self)) return;
-        self.playSound(net.minecraft.sounds.SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
+        if (BhHorseInteraction.riderMayLeadPillion(self, this)) return;
+        self.playSound(SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
         if (player instanceof ServerPlayer serverPlayer) {
             serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_owner"));
         }
@@ -866,68 +765,18 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         ci.cancel();
     }
 
-    @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_enforceOwnerPrimaryRider(CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self.level().isClientSide()) return;
-        java.util.List<Entity> passengers = self.getPassengers();
-        if (passengers.isEmpty()) return;
-
-        if (!BhConfig.multiRidingEnabled() && passengers.size() > 1) {
-            for (int i = 1; i < passengers.size(); i++) {
-                passengers.get(i).stopRiding();
-            }
-            passengers = self.getPassengers();
-            if (passengers.isEmpty()) {
-                return;
-            }
-        }
-
-        if (!BhConfig.horseExclusivityEnabled()) {
-            return;
-        }
-
-        if (!this.bh_isOwned()) return;
-        Entity primary = passengers.get(0);
-        if (!(primary instanceof net.minecraft.world.entity.player.Player)) return;
-        if (this.bh_maySaddleUp(primary.getUUID())) return;
-        self.playSound(net.minecraft.sounds.SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
-        for (Entity passenger : new java.util.ArrayList<>(passengers)) {
-            passenger.stopRiding();
-        }
-    }
-
     @Inject(
             method = "doPlayerRide",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;isClientSide()Z"),
             cancellable = true)
-    private void bh_rotateHorseInsteadOfPlayer(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self.level().isClientSide()) {
-            return;
-        }
-
-        if (BhConfig.horseExclusivityEnabled()
-                && !this.bh_maySaddleUp(player.getUUID())
-                && !this.bh_riderMayLeadPillion(self)) {
+    private void bh_rotateHorseInsteadOfPlayer(Player player, CallbackInfo ci) {
+        if (BhHorseInteraction.rotateHorseInsteadOfPlayer((AbstractHorse) (Object) this, this, player)) {
             ci.cancel();
-            return;
         }
-        self.setYRot(player.getYRot());
-        self.yRotO = self.getYRot();
-        self.setYHeadRot(player.getYHeadRot());
-        self.setXRot(player.getXRot());
-
-        player.startRiding(self);
-
-        player.setYRot(self.getYRot());
-        player.yRotO = self.yRotO;
-        player.setXRot(self.getXRot());
-        ci.cancel();
     }
 
     @Inject(method = "tameWithName", at = @At("RETURN"))
-    private void bh_claimHorseOnTame(net.minecraft.world.entity.player.Player player, CallbackInfoReturnable<Boolean> cir) {
+    private void bh_claimHorseOnTame(Player player, CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!cir.getReturnValueZ() || self.level().isClientSide() || player.getUUID().equals(this.bh_getOwner())) {
             return;
@@ -943,66 +792,29 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Inject(method = "openCustomInventoryScreen", at = @At("HEAD"), cancellable = true)
-    private void bh_blockNonOwnerInventoryAccess(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self.level().isClientSide() || !BhConfig.horseExclusivityEnabled()) {
-            return;
+    private void bh_blockNonOwnerInventoryAccess(Player player, CallbackInfo ci) {
+        if (BhHorseInteraction.blockNonOwnerInventoryAccess((AbstractHorse) (Object) this, this, player)) {
+            ci.cancel();
         }
-
-        if (this.bh_mayHandle(player.getUUID())) {
-            return;
-        }
-
-        self.playSound(SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
-        if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_inventory_owner"));
-        }
-        ci.cancel();
     }
 
     @Inject(method = "mobInteract", at = @At("HEAD"), cancellable = true)
     private void bh_equipGearFromHand(
-            net.minecraft.world.entity.player.Player player,
-            net.minecraft.world.InteractionHand hand,
-            CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        ItemStack held = player.getItemInHand(hand);
-        boolean cart = held.is(ModItems.HORSE_CART);
-        boolean stabilizer = held.is(ModItems.HORSE_STABILIZER);
-        if ((!cart && !stabilizer) || player.isSecondaryUseActive()) {
-            return;
+            Player player,
+            InteractionHand hand,
+            CallbackInfoReturnable<InteractionResult> cir) {
+        InteractionResult result = BhHorseInteraction.equipGearFromHand(
+                (AbstractHorse) (Object) this, this, player, hand);
+        if (result != null) {
+            cir.setReturnValue(result);
         }
-        if (!this.bh_hasUpgradedSaddle() || !bh_gearContainer.getItem(GearSlot.STABILIZER.ordinal()).isEmpty()) {
-            return;
-        }
-        if (stabilizer && !(self instanceof Horse)) {
-            return;
-        }
-        if (self.level().isClientSide()) {
-            cir.setReturnValue(net.minecraft.world.InteractionResult.SUCCESS);
-            return;
-        }
-        if (BhConfig.horseExclusivityEnabled() && !this.bh_mayHandle(player.getUUID())) {
-            self.playSound(SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
-            if (player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.sendSystemMessage(
-                        Component.translatable("message.icys-better-horses.not_inventory_owner"));
-            }
-            cir.setReturnValue(net.minecraft.world.InteractionResult.CONSUME);
-            return;
-        }
-
-        bh_gearContainer.setItem(GearSlot.STABILIZER.ordinal(), held.copyWithCount(1));
-        held.consume(1, player);
-        self.playSound(SoundEvents.HORSE_SADDLE.value(), 1.0F, 1.0F);
-        cir.setReturnValue(net.minecraft.world.InteractionResult.CONSUME);
     }
 
     @Inject(method = "mobInteract", at = @At("HEAD"), cancellable = true)
     private void bh_allowSecondPlayerRider(
-            net.minecraft.world.entity.player.Player player,
-            net.minecraft.world.InteractionHand hand,
-            CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
+            Player player,
+            InteractionHand hand,
+            CallbackInfoReturnable<InteractionResult> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!self.isVehicle()
                 || self.isBaby()
@@ -1011,7 +823,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             return;
         }
 
-        net.minecraft.world.InteractionResult animalResult = super.mobInteract(player, hand);
+        InteractionResult animalResult = super.mobInteract(player, hand);
         if (animalResult.consumesAction()) {
             cir.setReturnValue(animalResult);
             return;
@@ -1019,13 +831,13 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
         if (self.isTamed() && player.isSecondaryUseActive()) {
             self.openCustomInventoryScreen(player);
-            cir.setReturnValue((self.level().isClientSide() ? net.minecraft.world.InteractionResult.SUCCESS : net.minecraft.world.InteractionResult.CONSUME));
+            cir.setReturnValue((self.level().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME));
             return;
         }
 
         ItemStack heldItem = player.getItemInHand(hand);
         if (!heldItem.isEmpty()) {
-            net.minecraft.world.InteractionResult heldItemResult = heldItem.interactLivingEntity(player, self, hand);
+            InteractionResult heldItemResult = heldItem.interactLivingEntity(player, self, hand);
             if (heldItemResult.consumesAction()) {
                 cir.setReturnValue(heldItemResult);
                 return;
@@ -1037,215 +849,19 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
 
         this.doPlayerRide(player);
-        cir.setReturnValue((self.level().isClientSide() ? net.minecraft.world.InteractionResult.SUCCESS : net.minecraft.world.InteractionResult.CONSUME));
-    }
-
-    @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_tickStabilizer(CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-
-        boolean serverSide = !self.level().isClientSide();
-        boolean simulates = serverSide || self.isLocalInstanceAuthoritative();
-
-        if (simulates) {
-            this.bh_trackStabilizerDescent(self);
-        }
-
-        HorseStabilizerState state = simulates
-                ? this.bh_computeStabilizerState(self)
-                : this.bh_getStabilizerState();
-
-        if (simulates && (state == HorseStabilizerState.OPEN || state == HorseStabilizerState.HALF_OPEN)) {
-            Vec3 motion = self.getDeltaMovement();
-            double targetSpeed = state == HorseStabilizerState.OPEN
-                    ? BH_STABILIZER_MAX_DESCENT_SPEED
-                    : BH_STABILIZER_HALF_OPEN_DESCENT_SPEED;
-            double smoothing = state == HorseStabilizerState.OPEN
-                    ? BH_STABILIZER_SMOOTHING
-                    : BH_STABILIZER_HALF_OPEN_SMOOTHING;
-
-            if (motion.y < targetSpeed) {
-                double smoothedY = Mth.lerp(smoothing, motion.y, targetSpeed);
-                if (smoothedY > targetSpeed) {
-                    smoothedY = targetSpeed;
-                }
-                self.setDeltaMovement(motion.x, smoothedY, motion.z);
-                self.hurtMarked = true;
-            }
-            if (state == HorseStabilizerState.OPEN) {
-                this.fallDistance = 0.0D;
-            }
-        }
-
-        if (serverSide) {
-            this.bh_setStabilizerState(state);
-        }
-    }
-
-    @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_tickCart(CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (!(self.level() instanceof ServerLevel)) {
-            return;
-        }
-
-        boolean wantsCart = ((IHorseData) this).bh_hasCartGear();
-        boolean hasCart = bh_cartEntity != null && bh_cartEntity.isAlive() && !bh_cartEntity.isRemoved();
-
-        if (!wantsCart) {
-            bh_dropCartChest();
-        }
-
-        if (wantsCart && !hasCart) {
-            bh_cartEntity = HorseCartEntity.spawnFor(self);
-        } else if (!wantsCart && bh_cartEntity != null) {
-            if (hasCart) {
-                bh_cartEntity.discard();
-            }
-            bh_cartEntity = null;
-        }
-    }
-
-    @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_freezeUnriddenCartHorse(CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self.level().isClientSide() || !((IHorseData) this).bh_hasCartGear()) {
-            bh_cartFrozen = false;
-            return;
-        }
-
-        boolean ridden = false;
-        for (Entity passenger : self.getPassengers()) {
-            if (passenger instanceof net.minecraft.world.entity.player.Player) {
-                ridden = true;
-                break;
-            }
-        }
-        if (ridden) {
-            bh_cartFrozen = false;
-            return;
-        }
-
-        if (!bh_cartFrozen) {
-            bh_cartFrozen = true;
-            bh_cartFrozenYaw = self.getYRot();
-            bh_cartFrozenPos = self.position();
-        }
-
-        if (bh_cartFrozenPos != null) {
-            self.setPos(bh_cartFrozenPos.x, self.getY(), bh_cartFrozenPos.z);
-        }
-        Vec3 motion = self.getDeltaMovement();
-        self.setDeltaMovement(0.0D, Math.min(motion.y, 0.0D), 0.0D);
-        self.hurtMarked = true;
-        self.getNavigation().stop();
-        self.xxa = 0.0F;
-        self.yya = 0.0F;
-        self.zza = 0.0F;
-
-        float yaw = bh_cartFrozenYaw;
-        self.setYRot(yaw);
-        self.yRotO = yaw;
-        self.setYHeadRot(yaw);
-        self.setYBodyRot(yaw);
-        self.yHeadRotO = yaw;
-        self.yBodyRotO = yaw;
-    }
-
-    @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_boostWaterMovement(CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (!self.isInWater() || !self.isVehicle()) {
-            return;
-        }
-        Vec3 motion = self.getDeltaMovement();
-        if (motion.x * motion.x + motion.z * motion.z < 1.0E-6D) {
-            return;
-        }
-        self.setDeltaMovement(
-                motion.x * BH_WATER_HORIZONTAL_BOOST,
-                motion.y,
-                motion.z * BH_WATER_HORIZONTAL_BOOST);
-    }
-
-    @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_freezeWaterWithFrostWalkerHooves(CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        Vec3 currentPos = self.position();
-        Vec3 previousPos = this.bh_lastFrostWalkerPos;
-        this.bh_lastFrostWalkerPos = currentPos;
-
-        if (!(self.level() instanceof ServerLevel serverLevel)) {
-            return;
-        }
-
-        int frostWalkerLevel = this.bh_getHoovesFrostWalkerLevel();
-        if (frostWalkerLevel <= 0 || self.isInLava() || (!self.onGround() && !self.isInWater())) {
-            return;
-        }
-
-        if (previousPos == null
-                || previousPos.distanceToSqr(currentPos) > BH_FROST_WALKER_RESET_DISTANCE * BH_FROST_WALKER_RESET_DISTANCE) {
-            previousPos = currentPos;
-        }
-
-        this.bh_applyFrostWalkerTrail(serverLevel, previousPos, currentPos, frostWalkerLevel);
-    }
-
-    @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_tickHitchpost(CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (this.bh_hitchpostPos == null) {
-            return;
-        }
-
-        if (!BhConfig.hitchpostEnabled()) {
-            if (self.level() instanceof ServerLevel serverLevel) {
-                HitchpostBlock.releaseHorse(serverLevel, self, true);
-            }
-            return;
-        }
-
-        if (self.level() instanceof ServerLevel serverLevel
-                && !HitchpostBlock.isValidTether(serverLevel, self, this.bh_hitchpostPos)) {
-            HitchpostBlock.releaseHorse(serverLevel, self, true);
-            return;
-        }
-
-        if (this.bh_hitchAnchor == null) {
-            this.bh_hitchAnchor = self.position();
-        }
-
-        this.bh_applyHitchpostConstraint(self);
+        cir.setReturnValue((self.level().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME));
     }
 
     @Inject(method = "causeFallDamage", at = @At("HEAD"), cancellable = true)
     private void bh_adjustFallDamage(double distance, float damageMultiplier, DamageSource source, CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (this.bh_hasStabilizerGear()) {
-            HorseStabilizerState landingState = HorseStabilizerLogic.resolveLandingState(
-                    true,
-                    (float) distance,
-                    this.bh_getStabilizerState());
-            if (landingState == HorseStabilizerState.CLOSED) {
-                return;
-            }
-
-            if (distance > 1.0D) {
-                self.playSound(SoundEvents.HORSE_LAND, 0.4F, 1.0F);
-            }
-            if (!self.level().isClientSide()) {
-                this.bh_setStabilizerState(landingState);
-            }
-            this.fallDistance = 0.0D;
+        BhHorseInteraction.StabilizerLanding landing =
+                BhHorseInteraction.stabilizerLanding(self, this, distance);
+        if (landing == BhHorseInteraction.StabilizerLanding.PASS_THROUGH) {
+            return;
+        }
+        if (landing == BhHorseInteraction.StabilizerLanding.ABSORBED) {
             cir.setReturnValue(false);
-            if (!self.level().isClientSide()) {
-                for (Entity passenger : self.getIndirectPassengers()) {
-                    if (passenger instanceof ServerPlayer serverPlayer) {
-                        BhCriteria.fire(serverPlayer, BhCriteria.STABILIZER_LANDING, (int) distance);
-                    }
-                }
-            }
             return;
         }
 
@@ -1282,8 +898,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             HitchpostBlock.releaseHorse(level, self, false);
         }
         bh_dropCartChest();
-        bh_dropContainerContents(self, level, bh_gearContainer);
-        bh_dropContainerContents(self, level, bh_chestContainer);
+        BhHorseStorage.dropContainerContents(self, level, bh_gearContainer);
+        BhHorseStorage.dropContainerContents(self, level, bh_chestContainer);
         bh_syncGearFlags();
     }
 
@@ -1305,7 +921,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                     target = "Lnet/minecraft/world/phys/Vec3;add(Lnet/minecraft/world/phys/Vec3;)"
                             + "Lnet/minecraft/world/phys/Vec3;"))
     private Vec3 bh_noRearRiderShift(Vec3 attachment, Vec3 rearOffset) {
-        Vec3 applied = rearOffset.scale(icy.betterhorses.net.BhRiderSeat.REAR_CAMERA_FOLLOW);
+        Vec3 applied = rearOffset.scale(BhRiderSeat.REAR_CAMERA_FOLLOW);
         this.bh_rearSeatShift = applied;
         return attachment.add(applied);
     }
@@ -1313,76 +929,47 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Inject(method = "getPassengerAttachmentPoint", at = @At("RETURN"), cancellable = true)
     private void bh_offsetSecondPassenger(
             Entity passenger,
-            net.minecraft.world.entity.EntityDimensions dimensions,
+            EntityDimensions dimensions,
             float scaleFactor,
             CallbackInfoReturnable<Vec3> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
 
-        if (((IHorseData) this).bh_hasCartGear()) {
-            icy.betterhorses.net.BhRiderSeat.publish(self.getId(), Vec3.ZERO);
+        if (this.bh_hasCartGear()) {
+            BhRiderSeat.publish(self.getId(), Vec3.ZERO);
             cir.setReturnValue(
-                    HorseCartEntity.benchSeatOffset(bh_benchSeatIndex(self, passenger), self.getYRot()));
+                    HorseCartEntity.benchSeatOffset(BhHorseSteering.benchSeatIndex(self, passenger), self.getYRot()));
             return;
         }
 
-        Vec3 lift = new Vec3(0.0D, icy.betterhorses.net.BhRiderSeat.seatLift(self), 0.0D);
-        icy.betterhorses.net.BhRiderSeat.publish(self.getId(), this.bh_rearSeatShift.add(lift));
+        Vec3 lift = new Vec3(0.0D, BhRiderSeat.seatLift(self), 0.0D);
+        BhRiderSeat.publish(self.getId(), this.bh_rearSeatShift.add(lift));
         if (lift.y != 0.0D) {
             cir.setReturnValue(cir.getReturnValue().add(lift));
         }
 
-        if (!BhConfig.multiRidingEnabled() || self.getPassengers().size() <= 1) {
-            return;
+        Vec3 offset = BhHorseSteering.multiRiderOffset(self, passenger);
+        if (offset != null) {
+            cir.setReturnValue(cir.getReturnValue().add(offset));
         }
-
-        int passengerIndex = self.getPassengers().indexOf(passenger);
-        if (passengerIndex < 0) {
-            return;
-        }
-
-        double zOffset = passengerIndex == 0 ? BH_FRONT_PASSENGER_Z_OFFSET : BH_REAR_PASSENGER_Z_OFFSET;
-        Vec3 offset = new Vec3(0.0D, 0.0D, zOffset).yRot(-self.getYRot() * ((float) Math.PI / 180.0F));
-        cir.setReturnValue(cir.getReturnValue().add(offset));
     }
 
     @Inject(method = "getRiddenRotation", at = @At("HEAD"), cancellable = true)
     private void bh_allowMountedFreeCamera(LivingEntity rider, CallbackInfoReturnable<Vec2> cir) {
-        if (!(rider instanceof net.minecraft.world.entity.player.Player player)) {
+        if (!(rider instanceof Player player)) {
             return;
         }
 
         AbstractHorse self = (AbstractHorse) (Object) this;
 
-        if (this.bh_isFreeSteer()) {
-            float speed = (float) self.getDeltaMovement().horizontalDistance();
-            float turnScale = 1.0F - BH_MANUAL_TURN_SPEED_FALLOFF
-                    * Mth.clamp(speed / BH_MANUAL_TURN_FULL_SPEED, 0.0F, 1.0F);
-            float yaw = self.getYRot()
-                    - player.xxa * BH_MANUAL_TURN_DEGREES_PER_TICK * turnScale;
-            cir.setReturnValue(new Vec2(0.0F, Mth.wrapDegrees(yaw)));
-            return;
+        Vec2 rotation = BhHorseSteering.riddenRotation(self, this, player);
+        if (rotation != null) {
+            cir.setReturnValue(rotation);
         }
-
-        if (player.xxa != 0.0F || player.zza != 0.0F) {
-            return;
-        }
-
-        float playerYRot = Mth.wrapDegrees(player.getYRot());
-        float rotationDifference = Mth.wrapDegrees(playerYRot - self.getYRot());
-
-        if (Math.abs(rotationDifference) > BH_FREE_CAMERA_ANGLE_THRESHOLD) {
-            float horseYRot = Mth.wrapDegrees(
-                    playerYRot - Math.signum(rotationDifference) * BH_FREE_CAMERA_ANGLE_THRESHOLD);
-            cir.setReturnValue(new Vec2(player.getXRot() * 0.5F, horseYRot));
-            return;
-        }
-
-        cir.setReturnValue(new Vec2(player.getXRot() * 0.5F, self.getYRot()));
     }
 
     @Inject(method = "getRiddenInput", at = @At("RETURN"), cancellable = true)
     private void bh_manualSteerReplacesStrafe(
-            net.minecraft.world.entity.player.Player player,
+            Player player,
             Vec3 travelVector,
             CallbackInfoReturnable<Vec3> cir) {
         if (!this.bh_isFreeSteer()) {
@@ -1396,72 +983,20 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     protected boolean canAddPassenger(Entity passenger) {
-        java.util.List<Entity> passengers = this.getPassengers();
-        boolean multiRidingEnabled = BhConfig.multiRidingEnabled() || ((IHorseData) this).bh_hasCartGear();
-        boolean horseExclusivityEnabled = BhConfig.horseExclusivityEnabled();
-        if (passengers.size() >= (multiRidingEnabled ? 2 : 1)) {
-            return false;
-        }
-
-        if (!(passenger instanceof net.minecraft.world.entity.player.Player)) {
-            return ((IHorseData) this).bh_hasCartGear()
-                    && !passengers.isEmpty()
-                    && passengers.get(0) instanceof net.minecraft.world.entity.player.Player
-                    && HorseCartEntity.isCarriableCargo(passenger);
-        }
-
-        UUID owner = this.bh_getOwner();
-        if (owner == null || !horseExclusivityEnabled) {
-            if (passengers.isEmpty()) {
-                return true;
-            }
-            return multiRidingEnabled && passenger instanceof net.minecraft.world.entity.player.Player;
-        }
-
-        if (!(passenger instanceof net.minecraft.world.entity.player.Player player)) {
-            return false;
-        }
-        boolean mayDrive = this.bh_maySaddleUp(player.getUUID());
-        if (passengers.isEmpty()) {
-            return mayDrive;
-        }
-        if (!multiRidingEnabled) {
-            return false;
-        }
-        if (mayDrive) {
-            return true;
-        }
-        return this.bh_maySaddleUp(passengers.get(0).getUUID());
-    }
-
-    @Unique
-    private static int bh_benchSeatIndex(AbstractHorse horse, Entity passenger) {
-        if (!(passenger instanceof net.minecraft.world.entity.player.Player)) {
-            return 1;
-        }
-        int seat = 0;
-        for (Entity other : horse.getPassengers()) {
-            if (other == passenger) {
-                break;
-            }
-            if (other instanceof net.minecraft.world.entity.player.Player) {
-                seat++;
-            }
-        }
-        return Math.min(seat, 1);
+        return BhHorseSteering.canAddPassenger((AbstractHorse) (Object) this, this, passenger);
     }
 
     @Inject(method = "getControllingPassenger", at = @At("RETURN"), cancellable = true)
     private void bh_keepPlayerAtTheReins(CallbackInfoReturnable<LivingEntity> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (cir.getReturnValue() != null
-                || !((IHorseData) this).bh_hasCartGear()
+                || !this.bh_hasCartGear()
                 || !self.isSaddled()) {
             return;
         }
 
         for (Entity passenger : self.getPassengers()) {
-            if (passenger instanceof net.minecraft.world.entity.player.Player player) {
+            if (passenger instanceof Player player) {
                 cir.setReturnValue(player);
                 return;
             }
@@ -1469,79 +1004,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Unique
-    private boolean bh_riderMayLeadPillion(AbstractHorse horse) {
-        java.util.List<Entity> passengers = horse.getPassengers();
-        return !passengers.isEmpty() && this.bh_maySaddleUp(passengers.get(0).getUUID());
-    }
-
-    @Unique
     private void bh_applyBondAttributes() {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        int bondLevel = Math.min(bh_bond / 20, 5);
-        double bonus = bondLevel * 0.15;
-
-        AttributeInstance speed = self.getAttribute(Attributes.MOVEMENT_SPEED);
-        if (speed != null) {
-            speed.removeModifier(BH_SPEED_ID);
-            if (bondLevel > 0) {
-                speed.addTransientModifier(new AttributeModifier(
-                        BH_SPEED_ID, bonus, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
-            }
-        }
-
-        AttributeInstance jump = self.getAttribute(Attributes.JUMP_STRENGTH);
-        if (jump != null) {
-            jump.removeModifier(BH_JUMP_ID);
-            if (bondLevel > 0) {
-                jump.addTransientModifier(new AttributeModifier(
-                        BH_JUMP_ID, bonus, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
-            }
-        }
-    }
-
-    @Unique
-    private double bh_stabilizerFall;
-
-    @Unique
-    private double bh_stabilizerStepY;
-
-    @Unique
-    private double bh_stabilizerPrevStepY;
-
-    @Unique
-    private double bh_stabilizerLastY = Double.NaN;
-
-    @Unique
-    private void bh_trackStabilizerDescent(AbstractHorse horse) {
-        double y = horse.getY();
-        this.bh_stabilizerPrevStepY = this.bh_stabilizerStepY;
-        this.bh_stabilizerStepY = Double.isNaN(this.bh_stabilizerLastY) ? 0.0D : y - this.bh_stabilizerLastY;
-        this.bh_stabilizerLastY = y;
-
-        if (horse.onGround() || horse.isInWater() || horse.isInLava()
-                || this.bh_getStabilizerState() == HorseStabilizerState.OPEN) {
-            this.bh_stabilizerFall = 0.0D;
-        } else if (this.bh_stabilizerStepY < 0.0D) {
-            this.bh_stabilizerFall -= this.bh_stabilizerStepY;
-        }
-    }
-
-    @Unique
-    private HorseStabilizerState bh_computeStabilizerState(AbstractHorse horse) {
-        double verticalSpeed = Math.min(
-                horse.getDeltaMovement().y,
-                Math.min(this.bh_stabilizerStepY, this.bh_stabilizerPrevStepY));
-        float fallDistance = (float) Math.max(this.fallDistance, this.bh_stabilizerFall);
-
-        return HorseStabilizerLogic.computeState(
-                this.bh_hasStabilizerGear(),
-                horse.onGround(),
-                horse.isInWater(),
-                horse.isInLava(),
-                horse.isPassenger(),
-                verticalSpeed,
-                fallDistance,
-                this.bh_getStabilizerState());
+        BhHorseTraits.applyBondAttributes((AbstractHorse) (Object) this, bh_bond);
     }
 
     @Unique
@@ -1550,115 +1014,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Unique
-    private boolean bh_hasStabilizerGear() {
-        return BhConfig.stabilizerEnabled() && ((IHorseData) this).bh_hasStabilizerItem();
-    }
-
-    @Unique
-    private int bh_getHoovesFrostWalkerLevel() {
-        if (!BhConfig.hoovesEnabled()) {
-            return 0;
-        }
-        ItemStack hooves = this.bh_gearContainer.getItem(GearSlot.HOOVES.ordinal());
-        if (hooves.isEmpty()) {
-            return 0;
-        }
-
-        for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<net.minecraft.core.Holder<net.minecraft.world.item.enchantment.Enchantment>> entry
-                : hooves.getEnchantments().entrySet()) {
-            if (entry.getKey().is(Enchantments.FROST_WALKER)) {
-                return entry.getIntValue();
-            }
-        }
-
-        return 0;
-    }
-
-    @Unique
-    private void bh_applyFrostWalkerTrail(ServerLevel level, Vec3 start, Vec3 end, int frostWalkerLevel) {
-        int radius = Math.min(16, 3 + frostWalkerLevel);
-        double dx = end.x - start.x;
-        double dz = end.z - start.z;
-        double horizontalDistance = Math.sqrt(dx * dx + dz * dz);
-        if (horizontalDistance < 1.0E-6D) {
-            this.bh_freezeWaterAtSample(level, end, radius);
-            return;
-        }
-        int samples = Math.max(1, Mth.ceil(horizontalDistance / BH_FROST_WALKER_SAMPLE_STEP));
-
-        for (int i = 0; i <= samples; i++) {
-            double progress = (double) i / (double) samples;
-            this.bh_freezeWaterAtSample(level, new Vec3(
-                    Mth.lerp(progress, start.x, end.x),
-                    Mth.lerp(progress, start.y, end.y),
-                    Mth.lerp(progress, start.z, end.z)),
-                    radius);
-        }
-    }
-
-    @Unique
-    private void bh_freezeWaterAtSample(ServerLevel level, Vec3 sample, int radius) {
-        BlockPos center = BlockPos.containing(sample.x, sample.y - 1.0D, sample.z);
-        BlockState frostedIce = Blocks.FROSTED_ICE.defaultBlockState();
-        int radiusSq = radius * radius;
-        BlockPos.MutableBlockPos waterPos = new BlockPos.MutableBlockPos();
-        BlockPos.MutableBlockPos abovePos = new BlockPos.MutableBlockPos();
-
-        for (int dx = -radius; dx <= radius; dx++) {
-            for (int dz = -radius; dz <= radius; dz++) {
-                if (dx * dx + dz * dz > radiusSq) {
-                    continue;
-                }
-
-                waterPos.set(center.getX() + dx, center.getY(), center.getZ() + dz);
-                BlockState waterState = level.getBlockState(waterPos);
-                if (!waterState.is(Blocks.WATER) || !level.getFluidState(waterPos).isSourceOfType(Fluids.WATER)) {
-                    continue;
-                }
-
-                abovePos.set(waterPos.getX(), waterPos.getY() + 1, waterPos.getZ());
-                if (!level.getBlockState(abovePos).isAir()) {
-                    continue;
-                }
-
-                level.setBlock(waterPos, frostedIce, 3);
-            }
-        }
-    }
-
-    @Unique
-    private void bh_applyHitchpostConstraint(AbstractHorse horse) {
-        if (this.bh_hitchAnchor == null) {
-            return;
-        }
-
-        horse.getNavigation().stop();
-        Vec3 currentPos = horse.position();
-        double horizontalDistanceSq = (currentPos.x - this.bh_hitchAnchor.x) * (currentPos.x - this.bh_hitchAnchor.x)
-                + (currentPos.z - this.bh_hitchAnchor.z) * (currentPos.z - this.bh_hitchAnchor.z);
-        if (horizontalDistanceSq > 0.04D || Math.abs(currentPos.y - this.bh_hitchAnchor.y) > 1.25D) {
-            horse.teleportTo(this.bh_hitchAnchor.x, this.bh_hitchAnchor.y, this.bh_hitchAnchor.z);
-        }
-
-        horse.setDeltaMovement(Vec3.ZERO);
-        horse.hurtMarked = true;
-    }
-
-    @Unique
     private void bh_dropChestContents() {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!(self.level() instanceof ServerLevel serverLevel)) return;
-        bh_dropContainerContents(self, serverLevel, bh_chestContainer);
-    }
-
-    @Unique
-    private void bh_dropContainerContents(AbstractHorse horse, ServerLevel level, SimpleContainer container) {
-        for (int i = 0; i < container.getContainerSize(); i++) {
-            ItemStack stack = container.removeItemNoUpdate(i);
-            if (!stack.isEmpty()) {
-                horse.spawnAtLocation(level, stack);
-            }
-        }
+        BhHorseStorage.dropContainerContents(self, serverLevel, bh_chestContainer);
     }
 
     @Unique
@@ -1689,7 +1048,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Override
-    public void bh_ridePlayer(net.minecraft.world.entity.player.Player player) {
+    public void bh_ridePlayer(Player player) {
         this.doPlayerRide(player);
     }
 
@@ -1716,5 +1075,21 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                     target = "Lnet/minecraft/world/entity/animal/equine/AbstractHorse;"
                             + "standIfPossible()V"))
     private void bh_noRearOnPlayerJump(AbstractHorse horse) {
+    }
+
+    @Unique
+    private void bh_afterLoad() {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        for (HorseFeature feature : this.bh_features) {
+            feature.onLoad(self, this);
+        }
+    }
+
+    @Unique
+    private void bh_afterInventoryChange() {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        for (HorseFeature feature : this.bh_features) {
+            feature.onInventoryChanged(self, this);
+        }
     }
 }

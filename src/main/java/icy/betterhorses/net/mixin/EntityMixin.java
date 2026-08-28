@@ -28,6 +28,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import net.minecraft.world.item.equipment.Equippable;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
@@ -59,7 +60,7 @@ public abstract class EntityMixin {
             return;
         }
 
-        if (player.getUUID().equals(((IHorseData) horse).bh_getOwner())) {
+        if (player.getUUID().equals(IHorseData.of(horse).bh_getOwner())) {
             HorseTracker.setLastRidden(player.getUUID(), horse);
         }
 
@@ -109,7 +110,7 @@ public abstract class EntityMixin {
             return;
         }
 
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         if (!player.getUUID().equals(data.bh_getOwner())) {
             return;
         }
@@ -139,7 +140,7 @@ public abstract class EntityMixin {
         ItemStack held = player.getItemInHand(hand);
         boolean cartHitched = held.is(Items.SHEARS)
                 && !player.isSecondaryUseActive()
-                && ((IHorseData) horse).bh_hasCartGear()
+                && IHorseData.of(horse).bh_hasCartGear()
                 && !horse.getItemBySlot(EquipmentSlot.SADDLE).isEmpty();
         if (!cartHitched && !bh_shouldBlockHorseSaddleShearing(horse, player, held)) {
             return;
@@ -160,7 +161,7 @@ public abstract class EntityMixin {
             return false;
         }
 
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         if (data.bh_mayHandle(player.getUUID())) {
             return false;
         }
@@ -170,7 +171,7 @@ public abstract class EntityMixin {
             return false;
         }
 
-        net.minecraft.world.item.equipment.Equippable equippable = saddle.get(DataComponents.EQUIPPABLE);
+        Equippable equippable = saddle.get(DataComponents.EQUIPPABLE);
         return equippable != null && equippable.canBeSheared();
     }
 }

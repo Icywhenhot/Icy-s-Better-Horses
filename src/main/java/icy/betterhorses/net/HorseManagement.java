@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import icy.betterhorses.net.entity.BhBreedHorse;
 
 public final class HorseManagement {
 
@@ -57,7 +58,7 @@ public final class HorseManagement {
             AbstractHorse horse = loaded != null ? loaded : materialize(server, horseId);
             if (horse == null) continue;
 
-            IHorseData data = (IHorseData) horse;
+            IHorseData data = IHorseData.of(horse);
             HorseTrackerState.KnownPosition known = HorseTracker.getLastKnownPosition(horseId);
             String dimension = loaded != null
                     ? loaded.level().dimension().identifier().toString()
@@ -82,7 +83,7 @@ public final class HorseManagement {
                     horse instanceof Horse coloured ? coloured.getVariant().ordinal() : -1,
                     horse instanceof Horse coloured ? coloured.getMarkings().ordinal() : -1,
                     horse.isBaby(),
-                    horse instanceof icy.betterhorses.net.entity.BhBreedHorse breedHorse
+                    horse instanceof BhBreedHorse breedHorse
                             ? breedHorse.bhCoat() : -1));
         }
         roster.sort(Comparator
@@ -111,7 +112,7 @@ public final class HorseManagement {
         if (respawned == null) {
             return Outcome.fail(respawnFailureKey(player, horseId));
         }
-        ((IHorseData) respawned).bh_setCommand(HorseCommand.FOLLOW);
+        IHorseData.of(respawned).bh_setCommand(HorseCommand.FOLLOW);
         return Outcome.OK;
     }
 
@@ -121,14 +122,14 @@ public final class HorseManagement {
 
         AbstractHorse loaded = findLoadedOwned(player, horseId);
         if (loaded != null) {
-            BlockPos home = ((IHorseData) loaded).bh_getHome();
+            BlockPos home = IHorseData.of(loaded).bh_getHome();
             if (home == null) return Outcome.fail(MSG_NO_HOME);
 
             loaded.ejectPassengers();
             keepHomeChunkLoaded((ServerLevel) loaded.level(), home);
             loaded.teleportTo(home.getX() + 0.5D, home.getY(), home.getZ() + 0.5D);
             loaded.fallDistance = 0.0F;
-            ((IHorseData) loaded).bh_setCommand(HorseCommand.STAY);
+            IHorseData.of(loaded).bh_setCommand(HorseCommand.STAY);
             return Outcome.OK;
         }
 
@@ -147,7 +148,7 @@ public final class HorseManagement {
                 server, horseId, homeLevel, home.getX() + 0.5D, home.getY(), home.getZ() + 0.5D);
         if (respawned == null) return Outcome.fail(MSG_FAILED);
 
-        ((IHorseData) respawned).bh_setCommand(HorseCommand.STAY);
+        IHorseData.of(respawned).bh_setCommand(HorseCommand.STAY);
         return Outcome.OK;
     }
 
@@ -169,10 +170,10 @@ public final class HorseManagement {
 
         AbstractHorse loaded = findLoadedOwned(player, horseId);
         if (loaded != null) {
-            if (((IHorseData) loaded).bh_hasAnyEquipment()) {
+            if (IHorseData.of(loaded).bh_hasAnyEquipment()) {
                 return Outcome.fail(MSG_HAS_EQUIPMENT);
             }
-            ((IHorseData) loaded).bh_disown();
+            IHorseData.of(loaded).bh_disown();
             HorseTracker.clearActiveHorse(horseId);
             IcysBetterHorses.LOGGER.info("[manage] {} disowned loaded horse {}",
                     player.getName().getString(), horseId);
@@ -185,7 +186,7 @@ public final class HorseManagement {
 
         AbstractHorse snapshotHorse = materialize(server, horseId);
         if (snapshotHorse == null) return Outcome.fail(MSG_GONE);
-        if (((IHorseData) snapshotHorse).bh_hasAnyEquipment()) {
+        if (IHorseData.of(snapshotHorse).bh_hasAnyEquipment()) {
             return Outcome.fail(MSG_HAS_EQUIPMENT);
         }
 
@@ -229,7 +230,7 @@ public final class HorseManagement {
     }
 
     public static void summonToPlayer(AbstractHorse horse, ServerPlayer player) {
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         if (data.bh_getBond() <= 0) return;
 
         data.bh_setCommand(HorseCommand.FOLLOW);
@@ -243,7 +244,7 @@ public final class HorseManagement {
     private static @Nullable AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {
         AbstractHorse lastRidden = HorseTracker.getLastRidden(playerId);
         if (lastRidden != null
-                && playerId.equals(((IHorseData) lastRidden).bh_getOwner())
+                && playerId.equals(IHorseData.of(lastRidden).bh_getOwner())
                 && lastRidden.level() == player.level()
                 && lastRidden.isAlive()) {
             return lastRidden;
@@ -253,7 +254,7 @@ public final class HorseManagement {
         double nearestDistSq = Double.MAX_VALUE;
         for (AbstractHorse candidate : HorseTracker.getAll()) {
             if (!candidate.isAlive() || candidate.level() != player.level()) continue;
-            if (!playerId.equals(((IHorseData) candidate).bh_getOwner())) continue;
+            if (!playerId.equals(IHorseData.of(candidate).bh_getOwner())) continue;
             double distSq = candidate.distanceToSqr(player);
             if (distSq < nearestDistSq) {
                 nearestDistSq = distSq;
@@ -267,12 +268,12 @@ public final class HorseManagement {
         AbstractHorse tracked = HorseTracker.getLoaded(horseId);
         if (tracked == null && player.level().getEntityInAnyDimension(horseId) instanceof AbstractHorse found) {
             tracked = found;
-            if (player.getUUID().equals(((IHorseData) found).bh_getOwner())) {
+            if (player.getUUID().equals(IHorseData.of(found).bh_getOwner())) {
                 HorseTracker.register(found);
             }
         }
         if (tracked == null || !tracked.isAlive()) return null;
-        return player.getUUID().equals(((IHorseData) tracked).bh_getOwner()) ? tracked : null;
+        return player.getUUID().equals(IHorseData.of(tracked).bh_getOwner()) ? tracked : null;
     }
 
     private static boolean ownsStoredHorse(ServerPlayer player, UUID horseId) {
@@ -322,7 +323,7 @@ public final class HorseManagement {
         }
 
         int newGeneration = HorseTracker.getGeneration(horseId) + 1;
-        ((IHorseData) horse).bh_setGeneration(newGeneration);
+        IHorseData.of(horse).bh_setGeneration(newGeneration);
         horse.snapTo(x, y, z, horse.getYRot(), horse.getXRot());
         horse.fallDistance = 0.0F;
 

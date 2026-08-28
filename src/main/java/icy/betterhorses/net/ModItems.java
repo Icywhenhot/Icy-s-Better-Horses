@@ -15,6 +15,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.equipment.Equippable;
+import icy.betterhorses.net.item.HorseCartItem;
+import java.util.List;
 
 public final class ModItems {
 
@@ -39,7 +41,7 @@ public final class ModItems {
             new Item(itemProperties("horse_stabilizer_gear").stacksTo(1)));
 
     public static final Item HORSE_CART = register("horse_cart_gear",
-            new icy.betterhorses.net.item.HorseCartItem(itemProperties("horse_cart_gear").stacksTo(1)));
+            new HorseCartItem(itemProperties("horse_cart_gear").stacksTo(1)));
 
     public static final Item WHEEL = register("wheel",
             new Item(itemProperties("wheel")));
@@ -92,7 +94,7 @@ public final class ModItems {
             new SpawnEggItem(itemProperties("clydesdale_horse_spawn_egg")
                     .spawnEgg(ModEntities.CLYDESDALE_HORSE)));
 
-    public static final java.util.List<Item> BREED_SPAWN_EGGS = java.util.List.of(
+    public static final List<Item> BREED_SPAWN_EGGS = List.of(
             ICELANDIC_HORSE_SPAWN_EGG,
             FRIESIAN_HORSE_SPAWN_EGG,
             APPALOOSA_HORSE_SPAWN_EGG,

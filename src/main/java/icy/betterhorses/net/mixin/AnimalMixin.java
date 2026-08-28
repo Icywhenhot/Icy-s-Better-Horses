@@ -9,7 +9,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -21,8 +20,6 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -52,8 +49,8 @@ public abstract class AnimalMixin {
         if (!(self instanceof AbstractHorse selfHorse) || !(other instanceof AbstractHorse otherHorse)) {
             return;
         }
-        HorseGender selfGender = ((IHorseData) selfHorse).bh_getGender();
-        HorseGender otherGender = ((IHorseData) otherHorse).bh_getGender();
+        HorseGender selfGender = IHorseData.of(selfHorse).bh_getGender();
+        HorseGender otherGender = IHorseData.of(otherHorse).bh_getGender();
         if (selfGender == otherGender) {
             cir.setReturnValue(false);
         }
@@ -77,9 +74,9 @@ public abstract class AnimalMixin {
             return;
         }
 
-        IHorseData selfData = (IHorseData) selfHorse;
-        IHorseData partnerData = (IHorseData) partnerHorse;
-        IHorseData childData = (IHorseData) childHorse;
+        IHorseData selfData = IHorseData.of(selfHorse);
+        IHorseData partnerData = IHorseData.of(partnerHorse);
+        IHorseData childData = IHorseData.of(childHorse);
 
         childData.bh_setGender(self.getRandom().nextBoolean() ? HorseGender.MALE : HorseGender.FEMALE);
 

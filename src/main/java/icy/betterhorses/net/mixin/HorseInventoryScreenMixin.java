@@ -31,6 +31,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import java.util.Locale;
+import net.minecraft.world.entity.animal.equine.Horse;
 
 @Mixin(AbstractMountInventoryScreen.class)
 public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<AbstractMountInventoryMenu> {
@@ -184,7 +186,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
     @Unique
     private void bh_drawBondLabel(GuiGraphicsExtractor gfx, AbstractHorse horse) {
-        String text = "Bond: " + ((IHorseData) horse).bh_getBond();
+        String text = "Bond: " + IHorseData.of(horse).bh_getBond();
         int textWidth = this.font.width(text);
         gfx.text(this.font, text,
                 this.leftPos + this.imageWidth - textWidth - 8,
@@ -197,8 +199,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     private void bh_drawStatsLines(GuiGraphicsExtractor gfx, AbstractHorse horse) {
         double speedBps = horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * 43.2D;
         double jumpBlk = Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D);
-        String speedText = String.format(java.util.Locale.ROOT, "Speed: %.1f blk/s", speedBps);
-        String jumpText = String.format(java.util.Locale.ROOT, "Jump:  %.1f blk", jumpBlk);
+        String speedText = String.format(Locale.ROOT, "Speed: %.1f blk/s", speedBps);
+        String jumpText = String.format(Locale.ROOT, "Jump:  %.1f blk", jumpBlk);
 
         gfx.text(this.font, speedText,
                 this.leftPos + BH_STATS_TEXT_X,
@@ -302,7 +304,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
     @Unique
     private boolean bh_mountTakesStabilizer() {
-        return this.mount instanceof net.minecraft.world.entity.animal.equine.Horse;
+        return this.mount instanceof Horse;
     }
 
     @Unique

@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public enum HorseBreed {
     THOROUGHBRED,
@@ -87,13 +89,13 @@ public enum HorseBreed {
         return BIOME_MAP.getOrDefault(this, List.of());
     }
 
-    public static java.util.Set<ResourceKey<Biome>> allBreedBiomes() {
-        java.util.Set<ResourceKey<Biome>> out = new java.util.LinkedHashSet<>();
+    public static Set<ResourceKey<Biome>> allBreedBiomes() {
+        Set<ResourceKey<Biome>> out = new LinkedHashSet<>();
         for (HorseBreed breed : VALUES) {
             if (!breed.isRealBreed()) continue;
             out.addAll(breed.allowedBiomes());
         }
-        return java.util.Collections.unmodifiableSet(out);
+        return Collections.unmodifiableSet(out);
     }
 
     public static List<HorseBreed> breedsForBiome(ResourceKey<Biome> biome) {

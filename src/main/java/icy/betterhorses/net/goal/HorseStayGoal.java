@@ -19,7 +19,7 @@ public class HorseStayGoal extends Goal {
     @Override
     public boolean canUse() {
         if (horse.isVehicle()) return false;
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         return data.bh_isOwned() && data.bh_getCommand() == HorseCommand.STAY;
     }
 

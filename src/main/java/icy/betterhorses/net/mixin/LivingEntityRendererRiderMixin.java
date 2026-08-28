@@ -16,14 +16,19 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayDeque;
+import com.mojang.math.Axis;
+import icy.betterhorses.net.BhRiderSeat;
+import icy.betterhorses.net.client.render.IBhEquineStabilizerState;
+import net.minecraft.world.phys.Vec3;
+import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityRendererRiderMixin {
 
-    @org.spongepowered.asm.mixin.Unique
+    @Unique
     private static final float BH_RIDER_FOLLOW = 1.0F;
 
-    @org.spongepowered.asm.mixin.Unique
+    @Unique
     private static final ArrayDeque<Boolean> BH_PUSHED = new ArrayDeque<>();
 
     @Inject(
@@ -45,7 +50,7 @@ public abstract class LivingEntityRendererRiderMixin {
     private void bh_offsetRiderToSaddle(LivingEntityRenderState state, PoseStack poseStack,
                                         SubmitNodeCollector collector, CameraRenderState camera,
                                         CallbackInfo ci) {
-        if (state instanceof icy.betterhorses.net.client.render.IBhEquineStabilizerState equine
+        if (state instanceof IBhEquineStabilizerState equine
                 && equine.bh_getOpacity() <= 0.01F) {
             BH_PUSHED.push(Boolean.FALSE);
             return;
@@ -53,9 +58,9 @@ public abstract class LivingEntityRendererRiderMixin {
 
         int horseId = state instanceof IBhRiderState rider ? rider.bh_getRiddenHorseId() : -1;
         BhRiderMotion motion = horseId < 0 ? BhRiderMotion.NONE : BhRiderMotion.get(horseId);
-        net.minecraft.world.phys.Vec3 seat =
-                horseId < 0 ? net.minecraft.world.phys.Vec3.ZERO
-                            : icy.betterhorses.net.BhRiderSeat.applied(horseId);
+        Vec3 seat =
+                horseId < 0 ? Vec3.ZERO
+                            : BhRiderSeat.applied(horseId);
         if (motion.isRest() && seat.lengthSqr() == 0.0D) {
             BH_PUSHED.push(Boolean.FALSE);
             return;
@@ -77,10 +82,10 @@ public abstract class LivingEntityRendererRiderMixin {
                 motion.up() * BH_RIDER_FOLLOW - seat.y,
                 right * -sin + forward * cos - seat.z);
 
-        poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180.0F - yaw));
-        poseStack.mulPose(com.mojang.math.Axis.XP.rotation(-motion.pitch() * BH_RIDER_FOLLOW));
-        poseStack.mulPose(com.mojang.math.Axis.ZP.rotation(motion.roll() * BH_RIDER_FOLLOW));
-        poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(yaw - 180.0F));
+        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - yaw));
+        poseStack.mulPose(Axis.XP.rotation(-motion.pitch() * BH_RIDER_FOLLOW));
+        poseStack.mulPose(Axis.ZP.rotation(motion.roll() * BH_RIDER_FOLLOW));
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw - 180.0F));
     }
 
     @Inject(

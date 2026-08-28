@@ -20,6 +20,12 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import icy.betterhorses.net.BhCriteria;
+import icy.betterhorses.net.ModItems;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.ContainerUser;
+import net.minecraft.world.entity.animal.equine.Horse;
+import org.jetbrains.annotations.Nullable;
 
 @Mixin(HorseInventoryMenu.class)
 public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu implements HorseInventoryLayoutAccess {
@@ -36,11 +42,11 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Unique private int bh_playerInventoryStartIndex = -1;
     @Unique private int bh_playerInventoryEndIndex = -1;
     @Unique private boolean bh_playerInventoryShifted = false;
-    @Unique private @org.jetbrains.annotations.Nullable AbstractHorse bh_horse = null;
+    @Unique private @Nullable AbstractHorse bh_horse = null;
     @Unique private final SimpleContainer bh_enderChestView = new SimpleContainer(BH_CHEST_SLOT_COUNT);
     @Unique private PlayerEnderChestContainer bh_playerEnderChest = null;
     @Unique private boolean bh_enderChestViewLoaded = false;
-    @Unique private @org.jetbrains.annotations.Nullable Player bh_menuPlayer = null;
+    @Unique private @Nullable Player bh_menuPlayer = null;
 
     protected HorseInventoryMenuMixin(MenuType<?> type, int id) {
         super(type, id);
@@ -54,7 +60,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             AbstractHorse horse,
             int horseChestColumns,
             CallbackInfo ci) {
-        final IHorseData data = (IHorseData) horse;
+        final IHorseData data = IHorseData.of(horse);
         this.bh_horse = horse;
         final SimpleContainer gear = data.bh_getGearContainer();
         final SimpleContainer chest = data.bh_getChestContainer();
@@ -64,8 +70,8 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                 : playerInventory.player.getEnderChestInventory();
         if (this.bh_isEnderChestGear(gear.getItem(GearSlot.CHEST.ordinal()))) {
             this.bh_loadEnderChestView();
-            if (playerInventory.player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
-                icy.betterhorses.net.BhCriteria.fire(serverPlayer, icy.betterhorses.net.BhCriteria.ENDER_CHEST_GEAR);
+            if (playerInventory.player instanceof ServerPlayer serverPlayer) {
+                BhCriteria.fire(serverPlayer, BhCriteria.ENDER_CHEST_GEAR);
             }
         }
         final Container extraStorage = new Container() {
@@ -116,12 +122,12 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             }
 
             @Override
-            public void startOpen(net.minecraft.world.entity.ContainerUser user) {
+            public void startOpen(ContainerUser user) {
                 this.bh_active().startOpen(user);
             }
 
             @Override
-            public void stopOpen(net.minecraft.world.entity.ContainerUser user) {
+            public void stopOpen(ContainerUser user) {
                 this.bh_active().stopOpen(user);
             }
 
@@ -143,8 +149,8 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                         return false;
                     }
                     if (type == GearSlot.STABILIZER
-                            && stack.is(icy.betterhorses.net.ModItems.HORSE_STABILIZER)
-                            && !(horse instanceof net.minecraft.world.entity.animal.equine.Horse)) {
+                            && stack.is(ModItems.HORSE_STABILIZER)
+                            && !(horse instanceof Horse)) {
                         return false;
                     }
                     return type.accepts(stack);
@@ -232,13 +238,13 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Override
     public boolean bh_isCartSlotLocked() {
         return this.bh_horse != null
-                && ((IHorseData) this.bh_horse).bh_hasCartGear()
-                && ((IHorseData) this.bh_horse).bh_hasCartChest();
+                && IHorseData.of(this.bh_horse).bh_hasCartGear()
+                && IHorseData.of(this.bh_horse).bh_hasCartChest();
     }
 
     @Override
     public boolean bh_isSaddleSlotLocked() {
-        return this.bh_horse != null && ((IHorseData) this.bh_horse).bh_hasCartGear();
+        return this.bh_horse != null && IHorseData.of(this.bh_horse).bh_hasCartGear();
     }
 
     @Override
@@ -286,8 +292,8 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         }
         if (!wasEnderChest && isEnderChest) {
             this.bh_loadEnderChestView();
-            if (this.bh_menuPlayer instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
-                icy.betterhorses.net.BhCriteria.fire(serverPlayer, icy.betterhorses.net.BhCriteria.ENDER_CHEST_GEAR);
+            if (this.bh_menuPlayer instanceof ServerPlayer serverPlayer) {
+                BhCriteria.fire(serverPlayer, BhCriteria.ENDER_CHEST_GEAR);
             }
         }
     }
@@ -321,7 +327,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
     @Unique
     private boolean bh_hasUpgradedSaddleInMenu() {
-        return this.getSlot(0).getItem().is(icy.betterhorses.net.ModItems.UPGRADED_SADDLE);
+        return this.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE);
     }
 
     @Unique

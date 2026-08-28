@@ -22,6 +22,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.Entity;
 
 public final class ModEntities {
 
@@ -121,7 +122,7 @@ public final class ModEntities {
         FabricDefaultAttributeRegistry.register(CLYDESDALE_HORSE, ClydesdaleHorse.createAttributes());
     }
 
-    private static <T extends net.minecraft.world.entity.Entity> EntityType<T> register(
+    private static <T extends Entity> EntityType<T> register(
             String path, EntityType<T> type) {
         return Registry.register(
                 BuiltInRegistries.ENTITY_TYPE,

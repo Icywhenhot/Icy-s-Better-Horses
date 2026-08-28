@@ -16,6 +16,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityRendererMixin {
@@ -58,9 +60,9 @@ public abstract class LivingEntityRendererMixin {
             cancellable = true)
     private void bh_skipFullyTransparentHorse(
             LivingEntityRenderState renderState,
-            com.mojang.blaze3d.vertex.PoseStack poseStack,
+            PoseStack poseStack,
             SubmitNodeCollector collector,
-            net.minecraft.client.renderer.state.level.CameraRenderState camera,
+            CameraRenderState camera,
             CallbackInfo ci) {
         if (renderState instanceof IBhEquineStabilizerState bhState && bhState.bh_getOpacity() <= 0.01F) {
             ci.cancel();

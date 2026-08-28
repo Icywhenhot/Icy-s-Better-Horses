@@ -53,7 +53,7 @@ public abstract class HorseFinalizeSpawnMixin {
                                       @Nullable SpawnGroupData groupData,
                                       CallbackInfoReturnable<SpawnGroupData> cir) {
         Horse self = (Horse) (Object) this;
-        IHorseData data = (IHorseData) self;
+        IHorseData data = IHorseData.of(self);
 
         if (data.bh_getBreed() != HorseBreed.UNKNOWN_SPECIES) {
             this.bh_pendingGroupBreed = null;

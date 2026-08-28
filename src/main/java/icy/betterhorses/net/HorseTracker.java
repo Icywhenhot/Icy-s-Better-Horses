@@ -37,14 +37,14 @@ public final class HorseTracker {
     public static boolean isStale(AbstractHorse horse) {
         HorseTrackerState state = state();
         return state != null
-                && ((IHorseData) horse).bh_getGeneration() < state.getGeneration(horse.getUUID());
+                && IHorseData.of(horse).bh_getGeneration() < state.getGeneration(horse.getUUID());
     }
 
     public static void register(AbstractHorse horse) {
         if (isStale(horse)) return;
         ownedHorses.put(horse.getUUID(), horse);
         HorseTrackerState state = state();
-        if (state != null && ((IHorseData) horse).bh_isOwned()) {
+        if (state != null && IHorseData.of(horse).bh_isOwned()) {
             state.recordHorse(horse);
         }
     }
@@ -60,7 +60,7 @@ public final class HorseTracker {
             state.forgetHorse(horse.getUUID());
             IcysBetterHorses.LOGGER.info("[whistle] forgot horse {} (destroyed, removalReason={})",
                     horse.getUUID(), reason);
-        } else if (((IHorseData) horse).bh_isOwned()) {
+        } else if (IHorseData.of(horse).bh_isOwned()) {
             state.recordHorse(horse);
             IcysBetterHorses.LOGGER.info("[whistle] snapshot recorded for horse {} at {} (unloaded)",
                     horse.getUUID(), horse.blockPosition());
@@ -169,9 +169,9 @@ public final class HorseTracker {
         return state == null ? Map.of() : state.getTrusted(ownerId);
     }
 
-    public static java.util.List<UUID> getTrustingOwners(UUID playerId) {
+    public static List<UUID> getTrustingOwners(UUID playerId) {
         HorseTrackerState state = state();
-        return state == null ? java.util.List.of() : state.getTrustingOwners(playerId);
+        return state == null ? List.of() : state.getTrustingOwners(playerId);
     }
 
     public static void markPendingDisown(UUID horseId) {

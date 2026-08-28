@@ -15,11 +15,12 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import net.minecraft.world.level.block.Block;
 
 @Mixin(BlockBehaviour.BlockStateBase.class)
 public abstract class LeafPassthroughMixin {
 
-    @Shadow public abstract net.minecraft.world.level.block.Block getBlock();
+    @Shadow public abstract Block getBlock();
 
     @Inject(
         method = "getCollisionShape(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/shapes/CollisionContext;)Lnet/minecraft/world/phys/shapes/VoxelShape;",

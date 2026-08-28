@@ -34,7 +34,7 @@ public abstract class MobCartPassengerMixin {
         if (vehicle instanceof HorseCartEntity) {
             return true;
         }
-        return vehicle instanceof AbstractHorse horse && ((IHorseData) horse).bh_hasCartGear();
+        return vehicle instanceof AbstractHorse horse && IHorseData.of(horse).bh_hasCartGear();
     }
 
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
@@ -62,7 +62,7 @@ public abstract class MobCartPassengerMixin {
         if (vehicle instanceof HorseCartEntity cart) {
             return cart;
         }
-        return vehicle instanceof AbstractHorse horse ? ((IHorseData) horse).bh_getCartEntity() : null;
+        return vehicle instanceof AbstractHorse horse ? IHorseData.of(horse).bh_getCartEntity() : null;
     }
 
     @Inject(method = "updateControlFlags", at = @At("TAIL"))

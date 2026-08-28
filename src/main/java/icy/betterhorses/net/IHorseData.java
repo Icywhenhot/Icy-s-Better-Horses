@@ -1,12 +1,16 @@
 package icy.betterhorses.net;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import icy.betterhorses.net.inventory.GearSlot;
 
 import java.util.UUID;
+import icy.betterhorses.net.entity.HorseCartEntity;
+import net.minecraft.world.entity.animal.equine.Horse;
+import net.minecraft.world.entity.player.Player;
 
 public interface IHorseData {
     @Nullable UUID bh_getOwner();
@@ -79,10 +83,10 @@ public interface IHorseData {
 
     boolean bh_hasCartGear();
 
-    @Nullable icy.betterhorses.net.entity.HorseCartEntity bh_getCartEntity();
+    @Nullable HorseCartEntity bh_getCartEntity();
 
     default boolean bh_hasStabilizerItem() {
-        return this instanceof net.minecraft.world.entity.animal.equine.Horse
+        return this instanceof Horse
                 && bh_hasGear(GearSlot.STABILIZER) && !bh_hasCartGear();
     }
 
@@ -94,7 +98,7 @@ public interface IHorseData {
 
     void bh_dropCartChest();
 
-    void bh_ridePlayer(net.minecraft.world.entity.player.Player player);
+    void bh_ridePlayer(Player player);
 
     boolean bh_hasUpgradedSaddle();
 
@@ -113,4 +117,8 @@ public interface IHorseData {
     boolean bh_hasAnyEquipment();
 
     void bh_disown();
+
+    static IHorseData of(AbstractHorse horse) {
+        return (IHorseData) horse;
+    }
 }

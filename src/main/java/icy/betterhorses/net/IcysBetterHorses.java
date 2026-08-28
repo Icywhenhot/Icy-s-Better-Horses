@@ -27,6 +27,11 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import icy.betterhorses.net.book.BhBookPages;
+import icy.betterhorses.net.network.HorseRosterEntry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.sounds.SoundEvent;
 
 public class IcysBetterHorses implements ModInitializer {
 
@@ -52,7 +57,7 @@ public class IcysBetterHorses implements ModInitializer {
         BhBiomeSpawns.register();
         BhHorseSpawnRules.installSpawnPlacementOverride();
         BhCriteria.init();
-        icy.betterhorses.net.book.BhBookPages.init();
+        BhBookPages.init();
         BhCommands.register();
         registerPackets();
         registerServerHandlers();
@@ -121,12 +126,12 @@ public class IcysBetterHorses implements ModInitializer {
     }
 
     private void sendRoster(ServerPlayer player) {
-        List<icy.betterhorses.net.network.HorseRosterEntry> roster = HorseManagement.buildRoster(player);
+        List<HorseRosterEntry> roster = HorseManagement.buildRoster(player);
         ServerPlayNetworking.send(player, new HorseRosterSyncPayload(roster));
         if (!roster.isEmpty()) {
             BhCriteria.fire(player, BhCriteria.OWN_HORSE);
             BhCriteria.fire(player, BhCriteria.HORSE_COUNT, roster.size());
-            for (icy.betterhorses.net.network.HorseRosterEntry entry : roster) {
+            for (HorseRosterEntry entry : roster) {
                 BhCriteria.fireBreed(player, HorseBreed.fromId(entry.breedOrdinal()));
             }
         }
@@ -154,7 +159,7 @@ public class IcysBetterHorses implements ModInitializer {
         AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
         if (horse == null) return;
 
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         if (command == HorseCommand.SET_HOME) {
             data.bh_setHome(horse.blockPosition());
             data.bh_setCommand(HorseCommand.STAY);
@@ -174,7 +179,7 @@ public class IcysBetterHorses implements ModInitializer {
         if (horse.getRandom().nextFloat() >= COMMAND_ANSWER_CHANCE) {
             return;
         }
-        net.minecraft.sounds.SoundEvent sound = horse.getRandom().nextBoolean()
+        SoundEvent sound = horse.getRandom().nextBoolean()
                 ? ModSounds.HORSE_NEIGH
                 : ModSounds.HORSE_SNORT;
         horse.level().playSound(
@@ -203,13 +208,13 @@ public class IcysBetterHorses implements ModInitializer {
     }
 
     private void registerJoinSync() {
-        net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register(
+        ServerPlayConnectionEvents.JOIN.register(
                 (handler, sender, server) -> sendTrustList(handler.getPlayer()));
     }
 
     private void registerEntityTracking() {
         ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
-            if (entity instanceof AbstractHorse horse && ((IHorseData) horse).bh_isOwned()) {
+            if (entity instanceof AbstractHorse horse && IHorseData.of(horse).bh_isOwned()) {
                 if (HorseTracker.consumePendingDisown(horse.getUUID())) {
                     pendingReleases.add(horse);
                 } else if (HorseTracker.isStale(horse)) {
@@ -249,7 +254,7 @@ public class IcysBetterHorses implements ModInitializer {
         for (AbstractHorse horse : pendingReleases) {
             if (!horse.isRemoved()) {
                 LOGGER.info("[manage] releasing horse {} disowned while unloaded", horse.getUUID());
-                ((IHorseData) horse).bh_disown();
+                IHorseData.of(horse).bh_disown();
             }
         }
         pendingReleases.clear();
@@ -261,7 +266,7 @@ public class IcysBetterHorses implements ModInitializer {
             if (!stale.isRemoved()) {
                 LOGGER.debug("Discarding stale horse copy {} (generation {} < {})",
                         stale.getUUID(),
-                        ((IHorseData) stale).bh_getGeneration(),
+                        IHorseData.of(stale).bh_getGeneration(),
                         HorseTracker.getGeneration(stale.getUUID()));
                 stale.discard();
             }
@@ -269,9 +274,9 @@ public class IcysBetterHorses implements ModInitializer {
         staleHorses.clear();
     }
 
-    private void growHorseBond(net.minecraft.server.MinecraftServer server) {
+    private void growHorseBond(MinecraftServer server) {
         for (AbstractHorse horse : HorseTracker.getAll()) {
-            IHorseData data = (IHorseData) horse;
+            IHorseData data = IHorseData.of(horse);
             if (data.bh_getBond() >= 100) continue;
 
             UUID ownerId = data.bh_getOwner();
@@ -291,8 +296,8 @@ public class IcysBetterHorses implements ModInitializer {
                 || horse.getControllingPassenger() != player) {
             return;
         }
-        ((IHorseData) horse).bh_setGear(gear);
-        ((IHorseData) horse).bh_setGaitGear(gaitGear);
+        IHorseData.of(horse).bh_setGear(gear);
+        IHorseData.of(horse).bh_setGaitGear(gaitGear);
     }
 
     private void handleSteerMode(ServerPlayer player, int horseId, boolean freeSteer) {
@@ -300,7 +305,7 @@ public class IcysBetterHorses implements ModInitializer {
                 || horse.getControllingPassenger() != player) {
             return;
         }
-        ((IHorseData) horse).bh_setFreeSteer(freeSteer);
+        IHorseData.of(horse).bh_setFreeSteer(freeSteer);
     }
 
     private void handleRear(ServerPlayer player, int horseId) {
@@ -326,7 +331,7 @@ public class IcysBetterHorses implements ModInitializer {
             return null;
         }
 
-        if (!((IHorseData) horse).bh_mayHandle(player.getUUID())) {
+        if (!IHorseData.of(horse).bh_mayHandle(player.getUUID())) {
             return null;
         }
 

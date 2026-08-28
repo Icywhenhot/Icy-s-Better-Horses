@@ -16,6 +16,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 
 @Mixin(HorseMarkingLayer.class)
 public abstract class HorseMarkingLayerMixin extends RenderLayer<HorseRenderState, HorseModel> {
@@ -29,8 +31,8 @@ public abstract class HorseMarkingLayerMixin extends RenderLayer<HorseRenderStat
             at = @At("HEAD"),
             cancellable = true)
     private void bh_skipFullyTransparentMarkings(
-            com.mojang.blaze3d.vertex.PoseStack poseStack,
-            net.minecraft.client.renderer.SubmitNodeCollector collector,
+            PoseStack poseStack,
+            SubmitNodeCollector collector,
             int light,
             HorseRenderState state,
             float yRot,
@@ -50,7 +52,7 @@ public abstract class HorseMarkingLayerMixin extends RenderLayer<HorseRenderStat
             OrderedSubmitNodeCollector collector,
             Model<Object> model,
             Object state,
-            com.mojang.blaze3d.vertex.PoseStack poseStack,
+            PoseStack poseStack,
             RenderType renderType,
             int lightCoords,
             int overlayCoords,

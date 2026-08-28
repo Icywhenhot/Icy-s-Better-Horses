@@ -201,8 +201,8 @@ public class HorseTrackerState extends SavedData {
         return trusted == null ? Map.of() : Map.copyOf(trusted);
     }
 
-    public java.util.List<UUID> getTrustingOwners(UUID playerId) {
-        java.util.List<UUID> owners = new java.util.ArrayList<>();
+    public List<UUID> getTrustingOwners(UUID playerId) {
+        List<UUID> owners = new ArrayList<>();
         trustedByPlayer.forEach((ownerId, trusted) -> {
             if (trusted.containsKey(playerId)) {
                 owners.add(ownerId);

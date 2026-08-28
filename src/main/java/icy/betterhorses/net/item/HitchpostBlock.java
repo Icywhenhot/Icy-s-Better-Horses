@@ -36,6 +36,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.UUID;
+import net.minecraft.world.entity.EntityReference;
 
 public class HitchpostBlock extends BaseEntityBlock {
 
@@ -150,7 +151,7 @@ public class HitchpostBlock extends BaseEntityBlock {
     }
 
     public static void releaseHorse(ServerLevel level, AbstractHorse horse, boolean logRelease) {
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         BlockPos hitchpostPos = data.bh_getHitchpostPos();
         if (hitchpostPos != null) {
             clearPostReference(level, hitchpostPos, horse.getUUID());
@@ -174,7 +175,7 @@ public class HitchpostBlock extends BaseEntityBlock {
         }
 
         if (level.getEntity(horseId) instanceof AbstractHorse horse) {
-            ((IHorseData) horse).bh_setHitchpostPos(null);
+            IHorseData.of(horse).bh_setHitchpostPos(null);
         }
 
         hitchpost.setTetheredHorseId(null);
@@ -201,7 +202,7 @@ public class HitchpostBlock extends BaseEntityBlock {
             return false;
         }
 
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         BlockPos existingPost = data.bh_getHitchpostPos();
         if (existingPost != null && !existingPost.equals(pos)) {
             clearPostReference(level, existingPost, horseId);
@@ -214,7 +215,7 @@ public class HitchpostBlock extends BaseEntityBlock {
         horse.hurtMarked = true;
 
         if (player != null && data.bh_getOwner() == null) {
-            net.minecraft.world.entity.EntityReference<net.minecraft.world.entity.LivingEntity> ownerRef = horse.getOwnerReference();
+            EntityReference<LivingEntity> ownerRef = horse.getOwnerReference();
             UUID horseOwner = ownerRef == null ? null : ownerRef.getUUID();
             if (player.getUUID().equals(horseOwner)) {
                 data.bh_setOwner(player.getUUID());
@@ -248,9 +249,9 @@ public class HitchpostBlock extends BaseEntityBlock {
         }
 
         UUID playerId = player.getUUID();
-        net.minecraft.world.entity.EntityReference<net.minecraft.world.entity.LivingEntity> ownerRef = horse.getOwnerReference();
+        EntityReference<LivingEntity> ownerRef = horse.getOwnerReference();
         UUID ownerId = ownerRef == null ? null : ownerRef.getUUID();
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         return playerId.equals(ownerId)
                 || (data.bh_isOwned() && data.bh_mayHandle(playerId));
     }

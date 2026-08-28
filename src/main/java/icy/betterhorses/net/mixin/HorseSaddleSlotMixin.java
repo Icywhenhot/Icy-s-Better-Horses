@@ -32,7 +32,7 @@ public abstract class HorseSaddleSlotMixin extends Slot {
     private void bh_holdSaddleWhileCartHitched(Player player, CallbackInfoReturnable<Boolean> cir) {
         if (this.slot == EquipmentSlot.SADDLE
                 && this.owner instanceof AbstractHorse horse
-                && ((IHorseData) horse).bh_hasCartGear()) {
+                && IHorseData.of(horse).bh_hasCartGear()) {
             cir.setReturnValue(false);
         }
     }

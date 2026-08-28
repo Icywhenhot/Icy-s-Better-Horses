@@ -7,7 +7,6 @@ import icy.betterhorses.net.client.HorseInfoScreen;
 import icy.betterhorses.net.client.HorseRosterScreen;
 import icy.betterhorses.net.client.HorseStabilizerSoundController;
 import icy.betterhorses.net.client.RadialMenuScreen;
-import icy.betterhorses.net.client.render.BhEquineGait;
 import icy.betterhorses.net.client.render.BhHorseModel;
 import icy.betterhorses.net.client.render.BhJumpDebug;
 import icy.betterhorses.net.client.render.BhModelLayers;
@@ -33,7 +32,6 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
@@ -44,6 +42,10 @@ import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.UUID;
+import com.klikli_dev.modonomicon.client.render.page.PageRendererRegistry;
+import icy.betterhorses.net.book.BhBreedCoatsPage;
+import icy.betterhorses.net.client.BhClientCaches;
+import icy.betterhorses.net.client.book.BhBreedCoatsPageRenderer;
 
 public class IcysBetterHorsesClient implements ClientModInitializer {
 
@@ -142,10 +144,10 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                         BhModelLayers.CLYDESDALE_HORSE,
                         BhModelLayers.CLYDESDALE_HORSE_BABY));
 
-        com.klikli_dev.modonomicon.client.render.page.PageRendererRegistry.registerPageRenderer(
-                icy.betterhorses.net.book.BhBreedCoatsPage.ID,
-                page -> new icy.betterhorses.net.client.book.BhBreedCoatsPageRenderer(
-                        (icy.betterhorses.net.book.BhBreedCoatsPage) page));
+        PageRendererRegistry.registerPageRenderer(
+                BhBreedCoatsPage.ID,
+                page -> new BhBreedCoatsPageRenderer(
+                        (BhBreedCoatsPage) page));
 
         registerClientHandlers();
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
@@ -165,16 +167,8 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(TrustSyncPayload.TYPE, (payload, context) ->
                 context.client().execute(() -> ClientTrustCache.set(payload.trustingOwners())));
 
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            ClientHorseRoster.reset();
-            ClientTrustCache.reset();
-            HorseGearController.INSTANCE.reset();
-            icy.betterhorses.net.client.HorseSteerModeController.INSTANCE.reset();
-            BhEquineGait.reset();
-            icy.betterhorses.net.client.render.BhRiderMotion.reset();
-            icy.betterhorses.net.BhRiderSeat.reset();
-            icy.betterhorses.net.client.render.HorseStabilizerAnimatable.reset();
-        });
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
+                BhClientCaches.resetAll());
     }
 
     private void onClientTick(Minecraft client) {
@@ -260,7 +254,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         if (horse == null || !horse.isTamed()) {
             return;
         }
-        UUID owner = ((IHorseData) horse).bh_getOwner();
+        UUID owner = IHorseData.of(horse).bh_getOwner();
         if (owner != null
                 && !owner.equals(player.getUUID())
                 && !ClientTrustCache.isTrustedBy(owner)) {

@@ -28,7 +28,7 @@ public class HorseWanderBoundsGoal extends Goal {
     @Override
     public boolean canUse() {
         if (horse.isVehicle()) return false;
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         if (!data.bh_isOwned() || data.bh_getCommand() != HorseCommand.WANDER) return false;
         wanderCenter = data.bh_getWanderCenter();
         if (wanderCenter == null) {
@@ -40,7 +40,7 @@ public class HorseWanderBoundsGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         if (data.bh_getCommand() != HorseCommand.WANDER) return false;
         wanderCenter = data.bh_getWanderCenter();
         return wanderCenter != null && bh_isOutsideBounds(wanderCenter, WANDER_HALF_EXTENT - RETURN_PADDING);
