@@ -13,6 +13,8 @@ public interface HorseInventoryLayoutAccess {
 
     int bh_getChestStartIndex();
 
+    int bh_getChestRows();
+
     default boolean bh_isCartSlotLocked() {
         return false;
     }

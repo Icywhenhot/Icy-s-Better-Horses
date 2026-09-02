@@ -1,6 +1,6 @@
 {
-  "name": "Stable Handbook",
-  "tooltip": "Barnside Field Guide",
+  "name": "book.icys-better-horses.stable_handbook.name",
+  "tooltip": "book.icys-better-horses.stable_handbook.tooltip",
   "creative_tab": "icys-better-horses:stable_supplies",
   "model": "icys-better-horses:stable_handbook_book",
   "font": "minecraft:default",

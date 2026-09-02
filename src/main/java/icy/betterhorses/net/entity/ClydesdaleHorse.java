@@ -1,10 +1,9 @@
 package icy.betterhorses.net.entity;
 
+import icy.betterhorses.net.BreedArchetype;
 import icy.betterhorses.net.HorseBreed;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.level.Level;
 
@@ -28,10 +27,6 @@ public class ClydesdaleHorse extends BhBreedHorse {
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        return AbstractHorse.createBaseHorseAttributes()
-                .add(Attributes.MAX_HEALTH, 35.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.20D)
-                .add(Attributes.JUMP_STRENGTH, 0.52D)
-                .add(Attributes.STEP_HEIGHT, 1.0D);
+        return bhAttributes(BreedArchetype.DRAFT);
     }
 }

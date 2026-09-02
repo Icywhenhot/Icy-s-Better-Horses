@@ -15,12 +15,21 @@ A free-roaming North American horse. Tough, weatherproof, and rarely the same co
 
 ---
 
+## Class: War
+
+Never spooks, never rears when struck, medkits last twice as long, hits hardest.
+
+See [Breeds](index) for what every class shares.
+
 ## Breed ability: Wild Instincts
 
-A horse that lived feral notices what a stabled one misses.
+| Bond | Effect |
+|:---|:---|
+| 0 | outlines nearby hostiles and snorts a warning; heals itself slowly |
+| 40 | faster self-healing, and it starts slowly healing you too |
+| 100 | faster rider healing |
 
-- **Hostile alert.** Anything hostile within **15 blocks** — through walls, around corners, in the dark — earns an angry snort and a **glowing outline for 3 seconds**. The snort tells you something is there; the outline tells you where. On a cooldown, so a horse parked near a spawner doesn't become an alarm clock.
-- **Self-sufficient.** It **heals steadily on its own**, with no hay, apples, or golden anything required.
+The survivor's horse. It notices things before you do.
 
 ## Coats
 

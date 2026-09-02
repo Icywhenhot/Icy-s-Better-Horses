@@ -23,8 +23,11 @@ public class BhHorseRenderState extends EquineRenderState {
 
     public float walkWeight;
     public float trotWeight;
+    public float canterWeight;
     public float runWeight;
     public float swimWeight;
+
+    public int gear;
 
     public float idleWeight;
     public float moveWeight;
@@ -42,6 +45,12 @@ public class BhHorseRenderState extends EquineRenderState {
     public float landWeight;
 
     public float rearWeight;
+
+    public int kickTicks;
+    public float kickPhase = 1.0F;
+
+    public int stompTicks;
+    public float stompPhase = 1.0F;
 
     public float verticalSpeed;
     public float jumpChargeInput;
@@ -98,13 +107,4 @@ public class BhHorseRenderState extends EquineRenderState {
     public float pivotPhase;
     public float pivotDir;
     public float backWeight;
-
-    private BhEquineGait gait;
-
-    BhEquineGait gaitFor(int entityId) {
-        if (gait == null || gait.entityId() != entityId) {
-            gait = new BhEquineGait(entityId);
-        }
-        return gait;
-    }
 }

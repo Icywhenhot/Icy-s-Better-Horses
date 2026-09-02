@@ -83,6 +83,14 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
         return 1.0F;
     }
 
+    private static float canterSweep(float p) {
+        if (p < CANTER_DUTY) {
+            return -1.0F + 2.0F * (p / CANTER_DUTY);
+        }
+        float u = (p - CANTER_DUTY) / (1.0F - CANTER_DUTY);
+        return 1.0F - 2.0F * (u * u * (3.0F - 2.0F * u));
+    }
+
     private static float measureLegLever(ModelPart part, float fallback) {
         final float[] top = {Float.MAX_VALUE};
         part.visit(new PoseStack(),
@@ -170,6 +178,17 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
     private static final float GRAZE_NECK_MIN = 70.0F * Mth.DEG_TO_RAD;
     private static final float GRAZE_NECK_MAX = 145.0F * Mth.DEG_TO_RAD;
 
+    private static final float CANTER_DUTY = 0.55F;
+    private static final float CANTER_ROT_FRONT = 0.52F;
+    private static final float CANTER_ROT_BACK = 0.46F;
+    private static final float CANTER_REACH_FRONT = 7.0F;
+    private static final float CANTER_REACH_BACK = 6.0F;
+    private static final float CANTER_LIFT_FRONT = 2.6F;
+    private static final float CANTER_LIFT_BACK = 2.2F;
+
+    private static final float[] CANTER_RIGHT_LEAD = {1.0F / 3.0F, 0.0F, 2.0F / 3.0F, 1.0F / 3.0F};
+    private static final float[] CANTER_LEFT_LEAD = {0.0F, 1.0F / 3.0F, 1.0F / 3.0F, 2.0F / 3.0F};
+
     private static final float[] LEG_LAG_SECONDS = {0.020F, 0.020F, 0.013F, 0.013F};
 
     private static final float[] LEG_DIAGONAL = {1.0F, -1.0F, -1.0F, 1.0F};
@@ -198,6 +217,7 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
         final float trot = state.trotWeight;
         final float run = state.runWeight;
         final float swim = state.swimWeight;
+        final float canter = state.canterWeight;
         final float idle = state.idleWeight;
         final float move = state.moveWeight;
         final float tolt = state.toltWeight;
@@ -265,6 +285,23 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
         final float pivotT = state.pivotPhase * Mth.TWO_PI;
         final float back = state.backWeight;
 
+        final float kickRaw = state.kickPhase;
+        final float kickCoil = (0.5F - 0.5F * Mth.cos(
+                Mth.clamp(kickRaw / 0.18F, 0.0F, 1.0F)
+              * Mth.clamp((0.34F - kickRaw) / 0.16F, 0.0F, 1.0F) * Mth.PI)) * notRearingEarly;
+        final float kickSnap = (0.5F - 0.5F * Mth.cos(
+                Mth.clamp((kickRaw - 0.30F) / 0.14F, 0.0F, 1.0F)
+              * Mth.clamp((1.0F - kickRaw) / 0.56F, 0.0F, 1.0F) * Mth.PI)) * notRearingEarly;
+
+        final float stompRaw = state.stompPhase;
+        final float stompLift = 0.5F - 0.5F * Mth.cos(
+                Mth.clamp(stompRaw / 0.30F, 0.0F, 1.0F)
+              * Mth.clamp((0.52F - stompRaw) / 0.22F, 0.0F, 1.0F) * Mth.PI);
+        final float stompDrive = 0.5F - 0.5F * Mth.cos(
+                Mth.clamp((stompRaw - 0.46F) / 0.10F, 0.0F, 1.0F)
+              * Mth.clamp((1.0F - stompRaw) / 0.44F, 0.0F, 1.0F) * Mth.PI);
+        final int stompLeg = state.random01 > 0.5F ? 0 : 1;
+
         final float soreSign = state.random01 > 0.5F ? 1.0F : -1.0F;
         final float limpNod = Mth.cos(stride) * soreSign * limp;
 
@@ -275,6 +312,8 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
                  + (0.1F + Mth.cos(Mth.PI / 4.0F + stride * 2.0F) / 2.0F) * trot) * walk
               + Mth.cos(-Mth.PI / 3.0F + stride) * speed * run
                 * (1.0F - rear / (state.onGround ? 2.5F : 0.75F))
+              + Mth.cos(-Mth.PI / 5.0F + stride) * speed * 0.8F * canter
+                * (1.0F - rear / (state.onGround ? 2.5F : 0.75F))
               + speed / 2.0F
               + (-4.7F - Mth.cos(rearT) / 6.0F) * rear * frameScale
               + 2.0F * land
@@ -283,12 +322,16 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
               + GRAZE_DROP_PIXELS * graze * frameScale
               + 1.0F * skid
               + 0.8F * Math.abs(limpNod)
-              + (3.3F * jGather + 3.4F * jHit) * frameScale;
+              + (3.3F * jGather + 3.4F * jHit) * frameScale
+              + (0.9F * kickCoil - 2.1F * kickSnap) * frameScale
+              + (0.7F * stompLift - 0.5F * stompDrive) * frameScale;
 
         float bodyPitch =
                 Mth.sin(-Mth.PI / 4.0F + breath) / 60.0F * idle
               - Mth.cos(stride * 2.0F) / 40.0F * Math.max(0.3F, move) * walk * (1.0F - 0.75F * tolt)
               + (Mth.sin(stride) / 20.0F - Mth.cos(stride) / 13.0F) * speed * 0.7F * run
+                * (1.0F - rear / (state.onGround ? 1.2F : 3.0F))
+              + (Mth.sin(stride) / 18.0F) * speed * 0.9F * canter
                 * (1.0F - rear / (state.onGround ? 1.2F : 3.0F))
               + Mth.sin(Mth.PI / 4.0F + swimT * 2.0F) / 20.0F * swim
               + (-0.7F + Mth.sin(rearT) / 25.0F) * rear
@@ -296,7 +339,8 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
               - 0.22F * skid
               + GRAZE_PITCH * graze
               + (6.0F * Mth.DEG_TO_RAD) * jGather
-              + (5.0F * Mth.DEG_TO_RAD) * jHit;
+              + (5.0F * Mth.DEG_TO_RAD) * jHit
+              + (-5.0F * kickCoil + 16.0F * kickSnap) * Mth.DEG_TO_RAD;
 
         final float arcPitch = state.arcPitch;
         final float arcWhip = state.arcWhip;
@@ -652,6 +696,25 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
 
             final boolean front = i < 2;
 
+            if (canter > 0.0F) {
+                float p = (ls / Mth.TWO_PI
+                        + (lead > 0.0F ? CANTER_RIGHT_LEAD : CANTER_LEFT_LEAD)[i]) % 1.0F;
+                if (p < 0.0F) {
+                    p += 1.0F;
+                }
+                final float sweep = canterSweep(p);
+                final float swing = p < CANTER_DUTY
+                        ? 0.0F
+                        : Mth.sin(Mth.PI * (p - CANTER_DUTY) / (1.0F - CANTER_DUTY));
+                final float on = canter * speed * (front ? notRearing : 1.0F);
+
+                rot += sweep * (front ? CANTER_ROT_FRONT : CANTER_ROT_BACK) * on;
+                reach += sweep * (front ? CANTER_REACH_FRONT : CANTER_REACH_BACK) * on;
+                lift += Mth.clamp(
+                        -swing * (front ? CANTER_LIFT_FRONT : CANTER_LIFT_BACK) * on,
+                        -4.0F, 0.0F);
+            }
+
             final float airborneDamp = 1.0F - 0.80F * jFlight;
             rot *= airborneDamp;
             reach *= airborneDamp;
@@ -744,8 +807,16 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
 
             final float grazeFold = front ? (-7.0F * Mth.DEG_TO_RAD) * graze : 0.0F;
 
+            final float kickFold = front
+                    ? (5.0F * kickCoil - 4.0F * kickSnap) * Mth.DEG_TO_RAD
+                    : (-34.0F * kickCoil + 66.0F * kickSnap) * Mth.DEG_TO_RAD;
+
+            final float stompFold = i == stompLeg
+                    ? (-58.0F * stompLift + 22.0F * stompDrive) * Mth.DEG_TO_RAD
+                    : 0.0F;
+
             final float lever = legLever[i];
-            final float legSwing = jumpAngle + soreFold + grazeFold;
+            final float legSwing = jumpAngle + soreFold + grazeFold + kickFold + stompFold;
             rot += legSwing;
             reach += lever * Mth.sin(legSwing);
             lift += -lever * (1.0F - Mth.cos(legSwing));

@@ -4,12 +4,17 @@ import icy.betterhorses.net.entity.AmericanPaintHorse;
 import icy.betterhorses.net.entity.AndalusianHorse;
 import icy.betterhorses.net.entity.AppaloosaHorse;
 import icy.betterhorses.net.entity.FriesianHorse;
+import icy.betterhorses.net.entity.HaflingerHorse;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.entity.IcelandicHorse;
+import icy.betterhorses.net.entity.ArabianHorse;
 import icy.betterhorses.net.entity.MediumHorse;
+import icy.betterhorses.net.entity.MorganHorse;
+import icy.betterhorses.net.entity.SmallHorse;
 import icy.betterhorses.net.entity.MustangHorse;
 import icy.betterhorses.net.entity.PercheronHorse;
 import icy.betterhorses.net.entity.QuarterHorse;
+import icy.betterhorses.net.entity.BhBreedHorse;
 import icy.betterhorses.net.entity.BelgianHorse;
 import icy.betterhorses.net.entity.ClydesdaleHorse;
 import icy.betterhorses.net.entity.ShireHorse;
@@ -52,6 +57,15 @@ public final class ModEntities {
                     .clientTrackingRange(10)
                     .build(key("friesian_horse")));
 
+    public static final EntityType<HaflingerHorse> HAFLINGER_HORSE = register(
+            "haflinger_horse",
+            EntityType.Builder.<HaflingerHorse>of(HaflingerHorse::new, MobCategory.CREATURE)
+                    .sized(HaflingerHorse.WIDTH, HaflingerHorse.HEIGHT)
+                    .eyeHeight(HaflingerHorse.HEIGHT * 0.95F)
+                    .passengerAttachments(HaflingerHorse.HEIGHT * 0.90F)
+                    .clientTrackingRange(10)
+                    .build(key("haflinger_horse")));
+
     public static final EntityType<AppaloosaHorse> APPALOOSA_HORSE =
             registerMedium("appaloosa_horse", AppaloosaHorse::new);
     public static final EntityType<ThoroughbredHorse> THOROUGHBRED_HORSE =
@@ -64,6 +78,11 @@ public final class ModEntities {
             registerMedium("mustang_horse", MustangHorse::new);
     public static final EntityType<QuarterHorse> QUARTER_HORSE =
             registerMedium("quarter_horse", QuarterHorse::new);
+
+    public static final EntityType<ArabianHorse> ARABIAN_HORSE =
+            registerSmall("arabian_horse", ArabianHorse::new);
+    public static final EntityType<MorganHorse> MORGAN_HORSE =
+            registerSmall("morgan_horse", MorganHorse::new);
 
     public static final EntityType<PercheronHorse> PERCHERON_HORSE =
             register("percheron_horse", EntityType.Builder.of(PercheronHorse::new, MobCategory.CREATURE)
@@ -97,6 +116,37 @@ public final class ModEntities {
                     .clientTrackingRange(10)
                     .build(key("clydesdale_horse")));
 
+    public static EntityType<? extends BhBreedHorse> forBreed(HorseBreed breed) {
+        return switch (breed) {
+            case THOROUGHBRED -> THOROUGHBRED_HORSE;
+            case ARABIAN -> ARABIAN_HORSE;
+            case QUARTER -> QUARTER_HORSE;
+            case FRIESIAN -> FRIESIAN_HORSE;
+            case ANDALUSIAN -> ANDALUSIAN_HORSE;
+            case PERCHERON -> PERCHERON_HORSE;
+            case CLYDESDALE -> CLYDESDALE_HORSE;
+            case SHIRE -> SHIRE_HORSE;
+            case BELGIAN -> BELGIAN_HORSE;
+            case ICELANDIC -> ICELANDIC_HORSE;
+            case MUSTANG -> MUSTANG_HORSE;
+            case HAFLINGER -> HAFLINGER_HORSE;
+            case MORGAN -> MORGAN_HORSE;
+            case AMERICAN_PAINT -> AMERICAN_PAINT_HORSE;
+            case APPALOOSA -> APPALOOSA_HORSE;
+            default -> MUSTANG_HORSE;
+        };
+    }
+
+    private static <T extends SmallHorse> EntityType<T> registerSmall(
+            String path, EntityType.EntityFactory<T> factory) {
+        return register(path, EntityType.Builder.of(factory, MobCategory.CREATURE)
+                .sized(SmallHorse.WIDTH, SmallHorse.HEIGHT)
+                .eyeHeight(SmallHorse.HEIGHT * 0.95F)
+                .passengerAttachments(SmallHorse.HEIGHT * 0.90F)
+                .clientTrackingRange(10)
+                .build(key(path)));
+    }
+
     private static <T extends MediumHorse> EntityType<T> registerMedium(
             String path, EntityType.EntityFactory<T> factory) {
         return register(path, EntityType.Builder.of(factory, MobCategory.CREATURE)
@@ -110,12 +160,15 @@ public final class ModEntities {
     public static void init() {
         FabricDefaultAttributeRegistry.register(ICELANDIC_HORSE, IcelandicHorse.createAttributes());
         FabricDefaultAttributeRegistry.register(FRIESIAN_HORSE, FriesianHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(HAFLINGER_HORSE, HaflingerHorse.createAttributes());
         FabricDefaultAttributeRegistry.register(APPALOOSA_HORSE, AppaloosaHorse.createAttributes());
         FabricDefaultAttributeRegistry.register(THOROUGHBRED_HORSE, ThoroughbredHorse.createAttributes());
         FabricDefaultAttributeRegistry.register(AMERICAN_PAINT_HORSE, AmericanPaintHorse.createAttributes());
         FabricDefaultAttributeRegistry.register(ANDALUSIAN_HORSE, AndalusianHorse.createAttributes());
         FabricDefaultAttributeRegistry.register(MUSTANG_HORSE, MustangHorse.createAttributes());
         FabricDefaultAttributeRegistry.register(QUARTER_HORSE, QuarterHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(ARABIAN_HORSE, ArabianHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(MORGAN_HORSE, MorganHorse.createAttributes());
         FabricDefaultAttributeRegistry.register(PERCHERON_HORSE, PercheronHorse.createAttributes());
         FabricDefaultAttributeRegistry.register(SHIRE_HORSE, ShireHorse.createAttributes());
         FabricDefaultAttributeRegistry.register(BELGIAN_HORSE, BelgianHorse.createAttributes());

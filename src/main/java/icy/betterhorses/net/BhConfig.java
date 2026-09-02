@@ -24,6 +24,10 @@ public final class BhConfig {
     private static final String KEY_HOOVES = "hooves";
     private static final String KEY_HORSE_EXCLUSIVITY = "horse_exclusivity";
     private static final String KEY_MULTI_RIDING = "multiriding";
+    private static final String KEY_HORSE_COMBAT = "horse_combat";
+    private static final String KEY_BRICK_BREAK = "brick_break";
+    private static final String KEY_TRANSPARENT_HORSES = "transparent_horses";
+    private static final String KEY_GENDER_BREEDING = "gender_breeding";
 
     private static final Path CONFIG_PATH = FabricLoader.getInstance()
             .getConfigDir()
@@ -57,6 +61,10 @@ public final class BhConfig {
             needsRewrite |= !root.has(KEY_HOOVES);
             needsRewrite |= !root.has(KEY_HORSE_EXCLUSIVITY);
             needsRewrite |= !root.has(KEY_MULTI_RIDING);
+            needsRewrite |= !root.has(KEY_HORSE_COMBAT);
+            needsRewrite |= !root.has(KEY_BRICK_BREAK);
+            needsRewrite |= !root.has(KEY_TRANSPARENT_HORSES);
+            needsRewrite |= !root.has(KEY_GENDER_BREEDING);
 
             state = new State(
                     readToggle(root, KEY_STABILIZER, defaults.stabilizer()),
@@ -64,7 +72,11 @@ public final class BhConfig {
                     readToggle(root, KEY_HITCHPOST, defaults.hitchpost()),
                     readToggle(root, KEY_HOOVES, defaults.hooves()),
                     readToggle(root, KEY_HORSE_EXCLUSIVITY, defaults.horseExclusivity()),
-                    readToggle(root, KEY_MULTI_RIDING, defaults.multiRiding()));
+                    readToggle(root, KEY_MULTI_RIDING, defaults.multiRiding()),
+                    readToggle(root, KEY_HORSE_COMBAT, defaults.horseCombat()),
+                    readToggle(root, KEY_BRICK_BREAK, defaults.brickBreak()),
+                    readToggle(root, KEY_TRANSPARENT_HORSES, defaults.transparentHorses()),
+                    readToggle(root, KEY_GENDER_BREEDING, defaults.genderBreeding()));
         } catch (Exception exception) {
             state = defaults;
             IcysBetterHorses.LOGGER.warn("Failed to load config from {}. Reverting to defaults.",
@@ -104,9 +116,28 @@ public final class BhConfig {
         return state.multiRiding();
     }
 
+    public static boolean horseCombatEnabled() {
+        return state.horseCombat();
+    }
+
+    public static boolean brickBreakEnabled() {
+        return state.brickBreak();
+    }
+
+    public static boolean transparentHorsesEnabled() {
+        return state.transparentHorses();
+    }
+
+    public static boolean genderBreedingEnabled() {
+        return state.genderBreeding();
+    }
+
     public static synchronized void apply(boolean stabilizer, boolean medkit, boolean hitchpost,
-                                          boolean hooves, boolean horseExclusivity, boolean multiRiding) {
-        state = new State(stabilizer, medkit, hitchpost, hooves, horseExclusivity, multiRiding);
+                                          boolean hooves, boolean horseExclusivity, boolean multiRiding,
+                                          boolean horseCombat, boolean brickBreak,
+                                          boolean transparentHorses, boolean genderBreeding) {
+        state = new State(stabilizer, medkit, hitchpost, hooves, horseExclusivity, multiRiding,
+                horseCombat, brickBreak, transparentHorses, genderBreeding);
         save();
     }
 
@@ -154,6 +185,10 @@ public final class BhConfig {
         root.addProperty(KEY_HOOVES, yesNo(state.hooves()));
         root.addProperty(KEY_HORSE_EXCLUSIVITY, yesNo(state.horseExclusivity()));
         root.addProperty(KEY_MULTI_RIDING, yesNo(state.multiRiding()));
+        root.addProperty(KEY_HORSE_COMBAT, yesNo(state.horseCombat()));
+        root.addProperty(KEY_BRICK_BREAK, yesNo(state.brickBreak()));
+        root.addProperty(KEY_TRANSPARENT_HORSES, yesNo(state.transparentHorses()));
+        root.addProperty(KEY_GENDER_BREEDING, yesNo(state.genderBreeding()));
 
         try {
             Files.createDirectories(CONFIG_PATH.getParent());
@@ -175,10 +210,14 @@ public final class BhConfig {
             boolean hitchpost,
             boolean hooves,
             boolean horseExclusivity,
-            boolean multiRiding) {
+            boolean multiRiding,
+            boolean horseCombat,
+            boolean brickBreak,
+            boolean transparentHorses,
+            boolean genderBreeding) {
 
         private static State defaults() {
-            return new State(true, true, true, true, true, true);
+            return new State(true, true, true, true, true, true, true, false, true, true);
         }
     }
 

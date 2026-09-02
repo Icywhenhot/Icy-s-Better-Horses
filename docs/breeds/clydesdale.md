@@ -15,6 +15,22 @@ Scotland's draft giant, easy to spot by its white-feathered legs and bold field 
 
 ---
 
+## Class: Draft
+
+Slowest and toughest. Four rows of storage, a chest *and* two riders, no cart penalty, half spook chance.
+
+See [Breeds](index) for what every class shares.
+
+## Breed ability: Ironclad
+
+Barding counts **double** on a Clydesdale. Iron protects like diamond. Because charge and kick damage both scale off armour, better barding also makes it hit harder.
+
+| Bond | Effect |
+|:---|:---|
+| 0 | barding counts double |
+| 40 | that protection extends to the rider |
+| 100 | **Deflect**: projectiles bounce off instead of landing |
+
 ## Coats
 
 {: .note }

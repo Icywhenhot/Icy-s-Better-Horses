@@ -2,8 +2,10 @@
   "type": "modonomicon:content",
   "id": "icys-better-horses:basics/ownership_and_bonding",
   "category": "icys-better-horses:basics",
-  "name": "Claiming a Mount",
-  "icon": { "id": "minecraft:name_tag" },
+  "name": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.name",
+  "icon": {
+    "id": "minecraft:name_tag"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -12,28 +14,32 @@
   "x": 0,
   "y": 0,
   "sort_number": 1,
-  "parents": [ { "entry": "icys-better-horses:basics/welcome" } ],
+  "parents": [
+    {
+      "entry": "icys-better-horses:basics/welcome"
+    }
+  ],
   "pages": [
     {
       "type": "modonomicon:text",
       "id": "owned",
-      "title": "Ownership",
+      "title": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.owned.title",
       "show_title_separator": true,
-      "text": "Tame a horse fully and it becomes **owned** and starts using Better Horses' systems."
+      "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.owned.text"
     },
     {
       "type": "modonomicon:text",
       "id": "command_wheel",
-      "title": "Command Wheel",
+      "title": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.command_wheel.title",
       "show_title_separator": true,
-      "text": "Look at an owned horse and press your **Horse Command Wheel** key to open the radial menu. Pick a wedge to issue it, or click outside to cancel.\n\n- **Follow**: the horse trails after you.\n- **Wander**: it grazes and roams a 32x32 area around where you gave the command.\n- **Stay**: it waits where you left it.\n- **Set Home**: marks the spot as home and switches to Stay.\n- **Return Home**: sends it back to that saved spot."
+      "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.command_wheel.text"
     },
     {
       "type": "modonomicon:text",
       "id": "whistle_bond",
-      "title": "Whistle and Bond",
+      "title": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.whistle_bond.title",
       "show_title_separator": true,
-      "text": "Press your **Horse Whistle** key to whistle for your horse. Nearby mounts switch to **Follow**; distant ones are pulled closer. While riding, the same key opens the horse's info screen instead.\n\nBond runs 0 to 100, and every 20 points adds speed and jump strength.\n\n- Stay near your horse for slow passive gain.\n- A **Name Tag** gives +10 bond.\n- A **Golden Apple** gives +2 bond."
+      "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.whistle_bond.text"
     }
   ]
 }

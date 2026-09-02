@@ -54,6 +54,10 @@ public final class ModItems {
             new SpawnEggItem(itemProperties("friesian_horse_spawn_egg")
                     .spawnEgg(ModEntities.FRIESIAN_HORSE)));
 
+    public static final Item HAFLINGER_HORSE_SPAWN_EGG = register("haflinger_horse_spawn_egg",
+            new SpawnEggItem(itemProperties("haflinger_horse_spawn_egg")
+                    .spawnEgg(ModEntities.HAFLINGER_HORSE)));
+
     public static final Item APPALOOSA_HORSE_SPAWN_EGG = register("appaloosa_horse_spawn_egg",
             new SpawnEggItem(itemProperties("appaloosa_horse_spawn_egg")
                     .spawnEgg(ModEntities.APPALOOSA_HORSE)));
@@ -77,6 +81,14 @@ public final class ModItems {
     public static final Item QUARTER_HORSE_SPAWN_EGG = register("quarter_horse_spawn_egg",
             new SpawnEggItem(itemProperties("quarter_horse_spawn_egg")
                     .spawnEgg(ModEntities.QUARTER_HORSE)));
+
+    public static final Item ARABIAN_HORSE_SPAWN_EGG = register("arabian_horse_spawn_egg",
+            new SpawnEggItem(itemProperties("arabian_horse_spawn_egg")
+                    .spawnEgg(ModEntities.ARABIAN_HORSE)));
+
+    public static final Item MORGAN_HORSE_SPAWN_EGG = register("morgan_horse_spawn_egg",
+            new SpawnEggItem(itemProperties("morgan_horse_spawn_egg")
+                    .spawnEgg(ModEntities.MORGAN_HORSE)));
 
     public static final Item PERCHERON_HORSE_SPAWN_EGG = register("percheron_horse_spawn_egg",
             new SpawnEggItem(itemProperties("percheron_horse_spawn_egg")
@@ -103,10 +115,13 @@ public final class ModItems {
             ANDALUSIAN_HORSE_SPAWN_EGG,
             MUSTANG_HORSE_SPAWN_EGG,
             QUARTER_HORSE_SPAWN_EGG,
+            ARABIAN_HORSE_SPAWN_EGG,
+            MORGAN_HORSE_SPAWN_EGG,
             PERCHERON_HORSE_SPAWN_EGG,
             SHIRE_HORSE_SPAWN_EGG,
             BELGIAN_HORSE_SPAWN_EGG,
-            CLYDESDALE_HORSE_SPAWN_EGG);
+            CLYDESDALE_HORSE_SPAWN_EGG,
+            HAFLINGER_HORSE_SPAWN_EGG);
 
     public static final CreativeModeTab STABLE_SUPPLIES_TAB = Registry.register(
             BuiltInRegistries.CREATIVE_MODE_TAB,

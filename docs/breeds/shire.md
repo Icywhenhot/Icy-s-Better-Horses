@@ -15,6 +15,22 @@ England's largest draft horse, taller than a Clydesdale and just as patient. Usu
 
 ---
 
+## Class: Draft
+
+Slowest and toughest. Four rows of storage, a chest *and* two riders, no cart penalty, half spook chance.
+
+See [Breeds](index) for what every class shares.
+
+## Breed ability: Intimidation
+
+Anything that has locked onto you but has not swung yet gets snorted and stamped at, and usually thinks better of it. Once something has actually hit you it is too late; the Shire will not talk it down.
+
+| Bond | Effect |
+|:---|:---|
+| 0 | de-aggros mobs that have targeted you but not yet attacked |
+| 40 | wider radius |
+| 100 | **Brick Break**, same as the Belgian's |
+
 ## Coats
 
 {: .note }

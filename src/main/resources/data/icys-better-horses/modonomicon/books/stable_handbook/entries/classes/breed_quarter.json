@@ -1,0 +1,50 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:classes/breed_quarter",
+  "category": "icys-better-horses:classes",
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_quarter.name",
+  "icon": {
+    "id": "icys-better-horses:quarter_horse_spawn_egg"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 0,
+  "y": -4,
+  "sort_number": 3,
+  "parents": [
+    {
+      "entry": "icys-better-horses:classes/race"
+    }
+  ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_quarter.about.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_quarter.about.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "ability",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_quarter.ability.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_quarter.ability.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "spawns",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_quarter.spawns.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_quarter.spawns.text"
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "id": "coats",
+      "entity": "icys-better-horses:quarter_horse"
+    }
+  ]
+}

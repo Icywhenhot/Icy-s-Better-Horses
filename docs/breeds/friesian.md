@@ -15,14 +15,21 @@ The all-black horse of the Dutch lowlands. Tall, powerful, and always show-ready
 
 ---
 
-## Breed ability: Majestic Presence
+## Class: War
 
-Get into the saddle and whatever is chasing you **gives up on the spot** — wolves, polar bears, bees, iron golems, anything neutral within 24 blocks. Mounting a Friesian ends the chase, no matter who started it.
+Never spooks, never rears when struck, medkits last twice as long, hits hardest.
 
-While you ride, it keeps them off you: neutral mobs within 12 blocks drop a grudge before it turns into a fight.
+See [Breeds](index) for what every class shares.
 
-{: .note }
-> The two halves differ on purpose. The standing calm won't call off a fight you picked — anything the rider or horse actually struck stays angry. The mounting one will, because getting to your horse is exactly what you do when something is already after you.
+## Breed ability: Presence
+
+Neutral mobs lose interest in you. Anything already angry at the horse or its rider drops the grudge.
+
+| Bond | Effect |
+|:---|:---|
+| 0 | calms neutral mobs in radius |
+| 40 | calms hostiles as well |
+| 100 | **Dressage**: rearing throws hostiles in front back and clears their target |
 
 ## Coats
 

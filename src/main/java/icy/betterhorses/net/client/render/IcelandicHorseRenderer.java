@@ -70,7 +70,7 @@ public class IcelandicHorseRenderer
         int gear = data.bh_getGaitGear();
         boolean following = data.bh_isOwned() && data.bh_getCommand() == HorseCommand.FOLLOW;
         state.toltRequest = state.isRidden
-                ? (gear == BhGears.TOLT_LOW_GEAR || gear == BhGears.TOLT_HIGH_GEAR ? 1.0F : 0.0F)
+                ? (gear == BhGears.TOLT_GEAR ? 1.0F : 0.0F)
                 : (following ? 1.0F : 0.0F);
 
         state.commandedToStay =

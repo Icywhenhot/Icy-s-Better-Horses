@@ -1,9 +1,17 @@
 package icy.betterhorses.net.client.render;
 
+import icy.betterhorses.net.BhGears;
+import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.client.BhClientCaches;
 import net.minecraft.util.Mth;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public final class BhEquineGait {
 
@@ -83,12 +91,27 @@ public final class BhEquineGait {
     private static final float JUMP_RISE_OUT_PER_SECOND = 5.0F;
     private static final float ARC_LAG_SECONDS = 0.10F;
 
+    private static final float KICK_SECONDS = 0.62F;
+    private static final float STOMP_SECONDS = 0.5F;
+
+    private static final float MOVE_EPSILON = 0.02F;
+
+    private static final int STALE_FRAMES = 200;
+    private static final int SWEEP_INTERVAL = 600;
+
+    private static final Map<Integer, BhEquineGait> ACTIVE = new HashMap<>();
+
+    private static int frameStamp;
+
+    private int seenStamp;
+
     private final float random01;
 
     private final float leadSign;
 
     private float walk;
     private float trot;
+    private float canter;
     private float run;
     private float swimRamp;
     private float stridePhase;
@@ -100,6 +123,10 @@ public final class BhEquineGait {
     private boolean landOwed;
     private float lastJumpActive;
     private float shake;
+    private float kickClock = Float.MAX_VALUE;
+    private int lastKickTicks;
+    private float stompClock = Float.MAX_VALUE;
+    private int lastStompTicks;
     private float frontLeftStamp;
     private float backRightStamp;
     private float earFlickLeft;
@@ -176,14 +203,40 @@ public final class BhEquineGait {
                 : 0.0F;
     }
 
-    int entityId() {
-        return entityId;
-    }
-
     public static void advanceFor(Entity entity,
                                   BhHorseRenderState state) {
         fillJumpInputs(entity, state);
-        state.gaitFor(entity.getId()).advance(state, state.ageInTicks);
+        if (entity instanceof AbstractHorse horse) {
+            IHorseData data = IHorseData.of(horse);
+            state.gear = data.bh_getGear();
+            state.kickTicks = data.bh_getKickTicks();
+            state.stompTicks = data.bh_getStompTicks();
+        } else {
+            state.gear = 0;
+            state.kickTicks = 0;
+            state.stompTicks = 0;
+        }
+
+        if (++frameStamp % SWEEP_INTERVAL == 0) {
+            sweep();
+        }
+
+        BhEquineGait gait = ACTIVE.computeIfAbsent(entity.getId(), BhEquineGait::new);
+        gait.seenStamp = frameStamp;
+        gait.advance(state, state.ageInTicks);
+    }
+
+    public static void reset() {
+        ACTIVE.clear();
+    }
+
+    private static void sweep() {
+        Iterator<BhEquineGait> gaits = ACTIVE.values().iterator();
+        while (gaits.hasNext()) {
+            if (frameStamp - gaits.next().seenStamp > STALE_FRAMES) {
+                gaits.remove();
+            }
+        }
     }
 
     public void advance(BhHorseRenderState state, float ageInTicks) {
@@ -209,14 +262,25 @@ public final class BhEquineGait {
         float swim = Mth.clamp(-0.5F + swimRamp * 2.0F, 0.0F, 1.0F);
 
         float runThreshold = state.isRidden ? 0.8F : (state.isBaby ? 0.7F : 0.97F);
+        float canterThreshold = state.isRidden ? 0.62F : (state.isBaby ? 0.55F : 0.78F);
         float trotThreshold = state.isRidden ? 0.4F : 0.6F;
 
+        int gait = limbSpeed <= MOVE_EPSILON ? 0
+                : state.gear > 0 ? Math.min(state.gear, BhGears.GALLOP_GEAR)
+                : limbSpeed >= runThreshold ? BhGears.GALLOP_GEAR
+                : limbSpeed >= canterThreshold ? BhGears.CANTER_GEAR
+                : limbSpeed >= trotThreshold ? BhGears.TROT_GEAR
+                : BhGears.WALK_GEAR;
+
         run = Mth.clamp(
-                run + (limbSpeed >= runThreshold ? RAMP_PER_SECOND : -RAMP_PER_SECOND) * deltaSeconds,
+                run + (gait == BhGears.GALLOP_GEAR ? RAMP_PER_SECOND : -RAMP_PER_SECOND) * deltaSeconds,
                 0.0F, Math.max(0.0F, 1.0F - swim));
-        trot = Mth.clamp(
-                trot + (limbSpeed >= trotThreshold ? RAMP_PER_SECOND : -RAMP_PER_SECOND) * deltaSeconds,
+        canter = Mth.clamp(
+                canter + (gait == BhGears.CANTER_GEAR ? RAMP_PER_SECOND : -RAMP_PER_SECOND) * deltaSeconds,
                 0.0F, Math.max(0.0F, 1.0F - swim - run));
+        trot = Mth.clamp(
+                trot + (gait == BhGears.TROT_GEAR ? RAMP_PER_SECOND : -RAMP_PER_SECOND) * deltaSeconds,
+                0.0F, Math.max(0.0F, 1.0F - swim - run - canter));
         ridden = Mth.clamp(
                 ridden + (state.isRidden ? MOUNT_PER_SECOND : -MOUNT_PER_SECOND) * deltaSeconds,
                 0.0F, 1.0F);
@@ -231,17 +295,18 @@ public final class BhEquineGait {
                 Math.max(0.0F, 1.0F - swim));
 
         float runOut = run * (1.0F - tolt);
+        float canterOut = canter * (1.0F - tolt);
         float trotOut = trot * (1.0F - tolt);
-        walk = Math.max(0.0F, 1.0F - swim - runOut);
+        walk = Math.max(0.0F, 1.0F - swim - runOut - canterOut);
 
         boolean reversing = state.forwardSpeed < -BACK_SPEED_TRIGGER && !swimming;
         back = Mth.clamp(back + (reversing ? BACK_IN_PER_SECOND : -BACK_OUT_PER_SECOND)
                 * deltaSeconds, 0.0F, Math.max(0.0F, 1.0F - rear));
         state.backWeight = back;
 
-        if (trotOut > 0.0F || runOut > 0.0F || tolt > 0.0F) {
+        if (trotOut > 0.0F || canterOut > 0.0F || runOut > 0.0F || tolt > 0.0F) {
             strideOffset += deltaSeconds * limbSpeed
-                    * (state.isRidden ? 1.0F - 0.7F * runOut : 1.0F);
+                    * (state.isRidden ? 1.0F - 0.7F * runOut - 0.45F * canterOut : 1.0F);
         }
 
         float walkPosDelta = Float.isNaN(lastWalkPos) ? 0.0F : state.walkAnimationPos - lastWalkPos;
@@ -259,6 +324,7 @@ public final class BhEquineGait {
 
         state.walkWeight = walk;
         state.trotWeight = trotOut;
+        state.canterWeight = canterOut;
         state.runWeight = runOut;
         state.toltWeight = tolt;
 
@@ -488,6 +554,24 @@ public final class BhEquineGait {
                 0.0F, Math.min(shake, Math.max(0.0F, 1.0F - rear)));
         state.waterShakeRaw = waterShake;
 
+        if (state.kickTicks > lastKickTicks) {
+            kickClock = 0.0F;
+        }
+        lastKickTicks = state.kickTicks;
+        if (kickClock < KICK_SECONDS) {
+            kickClock += deltaSeconds;
+        }
+        state.kickPhase = Mth.clamp(kickClock / KICK_SECONDS, 0.0F, 1.0F);
+
+        if (state.stompTicks > lastStompTicks) {
+            stompClock = 0.0F;
+        }
+        lastStompTicks = state.stompTicks;
+        if (stompClock < STOMP_SECONDS) {
+            stompClock += deltaSeconds;
+        }
+        state.stompPhase = Mth.clamp(stompClock / STOMP_SECONDS, 0.0F, 1.0F);
+
         float stampSignal = phase + (ageInTicks + state.walkAnimationPos) / 130.0F;
         float stampCeiling = Math.max(0.0F, idle - rear);
         boolean grounded = !state.isInWater && state.onGround;
@@ -598,5 +682,9 @@ public final class BhEquineGait {
             return 1.0F;
         }
         return Math.max(0.0F, current - decayPerSecond * deltaSeconds);
+    }
+
+    static {
+        BhClientCaches.register(BhEquineGait::reset);
     }
 }

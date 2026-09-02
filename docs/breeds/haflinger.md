@@ -15,6 +15,20 @@ A small Tyrolean mountain breed with a chestnut body and flaxen mane. Sure-foote
 
 ---
 
+## Class: Pony
+
+Two-block step, no fall damage under 15 blocks, walks on powder snow, heals passively.
+
+See [Breeds](index) for what every class shares.
+
+## Breed ability: Packhorse
+
+| Bond | Effect |
+|:---|:---|
+| 0 | **four rows** of storage, a row above the pony baseline |
+| 40 | pulls a cart with no speed penalty |
+| 100 | **six rows**, and **Hearthlight**: after dark it glows and lights the ground it walks over |
+
 ## Coats
 
 | Coat |

@@ -1,5 +1,6 @@
 package icy.betterhorses.net.client;
 
+import icy.betterhorses.net.BreedArchetype;
 import icy.betterhorses.net.HorseManageAction;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.network.HorseManagePayload;
@@ -42,9 +43,11 @@ public class HorseInfoScreen extends Screen {
     private static final double SPEED_DISPLAY_FACTOR = 43.2D;
 
     private static final double BOND_MAX_MULTIPLIER = 1.0D + 5 * 0.15D;
-    private static final double SPEED_MAX = 0.3375D * BOND_MAX_MULTIPLIER * SPEED_DISPLAY_FACTOR;
-    private static final double JUMP_MAX = Math.max(0.0D, 1.0D * BOND_MAX_MULTIPLIER * 6.0D - 1.0D);
-    private static final double HEALTH_MAX = 30.0D;
+    private static final double SPEED_MAX =
+            BreedArchetype.topSpeed() * BOND_MAX_MULTIPLIER * SPEED_DISPLAY_FACTOR;
+    private static final double JUMP_MAX =
+            Math.max(0.0D, BreedArchetype.topJump() * BOND_MAX_MULTIPLIER * 6.0D - 1.0D);
+    private static final double HEALTH_MAX = BreedArchetype.topHealth();
 
     private static final int DISOWN_BTN_WIDTH = 110;
     private static final int DISOWN_BTN_HEIGHT = 24;

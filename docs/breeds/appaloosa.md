@@ -15,11 +15,19 @@ Known for its leopard-spot pattern, the only breed whose coat always carries dot
 
 ---
 
-## Breed ability: Scout's Vision
+## Class: Western
 
-After dark, the rider sees as the horse does: **Night Vision while mounted at night**, and through a thunderstorm dark enough to pass for one.
+Gains speed on roads: +10% at bond 0, +20% at 40, +50% at 100.
 
-It comes on quietly — no swirling particles, no HUD icon — is refreshed while you ride so it never flickers, and fades on its own once the sun is up.
+See [Breeds](index) for what every class shares.
+
+## Breed ability: Stock Horse
+
+| Bond | Effect |
+|:---|:---|
+| 0 | night vision while ridden in the dark |
+| 40 | **herding**, toggleable: livestock follow the horse with no food in hand |
+| 100 | **auto-feed**: with a chest equipped, it hands nearby animals the right breeding food from its own storage |
 
 ## Coats
 

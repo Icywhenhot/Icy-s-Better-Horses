@@ -2,7 +2,7 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.client.HorseAutodriveController;
 import icy.betterhorses.net.client.HorseGearController;
-import icy.betterhorses.net.client.HorseSteerModeController;
+import icy.betterhorses.net.client.HorseFreeLookController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.ClientInput;
@@ -41,7 +41,7 @@ public abstract class KeyboardInputMixin extends ClientInput {
             }
         }
 
-        HorseSteerModeController.INSTANCE.tick(eligible ? riddenHorse : null);
+        HorseFreeLookController.INSTANCE.tick(eligible ? riddenHorse : null);
 
         Input current = this.keyPresses;
         Vec2 currentMove = this.moveVector;

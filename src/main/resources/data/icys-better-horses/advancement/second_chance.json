@@ -1,0 +1,33 @@
+{
+  "criteria": {
+    "second_chance": {
+      "conditions": {
+        "key": "second_chance"
+      },
+      "trigger": "icys-better-horses:milestone"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.icys-better-horses.second_chance.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "id": "minecraft:totem_of_undying"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.icys-better-horses.second_chance.title"
+    }
+  },
+  "parent": "icys-better-horses:ride_or_die",
+  "requirements": [
+    [
+      "second_chance"
+    ]
+  ],
+  "rewards": {
+    "experience": 100
+  }
+}

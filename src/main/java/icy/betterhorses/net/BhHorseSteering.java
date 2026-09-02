@@ -1,6 +1,7 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.entity.HorseCartEntity;
+import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
@@ -17,11 +18,17 @@ public final class BhHorseSteering {
     private static final double FRONT_PASSENGER_Z_OFFSET = 0.35D;
     private static final double REAR_PASSENGER_Z_OFFSET = -0.35D;
     private static final float FREE_CAMERA_ANGLE_THRESHOLD = 90.0F;
-    private static final float MANUAL_TURN_DEGREES_PER_TICK = 4.5F;
-    private static final float MANUAL_TURN_FULL_SPEED = 0.35F;
-    private static final float MANUAL_TURN_SPEED_FALLOFF = 0.45F;
 
     private BhHorseSteering() {}
+
+    public static int bh_seatCount(IHorseData data) {
+        if (data.bh_getBreed() == HorseBreed.BELGIAN
+                && BhHorseTraits.bondTier(data.bh_getBond()) >= 1
+                && !data.bh_hasGear(GearSlot.CHEST)) {
+            return 3;
+        }
+        return 2;
+    }
 
     public static int benchSeatIndex(AbstractHorse horse, Entity passenger) {
         if (!(passenger instanceof Player)) {
@@ -36,7 +43,7 @@ public final class BhHorseSteering {
                 seat++;
             }
         }
-        return Math.min(seat, 1);
+        return Math.min(seat, bh_seatCount(IHorseData.of(horse)) - 1);
     }
 
     public static @Nullable Vec3 multiRiderOffset(AbstractHorse horse, Entity passenger) {
@@ -54,12 +61,8 @@ public final class BhHorseSteering {
     }
 
     public static @Nullable Vec2 riddenRotation(AbstractHorse horse, IHorseData data, Player player) {
-        if (data.bh_isFreeSteer()) {
-            float speed = (float) horse.getDeltaMovement().horizontalDistance();
-            float turnScale = 1.0F - MANUAL_TURN_SPEED_FALLOFF
-                    * Mth.clamp(speed / MANUAL_TURN_FULL_SPEED, 0.0F, 1.0F);
-            float yaw = horse.getYRot() - player.xxa * MANUAL_TURN_DEGREES_PER_TICK * turnScale;
-            return new Vec2(0.0F, Mth.wrapDegrees(yaw));
+        if (data.bh_isFreeLook()) {
+            return new Vec2(horse.getXRot(), horse.getYRot());
         }
 
         if (player.xxa != 0.0F || player.zza != 0.0F) {
@@ -82,7 +85,12 @@ public final class BhHorseSteering {
         List<Entity> passengers = horse.getPassengers();
         boolean multiRidingEnabled = BhConfig.multiRidingEnabled() || data.bh_hasCartGear();
         boolean horseExclusivityEnabled = BhConfig.horseExclusivityEnabled();
-        if (passengers.size() >= (multiRidingEnabled ? 2 : 1)) {
+        if (passengers.size() >= (multiRidingEnabled ? bh_seatCount(data) : 1)) {
+            return false;
+        }
+        if (passenger instanceof Player && !passengers.isEmpty()
+                && data.bh_hasGear(GearSlot.CHEST)
+                && !data.bh_getBreed().archetype().allowsChestAndRiders()) {
             return false;
         }
 

@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhCriteria;
 import icy.betterhorses.net.BhHorseSpawnRules;
 import icy.betterhorses.net.HorseBreed;
@@ -46,7 +47,8 @@ public abstract class AnimalMixin {
     @Inject(method = "canMate", at = @At("HEAD"), cancellable = true)
     private void bh_blockSameGenderBreeding(Animal other, CallbackInfoReturnable<Boolean> cir) {
         Animal self = (Animal) (Object) this;
-        if (!(self instanceof AbstractHorse selfHorse) || !(other instanceof AbstractHorse otherHorse)) {
+        if (!BhConfig.genderBreedingEnabled()
+                || !(self instanceof AbstractHorse selfHorse) || !(other instanceof AbstractHorse otherHorse)) {
             return;
         }
         HorseGender selfGender = IHorseData.of(selfHorse).bh_getGender();

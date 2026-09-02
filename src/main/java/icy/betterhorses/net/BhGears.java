@@ -6,8 +6,12 @@ public final class BhGears {
 
     public static final int TOP_GEAR = SPEEDS.length - 1;
 
-    public static final int TOLT_LOW_GEAR = 2;
-    public static final int TOLT_HIGH_GEAR = 3;
+    public static final int WALK_GEAR = 1;
+    public static final int TROT_GEAR = 2;
+    public static final int CANTER_GEAR = 3;
+    public static final int GALLOP_GEAR = 4;
+
+    public static final int TOLT_GEAR = TROT_GEAR;
 
     private BhGears() {}
 

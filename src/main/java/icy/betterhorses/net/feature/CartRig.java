@@ -1,7 +1,13 @@
 package icy.betterhorses.net.feature;
 
+import icy.betterhorses.net.BhHorseAttributes;
+import icy.betterhorses.net.BhHorseTraits;
+import icy.betterhorses.net.BreedArchetype;
+import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.HorseCartEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
@@ -11,7 +17,11 @@ import org.jetbrains.annotations.Nullable;
 
 public final class CartRig implements HorseFeature {
 
+    private static final String DRAG_KEY = "cart";
+    private static final double DRAG = 0.30D;
+
     private @Nullable HorseCartEntity cart;
+    private boolean dragged;
 
     private boolean frozen;
     private float frozenYaw;
@@ -24,6 +34,7 @@ public final class CartRig implements HorseFeature {
     @Override
     public void tick(AbstractHorse horse, IHorseData data) {
         syncCartEntity(horse, data);
+        cartDrag(horse, data);
         freezeWhenUnridden(horse, data);
     }
 
@@ -47,6 +58,27 @@ public final class CartRig implements HorseFeature {
             }
             cart = null;
         }
+    }
+
+    private void cartDrag(AbstractHorse horse, IHorseData data) {
+        if (horse.level().isClientSide()) {
+            return;
+        }
+        boolean want = data.bh_hasCartGear() && !pullsFree(data);
+        if (want == dragged) {
+            return;
+        }
+        dragged = want;
+        BhHorseAttributes.apply(horse, Attributes.MOVEMENT_SPEED,
+                BhHorseAttributes.Source.GEAR, DRAG_KEY, want ? -DRAG : 0.0D,
+                AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+    }
+
+    private static boolean pullsFree(IHorseData data) {
+        HorseBreed breed = data.bh_getBreed();
+        return breed.archetype() == BreedArchetype.DRAFT
+                || (breed == HorseBreed.HAFLINGER
+                        && BhHorseTraits.bondTier(data.bh_getBond()) >= 1);
     }
 
     private void freezeWhenUnridden(AbstractHorse horse, IHorseData data) {

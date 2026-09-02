@@ -67,11 +67,44 @@ public interface IHorseData {
     int bh_getGear();
     void bh_setGear(int gear);
 
+    @Nullable UUID bh_getCombatTarget();
+    void bh_setCombatTarget(@Nullable UUID target);
+    int bh_getSpookTicks();
+    void bh_setSpookTicks(int ticks);
+    int bh_getCombatState();
+    int bh_getKickTicks();
+    void bh_setKickTicks(int ticks);
+
+    boolean bh_isAbilityToggled();
+    void bh_setAbilityToggled(boolean on);
+
+    @Nullable UUID bh_getPairedTo();
+    void bh_setPairedTo(@Nullable UUID horseId);
+
+    default int bh_getChestRows() {
+        if (bh_hasEnderChestGear()) {
+            return 3;
+        }
+        return bh_getBreed().chestRows(BhHorseTraits.bondTier(bh_getBond()));
+    }
+
     int bh_getGaitGear();
     void bh_setGaitGear(int gear);
 
-    boolean bh_isFreeSteer();
-    void bh_setFreeSteer(boolean freeSteer);
+    boolean bh_isFreeLook();
+    void bh_setFreeLook(boolean freeLook);
+
+    int bh_getStompTicks();
+    void bh_setStompTicks(int ticks);
+
+    int bh_getSurge();
+    void bh_setSurge(int packed);
+
+    int bh_getPerkSurge();
+    void bh_setPerkSurge(int packed);
+
+    int bh_getCharge();
+    void bh_setCharge(int fill);
 
     default boolean bh_isHitched() {
         return bh_getHitchpostPos() != null;

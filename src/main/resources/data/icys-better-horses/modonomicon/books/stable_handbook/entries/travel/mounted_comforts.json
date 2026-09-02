@@ -2,7 +2,7 @@
   "type": "modonomicon:content",
   "id": "icys-better-horses:travel/mounted_comforts",
   "category": "icys-better-horses:basics",
-  "name": "Mounted Comforts",
+  "name": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.name",
   "icon": {
     "id": "minecraft:feather"
   },
@@ -23,37 +23,30 @@
     {
       "type": "modonomicon:text",
       "id": "intro",
-      "title": "Smoother Riding",
+      "title": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.intro.title",
       "show_title_separator": true,
-      "text": "A ridden horse should feel responsive. Better Horses fixes a list of small frictions vanilla horses used to have."
+      "text": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.intro.text"
     },
     {
       "type": "modonomicon:text",
       "id": "step",
-      "title": "Step Up & Mine Through",
+      "title": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.step.title",
       "show_title_separator": true,
-      "text": "- Step height is raised by a tenth, so a galloping horse doesn't trip over slabs, paths, or full blocks.\n- Mounted block-breaking now matches on-foot speed for most blocks.\n- Whatever penalty is left after that is cut to a fifth."
+      "text": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.step.text"
     },
     {
       "type": "modonomicon:text",
       "id": "look",
-      "title": "Look Around Freely",
+      "title": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.look.title",
       "show_title_separator": true,
-      "text": "Mounting no longer snaps your camera to the horse's facing - the **horse turns to match you** instead. Standing still, you get up to **90 degrees** of free look before the horse follows, so you can scan the horizon without dismounting."
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "clear",
-      "title": "Out of Your Way",
-      "show_title_separator": true,
-      "text": "Look down and the horse fades nearly invisible so it doesn't block your work or aim. While ridden, its head also drops forward to clear your view."
+      "text": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.look.text"
     },
     {
       "type": "modonomicon:text",
       "id": "creative",
-      "title": "Creative Convenience",
+      "title": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.creative.title",
       "show_title_separator": true,
-      "text": "Using a **Saddle** (vanilla or upgraded) on a horse in **Creative Mode** tames it instantly - no waiting on hearts. Useful when testing builds."
+      "text": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.creative.text"
     }
   ]
 }

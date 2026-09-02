@@ -2,8 +2,10 @@
   "type": "modonomicon:content",
   "id": "icys-better-horses:genetics/breeding",
   "category": "icys-better-horses:basics",
-  "name": "Breeding Rules",
-  "icon": { "id": "minecraft:golden_apple" },
+  "name": "book.icys-better-horses.stable_handbook.genetics.breeding.name",
+  "icon": {
+    "id": "minecraft:golden_apple"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -12,35 +14,39 @@
   "x": 0,
   "y": 2,
   "sort_number": 1,
-  "parents": [ { "entry": "icys-better-horses:genetics/traits" } ],
+  "parents": [
+    {
+      "entry": "icys-better-horses:genetics/traits"
+    }
+  ],
   "pages": [
     {
       "type": "modonomicon:text",
       "id": "gender",
-      "title": "Same Gender Won't Breed",
+      "title": "book.icys-better-horses.stable_handbook.genetics.breeding.gender.title",
       "show_title_separator": true,
-      "text": "Two horses of the same gender won't mate. Feed a **Golden Apple** to a horse whose partner matches its gender and you'll see \"These horses are the same gender and can't breed.\" The apple is still used and love mode resets."
+      "text": "book.icys-better-horses.stable_handbook.genetics.breeding.gender.text"
     },
     {
       "type": "modonomicon:text",
       "id": "inherit",
-      "title": "Inheritance",
+      "title": "book.icys-better-horses.stable_handbook.genetics.breeding.inherit.title",
       "show_title_separator": true,
-      "text": "When a foal is born:\n\n- **Gender** is a coin flip.\n- **Breed** comes from one parent at 50/50. Matching parents pass it cleanly; different breeds give the foal a **(mix)** tag.\n- Cross-species pairs (horse + donkey) give the matching species placeholder."
+      "text": "book.icys-better-horses.stable_handbook.genetics.breeding.inherit.text"
     },
     {
       "type": "modonomicon:text",
       "id": "stats",
-      "title": "Stat Inheritance",
+      "title": "book.icys-better-horses.stable_handbook.genetics.breeding.stats.title",
       "show_title_separator": true,
-      "text": "Health, speed, and jump are **max(parent1, parent2) + delta**, where delta is a roll from **-0.5** to **+1.0**. Foals can beat both parents, but the ceiling is the vanilla base - no runaway superhorses."
+      "text": "book.icys-better-horses.stable_handbook.genetics.breeding.stats.text"
     },
     {
       "type": "modonomicon:text",
       "id": "coat",
-      "title": "Coat Re-roll",
+      "title": "book.icys-better-horses.stable_handbook.genetics.breeding.coat.title",
       "show_title_separator": true,
-      "text": "The foal's coat is re-rolled from the coats its inherited breed allows. Two **Quarter** horses always give a Quarter-pattern coat; a mixed pair can surprise you with either side's palette."
+      "text": "book.icys-better-horses.stable_handbook.genetics.breeding.coat.text"
     }
   ]
 }

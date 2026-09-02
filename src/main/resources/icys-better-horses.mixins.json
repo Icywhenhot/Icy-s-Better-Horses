@@ -18,6 +18,10 @@
 		"LivingEntityMixin",
 		"MobCartPassengerMixin",
 		"MobNameTagBondMixin",
+		"PanicGoalMixin",
+		"PlayerHurtMixin",
+		"EntitySlowBlockMixin",
+		"HorseProtectionMixin",
 		"PowderSnowBlockMixin",
 		"SpawnPlacementsAccessor",
 		"SlotAccessor"

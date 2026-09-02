@@ -2,8 +2,12 @@
   "type": "modonomicon:content",
   "id": "icys-better-horses:travel/riding_improvements",
   "category": "icys-better-horses:basics",
-  "name": "Trail Tricks",
-  "icon": { "texture": "icys-better-horses:textures/gui/saddle_node.png", "width": 16, "height": 16 },
+  "name": "book.icys-better-horses.stable_handbook.travel.riding_improvements.name",
+  "icon": {
+    "texture": "icys-better-horses:textures/gui/saddle_node.png",
+    "width": 16,
+    "height": 16
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -12,28 +16,32 @@
   "x": 2,
   "y": -2,
   "sort_number": 0,
-  "parents": [ { "entry": "icys-better-horses:basics/welcome" } ],
+  "parents": [
+    {
+      "entry": "icys-better-horses:basics/welcome"
+    }
+  ],
   "pages": [
     {
       "type": "modonomicon:text",
       "id": "multiride",
-      "title": "Two in the Saddle",
+      "title": "book.icys-better-horses.stable_handbook.travel.riding_improvements.multiride.title",
       "show_title_separator": true,
-      "text": "Better Horses smooths out mounted travel.\n\n- Two players can share one horse for co-op trips.\n- The first rider keeps the reins.\n- The second gets a back seat."
+      "text": "book.icys-better-horses.stable_handbook.travel.riding_improvements.multiride.text"
     },
     {
       "type": "modonomicon:text",
       "id": "cruise",
-      "title": "Let the Horse Cruise",
+      "title": "book.icys-better-horses.stable_handbook.travel.riding_improvements.cruise.title",
       "show_title_separator": true,
-      "text": "Double-tap **W** while riding to enable auto-ride: the horse keeps moving forward and you just steer. Tap a movement key again to take back full control."
+      "text": "book.icys-better-horses.stable_handbook.travel.riding_improvements.cruise.text"
     },
     {
       "type": "modonomicon:text",
       "id": "terrain",
-      "title": "Mud, Water, and Leaves",
+      "title": "book.icys-better-horses.stable_handbook.travel.riding_improvements.terrain.title",
       "show_title_separator": true,
-      "text": "Horses handle bad terrain better now.\n\n- They float instead of sinking in water.\n- They move faster crossing water.\n- Leaf blocks lose collision while you ride, so forests feel like a path."
+      "text": "book.icys-better-horses.stable_handbook.travel.riding_improvements.terrain.text"
     }
   ]
 }

@@ -8,9 +8,12 @@
     "icys-better-horses:andalusian_horse",
     "icys-better-horses:mustang_horse",
     "icys-better-horses:quarter_horse",
+    "icys-better-horses:arabian_horse",
+    "icys-better-horses:morgan_horse",
     "icys-better-horses:percheron_horse",
     "icys-better-horses:shire_horse",
     "icys-better-horses:belgian_horse",
-    "icys-better-horses:clydesdale_horse"
+    "icys-better-horses:clydesdale_horse",
+    "icys-better-horses:haflinger_horse"
   ]
 }

@@ -15,6 +15,24 @@ A compact, hardworking American breed, versatile enough for the trail or the fie
 
 ---
 
+## Class: War
+
+Never spooks, never rears when struck, medkits last twice as long, hits hardest.
+
+See [Breeds](index) for what every class shares.
+
+## Breed ability: Easy Keeper
+
+The Morgan bonds **twice as fast** as any other horse, from the first day. Passive time near you, golden apples, the first name tag: all of it counts double.
+
+| Bond | Effect |
+|:---|:---|
+| 0 | double bond gain |
+| 40 | double bond gain |
+| 100 | **Adaptable**: a slice of every other tier, including a fourth storage row and a higher step |
+
+It reaches its best abilities first, and it is the only horse that does a bit of everything.
+
 ## Coats
 
 | Coat |

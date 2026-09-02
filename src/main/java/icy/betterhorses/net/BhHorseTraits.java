@@ -2,10 +2,8 @@ package icy.betterhorses.net;
 
 import icy.betterhorses.net.entity.BhBreedEntity;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
@@ -16,34 +14,30 @@ import java.util.List;
 
 public final class BhHorseTraits {
 
-    private static final Identifier SPEED_ID =
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "bond_speed");
-    private static final Identifier JUMP_ID =
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "bond_jump");
+    public static final int TIER_TWO_BOND = 40;
+    public static final int TIER_THREE_BOND = 100;
 
     private BhHorseTraits() {}
 
+    public static int bondTier(int bond) {
+        if (bond >= TIER_THREE_BOND) return 2;
+        if (bond >= TIER_TWO_BOND) return 1;
+        return 0;
+    }
+
+    public static void grantBond(IHorseData data, int amount) {
+        int gain = data.bh_getBreed() == HorseBreed.MORGAN ? amount * 2 : amount;
+        data.bh_setBond(data.bh_getBond() + gain);
+    }
+
     public static void applyBondAttributes(AbstractHorse horse, int bond) {
-        int bondLevel = Math.min(bond / 20, 5);
-        double bonus = bondLevel * 0.15;
-
-        AttributeInstance speed = horse.getAttribute(Attributes.MOVEMENT_SPEED);
-        if (speed != null) {
-            speed.removeModifier(SPEED_ID);
-            if (bondLevel > 0) {
-                speed.addTransientModifier(new AttributeModifier(
-                        SPEED_ID, bonus, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
-            }
-        }
-
-        AttributeInstance jump = horse.getAttribute(Attributes.JUMP_STRENGTH);
-        if (jump != null) {
-            jump.removeModifier(JUMP_ID);
-            if (bondLevel > 0) {
-                jump.addTransientModifier(new AttributeModifier(
-                        JUMP_ID, bonus, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
-            }
-        }
+        double bonus = Math.min(bond / 20, 5) * 0.15D;
+        BhHorseAttributes.apply(horse, Attributes.MOVEMENT_SPEED,
+                BhHorseAttributes.Source.BOND, "growth",
+                bonus, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+        BhHorseAttributes.apply(horse, Attributes.JUMP_STRENGTH,
+                BhHorseAttributes.Source.BOND, "growth",
+                bonus, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
     }
 
     public static HorseBreed pickBreed(AbstractHorse horse, RandomSource random) {
@@ -65,7 +59,7 @@ public final class BhHorseTraits {
     }
 
     public static void blockSameGenderBreeding(AbstractHorse horse, IHorseData data, Player player) {
-        if (!horse.isInLove()) {
+        if (!BhConfig.genderBreedingEnabled() || !horse.isInLove()) {
             return;
         }
         HorseGender gender = data.bh_getGender();

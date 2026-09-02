@@ -16,10 +16,14 @@ import icy.betterhorses.net.client.render.BelgianHorseRenderer;
 import icy.betterhorses.net.client.render.ClydesdaleHorseRenderer;
 import icy.betterhorses.net.client.render.ShireHorseRenderer;
 import icy.betterhorses.net.client.render.HorseCartRenderer;
+import icy.betterhorses.net.client.render.HaflingerHorseRenderer;
 import icy.betterhorses.net.client.render.IcelandicHorseRenderer;
 import icy.betterhorses.net.client.render.MediumHorseRenderer;
+import icy.betterhorses.net.client.render.SmallHorseRenderer;
+import icy.betterhorses.net.entity.IcelandicHorse;
 import icy.betterhorses.net.network.BhRearPayload;
 import icy.betterhorses.net.network.CallHorsePayload;
+import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
@@ -33,6 +37,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -58,8 +63,11 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
     public static KeyMapping MANAGE_KEY;
     public static KeyMapping GEAR_KEY;
     public static KeyMapping REAR_KEY;
+    public static KeyMapping FREE_LOOK_KEY;
     public static KeyMapping JUMP_DEBUG_KEY;
     public static KeyMapping REST_POSE_KEY;
+
+    private static final double BH_ROUSE_SCAN = 32.0D;
 
     private boolean callKeyWasDown = false;
 
@@ -93,6 +101,12 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_H,
                 CATEGORY));
 
+        FREE_LOOK_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.icys-better-horses.free_look",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_LEFT_CONTROL,
+                CATEGORY));
+
         JUMP_DEBUG_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.icys-better-horses.jump_debug",
                 InputConstants.Type.KEYSYM,
@@ -117,12 +131,16 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                         BhModelLayers.FRIESIAN_HORSE,
                         BhModelLayers.FRIESIAN_HORSE_BABY));
 
+        EntityRendererRegistry.register(ModEntities.HAFLINGER_HORSE, HaflingerHorseRenderer::new);
+
         EntityRendererRegistry.register(ModEntities.APPALOOSA_HORSE, MediumHorseRenderer::new);
         EntityRendererRegistry.register(ModEntities.THOROUGHBRED_HORSE, MediumHorseRenderer::new);
         EntityRendererRegistry.register(ModEntities.AMERICAN_PAINT_HORSE, MediumHorseRenderer::new);
         EntityRendererRegistry.register(ModEntities.ANDALUSIAN_HORSE, MediumHorseRenderer::new);
         EntityRendererRegistry.register(ModEntities.MUSTANG_HORSE, MediumHorseRenderer::new);
         EntityRendererRegistry.register(ModEntities.QUARTER_HORSE, MediumHorseRenderer::new);
+        EntityRendererRegistry.register(ModEntities.ARABIAN_HORSE, SmallHorseRenderer::new);
+        EntityRendererRegistry.register(ModEntities.MORGAN_HORSE, SmallHorseRenderer::new);
 
         EntityRendererRegistry.register(ModEntities.PERCHERON_HORSE, context ->
                 new PercheronHorseRenderer(context,
@@ -177,7 +195,9 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
 
         boolean callKeyDown = CALL_KEY.isDown();
         if (callKeyDown && !callKeyWasDown) {
-            if (client.player.getVehicle() instanceof AbstractHorse mount) {
+            if (bh_anyHorseRoused(client)) {
+                ClientPlayNetworking.send(new HorseRecallPayload());
+            } else if (client.player.getVehicle() instanceof AbstractHorse mount) {
                 client.setScreenAndShow(new HorseInfoScreen(mount));
             } else {
                 ClientPlayNetworking.send(new CallHorsePayload());
@@ -226,7 +246,16 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
             return;
         }
 
-        HorseGearController.INSTANCE.shiftUp(horse);
+        int gear = HorseGearController.INSTANCE.shiftUp(horse);
+        String gait = switch (gear) {
+            case BhGears.WALK_GEAR -> "walk";
+            case BhGears.TROT_GEAR -> horse instanceof IcelandicHorse ? "tolt" : "trot";
+            case BhGears.CANTER_GEAR -> "canter";
+            case BhGears.GALLOP_GEAR -> "gallop";
+            default -> "halt";
+        };
+        client.gui.chatListener().handleOverlay(
+                Component.translatable("message.icys-better-horses.gait." + gait));
     }
 
     private static void bh_tryRear(Minecraft client) {
@@ -245,6 +274,18 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         ClientPlayNetworking.send(new BhRearPayload(horse.getId()));
     }
 
+    private static boolean bh_anyHorseRoused(Minecraft client) {
+        UUID self = client.player.getUUID();
+        AABB box = client.player.getBoundingBox().inflate(BH_ROUSE_SCAN);
+        for (AbstractHorse horse : client.level.getEntitiesOfClass(AbstractHorse.class, box)) {
+            IHorseData data = IHorseData.of(horse);
+            if (data.bh_getCombatState() != 0 && self.equals(data.bh_getOwner())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static void bh_tryOpenRadial(Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || client.gui.screen() != null) {
@@ -260,7 +301,8 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                 && !ClientTrustCache.isTrustedBy(owner)) {
             return;
         }
-        client.setScreenAndShow(new RadialMenuScreen(horse.getId()));
+        client.setScreenAndShow(new RadialMenuScreen(horse.getId(),
+                client.player.getVehicle() instanceof AbstractHorse));
     }
 
     private static AbstractHorse bh_lookedAtHorse(LocalPlayer player) {

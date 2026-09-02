@@ -10,10 +10,12 @@ public final class BhTackTextures {
 
     public static final BhTackTextures BELGIAN = new BhTackTextures("belgian");
     public static final BhTackTextures FRIESIAN = new BhTackTextures("friesian");
+    public static final BhTackTextures HAFLINGER = new BhTackTextures("haflinger");
     public static final BhTackTextures ICELANDIC = new BhTackTextures("icelandic");
     public static final BhTackTextures MEDIUM = new BhTackTextures("medium");
     public static final BhTackTextures PERCHERON = new BhTackTextures("percheron");
     public static final BhTackTextures SHIRE = new BhTackTextures("shire");
+    public static final BhTackTextures SMALL = new BhTackTextures("small");
 
     private final Identifier saddle;
     private final Identifier saddleUpgraded;

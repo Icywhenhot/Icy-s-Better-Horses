@@ -33,7 +33,9 @@ The default file:
   "hitchpost": "yes",
   "hooves": "yes",
   "horse_exclusivity": "yes",
-  "multiriding": "yes"
+  "multiriding": "yes",
+  "horse_combat": "yes",
+  "brick_break": "no"
 }
 ```
 
@@ -49,6 +51,8 @@ The default file:
 | `hooves` | `yes` | [Horse Hooves](equipment/horse-hooves) lose snow walking, fall reduction, and Frost Walker |
 | `horse_exclusivity` | `yes` | **Any player can ride any owned horse**, useful for shared stables |
 | `multiriding` | `yes` | Only one player per horse; no second rider |
+| `horse_combat` | `yes` | No charging, kicking, owner defence or spooking. See [Combat](combat) |
+| `brick_break` | `no` | Off by default. Lets bonded Belgians and Shires smash blocks on the `horse_breakable` tag at a gallop |
 
 ### Accepted values
 

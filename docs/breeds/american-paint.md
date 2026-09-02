@@ -15,14 +15,23 @@ Bold patchwork coats are the signature. Same all-purpose build as the Quarter Ho
 
 ---
 
+## Class: Western
+
+Gains speed on roads: +10% at bond 0, +20% at 40, +50% at 100.
+
+See [Breeds](index) for what every class shares.
+
 ## Breed ability: Trail Blazer
 
-Ride with a **map in hand** and an American Paint fills it in over **twice the usual distance** from the path you're actually on — four times the area per ride.
+A map filled from the saddle of a Paint covers more ground than normal.
 
-This is the breed to be on when the job is finding out what's out there.
+| Bond | Effect |
+|:---|:---|
+| 0 | 2x map scan width |
+| 40 | 3x map scan width |
+| 100 | 4x, and structures it passes are marked on the map |
 
-{: .note }
-> The wider scan costs proportionally more work per tick, and only while a map is actually in hand. Put the map away and the horse is an ordinary all-rounder again.
+Structure marking reads the game's own structure registry, so anything another mod adds is included. Stack that on the Western road bonus and it is the horse for filling in a world map.
 
 ## Coats
 

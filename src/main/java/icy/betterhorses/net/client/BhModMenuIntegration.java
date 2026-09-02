@@ -40,6 +40,10 @@ public class BhModMenuIntegration implements ModMenuApi {
                 BhConfig.hoovesEnabled(),
                 BhConfig.horseExclusivityEnabled(),
                 BhConfig.multiRidingEnabled(),
+                BhConfig.horseCombatEnabled(),
+                BhConfig.brickBreakEnabled(),
+                BhConfig.transparentHorsesEnabled(),
+                BhConfig.genderBreedingEnabled(),
         };
         general.addEntry(bh_toggle(eb, "stabilizer", values, 0));
         general.addEntry(bh_toggle(eb, "medkit", values, 1));
@@ -47,6 +51,10 @@ public class BhModMenuIntegration implements ModMenuApi {
         general.addEntry(bh_toggle(eb, "hooves", values, 3));
         general.addEntry(bh_toggle(eb, "horse_exclusivity", values, 4));
         general.addEntry(bh_toggle(eb, "multiriding", values, 5));
+        general.addEntry(bh_toggle(eb, "horse_combat", values, 6));
+        general.addEntry(bh_toggle(eb, "brick_break", values, 7));
+        general.addEntry(bh_toggle(eb, "transparent_horses", values, 8));
+        general.addEntry(bh_toggle(eb, "gender_breeding", values, 9));
 
         ConfigCategory keybinds = builder.getOrCreateCategory(
                 Component.translatable("config.icys-better-horses.category.keybinds"));
@@ -64,7 +72,8 @@ public class BhModMenuIntegration implements ModMenuApi {
                 .build());
 
         builder.setSavingRunnable(() -> {
-            BhConfig.apply(values[0], values[1], values[2], values[3], values[4], values[5]);
+            BhConfig.apply(values[0], values[1], values[2], values[3], values[4], values[5],
+                    values[6], values[7], values[8], values[9]);
             KeyMapping.resetMapping();
             Minecraft.getInstance().options.save();
         });

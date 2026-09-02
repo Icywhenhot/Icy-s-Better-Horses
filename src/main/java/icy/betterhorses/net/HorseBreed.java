@@ -1,5 +1,20 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.feature.breed.BreedAbility;
+import icy.betterhorses.net.feature.breed.BrickBreak;
+import icy.betterhorses.net.feature.breed.EasyKeeper;
+import icy.betterhorses.net.feature.breed.HardyNorthern;
+import icy.betterhorses.net.feature.breed.Hearthlight;
+import icy.betterhorses.net.feature.breed.Intimidation;
+import icy.betterhorses.net.feature.breed.Ironclad;
+import icy.betterhorses.net.feature.breed.SecondChance;
+import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
+import icy.betterhorses.net.feature.breed.StockHorse;
+import icy.betterhorses.net.feature.breed.FriesianPresence;
+import icy.betterhorses.net.feature.breed.WildInstincts;
+import icy.betterhorses.net.feature.breed.Endurance;
+import icy.betterhorses.net.feature.breed.StandstillBurst;
+import icy.betterhorses.net.feature.breed.TopEnd;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
@@ -14,7 +29,10 @@ import net.minecraft.world.entity.animal.equine.SkeletonHorse;
 import net.minecraft.world.entity.animal.equine.Variant;
 import net.minecraft.world.entity.animal.equine.ZombieHorse;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
+import java.util.function.Supplier;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
@@ -23,29 +41,58 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public enum HorseBreed {
-    THOROUGHBRED,
-    ARABIAN,
-    QUARTER,
-    FRIESIAN,
-    ANDALUSIAN,
-    PERCHERON,
-    CLYDESDALE,
-    SHIRE,
-    BELGIAN,
-    ICELANDIC,
-    MUSTANG,
-    HAFLINGER,
-    MORGAN,
-    AMERICAN_PAINT,
-    APPALOOSA,
+    THOROUGHBRED(BreedArchetype.RACE, TopEnd::new),
+    ARABIAN(BreedArchetype.RACE, Endurance::new),
+    QUARTER(BreedArchetype.RACE, StandstillBurst::new),
+    FRIESIAN(BreedArchetype.WAR, FriesianPresence::new),
+    ANDALUSIAN(BreedArchetype.WAR, SecondChance::new),
+    PERCHERON(BreedArchetype.DRAFT, SlowBlockImmunity::new),
+    CLYDESDALE(BreedArchetype.DRAFT, Ironclad::new),
+    SHIRE(BreedArchetype.DRAFT, Intimidation::new),
+    BELGIAN(BreedArchetype.DRAFT, BrickBreak::new),
+    ICELANDIC(BreedArchetype.PONY, HardyNorthern::new),
+    MUSTANG(BreedArchetype.WAR, WildInstincts::new),
+    HAFLINGER(BreedArchetype.PONY, Hearthlight::new),
+    MORGAN(BreedArchetype.WAR, EasyKeeper::new),
+    AMERICAN_PAINT(BreedArchetype.WESTERN),
+    APPALOOSA(BreedArchetype.WESTERN, StockHorse::new),
 
-    DONKEY_SPECIES,
-    MULE_SPECIES,
-    SKELETON_SPECIES,
-    ZOMBIE_SPECIES,
-    UNKNOWN_SPECIES;
+    DONKEY_SPECIES(BreedArchetype.NONE),
+    MULE_SPECIES(BreedArchetype.NONE),
+    SKELETON_SPECIES(BreedArchetype.NONE),
+    ZOMBIE_SPECIES(BreedArchetype.NONE),
+    UNKNOWN_SPECIES(BreedArchetype.NONE);
 
     public record Coat(Variant color, Markings markings) {}
+
+    private final BreedArchetype archetype;
+    private final @Nullable Supplier<BreedAbility> ability;
+
+    HorseBreed(BreedArchetype archetype) {
+        this(archetype, null);
+    }
+
+    HorseBreed(BreedArchetype archetype, @Nullable Supplier<BreedAbility> ability) {
+        this.archetype = archetype;
+        this.ability = ability;
+    }
+
+    public BreedArchetype archetype() {
+        return archetype;
+    }
+
+    public int chestRows(int bondTier) {
+        return switch (this) {
+            case BELGIAN -> 6;
+            case HAFLINGER -> bondTier >= 2 ? 6 : 4;
+            case MORGAN -> bondTier >= 2 ? 4 : archetype.chestRows();
+            default -> archetype.chestRows();
+        };
+    }
+
+    public @Nullable BreedAbility newAbility() {
+        return ability == null ? null : ability.get();
+    }
 
     private static final HorseBreed[] VALUES = values();
     public static final int HORSE_BREED_COUNT = 15;

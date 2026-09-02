@@ -93,7 +93,8 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
             if (!moved && this.bh_hasUpgradedSaddleInMenu()) {
                 moved = this.bh_moveIntoFirstMatchingGearSlot(sourceStack, gearStartIndex, chestStartIndex);
                 if (!moved && this.bh_hasChestGearInMenu(gearStartIndex)) {
-                    moved = this.moveItemStackTo(sourceStack, chestStartIndex, chestStartIndex + 27, false);
+                    moved = this.moveItemStackTo(sourceStack, chestStartIndex,
+                            chestStartIndex + layoutAccess.bh_getChestRows() * 9, false);
                 }
             }
 

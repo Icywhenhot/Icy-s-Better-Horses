@@ -28,6 +28,7 @@ Vanilla horses are an early-game novelty you abandon the moment you find elytra.
 | [Horse carts](equipment/horse-cart) | A four-seat cart your horse tows, with an optional double-chest of storage. |
 | [Riding fixes](riding) | Auto-ride, free look, leaf passthrough, water floating, higher step height, two riders per horse. |
 | [Horse roster](managing-your-horses) | A screen listing every horse you own, with its live coordinates, so you can whistle, send home, or disown from anywhere. |
+| [Combat](combat) | Horses charge, kick, and defend you. Every breed has a class ability that grows at bond 40 and 100. |
 | [Commands](commands) | `/horse trust <player>` to let a friend ride every horse you own, without giving up the rest of ownership. |
 
 ## Requirements
@@ -51,4 +52,4 @@ Looking for a specific number? [Bonding](ownership-and-bonding) has the stat tab
 
 ## License
 
-Released under **CC0**. Learn from it, fork it, ship pieces of it in your own projects. No attribution required.
+All Rights Reserved. Play it, pack it into a free modpack, but don't reupload or ship pieces of it elsewhere without asking first.

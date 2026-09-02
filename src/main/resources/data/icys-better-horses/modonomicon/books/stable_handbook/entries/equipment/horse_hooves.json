@@ -2,8 +2,10 @@
   "type": "modonomicon:content",
   "id": "icys-better-horses:equipment/horse_hooves",
   "category": "icys-better-horses:equipment",
-  "name": "Horse Hooves",
-  "icon": { "id": "icys-better-horses:horse_hooves_gear" },
+  "name": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.name",
+  "icon": {
+    "id": "icys-better-horses:horse_hooves_gear"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -12,35 +14,39 @@
   "x": -2,
   "y": -1,
   "sort_number": 3,
-  "parents": [ { "entry": "icys-better-horses:equipment/upgraded_saddle" } ],
+  "parents": [
+    {
+      "entry": "icys-better-horses:equipment/upgraded_saddle"
+    }
+  ],
   "pages": [
     {
       "type": "modonomicon:crafting_recipe",
       "id": "recipe",
       "recipe_id_1": "icys-better-horses:horse_hooves_gear",
-      "title1": "Shoe the Horse",
-      "text": "A few copper ingots and a leather strap give your mount a steadier step in rough country."
+      "title1": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.recipe.title1",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.recipe.text"
     },
     {
       "type": "modonomicon:spotlight",
       "id": "info",
       "item": "icys-better-horses:horse_hooves_gear",
-      "title": "Sure-Footed Travel",
-      "text": "Hooves let a horse walk on powder snow instead of falling through, and soften fall damage - good everyday tack for mountains and cold biomes."
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.info.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.info.text"
     },
     {
       "type": "modonomicon:text",
       "id": "frost_walker",
-      "title": "Frost Walker Enchant",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.frost_walker.title",
       "show_title_separator": true,
-      "text": "Hooves take **Frost Walker** at an **Anvil** from an enchanted book. A horse running over water then leaves a trail of **frosted ice**, like a player wearing frost-walker boots."
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.frost_walker.text"
     },
     {
       "type": "modonomicon:text",
       "id": "speed",
-      "title": "Built for Speed",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.speed.title",
       "show_title_separator": true,
-      "text": "The ice trail keeps up with fast horses: at **15+ blocks per second** the freeze radius scales, so you can sprint across water without gaps. Lava still isn't safe."
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.speed.text"
     }
   ]
 }

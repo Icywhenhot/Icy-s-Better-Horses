@@ -1,7 +1,0 @@
-{
-  "name": "Breeds",
-  "icon": { "id": "minecraft:saddle" },
-  "background": "icys-better-horses:textures/gui/handbook_bg.png",
-  "sort_number": 4,
-  "description": "A field guide to all fifteen breeds - appearance, coats, and where each lives in the wild."
-}

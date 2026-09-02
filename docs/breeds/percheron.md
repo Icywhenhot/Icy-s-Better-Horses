@@ -15,6 +15,20 @@ A French draft breed. Heavy and muscular, but graceful for its size.
 
 ---
 
+## Class: Draft
+
+Slowest and toughest. Four rows of storage, a chest *and* two riders, no cart penalty, half spook chance.
+
+See [Breeds](index) for what every class shares.
+
+## Breed ability: Momentum
+
+| Bond | Effect |
+|:---|:---|
+| 0 | ignores soul sand, cobwebs, sweet berries and honey |
+| 40 | **Momentum**: charge damage builds the longer it runs straight, up to half again |
+| 100 | **Trample**: the charge hits everything in a wide arc instead of one target |
+
 ## Coats
 
 | Coat |

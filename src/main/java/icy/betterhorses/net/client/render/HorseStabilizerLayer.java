@@ -31,6 +31,12 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
     private static final Variant MEDIUM = new Variant(
             new HorseStabilizerGeoRenderer(new MediumStabilizerGeoModel()), 24.0D / 16.0D, 0.0D);
 
+    private static final Variant SMALL = new Variant(
+            new HorseStabilizerGeoRenderer(new SmallStabilizerGeoModel()), 24.0D / 16.0D, 0.0D);
+
+    private static final Variant HAFLINGER = new Variant(
+            new HorseStabilizerGeoRenderer(new HaflingerStabilizerGeoModel()), 24.0D / 16.0D, 0.0D);
+
     private static final Variant PERCHERON = new Variant(
             new HorseStabilizerGeoRenderer(new PercheronStabilizerGeoModel()), 24.0D / 16.0D, 0.0D);
 
@@ -50,6 +56,9 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
                     Map.entry(ModEntities.ANDALUSIAN_HORSE, MEDIUM),
                     Map.entry(ModEntities.MUSTANG_HORSE, MEDIUM),
                     Map.entry(ModEntities.QUARTER_HORSE, MEDIUM),
+                    Map.entry(ModEntities.ARABIAN_HORSE, SMALL),
+                    Map.entry(ModEntities.MORGAN_HORSE, SMALL),
+                    Map.entry(ModEntities.HAFLINGER_HORSE, HAFLINGER),
                     Map.entry(ModEntities.PERCHERON_HORSE, PERCHERON),
                     Map.entry(ModEntities.SHIRE_HORSE, SHIRE),
                     Map.entry(ModEntities.BELGIAN_HORSE, BELGIAN),

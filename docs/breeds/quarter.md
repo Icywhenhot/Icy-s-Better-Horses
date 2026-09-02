@@ -15,11 +15,23 @@ Stocky and broad-chested, very fast over short distances. A reliable all-purpose
 
 ---
 
-## Breed ability: Explosive Burst
+## Class: Race
 
-Named for outrunning anything over a quarter mile, and it's the first two seconds that earn the name. A Quarter Horse has **no acceleration delay**: ask it to go and it's already going, where every other horse spends about a second winding up.
+Fastest legs, fewest hearts, highest jump, softest charge.
 
-It does not raise the top speed — only how quickly the horse reaches it. For bolting, dodging, and short sprints, nothing else compares.
+See [Breeds](index) for what every class shares.
+
+## Breed ability: Standstill Burst
+
+Come to a full stop for a second, then ask, and the Quarter is gone.
+
+| Bond | Effect |
+|:---|:---|
+| 0 | +30% for 5s, 10s cooldown |
+| 40 | +45% for 5s, 10s cooldown |
+| 100 | +45% for 5s, 8s cooldown |
+
+It gives you nothing on a long straight. On a course full of corners, gates and stops it is the fastest thing here.
 
 ## Coats
 

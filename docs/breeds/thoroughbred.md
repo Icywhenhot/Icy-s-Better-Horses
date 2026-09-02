@@ -15,18 +15,23 @@ The classic racing horse. Tall, lean, built for speed, and an easy first pick fo
 
 ---
 
-## Breed ability: Sprint Burst
+## Class: Race
 
-Hold a **gallop** over level ground for **3 seconds** and the Thoroughbred finds a second gear: **Speed II for 5 seconds**, followed by a 10-second cooldown.
+Fastest legs, fewest hearts, highest jump, softest charge.
 
-It has to be an actual gallop — riding on <kbd>W</kbd>, or with the [walk cycle](../riding) in top gear. A held walk, trot, or canter never earns it however long you stay in it; the burst is a racehorse at full stretch finding more, not a reward for time in the saddle.
+See [Breeds](index) for what every class shares.
 
-The boost is applied to the rider as well as the horse. It does nothing for your own speed while mounted — a mount's pace is the mount's — but it puts the effect icon on your HUD, so you can see the burst fire.
+## Breed ability: Top End
 
-Stopping, climbing, or dropping off a ledge bleeds the wind-up away; slabs and gentle bumps don't.
+At a gallop over level ground the Thoroughbred opens up: **+35% speed for 3 seconds**, then 5 seconds before it can go again. There is no wind-up any more. Flat ground and a gallop is the whole condition.
 
-{: .tip }
-> Holding <kbd>W</kbd> while in a lower gear suspends that gear entirely, so it counts as a gallop too — you don't have to shift up to earn a burst.
+| Bond | Effect |
+|:---|:---|
+| 0 | +35% for 3s, 5s cooldown |
+| 40 | +50% for 3s, 5s cooldown |
+| 100 | +50% for 5s, 5s cooldown |
+
+Broken ground kills it. This is a horse for open country and nowhere else.
 
 ## Coats
 

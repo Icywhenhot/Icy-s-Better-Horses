@@ -2,8 +2,10 @@
   "type": "modonomicon:content",
   "id": "icys-better-horses:basics/configuration",
   "category": "icys-better-horses:basics",
-  "name": "Tuning the Mod",
-  "icon": { "id": "minecraft:redstone" },
+  "name": "book.icys-better-horses.stable_handbook.basics.configuration.name",
+  "icon": {
+    "id": "minecraft:redstone"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -12,28 +14,32 @@
   "x": -3,
   "y": -2,
   "sort_number": 5,
-  "parents": [ { "entry": "icys-better-horses:basics/welcome" } ],
+  "parents": [
+    {
+      "entry": "icys-better-horses:basics/welcome"
+    }
+  ],
   "pages": [
     {
       "type": "modonomicon:text",
       "id": "file",
-      "title": "Config File",
+      "title": "book.icys-better-horses.stable_handbook.basics.configuration.file.title",
       "show_title_separator": true,
-      "text": "A JSON config at **config/icys-better-horses.json** lets you toggle whole systems without removing the mod. Server admins use it to decide what's available on a world.\n\nWith **Mod Menu** and **Cloth Config** installed you can edit the same settings in game instead."
+      "text": "book.icys-better-horses.stable_handbook.basics.configuration.file.text"
     },
     {
       "type": "modonomicon:text",
       "id": "toggles",
-      "title": "What You Can Toggle",
+      "title": "book.icys-better-horses.stable_handbook.basics.configuration.toggles.title",
       "show_title_separator": true,
-      "text": "Every key takes **yes** or **no**:\n\n- **stabilizer** - gliding descent.\n- **medkit** - auto-heal on low health.\n- **hitchpost** - tethering blocks.\n- **hooves** - frost-walk, step-up, and fall-damage perks.\n- **horse_exclusivity** - owner-only riding.\n- **multiriding** - two riders on one horse."
+      "text": "book.icys-better-horses.stable_handbook.basics.configuration.toggles.text"
     },
     {
       "type": "modonomicon:text",
       "id": "dummy",
-      "title": "Dummy Mode",
+      "title": "book.icys-better-horses.stable_handbook.basics.configuration.dummy.title",
       "show_title_separator": true,
-      "text": "Items disabled in the config don't vanish - they switch to **dummy mode** and stay craftable as decorative models only. Nothing fires off in the world, but you can still build a display stable."
+      "text": "book.icys-better-horses.stable_handbook.basics.configuration.dummy.text"
     }
   ]
 }

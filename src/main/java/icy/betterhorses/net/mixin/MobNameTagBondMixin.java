@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -61,7 +62,7 @@ public abstract class MobNameTagBondMixin {
                 return;
             }
             horseData.bh_setReceivedNameTagBond(true);
-            horseData.bh_setBond(horseData.bh_getBond() + 10);
+            BhHorseTraits.grantBond(horseData, 10);
         } finally {
             this.bh$nameTagInteractInFlight = false;
             this.bh$nameBeforeInteract = null;

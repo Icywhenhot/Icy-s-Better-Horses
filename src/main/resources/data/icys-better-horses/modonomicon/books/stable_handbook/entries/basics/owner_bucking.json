@@ -2,8 +2,10 @@
   "type": "modonomicon:content",
   "id": "icys-better-horses:basics/owner_bucking",
   "category": "icys-better-horses:basics",
-  "name": "Owner-Only Riding",
-  "icon": { "id": "minecraft:iron_sword" },
+  "name": "book.icys-better-horses.stable_handbook.basics.owner_bucking.name",
+  "icon": {
+    "id": "minecraft:iron_sword"
+  },
   "background": {
     "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
     "width": 26,
@@ -12,28 +14,32 @@
   "x": 2,
   "y": 0,
   "sort_number": 4,
-  "parents": [ { "entry": "icys-better-horses:basics/ownership_and_bonding" } ],
+  "parents": [
+    {
+      "entry": "icys-better-horses:basics/ownership_and_bonding"
+    }
+  ],
   "pages": [
     {
       "type": "modonomicon:text",
       "id": "yours",
-      "title": "Your Horse Only",
+      "title": "book.icys-better-horses.stable_handbook.basics.owner_bucking.yours.title",
       "show_title_separator": true,
-      "text": "An owned horse only answers to you. Anyone else who tries to ride it as the main rider is bucked off at once. It will still accept a second rider - but only while you're already in the saddle."
+      "text": "book.icys-better-horses.stable_handbook.basics.owner_bucking.yours.text"
     },
     {
       "type": "modonomicon:text",
       "id": "trust",
-      "title": "Naming a Friend",
+      "title": "book.icys-better-horses.stable_handbook.basics.owner_bucking.trust.title",
       "show_title_separator": true,
-      "text": "To let one particular player ride on their own, type **/horse trust PlayerName**. It covers every horse you own, now and later, and **/horse untrust** takes it back.\n\nSee **Trusted Riders** for what that does and doesn't hand over."
+      "text": "book.icys-better-horses.stable_handbook.basics.owner_bucking.trust.text"
     },
     {
       "type": "modonomicon:text",
       "id": "toggle",
-      "title": "Toggle It Off",
+      "title": "book.icys-better-horses.stable_handbook.basics.owner_bucking.toggle.title",
       "show_title_separator": true,
-      "text": "Servers can turn this off in **config/icys-better-horses.json** by setting **horse_exclusivity** to **no** - then any player can ride any owned horse, handy for shared stables. The same file also toggles stabilizers, medkits, hitchposts, hooves, and multi-riding."
+      "text": "book.icys-better-horses.stable_handbook.basics.owner_bucking.toggle.text"
     }
   ]
 }

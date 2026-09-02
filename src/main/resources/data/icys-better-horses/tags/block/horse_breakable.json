@@ -1,0 +1,23 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:cobblestone",
+    "minecraft:mossy_cobblestone",
+    "minecraft:cobblestone_wall",
+    "minecraft:bricks",
+    "minecraft:mud_bricks",
+    "minecraft:packed_mud",
+    "minecraft:dirt",
+    "minecraft:coarse_dirt",
+    "minecraft:gravel",
+    "minecraft:sand",
+    "minecraft:red_sand",
+    "minecraft:terracotta",
+    "minecraft:glass",
+    "minecraft:glass_pane",
+    "minecraft:snow_block",
+    "minecraft:hay_block",
+    "minecraft:pumpkin",
+    "minecraft:melon"
+  ]
+}

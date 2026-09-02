@@ -1,6 +1,7 @@
 package icy.betterhorses.net;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -12,6 +13,8 @@ import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,6 +25,9 @@ import java.util.UUID;
 public final class BhCommands {
 
     private static final String MSG = "message.icys-better-horses.trust.";
+    private static final String BOND_MSG = "message.icys-better-horses.bond.";
+    private static final int BOND_MAX = 100;
+    private static final double BOND_REACH = 8.0D;
 
     private BhCommands() {}
 
@@ -30,6 +36,11 @@ public final class BhCommands {
     }
 
     private static void build(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(Commands.literal("bond")
+                .then(Commands.argument("level", IntegerArgumentType.integer(0, BOND_MAX))
+                        .executes(context -> setBond(context,
+                                IntegerArgumentType.getInteger(context, "level")))));
+
         dispatcher.register(Commands.literal("horse")
                 .then(Commands.literal("trust")
                         .then(Commands.argument("player", GameProfileArgument.gameProfile())
@@ -46,6 +57,43 @@ public final class BhCommands {
                                 .executes(context -> untrust(context, targets(context)))))
                 .then(Commands.literal("trusted")
                         .executes(BhCommands::listTrusted)));
+    }
+
+    private static int setBond(CommandContext<CommandSourceStack> context, int level)
+            throws CommandSyntaxException {
+        CommandSourceStack source = context.getSource();
+        ServerPlayer player = source.getPlayerOrException();
+        if (!player.isCreative()) {
+            source.sendFailure(Component.translatable(BOND_MSG + "creative_only"));
+            return 0;
+        }
+
+        AbstractHorse horse = player.getVehicle() instanceof AbstractHorse mount ? mount : nearby(player);
+        if (horse == null) {
+            source.sendFailure(Component.translatable(BOND_MSG + "no_horse"));
+            return 0;
+        }
+
+        IHorseData data = IHorseData.of(horse);
+        data.bh_setBond(level);
+        int tier = BhHorseTraits.bondTier(level);
+        source.sendSuccess(() -> Component.translatable(BOND_MSG + "set",
+                horse.getDisplayName(), level, tier + 1).withStyle(ChatFormatting.GREEN), false);
+        return level;
+    }
+
+    private static AbstractHorse nearby(ServerPlayer player) {
+        AABB box = player.getBoundingBox().inflate(BOND_REACH);
+        AbstractHorse best = null;
+        double bestDist = Double.MAX_VALUE;
+        for (AbstractHorse horse : player.level().getEntitiesOfClass(AbstractHorse.class, box)) {
+            double d = horse.distanceToSqr(player);
+            if (d < bestDist) {
+                bestDist = d;
+                best = horse;
+            }
+        }
+        return best;
     }
 
     private static Collection<NameAndId> targets(CommandContext<CommandSourceStack> context)

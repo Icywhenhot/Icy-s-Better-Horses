@@ -2,7 +2,7 @@
   "type": "modonomicon:content",
   "id": "icys-better-horses:genetics/traits",
   "category": "icys-better-horses:basics",
-  "name": "Traits at a Glance",
+  "name": "book.icys-better-horses.stable_handbook.genetics.traits.name",
   "icon": {
     "id": "minecraft:paper"
   },
@@ -23,16 +23,16 @@
     {
       "type": "modonomicon:text",
       "id": "four",
-      "title": "Four Traits",
+      "title": "book.icys-better-horses.stable_handbook.genetics.traits.four.title",
       "show_title_separator": true,
-      "text": "Beyond **Bond**, every horse now carries four pieces of identity:\n\n- **Gender** - male or female. Even donkeys and mules have one.\n- **Breed** - one of fifteen real breeds for plain horses; a species label for donkeys, mules, and skeleton or zombie horses.\n- **Mixed-Breed** - a **(mix)** tag when a foal inherits two breeds.\n- **Coat** - color and markings, tied to the breed."
+      "text": "book.icys-better-horses.stable_handbook.genetics.traits.four.text"
     },
     {
       "type": "modonomicon:text",
       "id": "see",
-      "title": "Where to See It",
+      "title": "book.icys-better-horses.stable_handbook.genetics.traits.see.title",
       "show_title_separator": true,
-      "text": "Press your **Horse Whistle** key while mounted to open the **Horse Info Screen** - gender, breed, coat, and stat bars are all there. Holding the **Upgraded Saddle** and looking at a horse also shows its gender and breed under its name."
+      "text": "book.icys-better-horses.stable_handbook.genetics.traits.see.text"
     }
   ]
 }

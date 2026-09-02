@@ -20,6 +20,7 @@ public final class BhCriteria {
     public static final String OWN_HORSE = "own_horse";
     public static final String HORSE_COUNT = "horse_count";
     public static final String BOND_MAX = "bond_max";
+    public static final String SECOND_CHANCE = "second_chance";
     public static final String SET_HOME = "set_home";
     public static final String ENDER_CHEST_GEAR = "ender_chest_gear";
     public static final String STABILIZER_LANDING = "stabilizer_landing";

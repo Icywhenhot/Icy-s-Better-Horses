@@ -24,6 +24,24 @@ public final class BhModelLayers {
     public static final ModelLayerLocation FRIESIAN_CHEST = layer("friesian_horse", "chest");
     public static final ModelLayerLocation FRIESIAN_CHEST_BABY = layer("friesian_horse", "chest_baby");
 
+    public static final ModelLayerLocation SMALL_HORSE = layer("small_horse", "main");
+    public static final ModelLayerLocation SMALL_HORSE_BABY = layer("small_horse", "baby");
+    public static final ModelLayerLocation SMALL_SADDLE = layer("small_horse", "saddle");
+    public static final ModelLayerLocation SMALL_SADDLE_BABY = layer("small_horse", "saddle_baby");
+    public static final ModelLayerLocation SMALL_ARMOR = layer("small_horse", "armor");
+    public static final ModelLayerLocation SMALL_ARMOR_BABY = layer("small_horse", "armor_baby");
+    public static final ModelLayerLocation SMALL_CHEST = layer("small_horse", "chest");
+    public static final ModelLayerLocation SMALL_CHEST_BABY = layer("small_horse", "chest_baby");
+
+    public static final ModelLayerLocation HAFLINGER_HORSE = layer("haflinger_horse", "main");
+    public static final ModelLayerLocation HAFLINGER_HORSE_BABY = layer("haflinger_horse", "baby");
+    public static final ModelLayerLocation HAFLINGER_SADDLE = layer("haflinger_horse", "saddle");
+    public static final ModelLayerLocation HAFLINGER_SADDLE_BABY = layer("haflinger_horse", "saddle_baby");
+    public static final ModelLayerLocation HAFLINGER_ARMOR = layer("haflinger_horse", "armor");
+    public static final ModelLayerLocation HAFLINGER_ARMOR_BABY = layer("haflinger_horse", "armor_baby");
+    public static final ModelLayerLocation HAFLINGER_CHEST = layer("haflinger_horse", "chest");
+    public static final ModelLayerLocation HAFLINGER_CHEST_BABY = layer("haflinger_horse", "chest_baby");
+
     public static final ModelLayerLocation MEDIUM_HORSE = layer("medium_horse", "main");
     public static final ModelLayerLocation MEDIUM_HORSE_BABY = layer("medium_horse", "baby");
     public static final ModelLayerLocation MEDIUM_SADDLE = layer("medium_horse", "saddle");
@@ -100,6 +118,40 @@ public final class BhModelLayers {
                 FRIESIAN_CHEST, FriesianChestGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(
                 FRIESIAN_CHEST_BABY, FriesianChestGeometry::createBodyLayer);
+
+        ModelLayerRegistry.registerModelLayer(
+                SMALL_HORSE, SmallHorseGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                SMALL_HORSE_BABY, SmallFoalGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                SMALL_SADDLE, SmallSaddleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                SMALL_SADDLE_BABY, SmallSaddleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                SMALL_ARMOR, SmallArmorGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                SMALL_ARMOR_BABY, SmallArmorGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                SMALL_CHEST, SmallChestGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                SMALL_CHEST_BABY, SmallChestGeometry::createBodyLayer);
+
+        ModelLayerRegistry.registerModelLayer(
+                HAFLINGER_HORSE, HaflingerHorseGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                HAFLINGER_HORSE_BABY, SmallFoalGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                HAFLINGER_SADDLE, HaflingerSaddleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                HAFLINGER_SADDLE_BABY, HaflingerSaddleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                HAFLINGER_ARMOR, HaflingerArmorGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                HAFLINGER_ARMOR_BABY, HaflingerArmorGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                HAFLINGER_CHEST, HaflingerChestGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(
+                HAFLINGER_CHEST_BABY, HaflingerChestGeometry::createBodyLayer);
 
         ModelLayerRegistry.registerModelLayer(
                 MEDIUM_HORSE, MediumHorseGeometry::createBodyLayer);

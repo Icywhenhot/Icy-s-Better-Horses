@@ -19,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Locale;
+import icy.betterhorses.net.client.BhAbilityBadges;
 import icy.betterhorses.net.client.render.BhJumpDebug;
 
 @Mixin(Gui.class)
@@ -118,6 +119,22 @@ public abstract class GuiMixin {
         for (int i = 0; i < lines.length; i++) {
             gfx.text(this.minecraft.font, lines[i], textX, textY + lineHeight * (i + 1), BH_STATS_HUD_TEXT_COLOR, false);
         }
+    }
+
+    @Inject(method = "extractRenderState", at = @At("TAIL"))
+    private void bh_renderAbilityBadges(DeltaTracker deltaTracker, boolean blurEnabled, boolean renderHud, CallbackInfo ci) {
+        if (this.minecraft.player == null || this.minecraft.level == null
+                || this.minecraft.gui.screen() != null) {
+            return;
+        }
+        if (!(this.minecraft.player.getVehicle() instanceof AbstractHorse horse)) {
+            return;
+        }
+        int scaledWidth = this.minecraft.getWindow().getGuiScaledWidth();
+        int scaledHeight = this.minecraft.getWindow().getGuiScaledHeight();
+        GuiGraphicsExtractor gfx = new GuiGraphicsExtractor(
+                this.minecraft, this.guiRenderState, scaledWidth, scaledHeight);
+        BhAbilityBadges.render(gfx, this.minecraft.font, scaledWidth, scaledHeight, horse);
     }
 
     @Unique

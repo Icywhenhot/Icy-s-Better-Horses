@@ -15,13 +15,19 @@ An agile, strong Iberian breed with a thick mane, common across open meadows.
 
 ---
 
-## Breed ability: Warhorse Courage
+## Class: War
 
-An Andalusian **never rears when it takes a hit**, so a fight doesn't throw the rider's aim.
+Never spooks, never rears when struck, medkits last twice as long, hits hardest.
 
-Damage also steadies the pair instead of panicking them: **Resistance I for 3 seconds**, applied to the horse and to whoever is in the saddle.
+See [Breeds](index) for what every class shares.
 
-It still rears when it jumps and when it's standing around idle. Only the flinch is gone.
+## Breed ability: Courage
+
+| Bond | Effect |
+|:---|:---|
+| 0 | rider takes reduced damage while mounted |
+| 40 | stronger reduction |
+| 100 | **Second Chance**: a killing blow is taken by the horse instead, which survives on one heart. Long cooldown. |
 
 ## Coats
 

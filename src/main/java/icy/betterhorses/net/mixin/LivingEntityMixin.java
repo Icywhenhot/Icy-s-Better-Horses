@@ -1,6 +1,7 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhSecondChance;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
@@ -12,6 +13,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -39,11 +41,15 @@ public abstract class LivingEntityMixin extends Entity {
     @Shadow
     protected abstract float getDamageAfterMagicAbsorb(DamageSource source, float amount);
 
-    @Inject(method = "actuallyHurt", at = @At("HEAD"))
+    @Inject(method = "actuallyHurt", at = @At("HEAD"), cancellable = true)
     private void bh_queueHorseMedkit(ServerLevel level, DamageSource source, float amount, CallbackInfo ci) {
         this.bh_triggerHorseMedkitAfterDamage = false;
 
         LivingEntity self = (LivingEntity) (Object) this;
+        if (self instanceof Player && BhSecondChance.intercept(level, self, source, amount)) {
+            ci.cancel();
+            return;
+        }
         if (!(self instanceof AbstractHorse) || !(self instanceof IHorseData data)) {
             return;
         }
@@ -60,20 +66,22 @@ public abstract class LivingEntityMixin extends Entity {
     }
 
     @Inject(method = "actuallyHurt", at = @At("TAIL"))
-    private void bh_useHorseMedkit(ServerLevel level, DamageSource source, float amount, CallbackInfo ci) {
+    private void bh_afterDamage(ServerLevel level, DamageSource source, float amount, CallbackInfo ci) {
+        LivingEntity self = (LivingEntity) (Object) this;
+
         if (!this.bh_triggerHorseMedkitAfterDamage) {
             return;
         }
 
         this.bh_triggerHorseMedkitAfterDamage = false;
 
-        LivingEntity self = (LivingEntity) (Object) this;
         if (!(self instanceof AbstractHorse) || !(self instanceof IHorseData data)) {
             return;
         }
 
         this.bh_consumeMedkitAndApplyEffects(self, data);
     }
+
 
     @Unique
     private boolean bh_hasEquippedMedkit(IHorseData data) {
@@ -98,9 +106,10 @@ public abstract class LivingEntityMixin extends Entity {
         gear.setItem(GearSlot.MEDKIT.ordinal(), ItemStack.EMPTY);
         gear.setChanged();
 
-        self.addEffect(new MobEffectInstance(MobEffects.REGENERATION, BH_MEDKIT_EFFECT_DURATION, 0));
+        int dur = BH_MEDKIT_EFFECT_DURATION * data.bh_getBreed().archetype().medkitMultiplier();
+        self.addEffect(new MobEffectInstance(MobEffects.REGENERATION, dur, 0));
         self.addEffect(new MobEffectInstance(MobEffects.INSTANT_HEALTH, 1, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, BH_MEDKIT_EFFECT_DURATION, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, BH_MEDKIT_EFFECT_DURATION, 0));
+        self.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, dur, 0));
+        self.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, dur, 0));
     }
 }

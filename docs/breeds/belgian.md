@@ -15,6 +15,22 @@ Belgium's powerful draft breed, best known for a creamy chestnut coat with a fla
 
 ---
 
+## Class: Draft
+
+Slowest and toughest. Four rows of storage, a chest *and* two riders, no cart penalty, half spook chance.
+
+See [Breeds](index) for what every class shares.
+
+## Breed ability: The Storage Draft
+
+| Bond | Effect |
+|:---|:---|
+| 0 | **six rows** of storage, the largest chest in the mod |
+| 40 | seats **three riders**, provided no chest is equipped |
+| 100 | **Brick Break**: smashes weak blocks at a full gallop |
+
+Brick Break costs the horse health, needs 30 seconds to recover, only breaks blocks on the `horse_breakable` tag, and is **off by default** in both the config and on the horse.
+
 ## Coats
 
 | Coat |

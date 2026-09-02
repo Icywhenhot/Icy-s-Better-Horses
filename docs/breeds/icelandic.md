@@ -15,14 +15,21 @@ A short, shaggy, cold-hardy pony from Iceland, known for an unusually smooth ext
 
 ---
 
-## Breed ability: Sure-Footed
+## Class: Pony
 
-Bred on scree and lava fields, an Icelandic **takes no fall damage at all from under 12 blocks** — and neither do you, because a horse absorbs the landing for its rider.
+Two-block step, no fall damage under 15 blocks, walks on powder snow, heals passively.
 
-Past twelve blocks it falls like any other horse. This is footing, not flight.
+See [Breeds](index) for what every class shares.
 
-{: .tip }
-> Twelve blocks covers nearly every drop you meet coming down a mountain, which makes the slowest breed in the mod the most comfortable one to explore rough terrain on.
+## Breed ability: Hardy Northern
+
+| Bond | Effect |
+|:---|:---|
+| 0 | ignores soul sand, cobwebs, berries and honey |
+| 40 | **Winter Coat**: neither horse nor rider freezes |
+| 100 | **Clear Head**: the rider takes no negative status effects at all while mounted |
+
+The tolt stays what it always was, a smoother gait to ride, not a number.
 
 ## Coats
 

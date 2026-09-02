@@ -10,7 +10,7 @@ import net.minecraft.network.chat.Component;
 
 public class RadialMenuScreen extends Screen {
 
-    private static final HorseCommand[] COMMANDS = {
+    private static final HorseCommand[] BASE_COMMANDS = {
             HorseCommand.FOLLOW,
             HorseCommand.WANDER,
             HorseCommand.STAY,
@@ -18,7 +18,14 @@ public class RadialMenuScreen extends Screen {
             HorseCommand.SET_HOME,
     };
 
-    private static final int SEGMENT_COUNT = COMMANDS.length;
+    private static final HorseCommand[] MOUNTED_COMMANDS = {
+            HorseCommand.FOLLOW,
+            HorseCommand.WANDER,
+            HorseCommand.STAY,
+            HorseCommand.RETURN_HOME,
+            HorseCommand.SET_HOME,
+            HorseCommand.PAIR,
+    };
     private static final int RING_INNER = 44;
     private static final int RING_OUTER = 110;
     private static final int RING_BACKDROP_INNER = 38;
@@ -51,9 +58,14 @@ public class RadialMenuScreen extends Screen {
     private final BhAnim.Lift hover = new BhAnim.Lift();
     private long bhOpenMs;
 
-    public RadialMenuScreen(int horseId) {
+    private final HorseCommand[] commands;
+    private final int segmentCount;
+
+    public RadialMenuScreen(int horseId, boolean mounted) {
         super(Component.translatable("screen.icys-better-horses.radial"));
         this.horseId = horseId;
+        this.commands = mounted ? MOUNTED_COMMANDS : BASE_COMMANDS;
+        this.segmentCount = this.commands.length;
     }
 
     @Override
@@ -96,9 +108,9 @@ public class RadialMenuScreen extends Screen {
         BhVector.ring(mesh, cx, cy, RING_BACKDROP_INNER, RING_BACKDROP_INNER + RIM_THICKNESS,
                 RING_RIM_COLOR, BhVector.FEATHER);
 
-        double segAngle = Math.PI * 2.0D / SEGMENT_COUNT;
-        float[] hoverAmount = new float[SEGMENT_COUNT];
-        for (int i = 0; i < SEGMENT_COUNT; i++) {
+        double segAngle = Math.PI * 2.0D / this.segmentCount;
+        float[] hoverAmount = new float[this.segmentCount];
+        for (int i = 0; i < this.segmentCount; i++) {
             hoverAmount[i] = hover.get(i, i == hoveredIndex, 1f);
             double start = segAngle * i - Math.PI / 2.0D - segAngle / 2.0D + SEGMENT_GAP_RADIANS;
             double end = start + segAngle - SEGMENT_GAP_RADIANS * 2.0D;
@@ -117,12 +129,12 @@ public class RadialMenuScreen extends Screen {
                 hoveredIndex >= 0 ? CENTER_DOT_HOVER_COLOR : CENTER_DOT_COLOR, BhVector.FEATHER);
         BhVector.submit(gfx, mesh);
 
-        for (int i = 0; i < SEGMENT_COUNT; i++) {
+        for (int i = 0; i < this.segmentCount; i++) {
             double labelAngle = segAngle * i - Math.PI / 2.0D;
             float labelRadius = LABEL_RADIUS + HOVER_PUSH * 0.5F * hoverAmount[i];
             int lx = cx + Math.round((float) Math.cos(labelAngle) * labelRadius);
             int ly = cy + Math.round((float) Math.sin(labelAngle) * labelRadius);
-            String text = Component.translatable(commandKey(COMMANDS[i])).getString();
+            String text = Component.translatable(commandKey(this.commands[i])).getString();
             int textColor = bh_mixColor(LABEL_COLOR, LABEL_HOVER_COLOR, hoverAmount[i]);
             gfx.centeredText(font, text, lx, ly - font.lineHeight / 2, textColor);
         }
@@ -142,11 +154,11 @@ public class RadialMenuScreen extends Screen {
     }
 
     private int bh_angleToIndex(double angle) {
-        double segAngle = Math.PI * 2.0D / SEGMENT_COUNT;
+        double segAngle = Math.PI * 2.0D / this.segmentCount;
         double adjusted = angle + Math.PI / 2.0D + segAngle / 2.0D;
         double twoPi = Math.PI * 2.0D;
         adjusted = ((adjusted % twoPi) + twoPi) % twoPi;
-        return (int) (adjusted / segAngle) % SEGMENT_COUNT;
+        return (int) (adjusted / segAngle) % this.segmentCount;
     }
 
     @Override
@@ -156,7 +168,7 @@ public class RadialMenuScreen extends Screen {
             double dy = event.y() - height / 2.0;
             double dist = Math.sqrt(dx * dx + dy * dy);
             if (dist >= RING_INNER && dist <= RING_OUTER) {
-                sendCommand(COMMANDS[bh_angleToIndex(Math.atan2(dy, dx))]);
+                sendCommand(this.commands[bh_angleToIndex(Math.atan2(dy, dx))]);
             }
             onClose();
             return true;
@@ -175,6 +187,7 @@ public class RadialMenuScreen extends Screen {
             case STAY -> "command.icys-better-horses.stay";
             case RETURN_HOME -> "command.icys-better-horses.return_home";
             case SET_HOME -> "command.icys-better-horses.set_home";
+            case PAIR -> "command.icys-better-horses.pair";
         };
     }
 }

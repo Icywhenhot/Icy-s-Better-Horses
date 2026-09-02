@@ -61,6 +61,10 @@ public final class BhBreedAbilities {
             return primed;
         }
 
+        public double speed() {
+            return smoothedSpeed;
+        }
+
         public boolean isRunningFlat() {
             return primed && smoothedSpeed > MIN_RUN_SPEED && verticalChange < LEVEL_GROUND_TOLERANCE;
         }

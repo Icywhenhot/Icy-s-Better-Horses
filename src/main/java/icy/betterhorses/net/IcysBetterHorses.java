@@ -1,8 +1,9 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.network.BhRearPayload;
-import icy.betterhorses.net.network.BhSteerModePayload;
+import icy.betterhorses.net.network.BhFreeLookPayload;
 import icy.betterhorses.net.network.CallHorsePayload;
+import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.HorseGearPayload;
 import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
@@ -70,10 +71,11 @@ public class IcysBetterHorses implements ModInitializer {
     private void registerPackets() {
         PayloadTypeRegistry.serverboundPlay().register(RadialCommandPayload.TYPE, new RadialCommandPayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(CallHorsePayload.TYPE, new CallHorsePayload.StreamCodec());
+        PayloadTypeRegistry.serverboundPlay().register(HorseRecallPayload.TYPE, new HorseRecallPayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(OpenHorseRosterPayload.TYPE, new OpenHorseRosterPayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(HorseManagePayload.TYPE, new HorseManagePayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(HorseGearPayload.TYPE, new HorseGearPayload.StreamCodec());
-        PayloadTypeRegistry.serverboundPlay().register(BhSteerModePayload.TYPE, new BhSteerModePayload.StreamCodec());
+        PayloadTypeRegistry.serverboundPlay().register(BhFreeLookPayload.TYPE, new BhFreeLookPayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(BhRearPayload.TYPE, new BhRearPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(HorseRosterSyncPayload.TYPE, new HorseRosterSyncPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(HorseManageResultPayload.TYPE, new HorseManageResultPayload.StreamCodec());
@@ -96,16 +98,21 @@ public class IcysBetterHorses implements ModInitializer {
             context.server().execute(() -> handleCallHorse(player));
         });
 
+        ServerPlayNetworking.registerGlobalReceiver(HorseRecallPayload.TYPE, (payload, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() -> handleRecall(player));
+        });
+
         ServerPlayNetworking.registerGlobalReceiver(HorseGearPayload.TYPE, (payload, context) -> {
             ServerPlayer player = context.player();
             context.server().execute(() ->
                     handleGearShift(player, payload.horseId(), payload.gear(), payload.gaitGear()));
         });
 
-        ServerPlayNetworking.registerGlobalReceiver(BhSteerModePayload.TYPE, (payload, context) -> {
+        ServerPlayNetworking.registerGlobalReceiver(BhFreeLookPayload.TYPE, (payload, context) -> {
             ServerPlayer player = context.player();
             context.server().execute(() ->
-                    handleSteerMode(player, payload.horseId(), payload.freeSteer()));
+                    handleFreeLook(player, payload.horseId(), payload.freeLook()));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(BhRearPayload.TYPE, (payload, context) -> {
@@ -155,11 +162,46 @@ public class IcysBetterHorses implements ModInitializer {
         }
     }
 
+    private static final int BH_MAX_PACKMATES = 3;
+    private static final int DISENGAGE_TICKS = 60;
+
+    private void handlePair(ServerPlayer player, AbstractHorse horse, IHorseData data) {
+        if (data.bh_getPairedTo() != null) {
+            data.bh_setPairedTo(null);
+            data.bh_setCommand(HorseCommand.FOLLOW);
+            player.sendSystemMessage(Component.translatable("message.icys-better-horses.unpaired"));
+            return;
+        }
+        if (!(player.getVehicle() instanceof AbstractHorse mount) || mount == horse) {
+            player.sendSystemMessage(Component.translatable("message.icys-better-horses.pair_needs_mount"));
+            return;
+        }
+        UUID leadId = mount.getUUID();
+        int paired = 0;
+        for (AbstractHorse other : HorseTracker.getAll()) {
+            if (leadId.equals(IHorseData.of(other).bh_getPairedTo())) {
+                paired++;
+            }
+        }
+        if (paired >= BH_MAX_PACKMATES) {
+            player.sendSystemMessage(Component.translatable("message.icys-better-horses.pair_full"));
+            return;
+        }
+        data.bh_setPairedTo(leadId);
+        data.bh_setCommand(HorseCommand.PAIR);
+        player.sendSystemMessage(Component.translatable("message.icys-better-horses.paired"));
+    }
+
     private void handleRadialCommand(ServerPlayer player, int horseId, HorseCommand command) {
         AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
         if (horse == null) return;
 
         IHorseData data = IHorseData.of(horse);
+        if (command == HorseCommand.PAIR) {
+            handlePair(player, horse, data);
+            playCommandAnswer(horse);
+            return;
+        }
         if (command == HorseCommand.SET_HOME) {
             data.bh_setHome(horse.blockPosition());
             data.bh_setCommand(HorseCommand.STAY);
@@ -185,6 +227,24 @@ public class IcysBetterHorses implements ModInitializer {
         horse.level().playSound(
                 null, horse.getX(), horse.getY(), horse.getZ(),
                 sound, horse.getSoundSource(), 1.0F, 1.0F);
+    }
+
+    private void handleRecall(ServerPlayer player) {
+        UUID ownerId = player.getUUID();
+        boolean any = false;
+        for (AbstractHorse horse : HorseTracker.getAll()) {
+            IHorseData data = IHorseData.of(horse);
+            if (!ownerId.equals(data.bh_getOwner()) || data.bh_getCombatState() == 0) {
+                continue;
+            }
+            data.bh_setCombatTarget(null);
+            data.bh_setSpookTicks(DISENGAGE_TICKS);
+            any = true;
+        }
+        if (any) {
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                    ModSounds.CALL_WHISTLE, player.getSoundSource(), 1.0F, 1.0F);
+        }
     }
 
     private void handleCallHorse(ServerPlayer player) {
@@ -287,7 +347,7 @@ public class IcysBetterHorses implements ModInitializer {
                 continue;
             }
 
-            data.bh_setBond(data.bh_getBond() + 1);
+            BhHorseTraits.grantBond(data, 1);
         }
     }
 
@@ -300,12 +360,12 @@ public class IcysBetterHorses implements ModInitializer {
         IHorseData.of(horse).bh_setGaitGear(gaitGear);
     }
 
-    private void handleSteerMode(ServerPlayer player, int horseId, boolean freeSteer) {
+    private void handleFreeLook(ServerPlayer player, int horseId, boolean freeLook) {
         if (!(player.level().getEntity(horseId) instanceof AbstractHorse horse)
                 || horse.getControllingPassenger() != player) {
             return;
         }
-        IHorseData.of(horse).bh_setFreeSteer(freeSteer);
+        IHorseData.of(horse).bh_setFreeLook(freeLook);
     }
 
     private void handleRear(ServerPlayer player, int horseId) {

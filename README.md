@@ -45,4 +45,4 @@ The repository keeps a branch per Minecraft version; active development is on **
 
 ## License
 
-Released under **CC0**. Learn from it, fork it, and reuse pieces of it in your own projects. No attribution required.
+All Rights Reserved. See [LICENSE](LICENSE). Play it, pack it into a free modpack, but don't reupload or ship pieces of it elsewhere without asking first.

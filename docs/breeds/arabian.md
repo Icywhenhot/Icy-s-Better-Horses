@@ -15,6 +15,24 @@ Compact and hardy, bred for tough country. A strong choice for desert crossings 
 
 ---
 
+## Class: Race
+
+Fastest legs, fewest hearts, highest jump, softest charge.
+
+See [Breeds](index) for what every class shares.
+
+## Breed ability: Endurance
+
+Keep moving and the Arabian keeps building, a little every second. Stop and it bleeds back down at 2% a second.
+
+| Bond | Effect |
+|:---|:---|
+| 0 | up to +10%, reached at 20s |
+| 40 | up to +20%, reached at 20s |
+| 100 | up to +20%, reached at 12s, with a 2s grace before it decays |
+
+No burst, ever. It just quietly beats everything on a long enough road.
+
 ## Coats
 
 | Coat |

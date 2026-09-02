@@ -86,6 +86,24 @@ public final class BhBreedCoats {
                     "smoky_black"),
             true);
 
+    public static final BhBreedCoats ARABIAN = new BhBreedCoats(
+            "arabian",
+            List.of("brown", "black", "chestnut", "silver_grey", "rabicano",
+                    "sabino_chestnut", "wild_bay", "bloody_shoulder"),
+            true);
+
+    public static final BhBreedCoats MORGAN = new BhBreedCoats(
+            "morgan",
+            List.of("bay", "black", "red_chestnut", "chocolate_silver", "roan",
+                    "dark_buckskin", "silver_bay"),
+            true);
+
+    public static final BhBreedCoats HAFLINGER = new BhBreedCoats(
+            "haflinger",
+            List.of("golden_chestnut", "light_chestnut", "dark_chestnut",
+                    "liver_chestnut", "kohlfuchs"),
+            true);
+
     public static final BhBreedCoats CLYDESDALE = new BhBreedCoats(
             "clydesdale",
             List.of("bay_sabino", "seal_brown", "black_sabino", "red_bay",

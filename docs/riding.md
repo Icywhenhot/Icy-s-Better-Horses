@@ -14,6 +14,24 @@ The pile of small fixes that make a horse feel like transport instead of a chore
 
 ---
 
+## Gaits
+
+Press the **walk cycle key** (default <kbd>V</kbd>) while riding to shift up through four gaits. Footfall pattern, stride length and the way the body rocks all change with the gear, so you can see which one you're in without reading the action bar.
+
+| Gear | Gait | Speed | Footfall |
+|:---|:---|:---|:---|
+| 1 | Walk | 20% | Four beats, lateral |
+| 2 | Trot | 45% | Two beats, diagonal pairs |
+| 3 | Canter | 70% | Three beats, with a leading foreleg |
+| 4 | Gallop | 100% | Four beats, with a moment of suspension |
+
+Shifting past top gear drops you back to a halt.
+
+Holding <kbd>W</kbd> or <kbd>S</kbd> hands speed control back to you and the horse animates to whatever pace you actually ride at. Let go and the selected gait takes over again.
+
+{: .note }
+> The [Icelandic](breeds/icelandic) has no trot. Gear 2 gives you its **tölt** instead -- a four-beat lateral gait that stays smooth in the saddle at a speed where other breeds are bouncing you around. Gears 3 and 4 canter and gallop as normal.
+
 ## Auto-ride
 
 **Double-tap <kbd>W</kbd>** while riding to switch on auto-ride. The horse keeps moving forward on its own and you only steer with the mouse. Useful for long overland trips where you'd otherwise be holding <kbd>W</kbd> for ten minutes.
@@ -77,6 +95,7 @@ Using a saddle, vanilla or [upgraded](equipment/upgraded-saddle), on a horse in 
 
 | Improvement | Detail |
 |:---|:---|
+| Gaits | Four gears: walk, trot, canter, gallop |
 | Auto-ride | Double-tap <kbd>W</kbd>; any movement key cancels |
 | Free look | Up to 90° while stationary before the horse turns |
 | Camera | Horse fades when you look down; head drops while ridden |
