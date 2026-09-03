@@ -162,14 +162,10 @@ public final class BhEquineGait {
     private float jumpThrustClock = Float.MAX_VALUE;
     private float jumpImpactClock = Float.MAX_VALUE;
     private float jumpAirSeconds;
-    private float jumpEventSeconds;
     private float jumpLaunchPower;
     private float jumpImpactPower;
-    private float jumpPeakRise;
     private float jumpDeepestFall;
     private boolean jumpWasAirborne;
-    private boolean jumpApexLogged;
-    private boolean jumpEventOpen;
 
     private float lastEarSignalLeft = Float.NaN;
     private float lastEarSignalRight = Float.NaN;
@@ -211,10 +207,12 @@ public final class BhEquineGait {
             state.gear = data.bh_getGear();
             state.kickTicks = data.bh_getKickTicks();
             state.stompTicks = data.bh_getStompTicks();
+            state.pullingCart = data.bh_hasCartGear();
         } else {
             state.gear = 0;
             state.kickTicks = 0;
             state.stompTicks = 0;
+            state.pullingCart = false;
         }
 
         if (++frameStamp % SWEEP_INTERVAL == 0) {
@@ -357,7 +355,7 @@ public final class BhEquineGait {
 
         float bankTarget = Mth.clamp(yawRate / BANK_YAW_FULL, -1.0F, 1.0F)
                 * move * Math.max(0.0F, 1.0F - swim) * (1.0F - rear)
-                * (state.isRidden ? 1.0F : 0.0F);
+                * (state.isRidden && !state.pullingCart ? 1.0F : 0.0F);
         float bankStep = BANK_PER_SECOND * deltaSeconds;
         bank += Mth.clamp(bankTarget - bank, -bankStep, bankStep);
         state.bankWeight = bank;
@@ -410,17 +408,11 @@ public final class BhEquineGait {
 
         if (airborne && !jumpWasAirborne) {
             jumpAirSeconds = 0.0F;
-            jumpPeakRise = verticalSpeed;
             jumpDeepestFall = 0.0F;
-            jumpApexLogged = false;
-            jumpEventSeconds = 0.0F;
-            jumpEventOpen = true;
             if (verticalSpeed >= JUMP_TAKEOFF_SPEED || jumpGather > 0.15F) {
                 jumpThrustClock = 0.0F;
                 jumpLaunchPower = Mth.clamp(
                         Math.max(verticalSpeed / JUMP_RISE_FULL, jumpGather), 0.35F, 1.0F);
-                BhJumpDebug.takeoff(entityId, verticalSpeed, jumpGather, jumpLaunchPower,
-                        state.isRidden);
             } else {
                 jumpLaunchPower = 0.6F;
             }
@@ -428,20 +420,13 @@ public final class BhEquineGait {
 
         if (airborne) {
             jumpAirSeconds += deltaSeconds;
-            jumpPeakRise = Math.max(jumpPeakRise, verticalSpeed);
             jumpDeepestFall = Math.min(jumpDeepestFall, verticalSpeed);
-            if (!jumpApexLogged && verticalSpeed <= 0.0F && jumpAirSeconds > 0.0F) {
-                jumpApexLogged = true;
-                BhJumpDebug.apex(entityId, jumpAirSeconds, jumpPeakRise);
-            }
         } else if (jumpWasAirborne) {
             if (state.onGround && jumpAirSeconds >= JUMP_MIN_AIR_SECONDS) {
                 float landingSpeed = Math.min(jumpDeepestFall, verticalSpeed);
                 jumpImpactClock = 0.0F;
                 jumpImpactPower = Mth.clamp(-landingSpeed / JUMP_FALL_FULL,
                         JUMP_IMPACT_POWER_MIN, JUMP_IMPACT_POWER_MAX);
-                BhJumpDebug.touchdown(entityId, jumpAirSeconds, landingSpeed, jumpImpactPower,
-                        jumpReach, deltaSeconds);
             }
             jumpAirSeconds = 0.0F;
         }
@@ -493,16 +478,6 @@ public final class BhEquineGait {
         arcLag += (arc - arcLag) * (1.0F - (float) Math.exp(-deltaSeconds / ARC_LAG_SECONDS));
         state.arcPitch = arc;
         state.arcWhip = arc - arcLag;
-
-        if (jumpEventOpen) {
-            jumpEventSeconds += deltaSeconds;
-            if (jumpTail <= 0.0F && !airborne) {
-                jumpEventOpen = false;
-                BhJumpDebug.settled(entityId, jumpEventSeconds);
-            } else {
-                BhJumpDebug.sample(entityId, state, jumpAirSeconds);
-            }
-        }
 
         if (rear > 0.2F) {
             landPhase = 0.0F;

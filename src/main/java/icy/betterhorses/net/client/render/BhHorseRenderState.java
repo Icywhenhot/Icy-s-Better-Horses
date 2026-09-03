@@ -96,6 +96,7 @@ public class BhHorseRenderState extends EquineRenderState {
 
     public float mountSettle;
 
+    public boolean pullingCart;
     public float bankWeight;
 
     public float skidWeight;

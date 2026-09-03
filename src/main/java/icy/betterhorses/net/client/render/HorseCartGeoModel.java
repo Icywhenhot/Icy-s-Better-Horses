@@ -1,31 +1,25 @@
 package icy.betterhorses.net.client.render;
 
-import icy.betterhorses.net.IcysBetterHorses;
+import icy.betterhorses.net.entity.CartSize;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.resources.Identifier;
 import com.geckolib.model.GeoModel;
 import com.geckolib.renderer.base.GeoRenderState;
 
 public final class HorseCartGeoModel extends GeoModel<HorseCartEntity> {
-    private static final Identifier MODEL =
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_cart");
-    private static final Identifier TEXTURE =
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "textures/entity/horse_cart.png");
-    private static final Identifier ANIMATION =
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_cart");
 
     @Override
     public Identifier getModelResource(GeoRenderState renderState) {
-        return MODEL;
+        return HorseCartRenderer.sizeOf(renderState).model();
     }
 
     @Override
     public Identifier getTextureResource(GeoRenderState renderState) {
-        return TEXTURE;
+        return HorseCartRenderer.sizeOf(renderState).texture();
     }
 
     @Override
     public Identifier getAnimationResource(HorseCartEntity animatable) {
-        return ANIMATION;
+        return animatable.size().animation();
     }
 }

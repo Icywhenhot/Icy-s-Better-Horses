@@ -93,7 +93,7 @@ public abstract class AbstractHorseRendererMixin<
         float bodyYaw = Mth.rotLerp(partialTick, entity.yBodyRotO, entity.yBodyRot);
         float radians = -bodyYaw * ((float) Math.PI / 180.0F);
         Vec3 horsePos = entity.getPosition(partialTick);
-        Vec3 driverPos = horsePos.add(HorseCartEntity.benchSeatOffset(0, bodyYaw));
+        Vec3 driverPos = horsePos.add(HorseCartEntity.benchSeatOffset(entity, 0, bodyYaw));
         Level level = entity.level();
 
         List<EntityRenderState.LeashState> reins = state.leashStates == null

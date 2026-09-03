@@ -34,6 +34,7 @@ public final class HorseCombat implements HorseFeature {
     private static final double FACING_DOT = 0.3D;
     private static final int COOLDOWN = 100;
     private static final int KICK_TICKS = 8;
+    private static final int BOLT_TICKS = 60;
     private static final double LOOSE_CHARGE = 0.8D;
 
     private static final int FULL_WIND = 60;
@@ -208,6 +209,10 @@ public final class HorseCombat implements HorseFeature {
         }
 
         strike(level, horse, data, attacker);
+        horse.clearStanding();
+        if (data.bh_getCombatTarget() == null) {
+            data.bh_setSpookTicks(BOLT_TICKS);
+        }
     }
 
     public static void strike(ServerLevel level, AbstractHorse horse, IHorseData data,

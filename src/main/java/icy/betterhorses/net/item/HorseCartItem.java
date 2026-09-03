@@ -1,5 +1,6 @@
 package icy.betterhorses.net.item;
 
+import icy.betterhorses.net.entity.CartSize;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,7 +34,7 @@ public class HorseCartItem extends Item {
 
         BlockPos above = context.getClickedPos().above();
         Vec3 pos = new Vec3(above.getX() + 0.5D, above.getY(), above.getZ() + 0.5D);
-        HorseCartEntity cart = HorseCartEntity.place(level, pos, player.getYRot() + 180.0F);
+        HorseCartEntity cart = HorseCartEntity.place(level, pos, player.getYRot() + 180.0F, CartSize.NORMAL);
         if (cart == null) {
             return InteractionResult.PASS;
         }

@@ -10,11 +10,18 @@ public abstract class LivingEntityRenderStateRiderMixin implements IBhRiderState
 
     @Unique private int bh_riddenHorseId = -1;
     @Unique private float bh_riddenHorseYaw;
+    @Unique private boolean bh_ridingCart;
 
     @Override
-    public void bh_setRiddenHorse(int horseId, float bodyYaw) {
+    public void bh_setRiddenHorse(int horseId, float bodyYaw, boolean onCart) {
         this.bh_riddenHorseId = horseId;
         this.bh_riddenHorseYaw = bodyYaw;
+        this.bh_ridingCart = onCart;
+    }
+
+    @Override
+    public boolean bh_isRidingCart() {
+        return this.bh_ridingCart;
     }
 
     @Override

@@ -22,8 +22,10 @@ public final class ArchetypePerks {
 
     private static final String PATH_KEY = "path";
     private static final int PATH_INTERVAL = 10;
+    private static final int PATH_GRACE = 40;
 
     private double pathBonus = -1.0D;
+    private int pathGrace;
 
     public void onBreedChanged(AbstractHorse horse, BreedArchetype arch) {
         BhHorseAttributes.apply(horse, Attributes.KNOCKBACK_RESISTANCE,
@@ -43,10 +45,17 @@ public final class ArchetypePerks {
     }
 
     private void updatePath(AbstractHorse horse, IHorseData data, BreedArchetype arch) {
-        double want = 0.0D;
-        if (BhBreedAbilities.rider(horse) != null && horse.getBlockStateOn().is(ROAD)) {
-            want = arch.pathSpeedBonus(BhHorseTraits.bondTier(data.bh_getBond()));
+        if (BhBreedAbilities.rider(horse) == null) {
+            pathGrace = 0;
+        } else if (horse.getBlockStateOn().is(ROAD)) {
+            pathGrace = PATH_GRACE;
+        } else if (pathGrace > 0) {
+            pathGrace = Math.max(0, pathGrace - PATH_INTERVAL);
         }
+
+        double want = pathGrace > 0
+                ? arch.pathSpeedBonus(BhHorseTraits.bondTier(data.bh_getBond()))
+                : 0.0D;
         if (want == pathBonus) {
             return;
         }
@@ -60,6 +69,7 @@ public final class ArchetypePerks {
 
     public void clear(AbstractHorse horse) {
         pathBonus = -1.0D;
+        pathGrace = 0;
         IHorseData.of(horse).bh_setPerkSurge(0);
         BhHorseAttributes.clear(horse, Attributes.MOVEMENT_SPEED,
                 BhHorseAttributes.Source.ARCHETYPE, PATH_KEY);

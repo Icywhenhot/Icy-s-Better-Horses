@@ -20,7 +20,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Locale;
 import icy.betterhorses.net.client.BhAbilityBadges;
-import icy.betterhorses.net.client.render.BhJumpDebug;
 
 @Mixin(Gui.class)
 public abstract class GuiMixin {
@@ -34,42 +33,6 @@ public abstract class GuiMixin {
     @Unique private static final int BH_STATS_HUD_TITLE_COLOR = 0xFFF2C15B;
     @Unique private static final int BH_STATS_HUD_BACKGROUND = 0xA0101010;
     @Unique private static final int BH_STATS_HUD_ACCENT = 0xD06E5324;
-    @Unique private static final String BH_JUMP_HUD_TITLE = "jump anim";
-
-    @Inject(method = "extractRenderState", at = @At("TAIL"))
-    private void bh_renderJumpDebugHud(DeltaTracker deltaTracker, boolean blurEnabled, boolean renderHud, CallbackInfo ci) {
-        String[] lines = BhJumpDebug.hudLines();
-        if (lines == null || this.minecraft.level == null || this.minecraft.gui.screen() != null) {
-            return;
-        }
-
-        int scaledWidth = this.minecraft.getWindow().getGuiScaledWidth();
-        int scaledHeight = this.minecraft.getWindow().getGuiScaledHeight();
-        GuiGraphicsExtractor gfx = new GuiGraphicsExtractor(
-                this.minecraft, this.guiRenderState, scaledWidth, scaledHeight);
-
-        int lineHeight = this.minecraft.font.lineHeight + 1;
-        int contentWidth = this.minecraft.font.width(BH_JUMP_HUD_TITLE);
-        for (String line : lines) {
-            contentWidth = Math.max(contentWidth, this.minecraft.font.width(line));
-        }
-        int left = BH_STATS_HUD_PADDING;
-        int top = scaledHeight - BH_STATS_HUD_PADDING * 2 - lineHeight * (lines.length + 1) - 40;
-
-        gfx.fill(left, top,
-                left + contentWidth + BH_STATS_HUD_PADDING * 2,
-                top + BH_STATS_HUD_PADDING * 2 + lineHeight * (lines.length + 1),
-                BH_STATS_HUD_BACKGROUND);
-        gfx.text(this.minecraft.font, Component.literal(BH_JUMP_HUD_TITLE),
-                left + BH_STATS_HUD_PADDING, top + BH_STATS_HUD_PADDING,
-                BH_STATS_HUD_TITLE_COLOR, false);
-        for (int i = 0; i < lines.length; i++) {
-            gfx.text(this.minecraft.font, Component.literal(lines[i]),
-                    left + BH_STATS_HUD_PADDING,
-                    top + BH_STATS_HUD_PADDING + lineHeight * (i + 1),
-                    BH_STATS_HUD_TEXT_COLOR, false);
-        }
-    }
 
     @Inject(method = "extractRenderState", at = @At("TAIL"))
     private void bh_renderHorseStatsHud(DeltaTracker deltaTracker, boolean blurEnabled, boolean renderHud, CallbackInfo ci) {

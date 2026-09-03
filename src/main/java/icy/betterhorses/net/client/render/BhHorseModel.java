@@ -162,8 +162,6 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
         return bodyRest.y();
     }
 
-    public static boolean DEBUG_REST_POSE = false;
-
     private static final float BANK_ROLL = 11.0F * Mth.DEG_TO_RAD;
 
     private static final float GROUND_Y = 24.0F;
@@ -204,9 +202,6 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
     @Override
     public void setupAnim(BhHorseRenderState state) {
         super.setupAnim(state);
-        if (DEBUG_REST_POSE) {
-            return;
-        }
 
         final float phase = state.phaseOffset;
         final float age = state.ageInTicks;

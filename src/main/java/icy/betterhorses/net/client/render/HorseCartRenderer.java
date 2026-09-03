@@ -1,5 +1,6 @@
 package icy.betterhorses.net.client.render;
 
+import icy.betterhorses.net.entity.CartSize;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -8,13 +9,19 @@ import com.geckolib.constant.DataTickets;
 import com.geckolib.constant.dataticket.DataTicket;
 import com.geckolib.renderer.GeoEntityRenderer;
 import com.geckolib.renderer.base.BoneSnapshots;
+import com.geckolib.renderer.base.GeoRenderState;
 import com.geckolib.renderer.base.RenderPassInfo;
 
 public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, EntityRenderState> {
 
-    private static final String CHEST_BONE = "chest";
     private static final DataTicket<Boolean> HAS_CHEST =
             DataTicket.create("bh_cart_has_chest", Boolean.class);
+    private static final DataTicket<Boolean> IS_LARGE =
+            DataTicket.create("bh_cart_is_large", Boolean.class);
+
+    public static CartSize sizeOf(GeoRenderState renderState) {
+        return CartSize.byLarge(renderState.getOrDefaultGeckolibData(IS_LARGE, false));
+    }
 
     public HorseCartRenderer(EntityRendererProvider.Context context) {
         super(context, new HorseCartGeoModel());
@@ -25,7 +32,8 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, 
         super.adjustModelBonesForRender(pass, snapshots);
 
         if (!pass.renderState().getOrDefaultGeckolibData(HAS_CHEST, false)) {
-            snapshots.ifPresent(CHEST_BONE, snapshot -> snapshot.skipRender(true).skipChildrenRender(true));
+            snapshots.ifPresent(sizeOf(pass.renderState()).chestBone(),
+                    snapshot -> snapshot.skipRender(true).skipChildrenRender(true));
         }
     }
 
@@ -34,6 +42,7 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, 
         super.extractRenderState(entity, state, partialTick);
 
         state.addGeckolibData(HAS_CHEST, entity.hasChest());
+        state.addGeckolibData(IS_LARGE, entity.size().isLarge());
 
         Vec3 glued = entity.gluedRenderPosition(partialTick);
         if (glued != null) {

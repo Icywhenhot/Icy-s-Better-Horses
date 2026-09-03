@@ -7,8 +7,6 @@ import icy.betterhorses.net.client.HorseInfoScreen;
 import icy.betterhorses.net.client.HorseRosterScreen;
 import icy.betterhorses.net.client.HorseStabilizerSoundController;
 import icy.betterhorses.net.client.RadialMenuScreen;
-import icy.betterhorses.net.client.render.BhHorseModel;
-import icy.betterhorses.net.client.render.BhJumpDebug;
 import icy.betterhorses.net.client.render.BhModelLayers;
 import icy.betterhorses.net.client.render.FriesianHorseRenderer;
 import icy.betterhorses.net.client.render.PercheronHorseRenderer;
@@ -21,7 +19,11 @@ import icy.betterhorses.net.client.render.IcelandicHorseRenderer;
 import icy.betterhorses.net.client.render.MediumHorseRenderer;
 import icy.betterhorses.net.client.render.SmallHorseRenderer;
 import icy.betterhorses.net.entity.IcelandicHorse;
+import icy.betterhorses.net.ModMenus;
+import icy.betterhorses.net.client.CartChestScreen;
+import net.minecraft.client.gui.screens.MenuScreens;
 import icy.betterhorses.net.network.BhRearPayload;
+import icy.betterhorses.net.network.CartSizePayload;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
@@ -40,10 +42,13 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import icy.betterhorses.net.entity.HorseCartEntity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.UUID;
@@ -64,8 +69,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
     public static KeyMapping GEAR_KEY;
     public static KeyMapping REAR_KEY;
     public static KeyMapping FREE_LOOK_KEY;
-    public static KeyMapping JUMP_DEBUG_KEY;
-    public static KeyMapping REST_POSE_KEY;
+    public static KeyMapping CART_SIZE_KEY;
 
     private static final double BH_ROUSE_SCAN = 32.0D;
 
@@ -107,19 +111,14 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_LEFT_CONTROL,
                 CATEGORY));
 
-        JUMP_DEBUG_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-                "key.icys-better-horses.jump_debug",
+        CART_SIZE_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.icys-better-horses.cart_size",
                 InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_J,
-                CATEGORY));
-
-        REST_POSE_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-                "key.icys-better-horses.rest_pose",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_K,
+                GLFW.GLFW_KEY_LEFT_ALT,
                 CATEGORY));
 
         EntityRendererRegistry.register(ModEntities.HORSE_CART, HorseCartRenderer::new);
+        MenuScreens.register(ModMenus.CART_CHEST, CartChestScreen::new);
 
         BhModelLayers.register();
         EntityRendererRegistry.register(ModEntities.ICELANDIC_HORSE, context ->
@@ -224,15 +223,8 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
             bh_tryRear(client);
         }
 
-        while (JUMP_DEBUG_KEY.consumeClick()) {
-            BhJumpDebug.cycle();
-        }
-
-        while (REST_POSE_KEY.consumeClick()) {
-            BhHorseModel.DEBUG_REST_POSE = !BhHorseModel.DEBUG_REST_POSE;
-            BhJumpDebug.banner(BhHorseModel.DEBUG_REST_POSE
-                    ? "rest pose: frozen"
-                    : "rest pose: animating");
+        while (CART_SIZE_KEY.consumeClick()) {
+            bh_trySwapCartSize(client);
         }
     }
 
@@ -272,6 +264,33 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         }
 
         ClientPlayNetworking.send(new BhRearPayload(horse.getId()));
+    }
+
+    private static void bh_trySwapCartSize(Minecraft client) {
+        LocalPlayer player = client.player;
+        if (player == null || client.gui.screen() != null) {
+            return;
+        }
+
+        Entity target = bh_lookedAtCartTarget(player);
+        if (target == null) {
+            return;
+        }
+
+        ClientPlayNetworking.send(new CartSizePayload(target.getId()));
+    }
+
+    private static @Nullable Entity bh_lookedAtCartTarget(LocalPlayer player) {
+        Vec3 eye = player.getEyePosition(1.0F);
+        Vec3 look = player.getViewVector(1.0F);
+        Vec3 end = eye.add(look.scale(RADIAL_REACH));
+        AABB searchBox = player.getBoundingBox().expandTowards(look.scale(RADIAL_REACH)).inflate(1.0D);
+        EntityHitResult hit = ProjectileUtil.getEntityHitResult(
+                player, eye, end, searchBox,
+                entity -> (entity instanceof HorseCartEntity || entity instanceof AbstractHorse)
+                        && entity.isPickable(),
+                RADIAL_REACH * RADIAL_REACH);
+        return hit == null ? null : hit.getEntity();
     }
 
     private static boolean bh_anyHorseRoused(Minecraft client) {

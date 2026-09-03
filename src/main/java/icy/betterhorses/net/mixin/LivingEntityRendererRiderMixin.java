@@ -1,6 +1,8 @@
 package icy.betterhorses.net.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import icy.betterhorses.net.BhRiderSeat;
+import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.client.render.BhRiderMotion;
 import icy.betterhorses.net.client.render.IBhRiderState;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -38,9 +40,10 @@ public abstract class LivingEntityRendererRiderMixin {
                                        float partialTick, CallbackInfo ci) {
         if (entity.getVehicle() instanceof AbstractHorse horse) {
             ((IBhRiderState) state).bh_setRiddenHorse(horse.getId(),
-                    Mth.rotLerp(partialTick, horse.yBodyRotO, horse.yBodyRot));
+                    Mth.rotLerp(partialTick, horse.yBodyRotO, horse.yBodyRot),
+                    IHorseData.of(horse).bh_hasCartGear());
         } else {
-            ((IBhRiderState) state).bh_setRiddenHorse(-1, 0.0F);
+            ((IBhRiderState) state).bh_setRiddenHorse(-1, 0.0F, false);
         }
     }
 
@@ -57,7 +60,8 @@ public abstract class LivingEntityRendererRiderMixin {
         }
 
         int horseId = state instanceof IBhRiderState rider ? rider.bh_getRiddenHorseId() : -1;
-        BhRiderMotion motion = horseId < 0 ? BhRiderMotion.NONE : BhRiderMotion.get(horseId);
+        boolean onCart = state instanceof IBhRiderState rider && rider.bh_isRidingCart();
+        BhRiderMotion motion = horseId < 0 || onCart ? BhRiderMotion.NONE : BhRiderMotion.get(horseId);
         Vec3 seat =
                 horseId < 0 ? Vec3.ZERO
                             : BhRiderSeat.applied(horseId);
