@@ -71,8 +71,22 @@ public class BhModMenuIntegration implements ModMenuApi {
                 .setTooltip(Component.translatable("config.icys-better-horses.manage_key.tooltip"))
                 .build());
         keybinds.addEntry(eb.fillKeybindingField(
+                        Component.translatable("config.icys-better-horses.gear_key"), IcysBetterHorsesClient.GEAR_KEY)
+                .setTooltip(Component.translatable("config.icys-better-horses.gear_key.tooltip"))
+                .build());
+        keybinds.addEntry(eb.fillKeybindingField(
                         Component.translatable("config.icys-better-horses.rear_key"), IcysBetterHorsesClient.REAR_KEY)
                 .setTooltip(Component.translatable("config.icys-better-horses.rear_key.tooltip"))
+                .build());
+        keybinds.addEntry(eb.fillKeybindingField(
+                        Component.translatable("config.icys-better-horses.free_look_key"),
+                        IcysBetterHorsesClient.FREE_LOOK_KEY)
+                .setTooltip(Component.translatable("config.icys-better-horses.free_look_key.tooltip"))
+                .build());
+        keybinds.addEntry(eb.fillKeybindingField(
+                        Component.translatable("config.icys-better-horses.cart_size_key"),
+                        IcysBetterHorsesClient.CART_SIZE_KEY)
+                .setTooltip(Component.translatable("config.icys-better-horses.cart_size_key.tooltip"))
                 .build());
 
         builder.setSavingRunnable(() -> {

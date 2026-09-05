@@ -16,8 +16,15 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, 
 
     private static final DataTicket<Boolean> HAS_CHEST =
             DataTicket.create("bh_cart_has_chest", Boolean.class);
+    private static final DataTicket<Boolean> HAS_PLOW =
+            DataTicket.create("bh_cart_has_plow", Boolean.class);
+    private static final DataTicket<Boolean> IS_PLACED =
+            DataTicket.create("bh_cart_is_placed", Boolean.class);
     private static final DataTicket<Boolean> IS_LARGE =
             DataTicket.create("bh_cart_is_large", Boolean.class);
+
+    private static final String PLOW_BONE = "plow";
+    private static final String PROP_BONE = "bone3";
 
     public static CartSize sizeOf(GeoRenderState renderState) {
         return CartSize.byLarge(renderState.getOrDefaultGeckolibData(IS_LARGE, false));
@@ -35,6 +42,14 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, 
             snapshots.ifPresent(sizeOf(pass.renderState()).chestBone(),
                     snapshot -> snapshot.skipRender(true).skipChildrenRender(true));
         }
+        if (!pass.renderState().getOrDefaultGeckolibData(IS_PLACED, false)) {
+            snapshots.ifPresent(PROP_BONE,
+                    snapshot -> snapshot.skipRender(true).skipChildrenRender(true));
+        }
+        if (!pass.renderState().getOrDefaultGeckolibData(HAS_PLOW, false)) {
+            snapshots.ifPresent(PLOW_BONE,
+                    snapshot -> snapshot.skipRender(true).skipChildrenRender(true));
+        }
     }
 
     @Override
@@ -42,6 +57,8 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, 
         super.extractRenderState(entity, state, partialTick);
 
         state.addGeckolibData(HAS_CHEST, entity.hasChest());
+        state.addGeckolibData(HAS_PLOW, entity.hasPlough());
+        state.addGeckolibData(IS_PLACED, entity.isPlaced());
         state.addGeckolibData(IS_LARGE, entity.size().isLarge());
 
         Vec3 glued = entity.gluedRenderPosition(partialTick);

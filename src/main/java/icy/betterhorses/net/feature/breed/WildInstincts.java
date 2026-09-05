@@ -22,7 +22,8 @@ public final class WildInstincts implements BreedAbility {
     private static final int ALERT_COOLDOWN = 120;
     private static final int GLOW_TICKS = 60;
     private static final int[] SELF_HEAL = {600, 400, 400};
-    private static final int[] RIDER_HEAL = {0, 600, 300};
+    private static final int[] RIDER_HEAL = {0, 120, 60};
+    private static final float RIDER_HEAL_AMOUNT = 2.0F;
 
     private int alertCooldown;
     private int glowExpiry;
@@ -50,7 +51,7 @@ public final class WildInstincts implements BreedAbility {
         if (riderRate > 0 && horse.tickCount % riderRate == 0) {
             Player rider = BhBreedAbilities.rider(horse);
             if (rider != null && rider.getHealth() < rider.getMaxHealth()) {
-                rider.heal(1.0F);
+                rider.heal(RIDER_HEAL_AMOUNT);
                 BhSurge.pulse(data, 0);
             }
         }

@@ -42,7 +42,7 @@ Upgraded Saddle ──┬── Chest / Ender Chest   (storage)
 | [Horse Hooves](horse-hooves) | Hooves | Powder snow walking, reduced fall damage, takes Frost Walker | Mountains, snow, crossing water |
 | [Horse Medkit](horse-medkit) | Medkit | One-shot auto-heal below half health | Nether trips, combat, anything risky |
 | [Horse Stabilizer](horse-stabilizer) | Stabilizer | Slows long falls and can cancel the damage entirely | Cliffs, ravines, mountain routes |
-| [Horse Cart](horse-cart) | Stabilizer | Tows a 4-seat cart, optional double chest | Bulk hauling and co-op travel |
+| [Horse Cart](horse-cart) | Stabilizer | Tows a 4-seat cart, optional double chest and plough | Bulk hauling, co-op travel, ploughing fields |
 | [Hitchpost](hitchpost) | Hitchpost | Tethers a horse to a fixed point | Stables, towns, anywhere you park |
 | [Canister](canister) | Component | Component for the stabilizer | Only as a stabilizer ingredient |
 | [Wheel](wheel) | Component | Component for the cart | Only as a cart ingredient |
@@ -55,7 +55,7 @@ Upgraded Saddle ──┬── Chest / Ender Chest   (storage)
 Two shortcuts save a trip through the inventory screen:
 
 - **Right-click the horse** holding a [Stabilizer](horse-stabilizer) or a [Cart](horse-cart) and it goes straight on, as long as the horse wears an Upgraded Saddle and that slot is empty.
-- **Right-click a cart** with a Chest in hand to mount the chest in its bed.
+- **Right-click a cart** with a Chest in hand to mount the chest in its bed, or with a hoe to fit a plough.
 
 ## Taking gear off
 

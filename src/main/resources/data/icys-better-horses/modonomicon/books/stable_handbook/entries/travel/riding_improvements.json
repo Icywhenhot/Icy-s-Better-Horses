@@ -42,6 +42,13 @@
       "title": "book.icys-better-horses.stable_handbook.travel.riding_improvements.terrain.title",
       "show_title_separator": true,
       "text": "book.icys-better-horses.stable_handbook.travel.riding_improvements.terrain.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "rear",
+      "title": "book.icys-better-horses.stable_handbook.travel.riding_improvements.rear.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.travel.riding_improvements.rear.text"
     }
   ]
 }

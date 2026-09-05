@@ -26,6 +26,21 @@ Breed is visible on the [Horse Info screen](../horse-info-screen), and in the qu
 
 Donkeys, mules, skeleton horses, and zombie horses don't get a real breed. They show a species label instead.
 
+
+### What each class is worth
+
+Speed and jump are what the [Horse Info screen](../horse-info-screen) shows you, in blocks per second and blocks of jump height. A horse rolls somewhere inside its class's range at birth, and [Bond](../ownership-and-bonding) lifts it from there.
+
+| Class | Speed (blk/s) | Jump (blk) | Health |
+|:---|:---:|:---:|:---:|
+| Race | 11-15 | 3-5.5 | 15-20 |
+| War | 9-15 | 2-5 | 25-40 |
+| Western | 8-15 | 2-4 | 15-30 |
+| Pony | 8-13 | 2-4 | 25-40 |
+| Draft | 7-10 | 1-3 | 35-50 |
+
+Draft horses are the slowest and by far the toughest, and they are the only class that hauls a full wagon. Race horses are the mirror image: quickest off the mark and the first to fall over.
+
 ---
 
 ## All fifteen at a glance

@@ -149,6 +149,25 @@ public final class BhBreedCoats {
         return random.nextInt(coatIds.size());
     }
 
+    public int rollOther(RandomSource random, int a, int b) {
+        a = clamp(a);
+        b = clamp(b);
+        int spare = coatIds.size() - (a == b ? 1 : 2);
+        if (spare < 1) {
+            return -1;
+        }
+        int pick = random.nextInt(spare);
+        for (int i = 0; i < coatIds.size(); i++) {
+            if (i == a || i == b) {
+                continue;
+            }
+            if (pick-- == 0) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public String coatId(int index) {
         return coatIds.get(clamp(index));
     }

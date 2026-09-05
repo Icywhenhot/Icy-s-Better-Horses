@@ -25,11 +25,10 @@ public class FriesianHorseRenderer
                 state -> state.saddle,
                 BhTackTextures.FRIESIAN::saddle));
 
-        this.addLayer(BhTackLayer.<BhHorseRenderState, FriesianHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, FriesianHorseModel>forArmor(this,
                 new FriesianHorseModel(context.bakeLayer(BhModelLayers.FRIESIAN_ARMOR)),
                 new FriesianHorseModel(context.bakeLayer(BhModelLayers.FRIESIAN_ARMOR_BABY)),
-                state -> state.bodyArmorItem,
-                BhTackTextures.FRIESIAN::armor));
+                BhTackTextures.FRIESIAN));
 
         this.addLayer(new BhTackLayer<>(this,
                 new FriesianHorseModel(context.bakeLayer(BhModelLayers.FRIESIAN_CHEST)),

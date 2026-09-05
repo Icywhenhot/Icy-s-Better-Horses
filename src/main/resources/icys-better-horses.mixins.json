@@ -31,6 +31,7 @@
 		"AbstractContainerScreenMixin",
 		"AbstractEquineModelMixin",
 		"AbstractHorseRendererMixin",
+		"CameraMixin",
 		"EquipmentLayerRendererMixin",
 		"EquineRenderStateMixin",
 		"GuiGraphicsExtractorAccessor",

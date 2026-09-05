@@ -22,11 +22,10 @@ public class MediumHorseRenderer<T extends MediumHorse>
                 state -> state.saddle,
                 BhTackTextures.MEDIUM::saddle));
 
-        this.addLayer(BhTackLayer.<BhHorseRenderState, MediumHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, MediumHorseModel>forArmor(this,
                 new MediumHorseModel(context.bakeLayer(BhModelLayers.MEDIUM_ARMOR)),
                 new MediumHorseModel(context.bakeLayer(BhModelLayers.MEDIUM_ARMOR_BABY)),
-                state -> state.bodyArmorItem,
-                BhTackTextures.MEDIUM::armor));
+                BhTackTextures.MEDIUM));
 
         this.addLayer(new BhTackLayer<>(this,
                 new MediumHorseModel(context.bakeLayer(BhModelLayers.MEDIUM_CHEST)),

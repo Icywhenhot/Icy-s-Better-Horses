@@ -25,11 +25,10 @@ public class PercheronHorseRenderer
                 state -> state.saddle,
                 BhTackTextures.PERCHERON::saddle));
 
-        this.addLayer(BhTackLayer.<BhHorseRenderState, PercheronHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, PercheronHorseModel>forArmor(this,
                 new PercheronHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_ARMOR)),
                 new PercheronHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_ARMOR_BABY)),
-                state -> state.bodyArmorItem,
-                BhTackTextures.PERCHERON::armor));
+                BhTackTextures.PERCHERON));
 
         this.addLayer(new BhTackLayer<>(this,
                 new PercheronHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_CHEST)),

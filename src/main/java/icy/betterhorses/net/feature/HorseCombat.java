@@ -5,13 +5,21 @@ import icy.betterhorses.net.BhGears;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhDamageTypes;
+import icy.betterhorses.net.ModSounds;
+import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BreedArchetype;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.network.HorseChargeShakePayload;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
@@ -36,6 +44,9 @@ public final class HorseCombat implements HorseFeature {
     private static final int KICK_TICKS = 8;
     private static final int BOLT_TICKS = 60;
     private static final double LOOSE_CHARGE = 0.8D;
+    private static final String SLOW_KEY = "charge_slow";
+    private static final int SLOW_TICKS = 30;
+    private static final double SLOW_AMOUNT = -0.6D;
 
     private static final int FULL_WIND = 60;
     private static final int MIN_WIND = 20;
@@ -45,6 +56,7 @@ public final class HorseCombat implements HorseFeature {
 
     private int cooldown;
     private int straight;
+    private int slowed;
     private float lastYaw = Float.NaN;
 
     @Override
@@ -57,6 +69,13 @@ public final class HorseCombat implements HorseFeature {
         int kicking = data.bh_getKickTicks();
         if (kicking > 0) {
             data.bh_setKickTicks(kicking - 1);
+        }
+        if (slowed > 0) {
+            slowed--;
+            if (slowed == 0) {
+                BhHorseAttributes.clear(horse, Attributes.MOVEMENT_SPEED,
+                        BhHorseAttributes.Source.ABILITY, SLOW_KEY);
+            }
         }
         Vec3 motion = horse.getKnownMovement();
         Vec3 flat = new Vec3(motion.x, 0.0D, motion.z);
@@ -82,18 +101,26 @@ public final class HorseCombat implements HorseFeature {
         }
 
         BreedArchetype arch = breed.archetype();
-        float damage = (float) Math.min(DAMAGE_CAP,
-                (BASE_DAMAGE * arch.bashDamage() + barding(horse))
-                        * charge(flat.length()) * wind() * momentum(breed, data));
+        float dmg = damage(horse, arch.bashDamage(),
+                charge(flat.length()) * wind() * momentum(breed, data));
         DamageSource src = level.damageSources().source(BhDamageTypes.HORSE_BASH, horse, rider);
         Vec3 dir = flat.normalize();
 
         boolean killed = false;
         for (LivingEntity target : hit) {
-            target.hurtServer(level, src, damage);
+            target.hurtServer(level, src, dmg);
             shove(target, dir, arch.bashKnockback());
             killed |= !target.isAlive();
         }
+        horse.playSound(ModSounds.HORSE_CHARGE_THUD, 0.5F, 1.0F);
+        horse.playSound(ModSounds.HORSE_NEIGH, 1.0F, 1.0F);
+        if (rider instanceof ServerPlayer serverRider) {
+            ServerPlayNetworking.send(serverRider, new HorseChargeShakePayload());
+        }
+        BhHorseAttributes.apply(horse, Attributes.MOVEMENT_SPEED,
+                BhHorseAttributes.Source.ABILITY, SLOW_KEY,
+                SLOW_AMOUNT, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+        slowed = SLOW_TICKS;
         if (killed && chains(breed, data)) {
             cooldown = 0;
             BhSurge.pulse(data, 0);
@@ -219,28 +246,27 @@ public final class HorseCombat implements HorseFeature {
                               LivingEntity target) {
         BreedArchetype arch = data.bh_getBreed().archetype();
         data.bh_setKickTicks(KICK_TICKS);
-        float damage = (float) Math.min(DAMAGE_CAP,
-                BASE_DAMAGE * arch.kickDamage() + barding(horse));
-        target.hurtServer(level,
-                level.damageSources().source(BhDamageTypes.HORSE_KICK, horse, horse),
-                damage);
-        Vec3 away = target.position().subtract(horse.position());
-        if (away.lengthSqr() > 1.0E-4D) {
-            shove(target, new Vec3(away.x, 0.0D, away.z).normalize(), arch.bashKnockback() * 0.5D);
-        }
+        hit(level, horse, target, BhDamageTypes.HORSE_KICK,
+                damage(horse, arch.kickDamage(), 1.0D), arch.bashKnockback() * 0.5D);
     }
 
     public static void chargeStrike(ServerLevel level, AbstractHorse horse, IHorseData data,
                                     LivingEntity target) {
         BreedArchetype arch = data.bh_getBreed().archetype();
-        float damage = (float) Math.min(DAMAGE_CAP,
-                (BASE_DAMAGE * arch.bashDamage() + barding(horse)) * LOOSE_CHARGE);
-        target.hurtServer(level,
-                level.damageSources().source(BhDamageTypes.HORSE_BASH, horse, horse),
-                damage);
+        hit(level, horse, target, BhDamageTypes.HORSE_BASH,
+                damage(horse, arch.bashDamage(), LOOSE_CHARGE), arch.bashKnockback());
+    }
+
+    private static float damage(AbstractHorse horse, double mult, double scale) {
+        return (float) Math.min(DAMAGE_CAP, (BASE_DAMAGE * mult + barding(horse)) * scale);
+    }
+
+    private static void hit(ServerLevel level, AbstractHorse horse, LivingEntity target,
+                            ResourceKey<DamageType> type, float damage, double knockback) {
+        target.hurtServer(level, level.damageSources().source(type, horse, horse), damage);
         Vec3 away = target.position().subtract(horse.position());
         if (away.lengthSqr() > 1.0E-4D) {
-            shove(target, new Vec3(away.x, 0.0D, away.z).normalize(), arch.bashKnockback());
+            shove(target, new Vec3(away.x, 0.0D, away.z).normalize(), knockback);
         }
     }
 

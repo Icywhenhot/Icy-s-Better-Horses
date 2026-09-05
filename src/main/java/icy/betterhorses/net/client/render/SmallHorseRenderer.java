@@ -22,11 +22,10 @@ public class SmallHorseRenderer<T extends SmallHorse>
                 state -> state.saddle,
                 BhTackTextures.SMALL::saddle));
 
-        this.addLayer(BhTackLayer.<BhHorseRenderState, SmallHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, SmallHorseModel>forArmor(this,
                 new SmallHorseModel(context.bakeLayer(BhModelLayers.SMALL_ARMOR)),
                 new SmallHorseModel(context.bakeLayer(BhModelLayers.SMALL_ARMOR_BABY)),
-                state -> state.bodyArmorItem,
-                BhTackTextures.SMALL::armor));
+                BhTackTextures.SMALL));
 
         this.addLayer(new BhTackLayer<>(this,
                 new SmallHorseModel(context.bakeLayer(BhModelLayers.SMALL_CHEST)),

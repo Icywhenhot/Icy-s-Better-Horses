@@ -36,6 +36,17 @@
     },
     {
       "type": "modonomicon:text",
+      "id": "size",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_cart.size.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.size.text"
+    },
+    {
+      "type": "icys-better-horses:cart_models",
+      "id": "models"
+    },
+    {
+      "type": "modonomicon:text",
       "id": "standalone",
       "title": "book.icys-better-horses.stable_handbook.equipment.horse_cart.standalone.title",
       "show_title_separator": true,
@@ -54,6 +65,13 @@
       "item": "minecraft:chest",
       "title": "book.icys-better-horses.stable_handbook.equipment.horse_cart.chest.title",
       "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.chest.text"
+    },
+    {
+      "type": "modonomicon:spotlight",
+      "id": "plough",
+      "item": "minecraft:iron_hoe",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_cart.plough.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.plough.text"
     },
     {
       "type": "modonomicon:spotlight",

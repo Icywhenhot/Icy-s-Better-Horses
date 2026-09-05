@@ -10,6 +10,7 @@ import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.HorseGearPayload;
 import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
+import icy.betterhorses.net.network.HorseChargeShakePayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
@@ -89,6 +90,7 @@ public class IcysBetterHorses implements ModInitializer {
         PayloadTypeRegistry.clientboundPlay().register(HorseRosterSyncPayload.TYPE, new HorseRosterSyncPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(HorseManageResultPayload.TYPE, new HorseManageResultPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(TrustSyncPayload.TYPE, new TrustSyncPayload.StreamCodec());
+        PayloadTypeRegistry.clientboundPlay().register(HorseChargeShakePayload.TYPE, new HorseChargeShakePayload.StreamCodec());
     }
 
     public static void sendTrustList(ServerPlayer player) {
@@ -176,46 +178,13 @@ public class IcysBetterHorses implements ModInitializer {
         }
     }
 
-    private static final int BH_MAX_PACKMATES = 3;
     private static final int DISENGAGE_TICKS = 60;
-
-    private void handlePair(ServerPlayer player, AbstractHorse horse, IHorseData data) {
-        if (data.bh_getPairedTo() != null) {
-            data.bh_setPairedTo(null);
-            data.bh_setCommand(HorseCommand.FOLLOW);
-            player.sendSystemMessage(Component.translatable("message.icys-better-horses.unpaired"));
-            return;
-        }
-        if (!(player.getVehicle() instanceof AbstractHorse mount) || mount == horse) {
-            player.sendSystemMessage(Component.translatable("message.icys-better-horses.pair_needs_mount"));
-            return;
-        }
-        UUID leadId = mount.getUUID();
-        int paired = 0;
-        for (AbstractHorse other : HorseTracker.getAll()) {
-            if (leadId.equals(IHorseData.of(other).bh_getPairedTo())) {
-                paired++;
-            }
-        }
-        if (paired >= BH_MAX_PACKMATES) {
-            player.sendSystemMessage(Component.translatable("message.icys-better-horses.pair_full"));
-            return;
-        }
-        data.bh_setPairedTo(leadId);
-        data.bh_setCommand(HorseCommand.PAIR);
-        player.sendSystemMessage(Component.translatable("message.icys-better-horses.paired"));
-    }
 
     private void handleRadialCommand(ServerPlayer player, int horseId, HorseCommand command) {
         AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
         if (horse == null) return;
 
         IHorseData data = IHorseData.of(horse);
-        if (command == HorseCommand.PAIR) {
-            handlePair(player, horse, data);
-            playCommandAnswer(horse);
-            return;
-        }
         if (command == HorseCommand.SET_HOME) {
             data.bh_setHome(horse.blockPosition());
             data.bh_setCommand(HorseCommand.STAY);
@@ -436,7 +405,6 @@ public class IcysBetterHorses implements ModInitializer {
             return false;
         }
         player.sendSystemMessage(refusal);
-        cart.playSound(SoundEvents.VILLAGER_NO, 1.0F, 1.0F);
         return true;
     }
 

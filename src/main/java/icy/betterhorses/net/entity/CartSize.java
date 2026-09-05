@@ -4,18 +4,19 @@ import icy.betterhorses.net.BreedArchetype;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.inventory.CartChestMenu;
 import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 import com.geckolib.animation.RawAnimation;
 
 public enum CartSize {
 
     NORMAL("horse_cart", "chest",
-            "wheel moving2", "chest", "chest close", "stand alone",
-            2.2D, 1.15D, 2.55D, 0.0D, 2, 0, 54),
+            "wheel moving2", "chest", "chest close", "stand alone", "till land",
+            2.2D, 1.15D, 1.15D, 2.55D, 0.0D, 2, 0, 54),
 
-    LARGE("horse_cart_large", "chest2",
-            "wheel moving", "chestopen", "chest close", "idle",
-            2.9D, 1.8D, 3.3D, 0.65D, 4, 2, CartChestMenu.SLOTS);
+    LARGE("horse_cart_large", "chest",
+            "wheel moving", "chest open", "chest close", "idle", null,
+            2.875D, 1.8125D, 1.525D, 3.4D, 0.75D, 4, 2, CartChestMenu.SLOTS);
 
     private final Identifier model;
     private final Identifier texture;
@@ -26,9 +27,11 @@ public enum CartSize {
     private final RawAnimation chestOpening;
     private final RawAnimation chestClosing;
     private final RawAnimation standing;
+    private final @Nullable RawAnimation tilling;
 
     private final double bedCenterBehind;
     private final double bedHalfLength;
+    private final double benchHeight;
     private final double rearSeatBehind;
     private final double rearRowSpacing;
     private final int rearSeatCount;
@@ -37,8 +40,10 @@ public enum CartSize {
 
     CartSize(String asset, String chestBone,
              String wheelAnim, String chestOpenAnim, String chestCloseAnim, String standAnim,
-             double bedCenterBehind, double bedHalfLength, double rearSeatBehind,
-             double rearRowSpacing, int rearSeatCount, int rearSeatsWithChest, int chestSlots) {
+             @Nullable String tillAnim,
+             double bedCenterBehind, double bedHalfLength, double benchHeight,
+             double rearSeatBehind, double rearRowSpacing,
+             int rearSeatCount, int rearSeatsWithChest, int chestSlots) {
         this.model = id(asset);
         this.texture = id("textures/entity/" + asset + ".png");
         this.animation = id(asset);
@@ -47,8 +52,10 @@ public enum CartSize {
         this.chestOpening = RawAnimation.begin().thenPlayAndHold(chestOpenAnim);
         this.chestClosing = RawAnimation.begin().thenPlayAndHold(chestCloseAnim);
         this.standing = RawAnimation.begin().thenLoop(standAnim);
+        this.tilling = tillAnim == null ? null : RawAnimation.begin().thenLoop(tillAnim);
         this.bedCenterBehind = bedCenterBehind;
         this.bedHalfLength = bedHalfLength;
+        this.benchHeight = benchHeight;
         this.rearSeatBehind = rearSeatBehind;
         this.rearRowSpacing = rearRowSpacing;
         this.rearSeatCount = rearSeatCount;
@@ -104,12 +111,24 @@ public enum CartSize {
         return this.standing;
     }
 
+    public @Nullable RawAnimation tilling() {
+        return this.tilling;
+    }
+
+    public boolean takesPlough() {
+        return this.tilling != null;
+    }
+
     public double bedCenterBehind() {
         return this.bedCenterBehind;
     }
 
     public double bedHalfLength() {
         return this.bedHalfLength;
+    }
+
+    public double benchHeight() {
+        return this.benchHeight;
     }
 
     public double rearSeatBehind() {

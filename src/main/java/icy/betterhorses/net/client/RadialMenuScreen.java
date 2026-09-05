@@ -10,21 +10,12 @@ import net.minecraft.network.chat.Component;
 
 public class RadialMenuScreen extends Screen {
 
-    private static final HorseCommand[] BASE_COMMANDS = {
+    private static final HorseCommand[] COMMANDS = {
             HorseCommand.FOLLOW,
             HorseCommand.WANDER,
             HorseCommand.STAY,
             HorseCommand.RETURN_HOME,
             HorseCommand.SET_HOME,
-    };
-
-    private static final HorseCommand[] MOUNTED_COMMANDS = {
-            HorseCommand.FOLLOW,
-            HorseCommand.WANDER,
-            HorseCommand.STAY,
-            HorseCommand.RETURN_HOME,
-            HorseCommand.SET_HOME,
-            HorseCommand.PAIR,
     };
     private static final int RING_INNER = 44;
     private static final int RING_OUTER = 110;
@@ -61,10 +52,10 @@ public class RadialMenuScreen extends Screen {
     private final HorseCommand[] commands;
     private final int segmentCount;
 
-    public RadialMenuScreen(int horseId, boolean mounted) {
+    public RadialMenuScreen(int horseId) {
         super(Component.translatable("screen.icys-better-horses.radial"));
         this.horseId = horseId;
-        this.commands = mounted ? MOUNTED_COMMANDS : BASE_COMMANDS;
+        this.commands = COMMANDS;
         this.segmentCount = this.commands.length;
     }
 
@@ -187,7 +178,6 @@ public class RadialMenuScreen extends Screen {
             case STAY -> "command.icys-better-horses.stay";
             case RETURN_HOME -> "command.icys-better-horses.return_home";
             case SET_HOME -> "command.icys-better-horses.set_home";
-            case PAIR -> "command.icys-better-horses.pair";
         };
     }
 }

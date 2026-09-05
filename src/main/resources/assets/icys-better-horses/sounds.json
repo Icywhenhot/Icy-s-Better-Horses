@@ -45,5 +45,12 @@
     "sounds": [
       "icys-better-horses:horse/snort1"
     ]
+  },
+  "horse_charge_thud": {
+    "subtitle": "subtitles.icys-better-horses.horse_charge_thud",
+    "sounds": [
+      "icys-better-horses:horse/charge_thud1",
+      "icys-better-horses:horse/charge_thud2"
+    ]
   }
 }

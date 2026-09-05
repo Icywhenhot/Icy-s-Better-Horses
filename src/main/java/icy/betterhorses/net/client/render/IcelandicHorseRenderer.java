@@ -26,11 +26,10 @@ public class IcelandicHorseRenderer
                 state -> state.saddle,
                 BhTackTextures.ICELANDIC::saddle));
 
-        this.addLayer(BhTackLayer.<BhHorseRenderState, IcelandicHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, IcelandicHorseModel>forArmor(this,
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_ARMOR)),
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_ARMOR_BABY)),
-                state -> state.bodyArmorItem,
-                BhTackTextures.ICELANDIC::armor));
+                BhTackTextures.ICELANDIC));
 
         this.addLayer(new BhTackLayer<>(this,
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_CHEST)),

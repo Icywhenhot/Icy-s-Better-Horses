@@ -14,6 +14,7 @@ public final class ModSounds {
     public static final SoundEvent HORSE_ANGRY_SNORT = register("horse_angry_snort");
     public static final SoundEvent HORSE_NEIGH = register("horse_neigh");
     public static final SoundEvent HORSE_SNORT = register("horse_snort");
+    public static final SoundEvent HORSE_CHARGE_THUD = register("horse_charge_thud");
 
     public static void init() {
     }

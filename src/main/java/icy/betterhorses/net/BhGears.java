@@ -16,12 +16,18 @@ public final class BhGears {
 
     private BhGears() {}
 
-    public static float speed(int gear) {
-        return gear > 0 && gear <= TOP_GEAR ? SPEEDS[gear] : 0.0F;
+    public static float riddenSpeed(int gear, float full) {
+        if (gear <= 0) {
+            return full;
+        }
+        if (gear < GALLOP_GEAR) {
+            return Math.min(PACE_BASE * SPEEDS[gear], full);
+        }
+        return full * speed(gear);
     }
 
-    public static float pace(int gear) {
-        return gear > 0 && gear < GALLOP_GEAR ? PACE_BASE * SPEEDS[gear] : 0.0F;
+    private static float speed(int gear) {
+        return gear > 0 && gear <= TOP_GEAR ? SPEEDS[gear] : 0.0F;
     }
 
     public static int next(int gear) {

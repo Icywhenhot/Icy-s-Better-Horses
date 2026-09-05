@@ -1,5 +1,6 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.client.ChargeShakeController;
 import icy.betterhorses.net.client.ClientHorseRoster;
 import icy.betterhorses.net.client.ClientTrustCache;
 import icy.betterhorses.net.client.HorseGearController;
@@ -26,6 +27,7 @@ import icy.betterhorses.net.network.BhRearPayload;
 import icy.betterhorses.net.network.CartSizePayload;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
+import icy.betterhorses.net.network.HorseChargeShakePayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
@@ -54,8 +56,12 @@ import org.lwjgl.glfw.GLFW;
 import java.util.UUID;
 import com.klikli_dev.modonomicon.client.render.page.PageRendererRegistry;
 import icy.betterhorses.net.book.BhBreedCoatsPage;
+import icy.betterhorses.net.book.BhCartModelsPage;
+import icy.betterhorses.net.book.BhChargeMeterPage;
 import icy.betterhorses.net.client.BhClientCaches;
 import icy.betterhorses.net.client.book.BhBreedCoatsPageRenderer;
+import icy.betterhorses.net.client.book.BhCartModelsPageRenderer;
+import icy.betterhorses.net.client.book.BhChargeMeterPageRenderer;
 
 public class IcysBetterHorsesClient implements ClientModInitializer {
 
@@ -166,6 +172,16 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                 page -> new BhBreedCoatsPageRenderer(
                         (BhBreedCoatsPage) page));
 
+        PageRendererRegistry.registerPageRenderer(
+                BhCartModelsPage.ID,
+                page -> new BhCartModelsPageRenderer(
+                        (BhCartModelsPage) page));
+
+        PageRendererRegistry.registerPageRenderer(
+                BhChargeMeterPage.ID,
+                page -> new BhChargeMeterPageRenderer(
+                        (BhChargeMeterPage) page));
+
         registerClientHandlers();
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
     }
@@ -183,6 +199,9 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
 
         ClientPlayNetworking.registerGlobalReceiver(TrustSyncPayload.TYPE, (payload, context) ->
                 context.client().execute(() -> ClientTrustCache.set(payload.trustingOwners())));
+
+        ClientPlayNetworking.registerGlobalReceiver(HorseChargeShakePayload.TYPE, (payload, context) ->
+                context.client().execute(ChargeShakeController::trigger));
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
                 BhClientCaches.resetAll());
@@ -320,8 +339,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                 && !ClientTrustCache.isTrustedBy(owner)) {
             return;
         }
-        client.setScreenAndShow(new RadialMenuScreen(horse.getId(),
-                client.player.getVehicle() instanceof AbstractHorse));
+        client.setScreenAndShow(new RadialMenuScreen(horse.getId()));
     }
 
     private static AbstractHorse bh_lookedAtHorse(LocalPlayer player) {

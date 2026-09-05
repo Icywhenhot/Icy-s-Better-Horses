@@ -1,6 +1,7 @@
 package icy.betterhorses.net;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
@@ -79,9 +80,6 @@ public interface IHorseData {
     boolean bh_isAbilityToggled();
     void bh_setAbilityToggled(boolean on);
 
-    @Nullable UUID bh_getPairedTo();
-    void bh_setPairedTo(@Nullable UUID horseId);
-
     default int bh_getChestRows() {
         if (bh_hasEnderChestGear()) {
             return 3;
@@ -139,6 +137,14 @@ public interface IHorseData {
     SimpleContainer bh_getCartChestContainer();
 
     void bh_dropCartChest();
+
+    boolean bh_hasCartPlough();
+
+    ItemStack bh_getCartPlough();
+
+    void bh_setCartPlough(ItemStack hoe);
+
+    void bh_dropCartPlough();
 
     void bh_ridePlayer(Player player);
 

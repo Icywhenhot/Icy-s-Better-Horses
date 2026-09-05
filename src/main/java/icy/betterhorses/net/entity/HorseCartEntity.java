@@ -10,7 +10,9 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -36,6 +38,8 @@ import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
@@ -46,6 +50,7 @@ import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.RawAnimation;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.state.AnimationTest;
 import com.geckolib.util.GeckoLibUtil;
@@ -67,7 +72,6 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     private static final double BED_HALF_WIDTH = 0.95D;
     private static final double BED_FLOOR_HEIGHT = 0.8125D;
 
-    private static final double SEAT_HEIGHT = 1.15D;
     private static final double SEAT_BEHIND = 1.4D;
     private static final double SEAT_SIDE = 0.45D;
 
@@ -78,6 +82,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     private static final float MAX_CARGO_WIDTH = EntityTypes.OAK_BOAT.getWidth();
     private static final double BOARD_SCAN_HEIGHT = 1.6D;
     private static final int RESTORE_BOARD_TICKS = 80;
+
+    private static final double PLOW_BEHIND = 4.2D;
+    private static final int PLOW_HALF_WIDTH = 1;
 
     private static final double SPEED_SMOOTHING_UP = 0.12D;
     private static final int STOP_RAMP_TICKS = 16;
@@ -98,6 +105,8 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             SynchedEntityData.defineId(HorseCartEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_HAS_CHEST =
             SynchedEntityData.defineId(HorseCartEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DATA_HAS_PLOW =
+            SynchedEntityData.defineId(HorseCartEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_LARGE =
             SynchedEntityData.defineId(HorseCartEntity.class, EntityDataSerializers.BOOLEAN);
 
@@ -110,6 +119,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     private final List<ServerPlayer> chestViewers = new ArrayList<>();
     private final SimpleContainer placedChest = new SimpleContainer(CHEST_SLOTS);
+    private ItemStack placedPlow = ItemStack.EMPTY;
     private float damageTaken;
     private boolean chestAnimPrimed = false;
 
@@ -178,6 +188,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         if (this.getPassengers().size() > size.rearSeats(this.hasChest())) {
             return Component.translatable("message.icys-better-horses.cart_size_passengers");
         }
+        if (this.hasPlough() && !size.takesPlough()) {
+            return Component.translatable("message.icys-better-horses.cart_size_plough");
+        }
         if (this.hasChest() && this.itemsBeyond(size.chestSlots())) {
             return Component.translatable("message.icys-better-horses.cart_size_chest_full");
         }
@@ -186,6 +199,14 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             return Component.translatable("message.icys-better-horses.cart_size_blocked");
         }
         return null;
+    }
+
+    public static HorseCartEntity preview(Level level, CartSize size) {
+        HorseCartEntity cart = new HorseCartEntity(ModEntities.HORSE_CART, level);
+        cart.setId(-1);
+        cart.entityData.set(DATA_PLACED, true);
+        cart.entityData.set(DATA_LARGE, size.isLarge());
+        return cart;
     }
 
     public static @Nullable HorseCartEntity place(ServerLevel level, Vec3 pos, float yaw, CartSize size) {
@@ -259,7 +280,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         this.updateRollSpeed();
         IHorseData data = IHorseData.of(boundHorse);
         this.entityData.set(DATA_HAS_CHEST, data.bh_hasCartChest());
+        this.entityData.set(DATA_HAS_PLOW, data.bh_hasCartPlough());
         this.setSize(CartSize.byLarge(data.bh_hasLargeCart()));
+        this.tillGround();
         this.updateChestViewers();
         this.tryBoardNearbyMobs();
         this.tendPassengers();
@@ -444,7 +467,8 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     public static Vec3 benchSeatOffset(AbstractHorse boundHorse, int seatIndex, float horseYaw) {
         double side = benchShared(boundHorse) ? (seatIndex <= 0 ? -SEAT_SIDE : SEAT_SIDE) : 0.0D;
-        return new Vec3(side, SEAT_HEIGHT, FOLLOW_OFFSET - SEAT_BEHIND)
+        double up = CartSize.byLarge(IHorseData.of(boundHorse).bh_hasLargeCart()).benchHeight();
+        return new Vec3(side, up, FOLLOW_OFFSET - SEAT_BEHIND)
                 .yRot(-horseYaw * ((float) Math.PI / 180.0F));
     }
 
@@ -520,17 +544,27 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         boolean clientSide = this.level().isClientSide();
         ItemStack held = player.getItemInHand(hand);
 
+        if (held.is(ItemTags.HOES) && !this.hasPlough() && this.size().takesPlough()) {
+            if (clientSide) {
+                return InteractionResult.SUCCESS;
+            }
+            return this.attachPlough(player, held) ? InteractionResult.CONSUME : InteractionResult.PASS;
+        }
         if (held.is(Items.CHEST) && !this.hasChest()) {
             if (clientSide) {
                 return InteractionResult.SUCCESS;
             }
             return this.attachChest(player, held) ? InteractionResult.CONSUME : InteractionResult.PASS;
         }
-        if (held.is(Items.SHEARS) && this.hasChest()) {
+        if (held.is(Items.SHEARS) && (this.hasPlough() || this.hasChest())) {
             if (clientSide) {
                 return InteractionResult.SUCCESS;
             }
-            this.shearChest(player, hand);
+            if (this.hasPlough()) {
+                this.shearPlough(player, hand);
+            } else {
+                this.shearChest(player, hand);
+            }
             return InteractionResult.CONSUME;
         }
 
@@ -572,6 +606,100 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     public boolean hasChest() {
         return this.entityData.get(DATA_HAS_CHEST);
+    }
+
+    public boolean hasPlough() {
+        return this.entityData.get(DATA_HAS_PLOW);
+    }
+
+    private ItemStack ploughItem() {
+        if (this.isPlaced()) {
+            return this.placedPlow;
+        }
+        AbstractHorse boundHorse = this.resolveHorse();
+        return boundHorse == null ? ItemStack.EMPTY : IHorseData.of(boundHorse).bh_getCartPlough();
+    }
+
+    private void setPlough(ItemStack hoe) {
+        if (this.isPlaced()) {
+            this.placedPlow = hoe;
+        } else {
+            AbstractHorse boundHorse = this.resolveHorse();
+            if (boundHorse != null) {
+                IHorseData.of(boundHorse).bh_setCartPlough(hoe);
+            }
+        }
+        this.entityData.set(DATA_HAS_PLOW, !hoe.isEmpty());
+    }
+
+    private boolean attachPlough(Player player, ItemStack held) {
+        if (!this.playerMayHandleCargo(player)) {
+            return false;
+        }
+        this.setPlough(held.copyWithCount(1));
+        held.consume(1, player);
+        this.playSound(SoundEvents.ARMOR_EQUIP_IRON.value(), 1.0F, 1.0F);
+        return true;
+    }
+
+    private void shearPlough(Player player, InteractionHand hand) {
+        if (!this.playerMayHandleCargo(player)) {
+            return;
+        }
+        this.dropPlough();
+        player.getItemInHand(hand).hurtAndBreak(1, player, hand);
+        this.playSound(SoundEvents.SHEEP_SHEAR, 1.0F, 1.0F);
+    }
+
+    private void dropPlough() {
+        if (!(this.level() instanceof ServerLevel level)) {
+            return;
+        }
+        ItemStack hoe = this.ploughItem();
+        if (hoe.isEmpty()) {
+            return;
+        }
+        this.setPlough(ItemStack.EMPTY);
+        this.spawnAtLocation(level, hoe);
+    }
+
+    private void tillGround() {
+        if (!(this.level() instanceof ServerLevel level) || !this.hasPlough()) {
+            return;
+        }
+        if (this.entityData.get(DATA_ROLL_SPEED) < STILL_SPEED) {
+            return;
+        }
+        ItemStack hoe = this.ploughItem();
+        if (hoe.isEmpty()) {
+            return;
+        }
+
+        float rad = -this.getYRot() * ((float) Math.PI / 180.0F);
+        int turned = 0;
+        for (int lane = -PLOW_HALF_WIDTH; lane <= PLOW_HALF_WIDTH; lane++) {
+            Vec3 spot = this.position().add(new Vec3(lane, 0.0D, -PLOW_BEHIND).yRot(rad));
+            BlockPos pos = BlockPos.containing(spot.x, this.getY(), spot.z).below();
+            if (!tillable(level.getBlockState(pos)) || !level.getBlockState(pos.above()).isAir()) {
+                continue;
+            }
+            level.setBlockAndUpdate(pos, Blocks.FARMLAND.defaultBlockState());
+            turned++;
+        }
+        if (turned == 0) {
+            return;
+        }
+
+        this.playSound(SoundEvents.HOE_TILL, 1.0F, 1.0F);
+        hoe.hurtAndBreak(turned, level, null, item -> {});
+        if (hoe.isEmpty()) {
+            this.setPlough(ItemStack.EMPTY);
+            this.playSound(SoundEvents.ITEM_BREAK.value(), 0.8F, 0.9F);
+        }
+    }
+
+    private static boolean tillable(BlockState state) {
+        return state.is(Blocks.GRASS_BLOCK) || state.is(Blocks.DIRT) || state.is(Blocks.COARSE_DIRT);
     }
 
     private @Nullable SimpleContainer chestContainer() {
@@ -826,6 +954,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     private void breakIntoItems(ServerLevel level, boolean dropCart) {
         this.closeChestViewers();
         this.dropChest();
+        this.dropPlough();
         if (dropCart) {
             this.spawnAtLocation(level, new ItemStack(ModItems.HORSE_CART));
         }
@@ -853,6 +982,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         builder.define(DATA_ROLL_SPEED, 0.0F);
         builder.define(DATA_PLACED, false);
         builder.define(DATA_HAS_CHEST, false);
+        builder.define(DATA_HAS_PLOW, false);
         builder.define(DATA_LARGE, false);
     }
 
@@ -863,6 +993,8 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             this.setNoGravity(false);
         }
         this.entityData.set(DATA_HAS_CHEST, input.getBooleanOr("BhHasChest", false));
+        this.placedPlow = input.read("BhPlow", ItemStack.CODEC).orElse(ItemStack.EMPTY);
+        this.entityData.set(DATA_HAS_PLOW, !this.placedPlow.isEmpty());
         this.entityData.set(DATA_LARGE, input.getBooleanOr("BhLarge", false));
         this.damageTaken = input.getFloatOr("BhDamage", 0.0F);
         this.placedChest.clearContent();
@@ -877,6 +1009,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     protected void addAdditionalSaveData(ValueOutput output) {
         output.putBoolean("BhPlaced", this.isPlaced());
         output.putBoolean("BhHasChest", this.hasChest());
+        if (!this.placedPlow.isEmpty()) {
+            output.store("BhPlow", ItemStack.CODEC, this.placedPlow);
+        }
         output.putBoolean("BhLarge", this.size().isLarge());
         output.putFloat("BhDamage", this.damageTaken);
         ValueOutput.TypedOutputList<BhCartSlot> items = output.list("BhChestItems", BhCartSlot.CODEC);
@@ -901,6 +1036,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         controllers.add(new AnimationController<>("wheels", 0, this::wheelPredicate));
         controllers.add(new AnimationController<>("chest", 0, this::chestPredicate));
         controllers.add(new AnimationController<>("pose", 0, this::posePredicate));
+        controllers.add(new AnimationController<>("plough", 0, this::ploughPredicate));
     }
 
     private PlayState posePredicate(AnimationTest<HorseCartEntity> test) {
@@ -911,6 +1047,19 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             return PlayState.STOP;
         }
         return test.setAndContinue(this.size().standing());
+    }
+
+    private PlayState ploughPredicate(AnimationTest<HorseCartEntity> test) {
+        RawAnimation dragging = this.size().tilling();
+        if (dragging == null || !this.hasPlough() || this.smoothedSpeed <= 0.0D) {
+            if (test.controller().getCurrentRawAnimation() != null) {
+                test.controller().reset();
+            }
+            return PlayState.STOP;
+        }
+        test.setControllerSpeed(
+                (float) Mth.clamp(this.smoothedSpeed / REFERENCE_SPEED, MIN_ANIM_SPEED, MAX_ANIM_SPEED));
+        return test.setAndContinue(dragging);
     }
 
     private PlayState chestPredicate(AnimationTest<HorseCartEntity> test) {

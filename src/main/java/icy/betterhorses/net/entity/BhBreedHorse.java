@@ -131,9 +131,15 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
         bhSetCoat(bhCoats().roll(this.random));
     }
 
-    protected void bhInheritCoat(BhBreedHorse parentA, BhBreedHorse parentB) {
-        BhBreedHorse source = this.random.nextBoolean() ? parentA : parentB;
-        bhSetCoat(source.bhCoat());
+    protected void bhInheritCoat(int coatA, int coatB) {
+        if (this.random.nextBoolean()) {
+            int fresh = bhCoats().rollOther(this.random, coatA, coatB);
+            if (fresh >= 0) {
+                bhSetCoat(fresh);
+                return;
+            }
+        }
+        bhSetCoat(this.random.nextBoolean() ? coatA : coatB);
     }
 
     @Override
@@ -151,9 +157,9 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
             ((IHorseData) foal).bh_setBreed(source.bhFixedBreed());
             ((IHorseData) foal).bh_setMixedBreed(!sameBreed);
             if (sameBreed) {
-                foal.bhInheritCoat(this, other);
+                foal.bhInheritCoat(this.bhCoat(), other.bhCoat());
             } else {
-                foal.bhSetCoat(source.bhCoat());
+                foal.bhInheritCoat(source.bhCoat(), source.bhCoat());
             }
             foal.bhInheritStats(this, other);
             return foal;

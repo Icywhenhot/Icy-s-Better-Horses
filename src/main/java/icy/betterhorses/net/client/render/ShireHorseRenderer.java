@@ -25,11 +25,10 @@ public class ShireHorseRenderer
                 state -> state.saddle,
                 BhTackTextures.SHIRE::saddle));
 
-        this.addLayer(BhTackLayer.<BhHorseRenderState, ShireHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, ShireHorseModel>forArmor(this,
                 new ShireHorseModel(context.bakeLayer(BhModelLayers.SHIRE_ARMOR)),
                 new ShireHorseModel(context.bakeLayer(BhModelLayers.SHIRE_ARMOR_BABY)),
-                state -> state.bodyArmorItem,
-                BhTackTextures.SHIRE::armor));
+                BhTackTextures.SHIRE));
 
         this.addLayer(new BhTackLayer<>(this,
                 new ShireHorseModel(context.bakeLayer(BhModelLayers.SHIRE_CHEST)),

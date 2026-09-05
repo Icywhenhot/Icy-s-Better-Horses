@@ -49,14 +49,23 @@ Two horses of the **same gender won't breed**. Feed a golden apple to a horse wh
 |:---|:---|
 | **Gender** | A coin flip, 50/50 male or female |
 | **Breed** | Taken from one parent at random, 50/50 |
-| **Coat** | Re-rolled from the palette its inherited breed allows |
+| **Coat** | 50/50: either one parent's coat, or a **different** one from its breed's palette |
 | **Health, speed, jump** | `max(parent1, parent2) + delta`, where delta rolls from **−0.5 to +1.0** |
 
 ### Matching vs. mixed pairs
 
-Breed two horses of the **same breed** and the foal inherits that breed cleanly, with a coat rolled from that breed's palette. Two [Quarter Horses](breeds/quarter) always give a Quarter-pattern coat.
+Breed two horses of the **same breed** and the foal inherits that breed cleanly, and its coat comes from that breed's palette. Two [Quarter Horses](breeds/quarter) always give a Quarter-pattern coat.
 
-Breed **different breeds** and the foal takes one parent's breed at random and gets a **(mix)** tag. Its coat is re-rolled from whichever breed it landed on, so a mixed pair can surprise you with either side's palette.
+Breed **different breeds** and the foal takes one parent's breed at random and gets a **(mix)** tag. Its coat comes from whichever breed it landed on, so a mixed pair can surprise you with either side's palette.
+
+### The coat coin flip
+
+Half the time the foal simply wears one of its parents' coats. The other half it comes out in a coat **neither parent wears**, drawn from the rest of its breed's palette. So a matched pair is not a guarantee: two black Shires will often throw a foal that is bay, roan, or something else entirely.
+
+{: .note }
+> The only exception is a breed with nothing left to give. [Friesians](breeds/friesian) have just two coats, so if the parents already wear both, the foal takes one of theirs.
+
+Breeding toward a specific coat therefore takes patience. Keep the foals wearing the coat you want and breed those together, and the half that inherits will hold the line while the other half keeps wandering.
 
 Cross-species pairs such as horse with donkey give the matching species placeholder, as in vanilla.
 

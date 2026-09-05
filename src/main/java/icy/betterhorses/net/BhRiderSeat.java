@@ -15,8 +15,6 @@ public final class BhRiderSeat {
 
     private static final double LARGE_SEAT_LIFT = 0.25D;
 
-    public static final double CART_CAMERA_LIFT = 1.0D;
-
     private static final Map<Integer, Vec3> APPLIED = new ConcurrentHashMap<>();
 
     private BhRiderSeat() {}

@@ -22,11 +22,10 @@ public class HaflingerHorseRenderer
                 state -> state.saddle,
                 BhTackTextures.HAFLINGER::saddle));
 
-        this.addLayer(BhTackLayer.<BhHorseRenderState, HaflingerHorseModel>forItem(this,
+        this.addLayer(BhTackLayer.<BhHorseRenderState, HaflingerHorseModel>forArmor(this,
                 new HaflingerHorseModel(context.bakeLayer(BhModelLayers.HAFLINGER_ARMOR)),
                 new HaflingerHorseModel(context.bakeLayer(BhModelLayers.HAFLINGER_ARMOR_BABY)),
-                state -> state.bodyArmorItem,
-                BhTackTextures.HAFLINGER::armor));
+                BhTackTextures.HAFLINGER));
 
         this.addLayer(new BhTackLayer<>(this,
                 new HaflingerHorseModel(context.bakeLayer(BhModelLayers.HAFLINGER_CHEST)),

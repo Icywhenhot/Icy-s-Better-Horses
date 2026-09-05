@@ -1,0 +1,73 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:combat/horse_combat",
+  "category": "icys-better-horses:basics",
+  "name": "book.icys-better-horses.stable_handbook.combat.horse_combat.name",
+  "icon": {
+    "id": "minecraft:diamond_horse_armor"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 2,
+  "y": 2,
+  "sort_number": 0,
+  "parents": [
+    {
+      "entry": "icys-better-horses:basics/ownership_and_bonding"
+    }
+  ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "charge",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.charge.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.charge.text"
+    },
+    {
+      "type": "icys-better-horses:charge_meter",
+      "id": "meter",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.meter.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.meter.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "damage",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.damage.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.damage.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "spared",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.spared.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.spared.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "kick",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.kick.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.kick.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "defend",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.defend.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.defend.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "spook",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.spook.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.spook.text"
+    }
+  ]
+}

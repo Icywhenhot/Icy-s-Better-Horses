@@ -1,0 +1,54 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:travel/gaits",
+  "category": "icys-better-horses:basics",
+  "name": "book.icys-better-horses.stable_handbook.travel.gaits.name",
+  "icon": {
+    "texture": "icys-better-horses:textures/gui/hud/icon_quarter.png",
+    "width": 16,
+    "height": 16
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 2,
+  "y": -4,
+  "sort_number": 0,
+  "parents": [
+    {
+      "entry": "icys-better-horses:travel/riding_improvements"
+    }
+  ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "cycle",
+      "title": "book.icys-better-horses.stable_handbook.travel.gaits.cycle.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.travel.gaits.cycle.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "speeds",
+      "title": "book.icys-better-horses.stable_handbook.travel.gaits.speeds.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.travel.gaits.speeds.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "reins",
+      "title": "book.icys-better-horses.stable_handbook.travel.gaits.reins.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.travel.gaits.reins.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "tolt",
+      "title": "book.icys-better-horses.stable_handbook.travel.gaits.tolt.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.travel.gaits.tolt.text"
+    }
+  ]
+}

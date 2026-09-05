@@ -7,7 +7,7 @@ nav_order: 7
 # Horse Cart
 {: .no_toc }
 
-Four seats, a double chest of cargo, and it rolls along behind your horse as you ride.
+Four seats, a double chest of cargo, a plough on the back, and it rolls along behind your horse as you ride.
 {: .fs-5 .fw-300 }
 
 1. TOC
@@ -71,13 +71,32 @@ Empty it first, because a loaded chest refuses to come off rather than spilling 
 
 ---
 
+## Fitting a plough
+
+**Right-click the small cart with any hoe** and a plough drops down behind the bed. From then on, driving the cart over **grass, dirt or coarse dirt** turns a **three-block-wide** strip into farmland behind you, one pass, no dismounting.
+
+The block above has to be clear, same as tilling by hand, so the plough skips anything with a plant or a block sitting on it.
+
+{: .note }
+> Only the small cart takes a plough. The big wagon has no room for one, and a cart wearing a plough refuses to swap up to the large size until you shear it off.
+
+### Wear
+
+The hoe on the cart takes **one point of durability per block turned**, and it keeps its enchantments while it is on there, so **Unbreaking** and **Mending** are worth having. When it finally breaks, the plough drops off the cart with it.
+
+### Taking the plough off
+
+**Shears**, the same as the chest. If the cart has both fitted, the shears take the **plough first** and the chest on the next click.
+
+---
+
 ## Parking a cart on its own
 
 **Right-click the ground** with the cart to stand one up by itself, shafts down, no horse needed.
 
-A parked cart is **decoration** and nobody rides it, but a **Chest** works on it exactly as it does on a hitched one. That makes it a good-looking storage prop for a stable, market stall, or camp.
+A parked cart is **decoration** and nobody rides it, but a **Chest** and a **plough** both fit it exactly as they do a hitched one (a parked plough turns nothing, of course). That makes it a good-looking storage prop for a stable, market stall, or camp.
 
-To pick it back up, **hit it a few times**, like a boat. Breaking one with a chest fitted drops the chest and everything inside it.
+To pick it back up, **hit it a few times**, like a boat. Breaking one drops whatever was fitted to it: the chest and everything inside, and the plough's hoe.
 
 ---
 
@@ -85,9 +104,10 @@ To pick it back up, **hit it a few times**, like a boat. Breaking one with a che
 
 Gear comes off in the reverse order it went on. The slot **flashes red** if you try to skip a step:
 
-1. **Shear the chest** off the cart
-2. **Unhitch the cart**
-3. **Then** the saddle can come off
+1. **Shear the plough** off, if one is fitted
+2. **Shear the chest** off the cart
+3. **Unhitch the cart**
+4. **Then** the saddle can come off
 
 The relevant messages:
 
