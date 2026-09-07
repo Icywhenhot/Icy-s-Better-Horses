@@ -26,20 +26,21 @@ public abstract class KeyboardInputMixin extends ClientInput {
         LocalPlayer player = client.player;
         Screen screen = client.gui.screen();
 
-        boolean eligible = false;
+        boolean mounted = false;
         int horseId = 0;
         long tick = 0L;
         AbstractHorse riddenHorse = null;
 
-        if (screen == null && client.level != null && player != null) {
+        if (client.level != null && player != null) {
             Entity vehicle = player.getControlledVehicle();
             if (vehicle instanceof AbstractHorse horse && horse.getControllingPassenger() == player) {
-                eligible = true;
+                mounted = true;
                 horseId = horse.getId();
                 riddenHorse = horse;
                 tick = client.level.getGameTime();
             }
         }
+        boolean eligible = mounted && screen == null;
 
         HorseFreeLookController.INSTANCE.tick(eligible ? riddenHorse : null);
 
@@ -47,7 +48,7 @@ public abstract class KeyboardInputMixin extends ClientInput {
         Vec2 currentMove = this.moveVector;
         HorseAutodriveController.Output output = HorseAutodriveController.INSTANCE.tick(
                 tick,
-                eligible,
+                mounted,
                 horseId,
                 current.forward(),
                 current.backward(),

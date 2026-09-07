@@ -2,6 +2,9 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.HorseBreed;
+import icy.betterhorses.net.BhSurge;
+import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
@@ -34,7 +37,7 @@ public abstract class MapItemMixin {
             return scanWidth;
         }
         IHorseData d = IHorseData.of(horse);
-        if (d.bh_getBreed() != HorseBreed.AMERICAN_PAINT) {
+        if (d.bh_getBreed() != HorseBreed.AMERICAN_PAINT || !BhAbility.PAINT_SCAN.on()) {
             return scanWidth;
         }
         return scanWidth * (2 + BhHorseTraits.bondTier(d.bh_getBond()));
@@ -48,10 +51,12 @@ public abstract class MapItemMixin {
         }
         IHorseData d = IHorseData.of(horse);
         if (d.bh_getBreed() != HorseBreed.AMERICAN_PAINT
+                || !BhAbility.PAINT_STRUCTURES.on()
                 || BhHorseTraits.bondTier(d.bh_getBond()) < 2) {
             return;
         }
 
+        boolean marked = false;
         BlockPos at = horse.blockPosition();
         Registry<Structure> reg = level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
         for (Structure s : level.structureManager().getAllStructuresAt(at).keySet()) {
@@ -65,6 +70,10 @@ public abstract class MapItemMixin {
                     new BlockPos(mid.getX(), at.getY(), mid.getZ()),
                     id + "@" + mid.getX() + "," + mid.getZ(),
                     MapDecorationTypes.RED_X);
+            marked = true;
+        }
+        if (marked) {
+            BhSurge.pulse(d, 0, 0);
         }
     }
 }

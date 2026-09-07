@@ -1,6 +1,8 @@
 package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhHorseTraits;
+import icy.betterhorses.net.BhSurge;
+import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModSounds;
 import net.minecraft.server.level.ServerLevel;
@@ -19,7 +21,7 @@ import java.util.UUID;
 
 public final class Intimidation implements BreedAbility {
 
-    private final BrickBreak charge = new BrickBreak();
+    private final BrickBreak charge = new BrickBreak(1);
 
     private static final int SWEEP = 5;
     private static final int FEAR_TICKS = 100;
@@ -56,7 +58,7 @@ public final class Intimidation implements BreedAbility {
             return;
         }
 
-        LivingEntity ward = ward(horse, data);
+        LivingEntity ward = BhAbility.SHIRE_INTIMIDATE.on() ? ward(horse, data) : null;
         if (ward == null) {
             feared.clear();
             return;
@@ -107,6 +109,7 @@ public final class Intimidation implements BreedAbility {
             watching = threat;
             watchTicks = WATCH_TICKS;
         }
+        BhSurge.pulse(data, 0);
         horse.getLookControl().setLookAt(at, 45.0F, 45.0F);
         horse.level().playSound(null, horse.getX(), horse.getY(), horse.getZ(),
                 ModSounds.HORSE_ANGRY_SNORT, horse.getSoundSource(), 0.8F, 0.8F);

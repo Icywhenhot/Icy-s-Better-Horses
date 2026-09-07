@@ -4,6 +4,7 @@ import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BreedArchetype;
 import icy.betterhorses.net.HorseBreed;
+import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -76,9 +77,12 @@ public final class CartRig implements HorseFeature {
 
     private static boolean pullsFree(IHorseData data) {
         HorseBreed breed = data.bh_getBreed();
-        return breed.archetype() == BreedArchetype.DRAFT
-                || (breed == HorseBreed.HAFLINGER
-                        && BhHorseTraits.bondTier(data.bh_getBond()) >= 1);
+        if (breed.archetype() == BreedArchetype.DRAFT) {
+            return BhAbility.DRAFT_HAUL.on();
+        }
+        return breed == HorseBreed.HAFLINGER
+                && BhHorseTraits.bondTier(data.bh_getBond()) >= 1
+                && BhAbility.HAFLINGER_HAUL.on();
     }
 
     private void freezeWhenUnridden(AbstractHorse horse, IHorseData data) {

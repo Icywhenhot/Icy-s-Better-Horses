@@ -37,7 +37,7 @@ public final class BhVanillaHorseSwap {
 
         swap.bhConvertFrom(horse);
         transfer(horse, swap);
-        IcysBetterHorses.LOGGER.info("[HORSE_SWAP] replaced vanilla horse at {} with {}",
+        IcysBetterHorses.LOGGER.debug("[HORSE_SWAP] replaced vanilla horse at {} with {}",
                 horse.blockPosition(), breed);
         horse.discard();
         level.addFreshEntity(swap);

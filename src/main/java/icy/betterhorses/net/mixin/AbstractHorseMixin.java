@@ -20,6 +20,7 @@ import icy.betterhorses.net.IHorseAbilityHost;
 import icy.betterhorses.net.feature.BreedAbilities;
 import icy.betterhorses.net.feature.breed.BreedAbility;
 import icy.betterhorses.net.feature.CartRig;
+import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.feature.HorseCombat;
 import icy.betterhorses.net.feature.FrostHooves;
 import icy.betterhorses.net.feature.HitchTether;
@@ -182,6 +183,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
 
     @Unique
+    private static final EntityDataAccessor<Integer> BH_PULSE_SYNCED =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
+    @Unique
     private static final EntityDataAccessor<Integer> BH_PERK_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
 
@@ -208,7 +212,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private static final int BH_CHEST_MAX_SLOTS = 54;
     @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(BH_CHEST_MAX_SLOTS);
     @Unique private static final int BH_CART_CHEST_SIZE = CartChestMenu.SLOTS;
-    @Unique private final SimpleContainer bh_cartChestContainer = new SimpleContainer(BH_CART_CHEST_SIZE);
+    @Unique private @Nullable SimpleContainer bh_cartChestContainer;
     @Unique private ItemStack bh_cartPlow = ItemStack.EMPTY;
     @Unique private boolean bh_fedGoldenAppleThisTick = false;
     @Unique private static final float BH_HURT_NEIGH_CHANCE = 0.3F;
@@ -217,7 +221,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private int bh_grazeBlockedUntilTick = 0;
     @Unique private int bh_gear = 0;
     @Unique private @Nullable UUID bh_combatTarget = null;
-    @Unique private boolean bh_abilityToggled = false;
+    @Unique private boolean bh_abilityPaused = false;
     @Unique private int bh_spookTicks = 0;
 
     @Unique private final SaddleWatch bh_saddle = new SaddleWatch();
@@ -489,6 +493,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Override
     public SimpleContainer bh_getCartChestContainer() {
+        if (bh_cartChestContainer == null) {
+            bh_cartChestContainer = new SimpleContainer(BH_CART_CHEST_SIZE);
+        }
         return bh_cartChestContainer;
     }
 
@@ -499,7 +506,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             return;
         }
         bh_setCartChest(false);
-        BhHorseStorage.dropContainerContents(self, serverLevel, bh_cartChestContainer);
+        if (bh_cartChestContainer != null) {
+            BhHorseStorage.dropContainerContents(self, serverLevel, bh_cartChestContainer);
+        }
         self.spawnAtLocation(serverLevel, new ItemStack(Items.CHEST));
     }
 
@@ -579,6 +588,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         builder.define(BH_STOMP_SYNCED, 0);
         builder.define(BH_SURGE_SYNCED, 0);
         builder.define(BH_PERK_SYNCED, 0);
+        builder.define(BH_PULSE_SYNCED, 0);
         builder.define(BH_CHARGE_SYNCED, BhSurge.HIDDEN);
     }
 
@@ -587,7 +597,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (bh_owner != null) {
             output.store("BH_Owner", UUIDUtil.CODEC, bh_owner);
         }
-        output.putInt("BH_AbilityToggled", bh_abilityToggled ? 1 : 0);
+        output.putInt("BH_AbilityPaused", bh_abilityPaused ? 1 : 0);
         output.putInt("BH_Command", bh_command.ordinal());
         output.putInt("BH_Bond", bh_bond);
         output.putInt("BH_Generation", bh_generation);
@@ -605,7 +615,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         BhHorseStorage.writeContainer(output.list("BH_Chest", BhHorseStorage.SlotEntry.CODEC), bh_chestContainer);
         output.putBoolean("BH_CartChestOn", this.entityData.get(BH_CART_CHEST_SYNCED));
         output.putBoolean("BH_CartLarge", this.entityData.get(BH_CART_LARGE_SYNCED));
-        BhHorseStorage.writeContainer(output.list("BH_CartChest", BhHorseStorage.SlotEntry.CODEC), bh_cartChestContainer);
+        if (bh_cartChestContainer != null) {
+            BhHorseStorage.writeContainer(
+                    output.list("BH_CartChest", BhHorseStorage.SlotEntry.CODEC), bh_cartChestContainer);
+        }
         if (!bh_cartPlow.isEmpty()) {
             output.store("BH_CartPlow", ItemStack.CODEC, bh_cartPlow);
         }
@@ -617,7 +630,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
     private void bh_onRead(ValueInput input, CallbackInfo ci) {
         bh_owner = input.read("BH_Owner", UUIDUtil.CODEC).orElse(null);
-        bh_abilityToggled = input.getIntOr("BH_AbilityToggled", 0) != 0;
+        bh_abilityPaused = input.getIntOr("BH_AbilityPaused", 0) != 0;
         if (bh_owner == null) {
             EntityReference<LivingEntity> ownerRef = ((AbstractHorse) (Object) this).getOwnerReference();
             bh_owner = ownerRef == null ? null : ownerRef.getUUID();
@@ -646,7 +659,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         BhHorseStorage.readContainer(input.listOrEmpty("BH_Gear", BhHorseStorage.SlotEntry.CODEC), bh_gearContainer);
         BhHorseStorage.readContainer(input.listOrEmpty("BH_Chest", BhHorseStorage.SlotEntry.CODEC), bh_chestContainer);
         this.entityData.set(BH_CART_CHEST_SYNCED, input.getBooleanOr("BH_CartChestOn", false));
-        BhHorseStorage.readContainer(input.listOrEmpty("BH_CartChest", BhHorseStorage.SlotEntry.CODEC), bh_cartChestContainer);
+        if (bh_hasCartChest()) {
+            BhHorseStorage.readContainer(
+                    input.listOrEmpty("BH_CartChest", BhHorseStorage.SlotEntry.CODEC),
+                    bh_getCartChestContainer());
+        }
         bh_setCartPlough(input.read("BH_CartPlow", ItemStack.CODEC).orElse(ItemStack.EMPTY));
         BhHorseStorage.restoreUpgradedSaddle(inventory, input);
         bh_syncGearFlags();
@@ -736,13 +753,13 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     }
 
     @Override
-    public boolean bh_isAbilityToggled() {
-        return this.bh_abilityToggled;
+    public boolean bh_isAbilityPaused() {
+        return this.bh_abilityPaused;
     }
 
     @Override
-    public void bh_setAbilityToggled(boolean on) {
-        this.bh_abilityToggled = on;
+    public void bh_setAbilityPaused(boolean paused) {
+        this.bh_abilityPaused = paused;
     }
 
     @Override
@@ -812,6 +829,18 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     public void bh_setPerkSurge(int packed) {
         if (this.entityData.get(BH_PERK_SYNCED) != packed) {
             this.entityData.set(BH_PERK_SYNCED, packed);
+        }
+    }
+
+    @Override
+    public int bh_getPulse() {
+        return this.entityData.get(BH_PULSE_SYNCED);
+    }
+
+    @Override
+    public void bh_setPulse(int packed) {
+        if (this.entityData.get(BH_PULSE_SYNCED) != packed) {
+            this.entityData.set(BH_PULSE_SYNCED, packed);
         }
     }
 
@@ -944,6 +973,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             bh_setFreeLook(false);
             bh_setSurge(0);
             bh_setPerkSurge(0);
+            bh_setPulse(0);
             bh_setCharge(BhSurge.HIDDEN);
         }
     }
@@ -1085,6 +1115,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (waiver > 0.0D && distance < waiver) {
             if (distance > 1.0D) {
                 self.playSound(SoundEvents.HORSE_LAND, 0.4F, 1.0F);
+            }
+            if (distance > self.getMaxFallDistance()) {
+                BhSurge.pulsePerk(this, ArchetypePerks.FALL_BADGE);
             }
             cir.setReturnValue(false);
             return;

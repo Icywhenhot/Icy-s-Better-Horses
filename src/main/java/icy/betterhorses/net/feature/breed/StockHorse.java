@@ -1,6 +1,8 @@
 package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhHorseTraits;
+import icy.betterhorses.net.BhSurge;
+import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedAbilities;
 import icy.betterhorses.net.inventory.GearSlot;
@@ -16,48 +18,63 @@ import java.util.List;
 
 public final class StockHorse implements BreedAbility {
 
+    private boolean seeing;
+
     private static final int VISION_DURATION = 300;
     private static final int VISION_REFRESH = 100;
-    private static final int HERD_INTERVAL = 20;
+    private static final int HERD_INTERVAL = 10;
     private static final int FEED_INTERVAL = 100;
-    private static final double HERD_RADIUS = 12.0D;
+    private static final double HERD_RADIUS = 20.0D;
+    private static final double FEED_RADIUS = 12.0D;
     private static final double HERD_STOP_SQ = 25.0D;
-    private static final double HERD_SPEED = 1.15D;
+    private static final double HERD_SPEED = 2.0D;
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
         Player rider = BhBreedAbilities.rider(horse);
         int tier = BhHorseTraits.bondTier(data.bh_getBond());
 
-        if (rider != null && horse.tickCount % VISION_REFRESH == 0
-                && BhBreedAbilities.isDarkOutside(horse)) {
+        boolean dark = rider != null && BhAbility.APPALOOSA_NIGHT.on()
+                && BhBreedAbilities.isDarkOutside(horse);
+        if (dark && horse.tickCount % VISION_REFRESH == 0) {
             BhBreedAbilities.applyQuietEffect(rider, MobEffects.NIGHT_VISION, VISION_DURATION, 0);
         }
-
-        if (tier >= 1 && data.bh_isAbilityToggled() && horse.tickCount % HERD_INTERVAL == 0) {
-            herd(horse);
+        if (dark && !seeing) {
+            BhSurge.pulse(data, 0, 2);
         }
-        if (tier >= 2 && horse.tickCount % FEED_INTERVAL == 0) {
-            feed(horse, data);
+        seeing = dark;
+
+        if (tier >= 1 && rider != null && BhAbility.APPALOOSA_HERD.on()
+                && !data.bh_isAbilityPaused() && horse.tickCount % HERD_INTERVAL == 0
+                && herd(horse)) {
+            BhSurge.pulse(data, 0);
+        }
+        if (tier >= 2 && BhAbility.APPALOOSA_FEED.on()
+                && horse.tickCount % FEED_INTERVAL == 0 && feed(horse, data)) {
+            BhSurge.pulse(data, 0, 1);
         }
     }
 
-    private void herd(AbstractHorse horse) {
-        for (Animal animal : nearby(horse)) {
+    private boolean herd(AbstractHorse horse) {
+        boolean moved = false;
+        for (Animal animal : nearby(horse, HERD_RADIUS)) {
             if (animal.isBaby() || horse.distanceToSqr(animal) < HERD_STOP_SQ) {
                 continue;
             }
             animal.getNavigation().moveTo(horse, HERD_SPEED);
+            moved = true;
         }
+        return moved;
     }
 
-    private void feed(AbstractHorse horse, IHorseData data) {
+    private boolean feed(AbstractHorse horse, IHorseData data) {
         if (!data.bh_hasGear(GearSlot.CHEST)) {
-            return;
+            return false;
         }
+        boolean fed = false;
         SimpleContainer chest = data.bh_getChestContainer();
-        for (Animal animal : nearby(horse)) {
-            if (animal.isBaby() || animal.isInLove() || !animal.canFallInLove()) {
+        for (Animal animal : nearby(horse, FEED_RADIUS)) {
+            if (animal.getAge() != 0 || !animal.canFallInLove()) {
                 continue;
             }
             for (int i = 0; i < chest.getContainerSize(); i++) {
@@ -68,13 +85,15 @@ public final class StockHorse implements BreedAbility {
                 stack.shrink(1);
                 chest.setChanged();
                 animal.setInLove(null);
+                fed = true;
                 break;
             }
         }
+        return fed;
     }
 
-    private List<Animal> nearby(AbstractHorse horse) {
-        AABB box = horse.getBoundingBox().inflate(HERD_RADIUS);
+    private List<Animal> nearby(AbstractHorse horse, double radius) {
+        AABB box = horse.getBoundingBox().inflate(radius);
         return horse.level().getEntitiesOfClass(Animal.class, box,
                 a -> !(a instanceof AbstractHorse) && a.isAlive());
     }

@@ -21,6 +21,7 @@ public final class BhSecondChance {
         }
         IHorseData data = IHorseData.of(horse);
         if (data.bh_getBreed() != HorseBreed.ANDALUSIAN
+                || !BhAbility.ANDALUSIAN_SAVE.on()
                 || BhHorseTraits.bondTier(data.bh_getBond()) < 2) {
             return false;
         }

@@ -209,13 +209,13 @@ public final class HorseManagement {
 
         AbstractHorse horse = findCallableHorse(player, playerId);
         if (horse != null) {
-            IcysBetterHorses.LOGGER.info("[whistle] {} whistled: summoning loaded horse {}",
+            IcysBetterHorses.LOGGER.debug("[whistle] {} whistled: summoning loaded horse {}",
                     player.getName().getString(), horse.getUUID());
             summonToPlayer(horse, player);
             return;
         }
 
-        IcysBetterHorses.LOGGER.info("[whistle] {} whistled: no loaded horse found, trying stored respawn",
+        IcysBetterHorses.LOGGER.debug("[whistle] {} whistled: no loaded horse found, trying stored respawn",
                 player.getName().getString());
 
         UUID horseId = HorseTracker.getLastRiddenId(playerId);
@@ -223,7 +223,7 @@ public final class HorseManagement {
             horseId = HorseTracker.findStoredHorseOwnedBy(playerId);
         }
         if (horseId == null) {
-            IcysBetterHorses.LOGGER.info("[whistle] no stored horse found for {}", playerId);
+            IcysBetterHorses.LOGGER.debug("[whistle] no stored horse found for {}", playerId);
             return;
         }
         whistle(player, horseId);
@@ -301,17 +301,17 @@ public final class HorseManagement {
         HorseTrackerState.KnownPosition known = HorseTracker.getLastKnownPosition(horseId);
         CompoundTag snapshot = HorseTracker.getSnapshot(horseId);
         if (known == null || snapshot == null) {
-            IcysBetterHorses.LOGGER.info("[whistle] horse {} has no stored {} — cannot respawn",
+            IcysBetterHorses.LOGGER.debug("[whistle] horse {} has no stored {} — cannot respawn",
                     horseId, snapshot == null ? "snapshot" : "position");
             return null;
         }
         if (!level.dimension().equals(known.dimension())) {
-            IcysBetterHorses.LOGGER.info("[whistle] horse {} is in {}, target level is {} — not respawning",
+            IcysBetterHorses.LOGGER.debug("[whistle] horse {} is in {}, target level is {} — not respawning",
                     horseId, known.dimension().identifier(), level.dimension().identifier());
             return null;
         }
         if (snapshot.getIntOr("BH_Bond", 0) <= 0) {
-            IcysBetterHorses.LOGGER.info("[whistle] horse {} has no bond — not respawning", horseId);
+            IcysBetterHorses.LOGGER.debug("[whistle] horse {} has no bond — not respawning", horseId);
             return null;
         }
 
@@ -332,7 +332,7 @@ public final class HorseManagement {
             return null;
         }
         HorseTracker.setGeneration(horseId, newGeneration);
-        IcysBetterHorses.LOGGER.info("[whistle] respawned horse {} at {} {} {} in {} (generation {})",
+        IcysBetterHorses.LOGGER.debug("[whistle] respawned horse {} at {} {} {} in {} (generation {})",
                 horseId, x, y, z, level.dimension().identifier(), newGeneration);
         return horse;
     }

@@ -14,6 +14,7 @@ import icy.betterhorses.net.network.HorseChargeShakePayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
+import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
@@ -90,6 +91,7 @@ public class IcysBetterHorses implements ModInitializer {
         PayloadTypeRegistry.clientboundPlay().register(HorseRosterSyncPayload.TYPE, new HorseRosterSyncPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(HorseManageResultPayload.TYPE, new HorseManageResultPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(TrustSyncPayload.TYPE, new TrustSyncPayload.StreamCodec());
+        PayloadTypeRegistry.clientboundPlay().register(ConfigSyncPayload.TYPE, new ConfigSyncPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(HorseChargeShakePayload.TYPE, new HorseChargeShakePayload.StreamCodec());
     }
 
@@ -185,6 +187,15 @@ public class IcysBetterHorses implements ModInitializer {
         if (horse == null) return;
 
         IHorseData data = IHorseData.of(horse);
+        if (command == HorseCommand.ABILITY) {
+            boolean paused = !data.bh_isAbilityPaused();
+            data.bh_setAbilityPaused(paused);
+            player.sendSystemMessage(Component.translatable(paused
+                    ? "message.icys-better-horses.ability_off"
+                    : "message.icys-better-horses.ability_on"));
+            playCommandAnswer(horse);
+            return;
+        }
         if (command == HorseCommand.SET_HOME) {
             data.bh_setHome(horse.blockPosition());
             data.bh_setCommand(HorseCommand.STAY);
@@ -252,7 +263,11 @@ public class IcysBetterHorses implements ModInitializer {
 
     private void registerJoinSync() {
         ServerPlayConnectionEvents.JOIN.register(
-                (handler, sender, server) -> sendTrustList(handler.getPlayer()));
+                (handler, sender, server) -> {
+                    sendTrustList(handler.getPlayer());
+                    ServerPlayNetworking.send(handler.getPlayer(), new ConfigSyncPayload(
+                            BhConfig.packToggles(), BhConfig.packMasters(), BhConfig.packAbilities()));
+                });
     }
 
     private void registerEntityTracking() {

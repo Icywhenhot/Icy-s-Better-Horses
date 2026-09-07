@@ -27,7 +27,7 @@ See [Breeds](index) for what every class shares.
 |:---|:---|
 | 0 | ignores soul sand, cobwebs, sweet berries and honey |
 | 40 | **Momentum**: charge damage builds the longer it runs straight, up to half again |
-| 100 | **Trample**: the charge hits everything in a wide arc instead of one target |
+| 100 | **Chain Charge**: a charge that kills leaves no cooldown, so it can run straight through a group |
 
 ## Coats
 

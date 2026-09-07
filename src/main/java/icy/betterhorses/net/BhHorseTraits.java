@@ -26,7 +26,9 @@ public final class BhHorseTraits {
     }
 
     public static void grantBond(IHorseData data, int amount) {
-        int gain = data.bh_getBreed() == HorseBreed.MORGAN ? amount * 2 : amount;
+        int gain = data.bh_getBreed() == HorseBreed.MORGAN && BhAbility.MORGAN_BOND.on()
+                ? amount * (bondTier(data.bh_getBond()) >= 1 ? 4 : 3) / 2
+                : amount;
         data.bh_setBond(data.bh_getBond() + gain);
     }
 

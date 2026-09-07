@@ -1,6 +1,9 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhSurge;
+import icy.betterhorses.net.feature.breed.ArchetypePerks;
+import icy.betterhorses.net.feature.breed.HardyNorthern;
 import icy.betterhorses.net.BhSecondChance;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
@@ -23,6 +26,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity {
@@ -40,6 +44,22 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Shadow
     protected abstract float getDamageAfterMagicAbsorb(DamageSource source, float amount);
+
+    @Inject(method = "canBeAffected", at = @At("HEAD"), cancellable = true)
+    private void bh_refuseBadEffects(MobEffectInstance effect, CallbackInfoReturnable<Boolean> cir) {
+        if (effect.getEffect().value().isBeneficial()) {
+            return;
+        }
+        LivingEntity self = (LivingEntity) (Object) this;
+        AbstractHorse warden = HardyNorthern.warden(self);
+        if (warden == null) {
+            return;
+        }
+        if (!warden.level().isClientSide()) {
+            BhSurge.pulse(IHorseData.of(warden), 0, 0);
+        }
+        cir.setReturnValue(false);
+    }
 
     @Inject(method = "actuallyHurt", at = @At("HEAD"), cancellable = true)
     private void bh_queueHorseMedkit(ServerLevel level, DamageSource source, float amount, CallbackInfo ci) {
@@ -80,6 +100,7 @@ public abstract class LivingEntityMixin extends Entity {
         }
 
         this.bh_consumeMedkitAndApplyEffects(self, data);
+        BhSurge.pulsePerk(data, ArchetypePerks.MEDKIT_BADGE);
     }
 
 

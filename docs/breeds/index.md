@@ -59,7 +59,7 @@ Draft horses are the slowest and by far the toughest, and they are the only clas
 | [Icelandic](icelandic) | Pony | Hardy Northern | 4 | Own textures | Snowy Plains, Snowy Taiga, Ice Spikes… |
 | [Mustang](mustang) | War | Wild Instincts | 3 | Own textures | Plains, Savanna, Windswept Hills… |
 | [Haflinger](haflinger) | Pony | Packhorse | 3 | None | Snowy Slopes, Grove, Meadow… |
-| [Morgan](morgan) | War | Easy Keeper | 5 | None | Plains, Sunflower Plains, Forest… |
+| [Morgan](morgan) | Western | Easy Keeper | 5 | None | Plains, Sunflower Plains, Forest… |
 | [American Paint](american-paint) | Western | Trail Blazer | 3 | Own textures | Plains, Sunflower Plains, Savanna… |
 | [Appaloosa](appaloosa) | Western | Stock Horse | 4 | Own textures | Plains, Wooded Badlands, Savanna Plateau… |
 

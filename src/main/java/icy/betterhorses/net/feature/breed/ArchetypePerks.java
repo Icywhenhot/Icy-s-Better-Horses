@@ -13,6 +13,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Block;
 
 public final class ArchetypePerks {
@@ -23,6 +24,9 @@ public final class ArchetypePerks {
     private static final String PATH_KEY = "path";
     private static final int PATH_INTERVAL = 10;
     private static final int PATH_GRACE = 40;
+    public static final int MEDKIT_BADGE = 1;
+    private static final int SNOW_BADGE = 2;
+    public static final int FALL_BADGE = 3;
 
     private double pathBonus = -1.0D;
     private int graceUntil;
@@ -54,15 +58,21 @@ public final class ArchetypePerks {
         double want = horse.tickCount < graceUntil
                 ? arch.pathSpeedBonus(BhHorseTraits.bondTier(data.bh_getBond()))
                 : 0.0D;
-        if (want == pathBonus) {
+        if (want != pathBonus) {
+            pathBonus = want;
+            BhHorseAttributes.apply(horse, Attributes.MOVEMENT_SPEED,
+                    BhHorseAttributes.Source.ARCHETYPE, PATH_KEY, want,
+                    AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+        }
+        if (BhSurge.phase(data.bh_getPerkSurge()) == BhSurge.PULSE) {
             return;
         }
-        pathBonus = want;
+        if (arch.walksOnPowderSnow() && horse.getBlockStateOn().is(Blocks.POWDER_SNOW)) {
+            data.bh_setPerkSurge(BhSurge.pack(BhSurge.ACTIVE, 0, 0, 0, SNOW_BADGE));
+            return;
+        }
         data.bh_setPerkSurge(want <= 0.0D ? 0 : BhSurge.pack(BhSurge.ACTIVE, 0, 0,
                 (int) Math.round(want * 100.0D)));
-        BhHorseAttributes.apply(horse, Attributes.MOVEMENT_SPEED,
-                BhHorseAttributes.Source.ARCHETYPE, PATH_KEY, want,
-                AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
     }
 
     public void clear(AbstractHorse horse) {

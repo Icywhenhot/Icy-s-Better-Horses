@@ -30,6 +30,7 @@ import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
+import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
@@ -203,8 +204,18 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(HorseChargeShakePayload.TYPE, (payload, context) ->
                 context.client().execute(ChargeShakeController::trigger));
 
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
-                BhClientCaches.resetAll());
+        ClientPlayNetworking.registerGlobalReceiver(ConfigSyncPayload.TYPE, (payload, context) ->
+                context.client().execute(() -> {
+                    if (context.client().hasSingleplayerServer()) {
+                        return;
+                    }
+                    BhConfig.adoptServer(payload.toggles(), payload.masters(), payload.abilities());
+                }));
+
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+            BhConfig.dropServer();
+            BhClientCaches.resetAll();
+        });
     }
 
     private void onClientTick(Minecraft client) {

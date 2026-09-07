@@ -18,6 +18,16 @@
     "minecraft:snow_block",
     "minecraft:hay_block",
     "minecraft:pumpkin",
-    "minecraft:melon"
+    "minecraft:melon",
+    "#minecraft:planks",
+    "#minecraft:logs",
+    "#minecraft:wooden_fences",
+    "#minecraft:fence_gates",
+    "#minecraft:wooden_slabs",
+    "#minecraft:wooden_stairs",
+    "#minecraft:wooden_doors",
+    "#minecraft:wooden_trapdoors",
+    "#minecraft:wooden_pressure_plates",
+    "#minecraft:wooden_buttons"
   ]
 }

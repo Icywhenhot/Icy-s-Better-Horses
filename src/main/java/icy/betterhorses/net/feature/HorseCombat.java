@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature;
 
+import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhGears;
 import icy.betterhorses.net.BhSurge;
@@ -40,12 +41,17 @@ public final class HorseCombat implements HorseFeature {
     private static final double BASE_DAMAGE = 7.0D;
     private static final double DAMAGE_CAP = 30.0D;
     private static final double FACING_DOT = 0.3D;
+    private static final double BASH_SIDE = 0.3D;
+    private static final double BASH_LIFT = 0.3D;
+    private static final double BASH_AHEAD = 0.5D;
+    private static final int CHAIN_VARIANT = 1;
     private static final int COOLDOWN = 100;
     private static final int KICK_TICKS = 8;
     private static final int BOLT_TICKS = 60;
     private static final double LOOSE_CHARGE = 0.8D;
     private static final String SLOW_KEY = "charge_slow";
     private static final int SLOW_TICKS = 30;
+    private static final int NEIGH_TICKS = 50;
     private static final double SLOW_AMOUNT = -0.6D;
 
     private static final int FULL_WIND = 60;
@@ -57,6 +63,7 @@ public final class HorseCombat implements HorseFeature {
     private int cooldown;
     private int straight;
     private int slowed;
+    private int neighing;
     private float lastYaw = Float.NaN;
 
     @Override
@@ -69,6 +76,9 @@ public final class HorseCombat implements HorseFeature {
         int kicking = data.bh_getKickTicks();
         if (kicking > 0) {
             data.bh_setKickTicks(kicking - 1);
+        }
+        if (neighing > 0) {
+            neighing--;
         }
         if (slowed > 0) {
             slowed--;
@@ -110,23 +120,25 @@ public final class HorseCombat implements HorseFeature {
         for (LivingEntity target : hit) {
             target.hurtServer(level, src, dmg);
             shove(target, dir, arch.bashKnockback());
-            killed |= !target.isAlive();
+            killed |= target.isDeadOrDying();
         }
         horse.playSound(ModSounds.HORSE_CHARGE_THUD, 0.5F, 1.0F);
-        horse.playSound(ModSounds.HORSE_NEIGH, 1.0F, 1.0F);
+        if (neighing == 0) {
+            horse.playSound(ModSounds.HORSE_NEIGH, 1.0F, 1.0F);
+            neighing = NEIGH_TICKS;
+        }
         if (rider instanceof ServerPlayer serverRider) {
             ServerPlayNetworking.send(serverRider, new HorseChargeShakePayload());
+        }
+        if (killed && chains(breed, data)) {
+            BhSurge.pulse(data, 0, CHAIN_VARIANT);
+            return;
         }
         BhHorseAttributes.apply(horse, Attributes.MOVEMENT_SPEED,
                 BhHorseAttributes.Source.ABILITY, SLOW_KEY,
                 SLOW_AMOUNT, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
         slowed = SLOW_TICKS;
-        if (killed && chains(breed, data)) {
-            cooldown = 0;
-            BhSurge.pulse(data, 0);
-        } else {
-            cooldown = COOLDOWN;
-        }
+        cooldown = COOLDOWN;
     }
 
     private void publishCharge(AbstractHorse horse, IHorseData data, double speed) {
@@ -160,9 +172,6 @@ public final class HorseCombat implements HorseFeature {
         return WIND_FLOOR + WIND_GAIN * (double) straight / FULL_WIND;
     }
 
-    private static boolean chains(HorseBreed breed, IHorseData data) {
-        return breed == HorseBreed.MORGAN && BhHorseTraits.bondTier(data.bh_getBond()) >= 1;
-    }
 
     private void trackStraightLine(AbstractHorse horse) {
         float yaw = horse.getYRot();
@@ -180,15 +189,16 @@ public final class HorseCombat implements HorseFeature {
         return 1.0D + 0.5D * (double) straight / FULL_WIND;
     }
 
-    private static boolean tramples(HorseBreed breed, IHorseData data) {
-        return breed == HorseBreed.PERCHERON && BhHorseTraits.bondTier(data.bh_getBond()) >= 2;
+    private static boolean chains(HorseBreed breed, IHorseData data) {
+        return breed == HorseBreed.PERCHERON
+                && BhHorseTraits.bondTier(data.bh_getBond()) >= 2
+                && BhAbility.PERCHERON_CHAIN.on();
     }
 
     private List<LivingEntity> targets(AbstractHorse horse, IHorseData data, Player rider, Vec3 flat) {
-        double reach = tramples(data.bh_getBreed(), data) ? 1.6D : 0.3D;
-        double facing = tramples(data.bh_getBreed(), data) ? -0.2D : FACING_DOT;
-        AABB box = horse.getBoundingBox().inflate(reach).expandTowards(flat.x, 0.0D, flat.z);
         Vec3 dir = flat.normalize();
+        AABB box = horse.getBoundingBox().inflate(BASH_SIDE, BASH_LIFT, BASH_SIDE)
+                .expandTowards(dir.x * BASH_AHEAD, 0.0D, dir.z * BASH_AHEAD);
         UUID owner = data.bh_getOwner();
         List<LivingEntity> out = new ArrayList<>();
         for (LivingEntity e : horse.level().getEntitiesOfClass(LivingEntity.class, box)) {
@@ -206,7 +216,7 @@ public final class HorseCombat implements HorseFeature {
                 continue;
             }
             Vec3 to = e.position().subtract(horse.position());
-            if (to.lengthSqr() < 1.0E-4D || dir.dot(to.normalize()) < facing) {
+            if (to.lengthSqr() < 1.0E-4D || dir.dot(to.normalize()) < FACING_DOT) {
                 continue;
             }
             out.add(e);

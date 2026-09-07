@@ -1,0 +1,5 @@
+[19:12:06] [Test worker/INFO]: [STDOUT]: [STORAGE] nbt={BH_Chest:[{Item:{count:64,id:"minecraft:dirt"},Slot:0},{Item:{count:5,id:"minecraft:diamond"},Slot:26},{Item:{count:12,id:"minecraft:stone"},Slot:53}]}
+[19:12:06] [Test worker/INFO]: [STDOUT]: [STORAGE] slot 0 = 64x minecraft:dirt
+[19:12:06] [Test worker/INFO]: [STDOUT]: [STORAGE] slot 26 = 5x minecraft:diamond
+[19:12:06] [Test worker/INFO]: [STDOUT]: [STORAGE] slot 53 = 12x minecraft:stone
+[19:12:06] [Test worker/INFO]: [STDOUT]: [STORAGE] restoredTotal=81 problems=true

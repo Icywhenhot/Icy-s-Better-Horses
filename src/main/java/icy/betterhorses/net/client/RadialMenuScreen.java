@@ -1,12 +1,17 @@
 package icy.betterhorses.net.client;
 
 import icy.betterhorses.net.HorseCommand;
+import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.network.RadialCommandPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
+
+import java.util.Arrays;
 
 public class RadialMenuScreen extends Screen {
 
@@ -55,8 +60,19 @@ public class RadialMenuScreen extends Screen {
     public RadialMenuScreen(int horseId) {
         super(Component.translatable("screen.icys-better-horses.radial"));
         this.horseId = horseId;
-        this.commands = COMMANDS;
+        this.commands = wheelFor(horseId);
         this.segmentCount = this.commands.length;
+    }
+
+    private static HorseCommand[] wheelFor(int horseId) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || !(mc.level.getEntity(horseId) instanceof AbstractHorse horse)
+                || !HorseCommand.toggleable(IHorseData.of(horse).bh_getBreed())) {
+            return COMMANDS;
+        }
+        HorseCommand[] wide = Arrays.copyOf(COMMANDS, COMMANDS.length + 1);
+        wide[COMMANDS.length] = HorseCommand.ABILITY;
+        return wide;
     }
 
     @Override
@@ -178,6 +194,7 @@ public class RadialMenuScreen extends Screen {
             case STAY -> "command.icys-better-horses.stay";
             case RETURN_HOME -> "command.icys-better-horses.return_home";
             case SET_HOME -> "command.icys-better-horses.set_home";
+            case ABILITY -> "command.icys-better-horses.ability";
         };
     }
 }

@@ -3,6 +3,9 @@ package icy.betterhorses.net.feature.breed;
 import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.HorseBreed;
+import icy.betterhorses.net.BhSurge;
+import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedAbilities;
 import net.minecraft.world.effect.MobEffects;
@@ -18,10 +21,13 @@ public final class Ironclad implements BreedAbility {
     private static final int SHIELD_DURATION = 100;
 
     private double applied = -1.0D;
+    private boolean hadRider;
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
-        double armor = horse.getAttributeBaseValue(Attributes.ARMOR);
+        double armor = BhAbility.CLYDESDALE_ARMOR.on()
+                ? horse.getAttributeBaseValue(Attributes.ARMOR)
+                : 0.0D;
         if (armor != applied) {
             applied = armor;
             BhHorseAttributes.apply(horse, Attributes.ARMOR,
@@ -29,12 +35,19 @@ public final class Ironclad implements BreedAbility {
                     AttributeModifier.Operation.ADD_VALUE);
         }
 
+        Player up = BhBreedAbilities.rider(horse);
+        if (up != null && !hadRider && horse.getAttributeValue(Attributes.ARMOR) > 0.0D) {
+            BhSurge.pulse(data, 0, 0);
+        }
+        hadRider = up != null;
+
         int tier = BhHorseTraits.bondTier(data.bh_getBond());
         if (tier < 1 || horse.tickCount % REFRESH != 0) {
             return;
         }
-        Player rider = BhBreedAbilities.rider(horse);
-        if (rider != null && horse.getAttributeValue(Attributes.ARMOR) > 0.0D) {
+        Player rider = up;
+        if (rider != null && BhAbility.CLYDESDALE_RESIST.on()
+                && horse.getAttributeValue(Attributes.ARMOR) > 0.0D) {
             BhBreedAbilities.applyQuietEffect(rider, MobEffects.RESISTANCE, SHIELD_DURATION, 0);
         }
     }
@@ -47,6 +60,7 @@ public final class Ironclad implements BreedAbility {
 
     public static boolean deflectsProjectiles(IHorseData data) {
         return data.bh_getBreed() == HorseBreed.CLYDESDALE
-                && BhHorseTraits.bondTier(data.bh_getBond()) >= 2;
+                && BhHorseTraits.bondTier(data.bh_getBond()) >= 2
+                && BhAbility.CLYDESDALE_DEFLECT.on();
     }
 }

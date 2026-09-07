@@ -45,6 +45,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Unique private int bh_appliedShift = 0;
     @Unique private int bh_chestRows = 3;
     @Unique private @Nullable AbstractHorse bh_horse = null;
+    @Unique private @Nullable SimpleContainer bh_gearContainer = null;
     @Unique private final SimpleContainer bh_enderChestView = new SimpleContainer(BH_ENDER_SLOT_COUNT);
     @Unique private PlayerEnderChestContainer bh_playerEnderChest = null;
     @Unique private boolean bh_enderChestViewLoaded = false;
@@ -64,8 +65,9 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             CallbackInfo ci) {
         final IHorseData data = IHorseData.of(horse);
         this.bh_horse = horse;
-        this.bh_chestRows = data.bh_getChestRows();
         final SimpleContainer gear = data.bh_getGearContainer();
+        this.bh_gearContainer = gear;
+        this.bh_chestRows = this.bh_resolveChestRows();
         final SimpleContainer chest = data.bh_getChestContainer();
         this.bh_menuPlayer = playerInventory.player;
         this.bh_playerEnderChest = playerInventory.player.level().isClientSide()
@@ -200,11 +202,11 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         this.bh_chestStartIndex = this.slots.size();
         for (int row = 0; row < BH_MAX_CHEST_ROWS; row++) {
             for (int col = 0; col < 9; col++) {
-                final int index = col + row * 9;
-                this.addSlot(new Slot(extraStorage, index, BH_CHEST_SLOT_X + col * 18, BH_CHEST_SLOT_Y + row * 18) {
+                final int chestSlot = col + row * 9;
+                this.addSlot(new Slot(extraStorage, chestSlot, BH_CHEST_SLOT_X + col * 18, BH_CHEST_SLOT_Y + row * 18) {
                     @Override
                     public boolean isActive() {
-                        return index < HorseInventoryMenuMixin.this.bh_chestRows * 9
+                        return chestSlot < HorseInventoryMenuMixin.this.bh_chestRows * 9
                                 && HorseInventoryMenuMixin.this.bh_hasUpgradedSaddleInMenu()
                                 && HorseInventoryMenuMixin.this.bh_isChestGear(gear.getItem(GearSlot.CHEST.ordinal()));
                     }
@@ -217,9 +219,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
     @Override
     public void bh_refreshLayout() {
-        if (this.bh_horse != null) {
-            this.bh_chestRows = IHorseData.of(this.bh_horse).bh_getChestRows();
-        }
+        this.bh_chestRows = this.bh_resolveChestRows();
         if (this.bh_playerInventoryStartIndex < 0 || this.bh_playerInventoryEndIndex < 0) {
             return;
         }
@@ -262,7 +262,21 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
     @Override
     public int bh_getChestRows() {
+        this.bh_chestRows = this.bh_resolveChestRows();
         return this.bh_chestRows;
+    }
+
+    @Unique
+    private int bh_resolveChestRows() {
+        if (this.bh_horse == null) {
+            return this.bh_chestRows;
+        }
+        int rows = IHorseData.of(this.bh_horse).bh_getChestRows();
+        if (this.bh_gearContainer != null
+                && this.bh_isEnderChestGear(this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal()))) {
+            rows = Math.min(rows, BH_ENDER_SLOT_COUNT / 9);
+        }
+        return rows;
     }
 
     @Override

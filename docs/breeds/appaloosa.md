@@ -26,8 +26,18 @@ See [Breeds](index) for what every class shares.
 | Bond | Effect |
 |:---|:---|
 | 0 | night vision while ridden in the dark |
-| 40 | **herding**, toggleable: livestock follow the horse with no food in hand |
-| 100 | **auto-feed**: with a chest equipped, it hands nearby animals the right breeding food from its own storage |
+| 40 | **herding**: livestock within **20 blocks** follow the horse with no food in hand |
+| 100 | **auto-feed**: with a chest equipped, it feeds animals within **12 blocks** from its own storage |
+
+### Herding
+
+Only works **while you are riding**. Animals path toward the horse at double their normal walking speed, re-targeting twice a second, so they keep up at a trot or a canter. They stop closing once they are within 5 blocks, and foals are left alone.
+
+It runs on its own once the horse reaches bond 40. If you want a horse to stop dragging a herd around, open the **command wheel** on it and pick **Herding** to pause it; that setting is per horse and sticks.
+
+### Auto-feed
+
+Only grown animals that are **ready to breed** get fed. Foals are skipped, and so is any animal still on its post-breeding cooldown, so a pair that has just had a calf will not keep eating out of your saddlebags until the cooldown is up.
 
 ## Coats
 

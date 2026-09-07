@@ -53,7 +53,7 @@ public enum HorseBreed {
     ICELANDIC(BreedArchetype.PONY, HardyNorthern::new),
     MUSTANG(BreedArchetype.WAR, WildInstincts::new),
     HAFLINGER(BreedArchetype.PONY, Hearthlight::new),
-    MORGAN(BreedArchetype.WAR, EasyKeeper::new),
+    MORGAN(BreedArchetype.WESTERN, EasyKeeper::new),
     AMERICAN_PAINT(BreedArchetype.WESTERN),
     APPALOOSA(BreedArchetype.WESTERN, StockHorse::new),
 

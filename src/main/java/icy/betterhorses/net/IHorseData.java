@@ -77,8 +77,8 @@ public interface IHorseData {
     int bh_getKickTicks();
     void bh_setKickTicks(int ticks);
 
-    boolean bh_isAbilityToggled();
-    void bh_setAbilityToggled(boolean on);
+    boolean bh_isAbilityPaused();
+    void bh_setAbilityPaused(boolean paused);
 
     default int bh_getChestRows() {
         if (bh_hasEnderChestGear()) {
@@ -101,6 +101,10 @@ public interface IHorseData {
 
     int bh_getPerkSurge();
     void bh_setPerkSurge(int packed);
+
+    int bh_getPulse();
+
+    void bh_setPulse(int packed);
 
     int bh_getCharge();
     void bh_setCharge(int fill);

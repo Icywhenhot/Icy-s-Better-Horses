@@ -25,11 +25,13 @@ See [Breeds](index) for what every class shares.
 
 | Bond | Effect |
 |:---|:---|
-| 0 | outlines nearby hostiles and snorts a warning; heals itself slowly |
-| 40 | faster self-healing, and it starts slowly healing you too |
-| 100 | faster rider healing |
+| 0 | outlines nearby hostiles and snorts a warning; heals itself a heart every **15s** |
+| 40 | self-healing climbs to a heart every **8s**, and it starts healing **you** a heart every **10s** |
+| 100 | rider healing doubles to a heart every **5s** |
 
-The survivor's horse. It notices things before you do.
+Self-healing stops improving at bond 40 — bond 100 only buys the faster rider heal. Rider healing ticks only while you're actually in the saddle, and neither heal goes past its normal health cap.
+
+The survivor's horse. It notices things before you do, and it keeps you both standing.
 
 ## Coats
 

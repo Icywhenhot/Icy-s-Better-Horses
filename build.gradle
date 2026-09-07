@@ -72,6 +72,24 @@ tasks.named("runClient", JavaExec).configure {
 
 		jvmArgs "-Doshi.util.wmi.timeout=5000"
 	}
+	doFirst {
+		def wanted = "Icy"
+		def offline = java.util.UUID.nameUUIDFromBytes(
+				("OfflinePlayer:" + wanted).getBytes(java.nio.charset.StandardCharsets.UTF_8))
+		def out = new ArrayList<String>(args)
+		def force = { String flag, String value ->
+			int at = out.indexOf(flag)
+			if (at >= 0 && at + 1 < out.size()) {
+				out.set(at + 1, value)
+			} else {
+				out.add(flag)
+				out.add(value)
+			}
+		}
+		force("--username", wanted)
+		force("--uuid", offline.toString().replace("-", ""))
+		args = out
+	}
 }
 
 test {

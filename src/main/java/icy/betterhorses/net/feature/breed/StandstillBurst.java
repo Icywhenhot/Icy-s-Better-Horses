@@ -3,6 +3,7 @@ package icy.betterhorses.net.feature.breed;
 import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
+import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedAbilities;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -40,6 +41,10 @@ public final class StandstillBurst implements BreedAbility {
         if (cooldown > 0) {
             cooldown--;
             data.bh_setSurge(BhSurge.pack(BhSurge.COOLING, cooldown, span, bonus));
+            return;
+        }
+        if (!BhAbility.QUARTER_BURST.on()) {
+            data.bh_setSurge(0);
             return;
         }
         if (state.standstillTicks() >= SETTLE) {

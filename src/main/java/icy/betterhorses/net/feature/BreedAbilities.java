@@ -2,6 +2,7 @@ package icy.betterhorses.net.feature;
 
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.HorseBreed;
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.feature.breed.BhAbilityState;
@@ -18,6 +19,7 @@ public final class BreedAbilities implements HorseFeature {
     private final ArchetypePerks perks = new ArchetypePerks();
     private @Nullable HorseBreed active;
     private @Nullable BreedAbility ability;
+    private boolean offered;
     private int lastRows = -1;
 
     @Override
@@ -26,6 +28,7 @@ public final class BreedAbilities implements HorseFeature {
             return;
         }
         BhSurge.decay(data);
+        BhSurge.decayPerk(data);
         int stomping = data.bh_getStompTicks();
         if (stomping > 0) {
             data.bh_setStompTicks(stomping - 1);
@@ -50,9 +53,18 @@ public final class BreedAbilities implements HorseFeature {
 
         state.tick(horse);
         perks.tick(horse, data, breed.archetype());
-        if (ability != null) {
-            ability.tick(horse, data, state);
+        if (ability == null) {
+            return;
         }
+        if (!BhConfig.anyAbilityEnabled(breed)) {
+            if (offered) {
+                ability.onDetach(horse, data);
+                offered = false;
+            }
+            return;
+        }
+        offered = true;
+        ability.tick(horse, data, state);
     }
 
     public @Nullable BreedAbility current() {

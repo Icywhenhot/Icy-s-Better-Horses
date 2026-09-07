@@ -42,13 +42,6 @@
       "title": "book.icys-better-horses.stable_handbook.travel.gaits.reins.title",
       "show_title_separator": true,
       "text": "book.icys-better-horses.stable_handbook.travel.gaits.reins.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "tolt",
-      "title": "book.icys-better-horses.stable_handbook.travel.gaits.tolt.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.travel.gaits.tolt.text"
     }
   ]
 }

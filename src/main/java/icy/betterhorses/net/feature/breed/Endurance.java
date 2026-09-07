@@ -3,6 +3,7 @@ package icy.betterhorses.net.feature.breed;
 import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
+import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedAbilities;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -26,7 +27,8 @@ public final class Endurance implements BreedAbility {
         int ramp = tier >= 2 ? FAST_RAMP : RAMP;
         int grace = tier >= 2 ? GRACE : 0;
 
-        boolean rolling = BhBreedAbilities.rider(horse) != null
+        boolean rolling = BhAbility.ARABIAN_ENDURANCE.on()
+                && BhBreedAbilities.rider(horse) != null
                 && (state.movingTicks() > 0 || state.standstillTicks() <= grace);
 
         double before = bonus;

@@ -22,7 +22,7 @@ public final class HorseTracker {
 
     public static void attach(MinecraftServer runningServer) {
         cachedState = HorseTrackerState.get(runningServer);
-        IcysBetterHorses.LOGGER.info("[whistle] tracker attached: {}", cachedState.describe());
+        IcysBetterHorses.LOGGER.debug("[whistle] tracker attached: {}", cachedState.describe());
     }
 
     public static void detach() {
@@ -58,11 +58,11 @@ public final class HorseTracker {
         boolean destroyed = (reason != null && reason.shouldDestroy()) || !horse.isAlive();
         if (destroyed) {
             state.forgetHorse(horse.getUUID());
-            IcysBetterHorses.LOGGER.info("[whistle] forgot horse {} (destroyed, removalReason={})",
+            IcysBetterHorses.LOGGER.debug("[whistle] forgot horse {} (destroyed, removalReason={})",
                     horse.getUUID(), reason);
         } else if (IHorseData.of(horse).bh_isOwned()) {
             state.recordHorse(horse);
-            IcysBetterHorses.LOGGER.info("[whistle] snapshot recorded for horse {} at {} (unloaded)",
+            IcysBetterHorses.LOGGER.debug("[whistle] snapshot recorded for horse {} at {} (unloaded)",
                     horse.getUUID(), horse.blockPosition());
         }
     }
@@ -72,7 +72,7 @@ public final class HorseTracker {
         HorseTrackerState state = state();
         if (state == null) return;
         state.forgetHorse(horse.getUUID());
-        IcysBetterHorses.LOGGER.info("[whistle] disowned horse {}", horse.getUUID());
+        IcysBetterHorses.LOGGER.debug("[whistle] disowned horse {}", horse.getUUID());
     }
 
     public static void forgetStoredHorse(UUID horseId) {
@@ -94,7 +94,7 @@ public final class HorseTracker {
         HorseTrackerState state = state();
         if (state != null) {
             state.setLastRidden(playerId, horse.getUUID());
-            IcysBetterHorses.LOGGER.info("[whistle] last ridden horse of {} is now {}", playerId, horse.getUUID());
+            IcysBetterHorses.LOGGER.debug("[whistle] last ridden horse of {} is now {}", playerId, horse.getUUID());
         } else {
             IcysBetterHorses.LOGGER.warn("[whistle] setLastRidden with no attached server — ride not recorded");
         }

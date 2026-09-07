@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.feature.breed.Ironclad;
 import net.minecraft.world.damagesource.DamageSource;
@@ -24,6 +25,7 @@ public abstract class HorseProtectionMixin {
         Entity direct = source.getDirectEntity();
         if (direct instanceof Projectile && Ironclad.deflectsProjectiles(IHorseData.of(self))) {
             direct.discard();
+            BhSurge.pulse(IHorseData.of(self), 0, 1);
             cir.setReturnValue(false);
         }
     }

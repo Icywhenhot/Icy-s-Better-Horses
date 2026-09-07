@@ -79,6 +79,10 @@ public enum BreedArchetype {
         return bashDamage();
     }
 
+    public int chestRows() {
+        return this == DRAFT ? 4 : 3;
+    }
+
     public double bashKnockback() {
         return switch (this) {
             case RACE, PONY -> 0.8D;
@@ -89,15 +93,11 @@ public enum BreedArchetype {
     }
 
     public double spookChance(int tier) {
-        if (this == WAR || this == NONE) {
+        if (this == NONE || (this == WAR && BhAbility.WAR_STEADY.on())) {
             return 0.0D;
         }
         double base = tier >= 2 ? 0.05D : tier >= 1 ? 0.07D : 0.10D;
         return this == DRAFT ? base * 0.5D : base;
-    }
-
-    public int chestRows() {
-        return this == DRAFT ? 4 : 3;
     }
 
     public boolean allowsChestAndRiders() {
@@ -105,38 +105,38 @@ public enum BreedArchetype {
     }
 
     public boolean suppressRear() {
-        return this == WAR;
+        return this == WAR && BhAbility.WAR_STEADY.on();
     }
 
     public int medkitMultiplier() {
-        return this == WAR ? 2 : 1;
+        return this == WAR && BhAbility.WAR_MEDKIT.on() ? 2 : 1;
     }
 
     public double knockbackResistance() {
-        return this == DRAFT ? 0.6D : 0.0D;
+        return this == DRAFT && BhAbility.DRAFT_MASS.on() ? 0.6D : 0.0D;
     }
 
     public int passiveHealInterval() {
-        return this == PONY ? 400 : 0;
+        return this == PONY && BhAbility.PONY_HEAL.on() ? 400 : 0;
     }
 
     public boolean walksOnPowderSnow() {
-        return this == PONY;
+        return this == PONY && BhAbility.PONY_SNOW.on();
     }
 
     public double pathSpeedBonus(int tier) {
-        if (this != WESTERN) {
+        if (this != WESTERN || !BhAbility.WESTERN_ROAD.on()) {
             return 0.0D;
         }
         return tier >= 2 ? 0.50D : tier >= 1 ? 0.20D : 0.10D;
     }
 
     public double fallDamageWaiver() {
-        return this == PONY ? 15.0D : 0.0D;
+        return this == PONY && BhAbility.PONY_FALL.on() ? 15.0D : 0.0D;
     }
 
     public double stepHeight() {
-        return this == PONY ? 2.0D : 1.0D;
+        return this == PONY && BhAbility.PONY_STEP.on() ? 2.0D : 1.0D;
     }
 
     public static double topSpeed() {

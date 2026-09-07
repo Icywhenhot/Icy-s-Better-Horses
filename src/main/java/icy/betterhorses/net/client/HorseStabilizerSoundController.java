@@ -23,7 +23,9 @@ import java.util.Set;
 public final class HorseStabilizerSoundController {
 
     private static final double TRACKING_RANGE = 96.0D;
+    private static final int RESCAN = 10;
     private static final Map<Integer, ActiveStabilizerSound> ACTIVE_SOUNDS = new HashMap<>();
+    private static int sweep;
 
     public static void tick(Minecraft client) {
         if (!BhConfig.stabilizerEnabled()) {
@@ -41,6 +43,29 @@ public final class HorseStabilizerSoundController {
             return;
         }
 
+        if (sweep++ % RESCAN == 0) {
+            sweepNearby(client, cameraEntity);
+        }
+
+        SoundManager sounds = client.getSoundManager();
+        Iterator<Map.Entry<Integer, ActiveStabilizerSound>> iterator = ACTIVE_SOUNDS.entrySet().iterator();
+        while (iterator.hasNext()) {
+            ActiveStabilizerSound controller = iterator.next().getValue();
+            AbstractHorse horse = controller.horse();
+            if (horse.isRemoved() || !(horse instanceof IHorseData data)) {
+                controller.stopImmediately();
+                iterator.remove();
+                continue;
+            }
+            controller.setActive(HorseStabilizerLogic.shouldPlaySteam(data.bh_getStabilizerState()));
+            controller.tick(sounds);
+            if (controller.isFinished()) {
+                iterator.remove();
+            }
+        }
+    }
+
+    private static void sweepNearby(Minecraft client, Entity cameraEntity) {
         AABB searchBox = cameraEntity.getBoundingBox().inflate(TRACKING_RANGE);
         Set<Integer> seenHorseIds = new HashSet<>();
         for (Entity entity : client.level.getEntities((Entity) null, searchBox,
@@ -48,14 +73,14 @@ public final class HorseStabilizerSoundController {
             if (!(entity instanceof AbstractHorse horse) || !(horse instanceof IHorseData data)) {
                 continue;
             }
-
             seenHorseIds.add(horse.getId());
-            ActiveStabilizerSound controller = ACTIVE_SOUNDS.computeIfAbsent(
-                    horse.getId(),
-                    id -> new ActiveStabilizerSound(horse));
-            controller.setHorse(horse);
-            controller.setActive(HorseStabilizerLogic.shouldPlaySteam(data.bh_getStabilizerState()));
-            controller.tick(client.getSoundManager());
+            if (ACTIVE_SOUNDS.containsKey(horse.getId())) {
+                ACTIVE_SOUNDS.get(horse.getId()).setHorse(horse);
+                continue;
+            }
+            if (HorseStabilizerLogic.shouldPlaySteam(data.bh_getStabilizerState())) {
+                ACTIVE_SOUNDS.put(horse.getId(), new ActiveStabilizerSound(horse));
+            }
         }
 
         Iterator<Map.Entry<Integer, ActiveStabilizerSound>> iterator = ACTIVE_SOUNDS.entrySet().iterator();
@@ -64,16 +89,12 @@ public final class HorseStabilizerSoundController {
             if (!seenHorseIds.contains(entry.getKey())) {
                 entry.getValue().stopImmediately();
                 iterator.remove();
-                continue;
-            }
-
-            if (entry.getValue().isFinished()) {
-                iterator.remove();
             }
         }
     }
 
     private static void stopAll() {
+        sweep = 0;
         for (ActiveStabilizerSound controller : ACTIVE_SOUNDS.values()) {
             controller.stopImmediately();
         }
@@ -93,6 +114,10 @@ public final class HorseStabilizerSoundController {
         private ActiveStabilizerSound(AbstractHorse horse) {
             this.horseId = horse.getId();
             this.horse = horse;
+        }
+
+        private AbstractHorse horse() {
+            return this.horse;
         }
 
         private void setHorse(AbstractHorse horse) {

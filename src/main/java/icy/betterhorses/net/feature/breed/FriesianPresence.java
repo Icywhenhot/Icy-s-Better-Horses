@@ -2,6 +2,7 @@ package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
+import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedAbilities;
 import net.minecraft.world.entity.LivingEntity;
@@ -30,17 +31,23 @@ public final class FriesianPresence implements BreedAbility {
         Player rider = BhBreedAbilities.rider(horse);
         int tier = BhHorseTraits.bondTier(data.bh_getBond());
 
-        if (rider != null && !hadRider) {
-            calm(horse, rider, MOUNT_RADIUS, true, tier);
+        boolean soothes = BhAbility.FRIESIAN_CALM.on();
+        boolean calmed = false;
+        if (soothes && rider != null && !hadRider) {
+            calmed = calm(horse, rider, MOUNT_RADIUS, true, tier);
         }
         hadRider = rider != null;
 
-        if (rider != null && horse.tickCount % INTERVAL == 0) {
-            calm(horse, rider, RADIUS, false, tier);
+        if (soothes && rider != null && horse.tickCount % INTERVAL == 0) {
+            calmed |= calm(horse, rider, RADIUS, false, tier);
+        }
+        if (calmed) {
+            BhSurge.pulse(data, 0, 1);
         }
 
         boolean standing = horse.isStanding();
-        if (tier >= 2 && standing && !wasStanding && dressage(horse)) {
+        if (tier >= 2 && BhAbility.FRIESIAN_DRESSAGE.on()
+                && standing && !wasStanding && dressage(horse)) {
             BhSurge.pulse(data, 0);
         }
         wasStanding = standing;
@@ -70,8 +77,9 @@ public final class FriesianPresence implements BreedAbility {
         return pushed;
     }
 
-    private void calm(AbstractHorse horse, Player rider, double radius,
-                      boolean includeProvoked, int tier) {
+    private boolean calm(AbstractHorse horse, Player rider, double radius,
+                         boolean includeProvoked, int tier) {
+        boolean stopped = false;
         AABB box = horse.getBoundingBox().inflate(radius);
         for (Mob mob : horse.level().getEntitiesOfClass(Mob.class, box)) {
             boolean neutral = mob instanceof NeutralMob;
@@ -92,6 +100,8 @@ public final class FriesianPresence implements BreedAbility {
             if (mob instanceof NeutralMob angry) {
                 angry.stopBeingAngry();
             }
+            stopped = true;
         }
+        return stopped;
     }
 }

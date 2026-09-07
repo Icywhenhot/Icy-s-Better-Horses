@@ -27,7 +27,11 @@ See [Breeds](index) for what every class shares.
 |:---|:---|
 | 0 | ignores soul sand, cobwebs, berries and honey |
 | 40 | **Winter Coat**: neither horse nor rider freezes |
-| 100 | **Clear Head**: the rider takes no negative status effects at all while mounted |
+| 100 | **Clear Head**: neither the pony nor its rider takes any negative status effect |
+
+The pony's own immunity holds whether or not anyone is riding it, so a stabled Icelandic shrugs off a witch's poison on its own. The rider is covered only while mounted.
+
+Bad effects are refused as they are applied rather than cleaned up afterwards, so nothing flickers on for a moment first. Anything already running when the pony reaches bond 100 is stripped within the second.
 
 The tolt stays what it always was, a smoother gait to ride, not a number.
 
