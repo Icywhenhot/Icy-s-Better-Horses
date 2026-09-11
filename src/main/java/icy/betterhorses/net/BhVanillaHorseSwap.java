@@ -2,13 +2,16 @@ package icy.betterhorses.net;
 
 import icy.betterhorses.net.entity.BhBreedEntity;
 import icy.betterhorses.net.entity.BhBreedHorse;
+import icy.betterhorses.net.item.HitchpostBlock;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.equine.Horse;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 
 import java.util.List;
@@ -39,6 +42,7 @@ public final class BhVanillaHorseSwap {
         transfer(horse, swap);
         IcysBetterHorses.LOGGER.debug("[HORSE_SWAP] replaced vanilla horse at {} with {}",
                 horse.blockPosition(), breed);
+        HitchpostBlock.releaseHorse(level, horse, false);
         horse.discard();
         level.addFreshEntity(swap);
         return true;
@@ -65,8 +69,17 @@ public final class BhVanillaHorseSwap {
         to.setCustomName(from.getCustomName());
         to.setCustomNameVisible(from.isCustomNameVisible());
         to.setInvulnerable(from.isInvulnerable());
-        to.setPersistenceRequired();
+        if (from.isPersistenceRequired()) {
+            to.setPersistenceRequired();
+        }
         to.setHealth(Math.min(from.getHealth(), to.getMaxHealth()));
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            ItemStack worn = from.getItemBySlot(slot);
+            if (!worn.isEmpty()) {
+                to.setItemSlot(slot, worn.copy());
+                to.setDropChance(slot, from.getDropChances().byEquipment(slot));
+            }
+        }
 
         IHorseData src = IHorseData.of(from);
         IHorseData dst = IHorseData.of(to);
@@ -76,8 +89,10 @@ public final class BhVanillaHorseSwap {
         dst.bh_setGeneration(src.bh_getGeneration());
         dst.bh_setCommand(src.bh_getCommand());
         dst.bh_setHome(src.bh_getHome());
+        dst.bh_setWanderCenter(src.bh_getWanderCenter());
         dst.bh_setReceivedNameTagBond(src.bh_hasReceivedNameTagBond());
         dst.bh_setMixedBreed(src.bh_isMixedBreed());
+        dst.bh_setAbilityPaused(src.bh_isAbilityPaused());
 
         moveAll(src.bh_getGearContainer(), dst.bh_getGearContainer());
         moveAll(src.bh_getChestContainer(), dst.bh_getChestContainer());

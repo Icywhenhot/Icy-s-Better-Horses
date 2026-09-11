@@ -6,6 +6,7 @@ import icy.betterhorses.net.BhHorseSpawnRules;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.HorseGender;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.entity.BhBreedHorse;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
@@ -70,6 +71,8 @@ public abstract class AnimalMixin {
     @Inject(method = "finalizeSpawnChildFromBreeding", at = @At("TAIL"))
     private void bh_finalizeHorseChild(ServerLevel level, Animal partner, AgeableMob child, CallbackInfo ci) {
         Animal self = (Animal) (Object) this;
+        ServerPlayer breeder = this.bh_breeder;
+        this.bh_breeder = null;
         if (!(self instanceof AbstractHorse selfHorse)
                 || !(partner instanceof AbstractHorse partnerHorse)
                 || !(child instanceof AbstractHorse childHorse)) {
@@ -81,6 +84,11 @@ public abstract class AnimalMixin {
         IHorseData childData = IHorseData.of(childHorse);
 
         childData.bh_setGender(self.getRandom().nextBoolean() ? HorseGender.MALE : HorseGender.FEMALE);
+
+        if (childHorse instanceof BhBreedHorse) {
+            bh_awardFoal(breeder, childData);
+            return;
+        }
 
         HorseBreed selfBreed = selfData.bh_getBreed();
         HorseBreed partnerBreed = partnerData.bh_getBreed();
@@ -113,11 +121,14 @@ public abstract class AnimalMixin {
             }
         }
 
-        BhCriteria.fire(this.bh_breeder, BhCriteria.FOAL);
+        bh_awardFoal(breeder, childData);
+    }
+
+    private static void bh_awardFoal(@Nullable ServerPlayer breeder, IHorseData childData) {
+        BhCriteria.fire(breeder, BhCriteria.FOAL);
         if (childData.bh_isMixedBreed()) {
-            BhCriteria.fire(this.bh_breeder, BhCriteria.MIXED_FOAL);
+            BhCriteria.fire(breeder, BhCriteria.MIXED_FOAL);
         }
-        this.bh_breeder = null;
     }
 
     private static final double VANILLA_MAX_HEALTH = 30.0D;

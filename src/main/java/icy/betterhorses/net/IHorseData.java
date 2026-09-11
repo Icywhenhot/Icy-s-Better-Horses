@@ -1,6 +1,8 @@
 package icy.betterhorses.net;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.SimpleContainer;
@@ -23,6 +25,7 @@ public interface IHorseData {
 
     @Nullable BlockPos bh_getHome();
     void bh_setHome(@Nullable BlockPos pos);
+    @Nullable ResourceKey<Level> bh_getHomeDimension();
 
     @Nullable BlockPos bh_getWanderCenter();
     void bh_setWanderCenter(@Nullable BlockPos pos);

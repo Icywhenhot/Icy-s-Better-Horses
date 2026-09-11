@@ -2,6 +2,8 @@ package icy.betterhorses.net;
 
 import icy.betterhorses.net.network.HorseRosterEntry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -14,6 +16,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -45,6 +48,8 @@ public final class HorseManagement {
     public static final String MSG_NO_HOME = MSG + "no_home";
     public static final String MSG_HAS_EQUIPMENT = MSG + "has_equipment";
     public static final String MSG_OTHER_DIMENSION = MSG + "other_dimension";
+    public static final String MSG_HOME_ELSEWHERE = MSG + "home_elsewhere";
+    public static final String MSG_NO_BOND = MSG + "no_bond";
     public static final String MSG_FAILED = MSG + "failed";
 
     public static List<HorseRosterEntry> buildRoster(ServerPlayer player) {
@@ -85,6 +90,9 @@ public final class HorseManagement {
                     horse.isBaby(),
                     horse instanceof BhBreedHorse breedHorse
                             ? breedHorse.bhCoat() : -1));
+            if (loaded == null) {
+                release(horse);
+            }
         }
         roster.sort(Comparator
                 .comparing((HorseRosterEntry entry) -> entry.customName().isEmpty())
@@ -102,8 +110,7 @@ public final class HorseManagement {
             if (loaded.level() != player.level()) {
                 return Outcome.fail(MSG_OTHER_DIMENSION);
             }
-            summonToPlayer(loaded, player);
-            return Outcome.OK;
+            return summonToPlayer(loaded, player) ? Outcome.OK : Outcome.fail(MSG_NO_BOND);
         }
 
         ServerLevel level = (ServerLevel) player.level();
@@ -124,6 +131,10 @@ public final class HorseManagement {
         if (loaded != null) {
             BlockPos home = IHorseData.of(loaded).bh_getHome();
             if (home == null) return Outcome.fail(MSG_NO_HOME);
+            ResourceKey<Level> homeDim = IHorseData.of(loaded).bh_getHomeDimension();
+            if (homeDim != null && !homeDim.equals(loaded.level().dimension())) {
+                return Outcome.fail(MSG_HOME_ELSEWHERE);
+            }
 
             loaded.ejectPassengers();
             keepHomeChunkLoaded((ServerLevel) loaded.level(), home);
@@ -140,7 +151,12 @@ public final class HorseManagement {
         BlockPos home = snapshot.read("BH_Home", BlockPos.CODEC).orElse(null);
         if (home == null) return Outcome.fail(MSG_NO_HOME);
 
-        ServerLevel homeLevel = server.getLevel(known.dimension());
+        ResourceKey<Level> homeDim = snapshot
+                .read("BH_HomeDim", ResourceKey.codec(Registries.DIMENSION))
+                .orElse(known.dimension());
+        if (!homeDim.equals(known.dimension())) return Outcome.fail(MSG_HOME_ELSEWHERE);
+
+        ServerLevel homeLevel = server.getLevel(homeDim);
         if (homeLevel == null) return Outcome.fail(MSG_FAILED);
 
         keepHomeChunkLoaded(homeLevel, home);
@@ -184,9 +200,11 @@ public final class HorseManagement {
             return Outcome.fail(MSG_GONE);
         }
 
-        AbstractHorse snapshotHorse = materialize(server, horseId);
-        if (snapshotHorse == null) return Outcome.fail(MSG_GONE);
-        if (IHorseData.of(snapshotHorse).bh_hasAnyEquipment()) {
+        AbstractHorse scratch = materialize(server, horseId);
+        if (scratch == null) return Outcome.fail(MSG_GONE);
+        boolean carrying = IHorseData.of(scratch).bh_hasAnyEquipment();
+        release(scratch);
+        if (carrying) {
             return Outcome.fail(MSG_HAS_EQUIPMENT);
         }
 
@@ -229,9 +247,9 @@ public final class HorseManagement {
         whistle(player, horseId);
     }
 
-    public static void summonToPlayer(AbstractHorse horse, ServerPlayer player) {
+    public static boolean summonToPlayer(AbstractHorse horse, ServerPlayer player) {
         IHorseData data = IHorseData.of(horse);
-        if (data.bh_getBond() <= 0) return;
+        if (data.bh_getBond() <= 0) return false;
 
         data.bh_setCommand(HorseCommand.FOLLOW);
 
@@ -239,6 +257,7 @@ public final class HorseManagement {
         if (horse.distanceToSqr(player) > CALL_TELEPORT_DIST_SQ) {
             horse.teleportTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
         }
+        return true;
     }
 
     private static @Nullable AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {
@@ -296,6 +315,13 @@ public final class HorseManagement {
         return horse;
     }
 
+    private static void release(AbstractHorse scratch) {
+        for (Entity rider : scratch.getIndirectPassengers()) {
+            rider.discard();
+        }
+        scratch.discard();
+    }
+
     private static @Nullable AbstractHorse respawnFromSnapshot(
             MinecraftServer server, UUID horseId, ServerLevel level, double x, double y, double z) {
         HorseTrackerState.KnownPosition known = HorseTracker.getLastKnownPosition(horseId);
@@ -339,9 +365,13 @@ public final class HorseManagement {
 
     private static String respawnFailureKey(ServerPlayer player, UUID horseId) {
         HorseTrackerState.KnownPosition known = HorseTracker.getLastKnownPosition(horseId);
-        if (known == null || HorseTracker.getSnapshot(horseId) == null) {
+        CompoundTag snapshot = HorseTracker.getSnapshot(horseId);
+        if (known == null || snapshot == null) {
             return MSG_GONE;
         }
-        return player.level().dimension().equals(known.dimension()) ? MSG_FAILED : MSG_OTHER_DIMENSION;
+        if (!player.level().dimension().equals(known.dimension())) {
+            return MSG_OTHER_DIMENSION;
+        }
+        return snapshot.getIntOr("BH_Bond", 0) <= 0 ? MSG_NO_BOND : MSG_FAILED;
     }
 }

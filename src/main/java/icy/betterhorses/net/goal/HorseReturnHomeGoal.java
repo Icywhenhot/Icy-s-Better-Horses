@@ -4,6 +4,8 @@ import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModTicketTypes;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
@@ -46,6 +48,7 @@ public class HorseReturnHomeGoal extends Goal {
             data.bh_setCommand(HorseCommand.STAY);
             return false;
         }
+        if (!homeIsHere(data)) return false;
         return horse.distanceToSqr(Vec3.atBottomCenterOf(home)) > ARRIVED_DIST_SQ;
     }
 
@@ -54,12 +57,17 @@ public class HorseReturnHomeGoal extends Goal {
         IHorseData data = IHorseData.of(horse);
         if (data.bh_getCommand() != HorseCommand.RETURN_HOME) return false;
         BlockPos home = data.bh_getHome();
-        if (home == null) return false;
+        if (home == null || !homeIsHere(data)) return false;
         if (horse.distanceToSqr(Vec3.atBottomCenterOf(home)) <= ARRIVED_DIST_SQ) {
             data.bh_setCommand(HorseCommand.STAY);
             return false;
         }
         return true;
+    }
+
+    private boolean homeIsHere(IHorseData data) {
+        ResourceKey<Level> dim = data.bh_getHomeDimension();
+        return dim == null || dim.equals(horse.level().dimension());
     }
 
     @Override

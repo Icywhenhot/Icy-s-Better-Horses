@@ -164,8 +164,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         }
     }
 
-    private boolean itemsBeyond(int slots) {
-        SimpleContainer contents = this.chestContainer();
+    public static boolean itemsBeyond(@Nullable SimpleContainer contents, int slots) {
         if (contents == null) {
             return false;
         }
@@ -191,7 +190,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         if (this.hasPlough() && !size.takesPlough()) {
             return Component.translatable("message.icys-better-horses.cart_size_plough");
         }
-        if (this.hasChest() && this.itemsBeyond(size.chestSlots())) {
+        if (this.hasChest() && itemsBeyond(this.chestContainer(), size.chestSlots())) {
             return Component.translatable("message.icys-better-horses.cart_size_chest_full");
         }
         if (this.isPlaced()

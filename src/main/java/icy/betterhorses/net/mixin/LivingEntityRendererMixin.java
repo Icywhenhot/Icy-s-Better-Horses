@@ -65,6 +65,8 @@ public abstract class LivingEntityRendererMixin {
             CameraRenderState camera,
             CallbackInfo ci) {
         if (renderState instanceof IBhEquineStabilizerState bhState && bhState.bh_getOpacity() <= 0.01F) {
+            BhRenderContext.clearCamera();
+            BhRenderContext.clearOpacity();
             ci.cancel();
         }
     }

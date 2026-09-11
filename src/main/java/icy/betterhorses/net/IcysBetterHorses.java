@@ -406,7 +406,14 @@ public class IcysBetterHorses implements ModInitializer {
         }
 
         HorseCartEntity cart = data.bh_getCartEntity();
-        if (cart != null && refuseResize(player, cart, wanted)) {
+        if (cart != null) {
+            if (refuseResize(player, cart, wanted)) {
+                return;
+            }
+        } else if (data.bh_hasCartChest()
+                && HorseCartEntity.itemsBeyond(data.bh_getCartChestContainer(), wanted.chestSlots())) {
+            player.sendSystemMessage(
+                    Component.translatable("message.icys-better-horses.cart_size_chest_full"));
             return;
         }
 

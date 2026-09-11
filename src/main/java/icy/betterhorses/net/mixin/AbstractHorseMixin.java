@@ -42,7 +42,10 @@ import icy.betterhorses.net.goal.HorseStayGoal;
 import icy.betterhorses.net.goal.SpookGoal;
 import icy.betterhorses.net.goal.HorseWanderBoundsGoal;
 import icy.betterhorses.net.inventory.GearSlot;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -196,6 +199,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private volatile @Nullable UUID bh_owner = null;
     @Unique private HorseCommand bh_command = HorseCommand.FOLLOW;
     @Unique private @Nullable BlockPos bh_home = null;
+    @Unique private @Nullable ResourceKey<Level> bh_homeDim = null;
     @Unique private @Nullable BlockPos bh_wanderCenter = null;
     @Unique private @Nullable BlockPos bh_hitchpostPos = null;
     @Unique private int bh_bond = 0;
@@ -209,6 +213,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             AbstractHorseMixin.this.bh_syncGearFlags();
         }
     };
+    @Unique
+    private static final Codec<ResourceKey<Level>> BH_DIMENSION_CODEC =
+            ResourceKey.codec(Registries.DIMENSION);
     @Unique private static final int BH_CHEST_MAX_SLOTS = 54;
     @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(BH_CHEST_MAX_SLOTS);
     @Unique private static final int BH_CART_CHEST_SIZE = CartChestMenu.SLOTS;
@@ -306,6 +313,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public void bh_setHome(@Nullable BlockPos pos) {
         this.bh_home = pos;
+        this.bh_homeDim = pos == null ? null : ((AbstractHorse) (Object) this).level().dimension();
+    }
+
+    @Override
+    public @Nullable ResourceKey<Level> bh_getHomeDimension() {
+        return this.bh_homeDim;
     }
 
     @Override
@@ -605,6 +618,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (bh_home != null) {
             output.store("BH_Home", BlockPos.CODEC, bh_home);
         }
+        if (bh_homeDim != null) {
+            output.store("BH_HomeDim", BH_DIMENSION_CODEC, bh_homeDim);
+        }
         if (bh_wanderCenter != null) {
             output.store("BH_WanderCenter", BlockPos.CODEC, bh_wanderCenter);
         }
@@ -643,10 +659,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         this.entityData.set(BH_BOND_SYNCED, bh_bond);
         bh_nameTagBondReceived = input.getIntOr("BH_NameTagBondGiven", bh_bond > 0 ? 1 : 0) != 0;
         bh_home = input.read("BH_Home", BlockPos.CODEC).orElse(null);
+        bh_homeDim = input.read("BH_HomeDim", BH_DIMENSION_CODEC).orElse(null);
         bh_wanderCenter = input.read("BH_WanderCenter", BlockPos.CODEC).orElse(null);
         bh_hitchpostPos = input.read("BH_Hitchpost", BlockPos.CODEC).orElse(null);
         if (bh_home == null) {
             bh_home = BhHorseStorage.readLegacyBlockPos(input, "BH_Home");
+        }
+        if (bh_home != null && bh_homeDim == null) {
+            bh_homeDim = ((AbstractHorse) (Object) this).level().dimension();
         }
         if (bh_wanderCenter == null) {
             bh_wanderCenter = BhHorseStorage.readLegacyBlockPos(input, "BH_WanderCenter");
