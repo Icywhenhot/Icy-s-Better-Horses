@@ -16,7 +16,7 @@ public final class ModBlockEntities {
     public static void register(RegisterEvent event) {
         event.register(
                 Registries.BLOCK_ENTITY_TYPE,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "hitchpost"),
+                Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "hitchpost"),
                 () -> HITCHPOST);
     }
 

@@ -17,14 +17,14 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 public final class BhBiomeSpawns {
 
     private static final TagKey<Biome> SPAWNS = TagKey.create(Registries.BIOME,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "spawns_horses"));
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "spawns_horses"));
 
     private BhBiomeSpawns() {}
 
     public static void register(RegisterEvent event) {
         event.register(
                 NeoForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_biome_spawns"),
+                Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "horse_biome_spawns"),
                 () -> SpawnModifier.CODEC);
     }
 

@@ -64,7 +64,7 @@ public enum CartSize {
     }
 
     private static Identifier id(String path) {
-        return Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
+        return Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, path);
     }
 
     public static CartSize forArchetype(BreedArchetype archetype) {

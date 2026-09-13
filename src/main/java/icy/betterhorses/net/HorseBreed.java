@@ -70,7 +70,7 @@ public enum HorseBreed {
     public record Coat(Variant color, Markings markings) {}
 
     private final TagKey<Biome> biomeTag = TagKey.create(Registries.BIOME,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "spawns/" + name().toLowerCase(java.util.Locale.ROOT)));
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "spawns/" + name().toLowerCase(java.util.Locale.ROOT)));
     private final BreedArchetype archetype;
     private final @Nullable Supplier<BreedAbility> ability;
 

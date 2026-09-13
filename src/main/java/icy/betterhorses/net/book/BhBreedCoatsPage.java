@@ -18,7 +18,7 @@ import java.util.Locale;
 public class BhBreedCoatsPage extends BookPage {
 
     public static final Identifier ID =
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "breed_coats");
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "breed_coats");
 
     public static final MapCodec<BhBreedCoatsPage> CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(

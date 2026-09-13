@@ -17,7 +17,7 @@ import net.minecraft.world.level.Level;
 public class BhCartModelsPage extends BookPage {
 
     public static final Identifier ID =
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "cart_models");
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "cart_models");
 
     public static final MapCodec<BhCartModelsPage> CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(

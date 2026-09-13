@@ -22,7 +22,7 @@ public final class ModMenus {
     public static void register(RegisterEvent event) {
         event.register(
                 Registries.MENU,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "cart_chest"),
+                Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "cart_chest"),
                 () -> CART_CHEST);
     }
 }

@@ -144,10 +144,10 @@ public final class ModItems {
 
     public static void register(RegisterEvent event) {
         event.register(Registries.ITEM, helper -> ITEMS.forEach((path, item) ->
-                helper.register(Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path), item)));
+                helper.register(Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, path), item)));
         event.register(
                 Registries.CREATIVE_MODE_TAB,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "stable_supplies"),
+                Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "stable_supplies"),
                 () -> STABLE_SUPPLIES_TAB);
     }
 
@@ -167,7 +167,7 @@ public final class ModItems {
     private static ResourceKey<Item> itemKey(String path) {
         return ResourceKey.create(
                 Registries.ITEM,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path));
+                Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, path));
     }
 
     private ModItems() {}

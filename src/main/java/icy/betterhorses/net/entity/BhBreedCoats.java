@@ -132,7 +132,7 @@ public final class BhBreedCoats {
     private static List<Identifier> texturesIn(String path, List<String> ids) {
         return ids.stream()
                 .map(id -> Identifier.fromNamespaceAndPath(
-                        IcysBetterHorses.MOD_ID,
+                        IcysBetterHorses.RESOURCE_NAMESPACE,
                         "textures/entity/horse/" + path + "/" + id + ".png"))
                 .toList();
     }

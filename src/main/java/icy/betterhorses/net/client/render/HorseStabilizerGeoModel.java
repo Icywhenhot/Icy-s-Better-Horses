@@ -7,11 +7,11 @@ import com.geckolib.renderer.base.GeoRenderState;
 
 public final class HorseStabilizerGeoModel extends GeoModel<HorseStabilizerAnimatable> {
     private static final Identifier MODEL =
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "st");
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "st");
     private static final Identifier TEXTURE =
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "textures/entity/horse_stabilizer.png");
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "textures/entity/horse_stabilizer.png");
     private static final Identifier ANIMATION =
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "st");
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "st");
 
     @Override
     public Identifier getModelResource(GeoRenderState renderState) {

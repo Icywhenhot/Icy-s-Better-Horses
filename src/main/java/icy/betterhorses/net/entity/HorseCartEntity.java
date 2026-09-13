@@ -89,11 +89,11 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     private static final int RESTORE_BOARD_TICKS = 80;
 
     private static final TagKey<Block> PLOUGHABLE = TagKey.create(Registries.BLOCK,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "ploughable"));
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "ploughable"));
     private static final TagKey<EntityType<?>> CARGO_BLOCKED = TagKey.create(Registries.ENTITY_TYPE,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "cart_cargo_blocked"));
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "cart_cargo_blocked"));
     private static final TagKey<EntityType<?>> CARGO_ALLOWED = TagKey.create(Registries.ENTITY_TYPE,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "cart_cargo_allowed"));
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "cart_cargo_allowed"));
 
     private static final double PLOW_BEHIND = 4.2D;
     private static final int PLOW_HALF_WIDTH = 1;

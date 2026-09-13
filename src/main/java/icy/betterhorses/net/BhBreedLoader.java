@@ -22,7 +22,7 @@ public final class BhBreedLoader {
 
     public static void register(AddServerReloadListenersEvent event) {
         event.addListener(
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "breeds"),
+                Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "breeds"),
                 (ResourceManagerReloadListener) BhBreedLoader::load);
     }
 

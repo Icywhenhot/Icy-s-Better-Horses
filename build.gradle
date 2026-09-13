@@ -20,10 +20,6 @@ sourceSets.main.resources {
     srcDir('src/generated/resources')
     exclude("**/*.bbmodel")
     exclude("src/generated/**/.cache")
-    exclude("fabric.mod.json")
-    exclude("icys_better_horses.mixins.json")
-    exclude("assets/icys_better_horses/**")
-    exclude("data/icys_better_horses/**")
 }
 
 repositories {
@@ -93,7 +89,6 @@ neoForge {
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
             if (System.getProperty('os.name').toLowerCase(java.util.Locale.ROOT).contains('windows')) {
-                // Prevent Windows WMI hardware probing from stalling client startup on some systems.
                 systemProperty 'oshi.util.wmi.timeout', '5000'
             }
             logLevel = org.slf4j.event.Level.DEBUG

@@ -33,7 +33,7 @@ public final class BhCriteria {
 
     public static void register(RegisterEvent event) {
         event.register(Registries.TRIGGER_TYPE,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "milestone"),
+                Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "milestone"),
                 () -> MILESTONE);
     }
 

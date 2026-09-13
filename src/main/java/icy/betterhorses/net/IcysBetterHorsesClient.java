@@ -73,7 +73,7 @@ import icy.betterhorses.net.client.book.BhBreedCoatsPageRenderer;
 import icy.betterhorses.net.client.book.BhCartModelsPageRenderer;
 import icy.betterhorses.net.client.book.BhChargeMeterPageRenderer;
 
-@Mod(value = IcysBetterHorses.NEO_ID, dist = Dist.CLIENT)
+@Mod(value = IcysBetterHorses.MOD_ID, dist = Dist.CLIENT)
 public class IcysBetterHorsesClient {
 
     private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
@@ -104,7 +104,7 @@ public class IcysBetterHorsesClient {
         NeoForge.EVENT_BUS.addListener(this::onEntityLeave);
         if (ModList.get().isLoaded("cloth_config")) {
             modContainer.registerExtensionPoint(IConfigScreenFactory.class,
-                    (container, parent) -> icy.betterhorses.net.client.BhModMenuIntegration.buildScreen(parent));
+                    (container, parent) -> icy.betterhorses.net.client.BhConfigScreen.create(parent));
         }
 
         PageRendererRegistry.registerPageRenderer(

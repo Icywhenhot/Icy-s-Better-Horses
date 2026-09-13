@@ -1,6 +1,6 @@
 # Icy's Better Horses
 
-A Fabric mod for Minecraft 26.2 that turns horses from an early-game novelty into long-term companions: ownership and bonding, fifteen real breeds, dedicated tack, carts, and a stack of riding fixes.
+A NeoForge mod for Minecraft 26.1.2 that turns horses from an early-game novelty into long-term companions: ownership and bonding, fifteen real breeds, dedicated tack, carts, and a stack of riding fixes.
 
 **📖 [Read the wiki](https://icywhenhot.github.io/Icy-s-Better-Horses/)** for full documentation of every system, item, breed, and config option.
 
@@ -23,11 +23,11 @@ Full detail on each: **[the wiki](https://icywhenhot.github.io/Icy-s-Better-Hors
 
 | | |
 |:---|:---|
-| Minecraft | 26.2 |
-| Loader | Fabric 0.19.3+ |
+| Minecraft | 26.1.2 |
+| Loader | NeoForge 26.1.2.71+ |
 | Java | 25 or newer |
-| Required | Fabric API, GeckoLib 5.5.0+, Modonomicon |
-| Optional | Mod Menu + Cloth Config, for the in-game settings screen |
+| Required | GeckoLib 5.5.1+, Modonomicon 2.2.0+ |
+| Optional | Cloth Config 26.1.154+, for the in-game settings screen |
 
 ## Configuration
 
@@ -39,9 +39,9 @@ Six toggles in `config/icys-better-horses.json` let a server disable stabilizers
 ./gradlew build
 ```
 
-The jar lands in `build/libs/`. For IDE setup see the [Fabric documentation](https://docs.fabricmc.net/). Art and model notes are in [`docs/horse-stabilizer-model-guide.md`](docs/horse-stabilizer-model-guide.md) and [`docs/horse-ui-art-guide.md`](docs/horse-ui-art-guide.md).
+The jar lands in `build/libs/`. For IDE setup see the [NeoForge documentation](https://docs.neoforged.net/). Art and model notes are in [`docs/horse-stabilizer-model-guide.md`](docs/horse-stabilizer-model-guide.md) and [`docs/horse-ui-art-guide.md`](docs/horse-ui-art-guide.md).
 
-The repository keeps a branch per Minecraft version; active development is on **`26.2-fab`**.
+The repository keeps a branch per Minecraft version; this release is maintained on **`26.1.2-neo`**.
 
 ## License
 

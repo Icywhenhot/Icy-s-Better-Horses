@@ -53,7 +53,7 @@ public class HorseTrackerState extends SavedData {
     ).apply(instance, HorseTrackerState::new));
 
     public static final SavedDataType<HorseTrackerState> TYPE = new SavedDataType<>(
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_tracker"),
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "horse_tracker"),
             HorseTrackerState::new,
             CODEC,
             DataFixTypes.SAVED_DATA_COMMAND_STORAGE);

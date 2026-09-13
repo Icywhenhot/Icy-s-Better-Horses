@@ -18,7 +18,7 @@ import net.minecraft.resources.Identifier;
 public class BhChargeMeterPage extends BookTextPage {
 
     public static final Identifier ID =
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "charge_meter");
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "charge_meter");
 
     public static final MapCodec<BhChargeMeterPage> CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(

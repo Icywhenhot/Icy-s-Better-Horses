@@ -163,7 +163,7 @@ public final class ModEntities {
 
     public static void register(RegisterEvent event) {
         event.register(Registries.ENTITY_TYPE, helper -> TYPES.forEach((path, type) ->
-                helper.register(Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path), type)));
+                helper.register(Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, path), type)));
     }
 
     public static void registerAttributes(EntityAttributeCreationEvent event) {
@@ -193,7 +193,7 @@ public final class ModEntities {
     private static ResourceKey<EntityType<?>> key(String path) {
         return ResourceKey.create(
                 Registries.ENTITY_TYPE,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path));
+                Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, path));
     }
 
     private ModEntities() {}

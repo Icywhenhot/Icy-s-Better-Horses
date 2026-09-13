@@ -44,7 +44,7 @@ public final class BhTackTextures {
     }
 
     private static Identifier tex(String base, String name) {
-        return Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, base + name + ".png");
+        return Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, base + name + ".png");
     }
 
     public Identifier chest(boolean ender) {

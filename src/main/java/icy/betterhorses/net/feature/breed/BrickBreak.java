@@ -24,7 +24,7 @@ import net.minecraft.world.phys.Vec3;
 public final class BrickBreak implements BreedAbility {
 
     private static final TagKey<Block> BREAKABLE = TagKey.create(Registries.BLOCK,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_breakable"));
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "horse_breakable"));
 
     public static final double MIN_SPEED = 0.30D;
     private static final double REACH = 1.2D;

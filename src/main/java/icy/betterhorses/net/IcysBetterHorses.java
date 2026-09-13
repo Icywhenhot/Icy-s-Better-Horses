@@ -54,11 +54,11 @@ import icy.betterhorses.net.network.HorseRosterEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvent;
 
-@Mod(IcysBetterHorses.NEO_ID)
+@Mod(IcysBetterHorses.MOD_ID)
 public class IcysBetterHorses {
 
-    public static final String MOD_ID = "icys-better-horses";
-    public static final String NEO_ID = "icys_better_horses";
+    public static final String MOD_ID = "icys_better_horses";
+    public static final String RESOURCE_NAMESPACE = "icys-better-horses";
 
     private static final double CART_SIZE_REACH = 12.0D;
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);

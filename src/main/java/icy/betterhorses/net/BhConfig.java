@@ -37,7 +37,7 @@ public final class BhConfig {
     private static final String KEY_SPAWN_FLOOR = "spawn_probability_floor";
 
     private static final Path CONFIG_PATH = FMLPaths.CONFIGDIR.get()
-            .resolve(IcysBetterHorses.MOD_ID + ".json");
+            .resolve(IcysBetterHorses.RESOURCE_NAMESPACE + ".json");
     private static final Gson GSON = new GsonBuilder()
             .disableHtmlEscaping()
             .setPrettyPrinting()

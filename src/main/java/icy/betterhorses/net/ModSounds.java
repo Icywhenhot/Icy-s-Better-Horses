@@ -23,11 +23,11 @@ public final class ModSounds {
 
     public static void register(RegisterEvent event) {
         event.register(Registries.SOUND_EVENT, helper -> SOUNDS.forEach((path, sound) ->
-                helper.register(Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path), sound)));
+                helper.register(Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, path), sound)));
     }
 
     private static SoundEvent register(String path) {
-        Identifier id = Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
+        Identifier id = Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, path);
         SoundEvent sound = SoundEvent.createVariableRangeEvent(id);
         SOUNDS.put(path, sound);
         return sound;

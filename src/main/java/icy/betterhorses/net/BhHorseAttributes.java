@@ -37,6 +37,6 @@ public final class BhHorseAttributes {
 
     private static Identifier idFor(Source src, String key) {
         return Identifier.fromNamespaceAndPath(
-                IcysBetterHorses.MOD_ID, src.name().toLowerCase() + "/" + key);
+                IcysBetterHorses.RESOURCE_NAMESPACE, src.name().toLowerCase() + "/" + key);
     }
 }

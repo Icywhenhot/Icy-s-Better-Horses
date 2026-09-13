@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.Block;
 public final class ArchetypePerks {
 
     private static final TagKey<Block> ROAD = TagKey.create(Registries.BLOCK,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_road"));
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "horse_road"));
 
     private static final String PATH_KEY = "path";
     private static final int PATH_INTERVAL = 10;

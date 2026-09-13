@@ -74,7 +74,7 @@ public final class BhHorseAttachments {
     private static void register(RegisterEvent event, String path, AttachmentType<?> type) {
         event.register(
                 NeoForgeRegistries.Keys.ATTACHMENT_TYPES,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path),
+                Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, path),
                 () -> type);
     }
 

@@ -14,6 +14,6 @@ public final class BhDamageTypes {
 
     private static ResourceKey<DamageType> key(String path) {
         return ResourceKey.create(Registries.DAMAGE_TYPE,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path));
+                Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, path));
     }
 }

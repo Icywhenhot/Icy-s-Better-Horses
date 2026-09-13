@@ -14,7 +14,7 @@ public final class ModTicketTypes {
     public static void register(RegisterEvent event) {
         event.register(
                 Registries.TICKET_TYPE,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_task"),
+                Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "horse_task"),
                 () -> HORSE_TASK);
     }
 

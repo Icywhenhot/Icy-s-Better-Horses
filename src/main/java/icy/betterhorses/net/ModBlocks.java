@@ -15,12 +15,12 @@ public final class ModBlocks {
     public static final icy.betterhorses.net.item.HearthlightBlock HEARTHLIGHT =
             new icy.betterhorses.net.item.HearthlightBlock(BlockBehaviour.Properties.of()
                     .setId(ResourceKey.create(Registries.BLOCK,
-                            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "hearthlight")))
+                            Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "hearthlight")))
                     .noCollision().noOcclusion().replaceable().noLootTable().lightLevel(state -> 10));
 
     private static final ResourceKey<Block> HITCHPOST_KEY = ResourceKey.create(
             Registries.BLOCK,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "hitchpost"));
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "hitchpost"));
 
     public static final Block HITCHPOST = new HitchpostBlock(BlockBehaviour.Properties.of()
                     .setId(HITCHPOST_KEY)
@@ -31,8 +31,8 @@ public final class ModBlocks {
 
     public static void register(RegisterEvent event) {
         event.register(Registries.BLOCK, helper -> {
-            helper.register(Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "hearthlight"), HEARTHLIGHT);
-            helper.register(Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "hitchpost"), HITCHPOST);
+            helper.register(Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "hearthlight"), HEARTHLIGHT);
+            helper.register(Identifier.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "hitchpost"), HITCHPOST);
         });
     }
 

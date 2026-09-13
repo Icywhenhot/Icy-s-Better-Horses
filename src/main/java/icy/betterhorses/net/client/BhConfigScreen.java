@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public final class BhModMenuIntegration {
+public final class BhConfigScreen {
 
-    public static Screen buildScreen(Screen parent) {
+    public static Screen create(Screen parent) {
         ConfigBuilder builder = ConfigBuilder.create()
                 .setParentScreen(parent)
                 .setTitle(Component.translatable("config.icys-better-horses.title"));

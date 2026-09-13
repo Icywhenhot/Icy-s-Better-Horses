@@ -1,6 +1,6 @@
 title: Icy's Better Horses
 description: >-
-  Wiki for Icy's Better Horses — a Fabric mod that turns horses into long-term
+  Wiki for Icy's Better Horses — a NeoForge mod that turns horses into long-term
   companions with ownership, bonding, fifteen breeds, dedicated tack, and carts.
 
 url: https://icywhenhot.github.io
@@ -48,7 +48,7 @@ last_edit_time_format: "%b %e %Y"
 gh_edit_link: true
 gh_edit_link_text: "Edit this page on GitHub"
 gh_edit_repository: https://github.com/Icywhenhot/Icy-s-Better-Horses
-gh_edit_branch: "26.2-fab"
+gh_edit_branch: "26.1.2-neo"
 gh_edit_source: docs
 gh_edit_view_mode: "tree"
 
