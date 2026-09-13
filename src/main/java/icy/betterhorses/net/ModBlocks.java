@@ -13,6 +13,14 @@ import net.minecraft.world.level.material.MapColor;
 
 public final class ModBlocks {
 
+    public static final icy.betterhorses.net.item.HearthlightBlock HEARTHLIGHT =
+            Registry.register(BuiltInRegistries.BLOCK,
+                    Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "hearthlight"),
+                    new icy.betterhorses.net.item.HearthlightBlock(BlockBehaviour.Properties.of()
+                            .setId(ResourceKey.create(Registries.BLOCK,
+                                    Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "hearthlight")))
+                            .noCollision().noOcclusion().replaceable().noLootTable().lightLevel(state -> 10)));
+
     private static final ResourceKey<Block> HITCHPOST_KEY = ResourceKey.create(
             Registries.BLOCK,
             Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "hitchpost"));
@@ -25,12 +33,7 @@ public final class ModBlocks {
                     .sound(SoundType.WOOD)
                     .noOcclusion()));
 
-    /**
-     * Called from {@link IcysBetterHorses#onInitialize()} before block entity and item setup so
-     * that the rest of the registries can reference the registered blocks.
-     */
     public static void init() {
-        // Registering happens via static initializer; touching the class triggers it.
     }
 
     private static Block register(String path, Block block) {

@@ -19,20 +19,15 @@ import net.minecraft.world.level.storage.TagValueOutput;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * World-saved half of the horse tracker: which horse each player last rode, where each owned horse
- * was last seen, a full NBT snapshot of it, and a generation counter per horse. The whistle respawns
- * a horse from its snapshot when the real entity is unreachable (unloaded chunk); the generation
- * counter marks the copy left behind in the unloaded chunk as stale so it is discarded when its
- * chunk eventually loads. Everything survives restarts.
- */
 public class HorseTrackerState extends SavedData {
 
-    /** Where an owned horse was last seen, used for the same-dimension check when whistling. */
     public record KnownPosition(ResourceKey<Level> dimension, BlockPos pos) {
         static final Codec<KnownPosition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ResourceKey.codec(Registries.DIMENSION).fieldOf("dimension").forGetter(KnownPosition::dimension),
@@ -48,7 +43,13 @@ public class HorseTrackerState extends SavedData {
             Codec.unboundedMap(UUIDUtil.STRING_CODEC, CompoundTag.CODEC)
                     .optionalFieldOf("horse_snapshots", Map.of()).forGetter(state -> state.snapshots),
             Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.INT)
-                    .optionalFieldOf("horse_generations", Map.of()).forGetter(state -> state.generations)
+                    .optionalFieldOf("horse_generations", Map.of()).forGetter(state -> state.generations),
+            UUIDUtil.STRING_CODEC.listOf()
+                    .optionalFieldOf("pending_disowns", List.of()).forGetter(state -> List.copyOf(state.pendingDisowns)),
+            Codec.unboundedMap(UUIDUtil.STRING_CODEC, UUIDUtil.STRING_CODEC)
+                    .optionalFieldOf("active_horse_by_player", Map.of()).forGetter(state -> state.activeHorseByPlayer),
+            Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.STRING))
+                    .optionalFieldOf("trusted_by_player", Map.of()).forGetter(state -> state.trustedByPlayer)
     ).apply(instance, HorseTrackerState::new));
 
     public static final SavedDataType<HorseTrackerState> TYPE = new SavedDataType<>(
@@ -61,25 +62,37 @@ public class HorseTrackerState extends SavedData {
     private final Map<UUID, KnownPosition> lastKnownPositions;
     private final Map<UUID, CompoundTag> snapshots;
     private final Map<UUID, Integer> generations;
+    private final Set<UUID> pendingDisowns;
+    private final Map<UUID, UUID> activeHorseByPlayer;
+    private final Map<UUID, Map<UUID, String>> trustedByPlayer;
 
-    // Concurrent maps: parallel-ticking mods mutate these from multiple entity-tick threads at once
-    // (e.g. two horses unloading, or a dismount landing while another horse records its position).
     public HorseTrackerState() {
         this.lastRiddenByPlayer = new ConcurrentHashMap<>();
         this.lastKnownPositions = new ConcurrentHashMap<>();
         this.snapshots = new ConcurrentHashMap<>();
         this.generations = new ConcurrentHashMap<>();
+        this.pendingDisowns = ConcurrentHashMap.newKeySet();
+        this.activeHorseByPlayer = new ConcurrentHashMap<>();
+        this.trustedByPlayer = new ConcurrentHashMap<>();
     }
 
     private HorseTrackerState(
             Map<UUID, UUID> lastRiddenByPlayer,
             Map<UUID, KnownPosition> lastKnownPositions,
             Map<UUID, CompoundTag> snapshots,
-            Map<UUID, Integer> generations) {
+            Map<UUID, Integer> generations,
+            List<UUID> pendingDisowns,
+            Map<UUID, UUID> activeHorseByPlayer,
+            Map<UUID, Map<UUID, String>> trustedByPlayer) {
         this.lastRiddenByPlayer = new ConcurrentHashMap<>(lastRiddenByPlayer);
         this.lastKnownPositions = new ConcurrentHashMap<>(lastKnownPositions);
         this.snapshots = new ConcurrentHashMap<>(snapshots);
         this.generations = new ConcurrentHashMap<>(generations);
+        this.pendingDisowns = ConcurrentHashMap.newKeySet();
+        this.pendingDisowns.addAll(pendingDisowns);
+        this.activeHorseByPlayer = new ConcurrentHashMap<>(activeHorseByPlayer);
+        this.trustedByPlayer = new ConcurrentHashMap<>();
+        trustedByPlayer.forEach((owner, trusted) -> this.trustedByPlayer.put(owner, new ConcurrentHashMap<>(trusted)));
     }
 
     public static HorseTrackerState get(MinecraftServer server) {
@@ -95,22 +108,31 @@ public class HorseTrackerState extends SavedData {
         return lastRiddenByPlayer.get(playerId);
     }
 
-    /** Records both the horse's position and a full NBT snapshot the whistle can respawn it from. */
     public void recordHorse(AbstractHorse horse) {
         UUID horseId = horse.getUUID();
         lastKnownPositions.put(horseId, new KnownPosition(horse.level().dimension(), horse.blockPosition()));
         TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, horse.registryAccess());
-        if (horse.save(output)) {
-            snapshots.put(horseId, output.buildResult());
-        }
-        setDirty();
+        horse.saveWithoutId(output);
+        output.putString("id", net.minecraft.world.entity.EntityType.getKey(horse.getType()).toString());
+        CompoundTag snapshot = output.buildResult();
+        IHorseData data = IHorseData.of(horse);
+        CompoundTag summary = new CompoundTag();
+        summary.putString("name", horse.hasCustomName() ? horse.getCustomName().getString() : "");
+        summary.putString("breedId", data.bh_getBreed().id());
+        summary.putInt("gender", data.bh_getGender().ordinal());
+        summary.putBoolean("mixed", data.bh_isMixedBreed());
+        summary.putInt("bond", data.bh_getBond());
+        summary.putBoolean("home", data.bh_getHome() != null);
+        summary.putString("type", net.minecraft.world.entity.EntityType.getKey(horse.getType()).toString());
+        summary.putInt("variant", horse instanceof net.minecraft.world.entity.animal.equine.Horse h ? h.getVariant().ordinal() : -1);
+        summary.putInt("markings", horse instanceof net.minecraft.world.entity.animal.equine.Horse h ? h.getMarkings().ordinal() : -1);
+        summary.putBoolean("baby", horse.isBaby());
+        summary.putInt("coat", horse instanceof icy.betterhorses.net.entity.BhBreedHorse h ? h.bhCoat() : -1);
+        snapshot.put("BH_Roster", summary);
+        CompoundTag old = snapshots.put(horseId, snapshot);
+        if (!snapshot.equals(old)) setDirty();
     }
 
-    /**
-     * Drops the position and snapshot of a horse that died, was discarded, or was disowned. The
-     * generation entry is deliberately kept forever so a stale copy of a dead horse can never be
-     * resurrected when its chunk loads.
-     */
     public void forgetHorse(UUID horseId) {
         boolean removed = lastKnownPositions.remove(horseId) != null;
         removed |= snapshots.remove(horseId) != null;
@@ -127,16 +149,95 @@ public class HorseTrackerState extends SavedData {
         return snapshots.get(horseId);
     }
 
-    /** Fallback lookup when no last-ridden entry exists: any stored horse owned by this player. */
     public @Nullable UUID findStoredHorseOwnedBy(UUID playerId) {
         for (Map.Entry<UUID, CompoundTag> entry : snapshots.entrySet()) {
-            if (entry.getValue().read("BH_Owner", UUIDUtil.CODEC)
-                    .map(playerId::equals)
-                    .orElse(false)) {
+            if (isOwnedBy(entry.getValue(), playerId)) {
                 return entry.getKey();
             }
         }
         return null;
+    }
+
+    public List<UUID> findAllStoredHorsesOwnedBy(UUID playerId) {
+        List<UUID> owned = new ArrayList<>();
+        for (Map.Entry<UUID, CompoundTag> entry : snapshots.entrySet()) {
+            if (isOwnedBy(entry.getValue(), playerId)) {
+                owned.add(entry.getKey());
+            }
+        }
+        return owned;
+    }
+
+    private static boolean isOwnedBy(CompoundTag snapshot, UUID playerId) {
+        return snapshot.read("BH_Owner", UUIDUtil.CODEC).map(playerId::equals).orElse(false);
+    }
+
+    public void setActiveHorse(UUID playerId, UUID horseId) {
+        activeHorseByPlayer.put(playerId, horseId);
+        setDirty();
+    }
+
+    public @Nullable UUID getActiveHorseId(UUID playerId) {
+        return activeHorseByPlayer.get(playerId);
+    }
+
+    public void clearActiveHorse(UUID horseId) {
+        if (activeHorseByPlayer.values().removeIf(horseId::equals)) {
+            setDirty();
+        }
+    }
+
+    public boolean trust(UUID ownerId, UUID trustedId, String trustedName) {
+        Map<UUID, String> trusted = trustedByPlayer.computeIfAbsent(ownerId, id -> new ConcurrentHashMap<>());
+        String previous = trusted.put(trustedId, trustedName);
+        setDirty();
+        return previous == null;
+    }
+
+    public boolean untrust(UUID ownerId, UUID trustedId) {
+        Map<UUID, String> trusted = trustedByPlayer.get(ownerId);
+        if (trusted == null || trusted.remove(trustedId) == null) {
+            return false;
+        }
+        if (trusted.isEmpty()) {
+            trustedByPlayer.remove(ownerId, trusted);
+        }
+        setDirty();
+        return true;
+    }
+
+    public boolean isTrusted(UUID ownerId, UUID playerId) {
+        Map<UUID, String> trusted = trustedByPlayer.get(ownerId);
+        return trusted != null && trusted.containsKey(playerId);
+    }
+
+    public Map<UUID, String> getTrusted(UUID ownerId) {
+        Map<UUID, String> trusted = trustedByPlayer.get(ownerId);
+        return trusted == null ? Map.of() : Map.copyOf(trusted);
+    }
+
+    public List<UUID> getTrustingOwners(UUID playerId) {
+        List<UUID> owners = new ArrayList<>();
+        trustedByPlayer.forEach((ownerId, trusted) -> {
+            if (trusted.containsKey(playerId)) {
+                owners.add(ownerId);
+            }
+        });
+        return owners;
+    }
+
+    public void markPendingDisown(UUID horseId) {
+        if (pendingDisowns.add(horseId)) {
+            setDirty();
+        }
+    }
+
+    public boolean consumePendingDisown(UUID horseId) {
+        if (pendingDisowns.remove(horseId)) {
+            setDirty();
+            return true;
+        }
+        return false;
     }
 
     public int getGeneration(UUID horseId) {

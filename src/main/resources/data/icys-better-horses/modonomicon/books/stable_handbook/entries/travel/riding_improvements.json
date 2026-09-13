@@ -1,0 +1,54 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:travel/riding_improvements",
+  "category": "icys-better-horses:basics",
+  "name": "book.icys-better-horses.stable_handbook.travel.riding_improvements.name",
+  "icon": {
+    "texture": "icys-better-horses:textures/gui/saddle_node.png",
+    "width": 16,
+    "height": 16
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 2,
+  "y": -2,
+  "sort_number": 0,
+  "parents": [
+    {
+      "entry": "icys-better-horses:basics/welcome"
+    }
+  ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "multiride",
+      "title": "book.icys-better-horses.stable_handbook.travel.riding_improvements.multiride.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.travel.riding_improvements.multiride.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "cruise",
+      "title": "book.icys-better-horses.stable_handbook.travel.riding_improvements.cruise.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.travel.riding_improvements.cruise.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "terrain",
+      "title": "book.icys-better-horses.stable_handbook.travel.riding_improvements.terrain.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.travel.riding_improvements.terrain.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "rear",
+      "title": "book.icys-better-horses.stable_handbook.travel.riding_improvements.rear.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.travel.riding_improvements.rear.text"
+    }
+  ]
+}

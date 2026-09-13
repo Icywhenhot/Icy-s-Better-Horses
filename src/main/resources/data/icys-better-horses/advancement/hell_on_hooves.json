@@ -1,0 +1,42 @@
+{
+  "criteria": {
+    "horse_in_the_nether": {
+      "conditions": {
+        "player": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "minecraft:location": {
+                "dimension": "minecraft:the_nether"
+              },
+              "minecraft:vehicle": {
+                "minecraft:entity_type": "#icys-better-horses:horses"
+              }
+            }
+          }
+        ]
+      },
+      "trigger": "minecraft:location"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.icys-better-horses.hell_on_hooves.description"
+    },
+    "icon": {
+      "id": "minecraft:netherrack"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.icys-better-horses.hell_on_hooves.title"
+    }
+  },
+  "parent": "icys-better-horses:hold_your_horses",
+  "requirements": [
+    [
+      "horse_in_the_nether"
+    ]
+  ]
+}

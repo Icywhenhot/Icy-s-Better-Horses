@@ -1,6 +1,9 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhSurge;
+import icy.betterhorses.net.feature.breed.ArchetypePerks;
+import icy.betterhorses.net.feature.breed.HardyNorthern;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
@@ -12,6 +15,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -21,6 +25,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity {
@@ -39,11 +44,23 @@ public abstract class LivingEntityMixin extends Entity {
     @Shadow
     protected abstract float getDamageAfterMagicAbsorb(DamageSource source, float amount);
 
-    /**
-     * 1.21.5+ widened {@code actuallyHurt} to take a {@link ServerLevel} as its first parameter,
-     * so all {@code @Inject}s into it must mirror the new descriptor.
-     */
-    @Inject(method = "actuallyHurt", at = @At("HEAD"))
+    @Inject(method = "canBeAffected", at = @At("HEAD"), cancellable = true)
+    private void bh_refuseBadEffects(MobEffectInstance effect, CallbackInfoReturnable<Boolean> cir) {
+        if (effect.getEffect().value().isBeneficial()) {
+            return;
+        }
+        LivingEntity self = (LivingEntity) (Object) this;
+        AbstractHorse warden = HardyNorthern.warden(self);
+        if (warden == null) {
+            return;
+        }
+        if (!warden.level().isClientSide()) {
+            BhSurge.pulse(IHorseData.of(warden), 0, 0);
+        }
+        cir.setReturnValue(false);
+    }
+
+    @Inject(method = "actuallyHurt", at = @At("HEAD"), cancellable = true)
     private void bh_queueHorseMedkit(ServerLevel level, DamageSource source, float amount, CallbackInfo ci) {
         this.bh_triggerHorseMedkitAfterDamage = false;
 
@@ -64,20 +81,23 @@ public abstract class LivingEntityMixin extends Entity {
     }
 
     @Inject(method = "actuallyHurt", at = @At("TAIL"))
-    private void bh_useHorseMedkit(ServerLevel level, DamageSource source, float amount, CallbackInfo ci) {
+    private void bh_afterDamage(ServerLevel level, DamageSource source, float amount, CallbackInfo ci) {
+        LivingEntity self = (LivingEntity) (Object) this;
+
         if (!this.bh_triggerHorseMedkitAfterDamage) {
             return;
         }
 
         this.bh_triggerHorseMedkitAfterDamage = false;
 
-        LivingEntity self = (LivingEntity) (Object) this;
         if (!(self instanceof AbstractHorse) || !(self instanceof IHorseData data)) {
             return;
         }
 
         this.bh_consumeMedkitAndApplyEffects(self, data);
+        BhSurge.pulsePerk(data, ArchetypePerks.MEDKIT_BADGE);
     }
+
 
     @Unique
     private boolean bh_hasEquippedMedkit(IHorseData data) {
@@ -102,10 +122,10 @@ public abstract class LivingEntityMixin extends Entity {
         gear.setItem(GearSlot.MEDKIT.ordinal(), ItemStack.EMPTY);
         gear.setChanged();
 
-        // 1.21.11 MobEffects rename: HEAL → INSTANT_HEALTH, DAMAGE_RESISTANCE → RESISTANCE.
-        self.addEffect(new MobEffectInstance(MobEffects.REGENERATION, BH_MEDKIT_EFFECT_DURATION, 0));
+        int dur = BH_MEDKIT_EFFECT_DURATION * data.bh_getBreed().archetype().medkitMultiplier();
+        self.addEffect(new MobEffectInstance(MobEffects.REGENERATION, dur, 0));
         self.addEffect(new MobEffectInstance(MobEffects.INSTANT_HEALTH, 1, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, BH_MEDKIT_EFFECT_DURATION, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, BH_MEDKIT_EFFECT_DURATION, 0));
+        self.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, dur, 0));
+        self.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, dur, 0));
     }
 }

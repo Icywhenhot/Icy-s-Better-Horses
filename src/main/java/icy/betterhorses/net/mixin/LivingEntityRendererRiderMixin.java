@@ -1,0 +1,105 @@
+package icy.betterhorses.net.mixin;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import icy.betterhorses.net.BhRiderSeat;
+import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.client.render.BhRiderMotion;
+import icy.betterhorses.net.client.render.IBhRiderState;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.ArrayDeque;
+import com.mojang.math.Axis;
+import icy.betterhorses.net.BhRiderSeat;
+import icy.betterhorses.net.client.render.IBhEquineStabilizerState;
+import net.minecraft.world.phys.Vec3;
+import org.spongepowered.asm.mixin.Unique;
+
+@Mixin(LivingEntityRenderer.class)
+public abstract class LivingEntityRendererRiderMixin {
+
+    @Unique
+    private static final float BH_RIDER_FOLLOW = 1.0F;
+
+    @Unique
+    private static final ArrayDeque<Boolean> BH_PUSHED = new ArrayDeque<>();
+
+    @Inject(
+            method = "extractRenderState(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;F)V",
+            at = @At("RETURN"))
+    private void bh_captureRiddenHorse(LivingEntity entity, LivingEntityRenderState state,
+                                       float partialTick, CallbackInfo ci) {
+        if (entity.getVehicle() instanceof AbstractHorse horse) {
+            ((IBhRiderState) state).bh_setRiddenHorse(horse.getId(),
+                    Mth.rotLerp(partialTick, horse.yBodyRotO, horse.yBodyRot),
+                    IHorseData.of(horse).bh_hasCartGear());
+        } else {
+            ((IBhRiderState) state).bh_setRiddenHorse(-1, 0.0F, false);
+        }
+    }
+
+    @Inject(
+            method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
+            at = @At("HEAD"))
+    private void bh_offsetRiderToSaddle(LivingEntityRenderState state, PoseStack poseStack,
+                                        SubmitNodeCollector collector, CameraRenderState camera,
+                                        CallbackInfo ci) {
+        if (state instanceof IBhEquineStabilizerState equine
+                && equine.bh_getOpacity() <= 0.01F) {
+            BH_PUSHED.push(Boolean.FALSE);
+            return;
+        }
+
+        int horseId = state instanceof IBhRiderState rider ? rider.bh_getRiddenHorseId() : -1;
+        boolean onCart = state instanceof IBhRiderState rider && rider.bh_isRidingCart();
+        BhRiderMotion motion = horseId < 0 || onCart ? BhRiderMotion.NONE : BhRiderMotion.get(horseId);
+        Vec3 seat =
+                horseId < 0 ? Vec3.ZERO
+                            : BhRiderSeat.applied(horseId);
+        if (motion.isRest() && seat.lengthSqr() == 0.0D) {
+            BH_PUSHED.push(Boolean.FALSE);
+            return;
+        }
+
+        float yaw = ((IBhRiderState) state).bh_getRiddenHorseYaw();
+        float rad = yaw * Mth.DEG_TO_RAD;
+        float cos = Mth.cos(rad);
+        float sin = Mth.sin(rad);
+
+        float right = motion.right() * BH_RIDER_FOLLOW;
+        float forward = motion.forward() * BH_RIDER_FOLLOW;
+
+        poseStack.pushPose();
+        BH_PUSHED.push(Boolean.TRUE);
+
+        poseStack.translate(
+                right * -cos + forward * -sin - seat.x,
+                motion.up() * BH_RIDER_FOLLOW - seat.y,
+                right * -sin + forward * cos - seat.z);
+
+        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - yaw));
+        poseStack.mulPose(Axis.XP.rotation(-motion.pitch() * BH_RIDER_FOLLOW));
+        poseStack.mulPose(Axis.ZP.rotation(motion.roll() * BH_RIDER_FOLLOW));
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw - 180.0F));
+    }
+
+    @Inject(
+            method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
+            at = @At("RETURN"))
+    private void bh_restoreRiderPose(LivingEntityRenderState state, PoseStack poseStack,
+                                     SubmitNodeCollector collector, CameraRenderState camera,
+                                     CallbackInfo ci) {
+        if (!BH_PUSHED.isEmpty() && BH_PUSHED.pop()) {
+            poseStack.popPose();
+        }
+    }
+}

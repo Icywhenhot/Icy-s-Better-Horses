@@ -1,0 +1,84 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:equipment/horse_cart",
+  "category": "icys-better-horses:equipment",
+  "name": "book.icys-better-horses.stable_handbook.equipment.horse_cart.name",
+  "icon": {
+    "id": "icys-better-horses:horse_cart_gear"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 4,
+  "y": 1,
+  "sort_number": 9,
+  "parents": [
+    {
+      "entry": "icys-better-horses:equipment/wheel"
+    }
+  ],
+  "pages": [
+    {
+      "type": "modonomicon:crafting_recipe",
+      "id": "recipe",
+      "recipe_id_1": "icys-better-horses:horse_cart_gear",
+      "title1": "book.icys-better-horses.stable_handbook.equipment.horse_cart.recipe.title1",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.recipe.text"
+    },
+    {
+      "type": "modonomicon:spotlight",
+      "id": "info",
+      "item": "icys-better-horses:horse_cart_gear",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_cart.info.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.info.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "size",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_cart.size.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.size.text"
+    },
+    {
+      "type": "icys-better-horses:cart_models",
+      "id": "models"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "standalone",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_cart.standalone.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.standalone.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "riders",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_cart.riders.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.riders.text"
+    },
+    {
+      "type": "modonomicon:spotlight",
+      "id": "chest",
+      "item": "minecraft:chest",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_cart.chest.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.chest.text"
+    },
+    {
+      "type": "modonomicon:spotlight",
+      "id": "plough",
+      "item": "minecraft:iron_hoe",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_cart.plough.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.plough.text"
+    },
+    {
+      "type": "modonomicon:spotlight",
+      "id": "shears",
+      "item": "minecraft:shears",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_cart.shears.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.shears.text"
+    }
+  ]
+}

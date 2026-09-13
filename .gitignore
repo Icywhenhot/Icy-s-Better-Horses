@@ -5,9 +5,10 @@ run/
 out/
 *.iml
 
-# OS junk
 .DS_Store
 Thumbs.db
 
-# Optional
-.claude/
+blockbench/
+tools/
+*.bbmodel
+*.md

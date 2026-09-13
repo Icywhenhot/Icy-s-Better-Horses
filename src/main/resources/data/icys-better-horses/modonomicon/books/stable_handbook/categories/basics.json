@@ -1,0 +1,9 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.basics.name",
+  "icon": {
+    "id": "minecraft:lead"
+  },
+  "background": "icys-better-horses:textures/gui/handbook_bg.png",
+  "sort_number": 0,
+  "description": "book.icys-better-horses.stable_handbook.basics.description"
+}

@@ -5,19 +5,24 @@ import com.geckolib.renderer.GeoObjectRenderer;
 import com.geckolib.renderer.base.BoneSnapshots;
 import com.geckolib.renderer.base.GeoRenderState;
 import com.geckolib.renderer.base.RenderPassInfo;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
+import com.geckolib.model.GeoModel;
 
-/**
- * GeckoLib 5 widened {@link GeoObjectRenderer} from one type parameter to three:
- * {@code <T animatable, O relatedObject, R renderState>}. We don't need a related object,
- * so we use {@link Void}, and the default {@link GeoRenderState.Impl} suffices for the state.
- */
 public final class HorseStabilizerGeoRenderer
         extends GeoObjectRenderer<HorseStabilizerAnimatable, Void, GeoRenderState.Impl> {
     private static final DataTicket<Boolean> WINGS_ACTIVE =
             DataTicket.create("icys_better_horses_stabilizer_wings_active", Boolean.class);
+    private static final DataTicket<Float> OPACITY =
+            DataTicket.create("icys_better_horses_stabilizer_opacity", Float.class);
 
     public HorseStabilizerGeoRenderer() {
-        super(new HorseStabilizerGeoModel());
+        this(new HorseStabilizerGeoModel());
+    }
+
+    public HorseStabilizerGeoRenderer(GeoModel<HorseStabilizerAnimatable> model) {
+        super(model);
     }
 
     @Override
@@ -27,12 +32,25 @@ public final class HorseStabilizerGeoRenderer
             GeoRenderState.Impl renderState,
             float partialTick) {
         renderState.addGeckolibData(WINGS_ACTIVE, animatable.isActive());
+        renderState.addGeckolibData(OPACITY, BhRenderContext.currentOpacity());
+    }
+
+    @Override
+    public int getRenderColor(HorseStabilizerAnimatable animatable, Void relatedObject, float partialTick) {
+        return BhMountedHorseVisibility.applyOpacity(
+                super.getRenderColor(animatable, relatedObject, partialTick),
+                BhRenderContext.currentOpacity());
+    }
+
+    @Override
+    public RenderType getRenderType(GeoRenderState.Impl renderState, Identifier texture) {
+        return renderState.getOrDefaultGeckolibData(OPACITY, 1.0F) < 1.0F
+                ? RenderTypes.entityTranslucent(texture)
+                : super.getRenderType(renderState, texture);
     }
 
     @Override
     public void adjustRenderPose(RenderPassInfo<GeoRenderState.Impl> renderPassInfo) {
-        // The layer already anchors the stabilizer to the horse body. GeoObjectRenderer's default
-        // +0.5/+0.51/+0.5 translation is for standalone objects and pushes the rig off the horse.
     }
 
     @Override

@@ -1,0 +1,9 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.name",
+  "icon": {
+    "id": "minecraft:golden_horse_armor"
+  },
+  "background": "icys-better-horses:textures/gui/handbook_bg.png",
+  "sort_number": 3,
+  "description": "book.icys-better-horses.stable_handbook.classes.description"
+}

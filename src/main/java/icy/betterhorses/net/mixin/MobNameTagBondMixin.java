@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -17,14 +18,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * Grants +10 bond when a player names a tamed horse with a name tag.
- *
- * Vanilla {@code Mob.interact} calls {@code checkAndHandleImportantInteractions} first; that
- * method handles name-tag renames via {@code ItemStack.interactLivingEntity} and short-circuits
- * with a CONSUME result before {@code mobInteract} runs. So a {@code mobInteract} hook never
- * sees name-tag use — we have to attach to {@code interact} on Mob itself.
- */
 @Mixin(Mob.class)
 public abstract class MobNameTagBondMixin {
 
@@ -65,14 +58,11 @@ public abstract class MobNameTagBondMixin {
             if (now == null || now.equals(this.bh$nameBeforeInteract)) {
                 return;
             }
-            // Only the first nametag grants bond. Subsequent renames still apply (vanilla
-            // already changed the name in checkAndHandleImportantInteractions) but can't be
-            // farmed for bond.
             if (horseData.bh_hasReceivedNameTagBond()) {
                 return;
             }
             horseData.bh_setReceivedNameTagBond(true);
-            horseData.bh_setBond(horseData.bh_getBond() + 10);
+            BhHorseTraits.grantBond(horseData, 10);
         } finally {
             this.bh$nameTagInteractInFlight = false;
             this.bh$nameBeforeInteract = null;

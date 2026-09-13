@@ -1,6 +1,8 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.client.HorseAutodriveController;
+import icy.betterhorses.net.client.HorseGearController;
+import icy.betterhorses.net.client.HorseFreeLookController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.ClientInput;
@@ -15,13 +17,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Mixin into KeyboardInput.tick() to drive the horse autodrive controller.
- *
- * 1.21.11 reshape: KeyboardInput now extends ClientInput, the keyboard state lives in an immutable
- * Input record at {@code keyPresses}, and movement impulse comes from {@code moveVector}.
- * We rebuild both at TAIL using the autodrive controller's output.
- */
 @Mixin(KeyboardInput.class)
 public abstract class KeyboardInputMixin extends ClientInput {
 
@@ -31,24 +26,29 @@ public abstract class KeyboardInputMixin extends ClientInput {
         LocalPlayer player = client.player;
         Screen screen = client.screen;
 
-        boolean eligible = false;
+        boolean mounted = false;
         int horseId = 0;
         long tick = 0L;
+        AbstractHorse riddenHorse = null;
 
-        if (screen == null && client.level != null && player != null) {
+        if (client.level != null && player != null) {
             Entity vehicle = player.getControlledVehicle();
             if (vehicle instanceof AbstractHorse horse && horse.getControllingPassenger() == player) {
-                eligible = true;
+                mounted = true;
                 horseId = horse.getId();
+                riddenHorse = horse;
                 tick = client.level.getGameTime();
             }
         }
+        boolean eligible = mounted && screen == null;
+
+        HorseFreeLookController.INSTANCE.tick(eligible ? riddenHorse : null);
 
         Input current = this.keyPresses;
         Vec2 currentMove = this.moveVector;
         HorseAutodriveController.Output output = HorseAutodriveController.INSTANCE.tick(
                 tick,
-                eligible,
+                mounted,
                 horseId,
                 current.forward(),
                 current.backward(),
@@ -58,8 +58,20 @@ public abstract class KeyboardInputMixin extends ClientInput {
                 currentMove.x
         );
 
+        boolean forwardDown = output.forwardDown();
+        float forwardImpulse = output.forwardImpulse();
+        float leftImpulse = output.leftImpulse();
+        if (output.active()) {
+            HorseGearController.INSTANCE.reset();
+        } else if (HorseGearController.INSTANCE
+                .tick(eligible, riddenHorse, current.forward(), current.backward())
+                .geared()) {
+            forwardDown = true;
+            forwardImpulse = 1.0F;
+        }
+
         this.keyPresses = new Input(
-                output.forwardDown(),
+                forwardDown,
                 output.backDown(),
                 output.leftDown(),
                 output.rightDown(),
@@ -67,6 +79,6 @@ public abstract class KeyboardInputMixin extends ClientInput {
                 current.shift(),
                 current.sprint()
         );
-        this.moveVector = new Vec2(output.leftImpulse(), output.forwardImpulse());
+        this.moveVector = new Vec2(leftImpulse, forwardImpulse);
     }
 }

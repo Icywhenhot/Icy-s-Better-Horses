@@ -19,12 +19,8 @@ public enum GearSlot {
             case CHEST -> stack.is(Items.CHEST) || stack.is(Items.ENDER_CHEST);
             case HOOVES -> stack.is(ModItems.HORSE_HOOVES);
             case MEDKIT -> stack.is(ModItems.HORSE_MEDKIT);
-            case STABILIZER -> stack.is(ModItems.HORSE_STABILIZER);
+            case STABILIZER -> stack.is(ModItems.HORSE_STABILIZER) || stack.is(ModItems.HORSE_CART);
             case HITCHPOST -> stack.is(ModItems.HITCHPOST);
         };
-    }
-
-    public String translationKey() {
-        return "gear.icys-better-horses." + name().toLowerCase();
     }
 }

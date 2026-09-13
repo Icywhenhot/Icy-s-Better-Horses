@@ -1,0 +1,45 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:classes/pony",
+  "category": "icys-better-horses:classes",
+  "name": "book.icys-better-horses.stable_handbook.classes.pony.name",
+  "icon": {
+    "id": "minecraft:powder_snow_bucket"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 2,
+  "y": 2,
+  "sort_number": 15,
+  "parents": [
+    {
+      "entry": "icys-better-horses:classes/root"
+    }
+  ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "book.icys-better-horses.stable_handbook.classes.pony.about.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.classes.pony.about.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "perks",
+      "title": "book.icys-better-horses.stable_handbook.classes.pony.perks.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.classes.pony.perks.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "stats",
+      "title": "book.icys-better-horses.stable_handbook.classes.pony.stats.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.classes.pony.stats.text"
+    }
+  ]
+}

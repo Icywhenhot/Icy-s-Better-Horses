@@ -1,5 +1,6 @@
 {
   "call_whistle": {
+    "subtitle": "subtitles.icys-better-horses.call_whistle",
     "sounds": [
       "icys-better-horses:call_whistle/w1",
       "icys-better-horses:call_whistle/w2",
@@ -10,6 +11,7 @@
     ]
   },
   "stabilizer_intro": {
+    "subtitle": "subtitles.icys-better-horses.stabilizer_intro",
     "sounds": [
       {
         "name": "icys-better-horses:stabilizer/s1",
@@ -23,6 +25,34 @@
         "name": "icys-better-horses:stabilizer/s2",
         "stream": true
       }
+    ]
+  },
+  "horse_angry_snort": {
+    "subtitle": "subtitles.icys-better-horses.horse_angry_snort",
+    "sounds": [
+      "icys-better-horses:horse/angry_snort"
+    ]
+  },
+  "horse_neigh": {
+    "subtitle": "subtitles.icys-better-horses.horse_neigh",
+    "sounds": [
+      "icys-better-horses:horse/neigh1",
+      "icys-better-horses:horse/neigh2",
+      "icys-better-horses:horse/neigh3",
+      "icys-better-horses:horse/neigh4"
+    ]
+  },
+  "horse_snort": {
+    "subtitle": "subtitles.icys-better-horses.horse_snort",
+    "sounds": [
+      "icys-better-horses:horse/snort1"
+    ]
+  },
+  "horse_charge_thud": {
+    "subtitle": "subtitles.icys-better-horses.horse_charge_thud",
+    "sounds": [
+      "icys-better-horses:horse/charge_thud1",
+      "icys-better-horses:horse/charge_thud2"
     ]
   }
 }

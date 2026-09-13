@@ -1,0 +1,60 @@
+{%- assign r = site.data.recipes[include.id] -%}
+{%- assign out = site.data.items[r.result] -%}
+<div class="craft">
+
+  {%- if r.shapeless -%}
+  <div class="craft-shapeless">
+    {%- for key in r.ingredients -%}
+    {%- assign it = site.data.items[key] -%}
+    {%- unless forloop.first %}<span class="craft-plus" aria-hidden="true">+</span>{% endunless -%}
+    <span class="slot" title="{{ it.name }}">
+      <img src="{{ '/assets/items/' | append: it.sprite | append: '.png' | relative_url }}" alt="{{ it.name }}" loading="lazy">
+    </span>
+    {%- endfor -%}
+  </div>
+  {%- else -%}
+  <div class="craft-grid" role="img" aria-label="Crafting grid for {{ out.name }}">
+    {%- for row in r.shape -%}{%- for cell in row -%}
+      {%- if cell == "" -%}
+      <span class="slot slot-empty"></span>
+      {%- else -%}
+      {%- assign it = site.data.items[cell] -%}
+      <span class="slot" title="{{ it.name }}">
+        <img src="{{ '/assets/items/' | append: it.sprite | append: '.png' | relative_url }}" alt="{{ it.name }}" loading="lazy">
+      </span>
+      {%- endif -%}
+    {%- endfor -%}{%- endfor -%}
+  </div>
+  {%- endif -%}
+
+  <span class="craft-arrow" aria-hidden="true">&rarr;</span>
+
+  <div class="craft-result">
+    <span class="slot slot-result" title="{{ out.name }}">
+      <img src="{{ '/assets/items/' | append: out.sprite | append: '.png' | relative_url }}" alt="{{ out.name }}" loading="lazy">
+    </span>
+    <span class="craft-result-name">{{ out.name }}</span>
+  </div>
+</div>
+
+{%- comment -%} Ingredient tally, so the recipe is readable without hovering. {%- endcomment -%}
+{%- if r.shapeless -%}
+<p class="craft-legend">{{ r.note }}</p>
+{%- else -%}
+{%- assign flat = "" -%}
+{%- for row in r.shape -%}{%- for cell in row -%}
+  {%- if cell != "" -%}{%- assign flat = flat | append: cell | append: " " -%}{%- endif -%}
+{%- endfor -%}{%- endfor -%}
+{%- assign list = flat | split: " " -%}
+{%- assign keys = list | uniq -%}
+<p class="craft-legend">
+  {%- for k in keys -%}
+    {%- assign n = 0 -%}
+    {%- for i in list -%}{%- if i == k -%}{%- assign n = n | plus: 1 -%}{%- endif -%}{%- endfor -%}
+    {%- assign it = site.data.items[k] -%}
+    {%- unless forloop.first %} · {% endunless -%}
+    <span class="craft-qty">{{ n }}&times;</span>
+    {%- if it.page %}<a href="{{ it.page | relative_url }}">{{ it.name }}</a>{% else %}{{ it.name }}{% endif -%}
+  {%- endfor -%}
+</p>
+{%- endif -%}

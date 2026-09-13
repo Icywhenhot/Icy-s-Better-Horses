@@ -1,0 +1,45 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:classes/war",
+  "category": "icys-better-horses:classes",
+  "name": "book.icys-better-horses.stable_handbook.classes.war.name",
+  "icon": {
+    "id": "minecraft:iron_horse_armor"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 3,
+  "y": 0,
+  "sort_number": 5,
+  "parents": [
+    {
+      "entry": "icys-better-horses:classes/root"
+    }
+  ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "book.icys-better-horses.stable_handbook.classes.war.about.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.classes.war.about.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "perks",
+      "title": "book.icys-better-horses.stable_handbook.classes.war.perks.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.classes.war.perks.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "stats",
+      "title": "book.icys-better-horses.stable_handbook.classes.war.stats.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.classes.war.stats.text"
+    }
+  ]
+}
