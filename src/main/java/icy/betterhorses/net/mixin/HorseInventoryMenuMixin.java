@@ -48,7 +48,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Unique private @Nullable SimpleContainer bh_gearContainer = null;
     @Unique private final SimpleContainer bh_enderChestView = new SimpleContainer(BH_ENDER_SLOT_COUNT);
     @Unique private PlayerEnderChestContainer bh_playerEnderChest = null;
-    @Unique private boolean bh_enderChestViewLoaded = false;
     @Unique private @Nullable Player bh_menuPlayer = null;
 
     protected HorseInventoryMenuMixin(MenuType<?> type, int id) {
@@ -74,7 +73,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                 ? null
                 : playerInventory.player.getEnderChestInventory();
         if (this.bh_isEnderChestGear(gear.getItem(GearSlot.CHEST.ordinal()))) {
-            this.bh_loadEnderChestView();
             if (playerInventory.player instanceof ServerPlayer serverPlayer) {
                 BhCriteria.fire(serverPlayer, BhCriteria.ENDER_CHEST_GEAR);
             }
@@ -82,7 +80,9 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         final Container extraStorage = new Container() {
             private Container bh_active() {
                 return HorseInventoryMenuMixin.this.bh_isEnderChestGear(gear.getItem(GearSlot.CHEST.ordinal()))
-                        ? HorseInventoryMenuMixin.this.bh_enderChestView
+                        ? (HorseInventoryMenuMixin.this.bh_playerEnderChest == null
+                                ? HorseInventoryMenuMixin.this.bh_enderChestView
+                                : HorseInventoryMenuMixin.this.bh_playerEnderChest)
                         : chest;
             }
 
@@ -191,9 +191,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                     super.onTake(player, stack);
                     if (type == GearSlot.CHEST) {
                         data.bh_onChestGearRemoved(stack);
-                        if (HorseInventoryMenuMixin.this.bh_isEnderChestGear(stack)) {
-                            HorseInventoryMenuMixin.this.bh_saveEnderChestView();
-                        }
                     }
                 }
             });
@@ -289,11 +286,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         return this.bh_chestStartIndex;
     }
 
-    @Override
-    public void bh_onMenuRemoved(Player player) {
-        this.bh_saveEnderChestView();
-    }
-
     @Unique
     private boolean bh_isChestGear(ItemStack stack) {
         return this.bh_isStorageChestGear(stack) || this.bh_isEnderChestGear(stack);
@@ -319,42 +311,11 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         if (wasStorageChest && !isStorageChest) {
             data.bh_onChestGearRemoved(previousStack);
         }
-        if (wasEnderChest && !isEnderChest) {
-            this.bh_saveEnderChestView();
-        }
         if (!wasEnderChest && isEnderChest) {
-            this.bh_loadEnderChestView();
             if (this.bh_menuPlayer instanceof ServerPlayer serverPlayer) {
                 BhCriteria.fire(serverPlayer, BhCriteria.ENDER_CHEST_GEAR);
             }
         }
-    }
-
-    @Unique
-    private void bh_loadEnderChestView() {
-        this.bh_enderChestView.clearContent();
-        if (this.bh_playerEnderChest == null) {
-            this.bh_enderChestViewLoaded = false;
-            return;
-        }
-
-        for (int slot = 0; slot < BH_ENDER_SLOT_COUNT; slot++) {
-            this.bh_enderChestView.setItem(slot, this.bh_playerEnderChest.getItem(slot).copy());
-        }
-        this.bh_enderChestViewLoaded = true;
-    }
-
-    @Unique
-    private void bh_saveEnderChestView() {
-        if (this.bh_playerEnderChest == null || !this.bh_enderChestViewLoaded) {
-            return;
-        }
-
-        for (int slot = 0; slot < BH_ENDER_SLOT_COUNT; slot++) {
-            this.bh_playerEnderChest.setItem(slot, this.bh_enderChestView.getItem(slot).copy());
-        }
-        this.bh_playerEnderChest.setChanged();
-        this.bh_enderChestViewLoaded = false;
     }
 
     @Unique

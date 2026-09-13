@@ -71,6 +71,11 @@ public final class BreedAbilities implements HorseFeature {
         return ability;
     }
 
+    @Override
+    public void onRemoved(AbstractHorse horse, IHorseData data) {
+        if (ability != null) ability.onDetach(horse, data);
+    }
+
     private static void spillOverflow(AbstractHorse horse, IHorseData data,
                                       ServerLevel level, int rows) {
         SimpleContainer chest = data.bh_getChestContainer();

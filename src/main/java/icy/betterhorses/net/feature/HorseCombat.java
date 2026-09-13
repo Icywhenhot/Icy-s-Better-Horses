@@ -20,6 +20,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
@@ -68,7 +69,18 @@ public final class HorseCombat implements HorseFeature {
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data) {
-        if (!(horse.level() instanceof ServerLevel level) || !BhConfig.horseCombatEnabled()) {
+        if (!(horse.level() instanceof ServerLevel level)) {
+            return;
+        }
+        if (!BhConfig.horseCombatEnabled()) {
+            if (slowed > 0) BhHorseAttributes.clear(horse, Attributes.MOVEMENT_SPEED, BhHorseAttributes.Source.ABILITY, SLOW_KEY);
+            slowed = 0;
+            cooldown = 0;
+            straight = 0;
+            lastYaw = Float.NaN;
+            data.bh_setKickTicks(0);
+            data.bh_setCharge(BhSurge.HIDDEN);
+            data.bh_setCombatTarget(null);
             return;
         }
         HorseBreed breed = data.bh_getBreed();
@@ -183,7 +195,7 @@ public final class HorseCombat implements HorseFeature {
     }
 
     private double momentum(HorseBreed breed, IHorseData data) {
-        if (breed != HorseBreed.PERCHERON || BhHorseTraits.bondTier(data.bh_getBond()) < 1) {
+        if (breed != HorseBreed.PERCHERON || !BhAbility.PERCHERON_MOMENTUM.on() || BhHorseTraits.bondTier(data.bh_getBond()) < 1) {
             return 1.0D;
         }
         return 1.0D + 0.5D * (double) straight / FULL_WIND;
@@ -193,6 +205,16 @@ public final class HorseCombat implements HorseFeature {
         return breed == HorseBreed.PERCHERON
                 && BhHorseTraits.bondTier(data.bh_getBond()) >= 2
                 && BhAbility.PERCHERON_CHAIN.on();
+    }
+
+    public static boolean mayTarget(LivingEntity target) {
+        if (BhConfig.horsePvpEnabled()) {
+            return true;
+        }
+        if (target instanceof Player) {
+            return false;
+        }
+        return !(target instanceof OwnableEntity owned) || owned.getOwnerReference() == null;
     }
 
     private List<LivingEntity> targets(AbstractHorse horse, IHorseData data, Player rider, Vec3 flat) {
@@ -206,6 +228,9 @@ public final class HorseCombat implements HorseFeature {
                 continue;
             }
             if (e instanceof Player p && data.bh_mayHandle(p.getUUID())) {
+                continue;
+            }
+            if (!mayTarget(e)) {
                 continue;
             }
             if (e instanceof AbstractHorse other
@@ -225,7 +250,7 @@ public final class HorseCombat implements HorseFeature {
     }
 
     public void onHurt(AbstractHorse horse, IHorseData data, DamageSource source) {
-        if (!(horse.level() instanceof ServerLevel level) || !BhConfig.horseCombatEnabled()) {
+        if (!(horse.level() instanceof ServerLevel level)) {
             return;
         }
         HorseBreed breed = data.bh_getBreed();
@@ -233,7 +258,8 @@ public final class HorseCombat implements HorseFeature {
             return;
         }
         if (horse.hasIndirectPassenger(attacker)
-                || (data.bh_isOwned() && data.bh_mayHandle(attacker.getUUID()))) {
+                || (data.bh_isOwned() && data.bh_mayHandle(attacker.getUUID()))
+                || !mayTarget(attacker)) {
             return;
         }
         Vec3 to = attacker.position().subtract(horse.position());

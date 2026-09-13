@@ -26,9 +26,12 @@ public final class BhHorseTraits {
     }
 
     public static void grantBond(IHorseData data, int amount) {
-        int gain = data.bh_getBreed() == HorseBreed.MORGAN && BhAbility.MORGAN_BOND.on()
-                ? amount * (bondTier(data.bh_getBond()) >= 1 ? 4 : 3) / 2
-                : amount;
+        int gain = amount;
+        if (data.bh_getBreed() == HorseBreed.MORGAN && BhAbility.MORGAN_BOND.on()) {
+            int halves = amount * (bondTier(data.bh_getBond()) >= 1 ? 4 : 3) + data.bh_getBondRemainder();
+            gain = halves / 2;
+            data.bh_setBondRemainder(halves % 2);
+        }
         data.bh_setBond(data.bh_getBond() + gain);
     }
 
@@ -60,23 +63,4 @@ public final class BhHorseTraits {
         return HorseBreed.MUSTANG;
     }
 
-    public static void blockSameGenderBreeding(AbstractHorse horse, IHorseData data, Player player) {
-        if (!BhConfig.genderBreedingEnabled() || !horse.isInLove()) {
-            return;
-        }
-        HorseGender gender = data.bh_getGender();
-        List<AbstractHorse> nearby = horse.level().getEntitiesOfClass(
-                AbstractHorse.class,
-                horse.getBoundingBox().inflate(8.0D),
-                other -> other != horse && other.isInLove()
-                        && IHorseData.of(other).bh_getGender() == gender);
-        if (nearby.isEmpty()) {
-            return;
-        }
-        horse.resetLove();
-        if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(
-                    Component.translatable("message.icys-better-horses.same_gender_breed"));
-        }
-    }
 }

@@ -27,11 +27,19 @@ No. They're optional and only add the in-game settings screen. Without them, edi
 
 ### Is it safe to add to an existing world?
 
-Yes. Horses you already have keep their appearance, because the mod reads their existing coat and assigns a matching breed. Coats that don't match anything become [Mustangs](breeds/mustang). Nothing is deleted or re-rolled.
+Yes, nothing is deleted. Your horses keep their name, owner, bond, gear, and inventory.
+
+They **do** change colour once, though. The mod reads the vanilla coat each horse is wearing, works out the closest matching breed from it, then gives it one of that breed's own coats. Coats that don't match anything become [Mustangs](breeds/mustang). It's a one-time change on first load and the new coat sticks.
 
 ### Does it work on a server?
 
-Yes. The gear toggles and `horse_exclusivity` exist specifically for multiplayer. See [Configuration](configuration).
+Yes. The gear toggles, `horse_exclusivity` and `horse_pvp` exist specifically for multiplayer, and the server's config applies to everyone who joins. See [Configuration](configuration).
+
+### Will horses spawn in my modded biomes?
+
+Not on their own. Every breed ships with a list of vanilla biomes, so in a pack that replaces the overworld you'll find horses only in whatever vanilla biomes are left.
+
+Adding them is a small datapack: each breed reads a biome tag, so you add your biomes to `icys-better-horses:tags/worldgen/biome/spawns/<breed>` and they spawn there. Worked example on the [Spawning](spawning#modded-biomes) page.
 
 ---
 
@@ -57,9 +65,12 @@ Open the [roster](managing-your-horses) with <kbd>G</kbd> and select the horse. 
 
 Check three things:
 
-1. **Is it the active horse?** Only the horse marked **Set Active** on the [roster](managing-your-horses) answers the whistle. 
-2. **Same dimension?** *"That horse is in another dimension."*
-3. **Are you mounted?** While riding, <kbd>P</kbd> opens the info screen instead of whistling.
+1. **Is its bond above 0?** A freshly tamed horse ignores the whistle entirely: *"Build some bond with this horse before it will answer your whistle."* One point is enough.
+2. **Is it the active horse?** Only the horse marked **Set Active** on the [roster](managing-your-horses) answers the whistle.
+3. **Same dimension?** *"That horse is in another dimension."*
+4. **Is it towing a cart?** *"Unhitch the cart before calling or teleporting this horse."*
+5. **Are you mounted?** While riding, <kbd>P</kbd> opens the info screen instead of whistling.
+6. **Is one of your horses fighting?** Then <kbd>P</kbd> calls it off instead of summoning anything. Press it again once the fight is over.
 
 ### What does "Resting" mean on the roster?
 
@@ -67,7 +78,9 @@ The horse is in an unloaded chunk. It's fine. Owned horses are stored persistent
 
 ### Can I get a disowned horse back?
 
-No. [Disowning](managing-your-horses#disown) is permanent, which is why it has a confirmation dialog. Its bond and home are gone with it.
+Sort of. [Disowning](managing-your-horses#disown) releases the horse rather than deleting it, so it's still standing there, untamed. You can walk up and tame it again.
+
+What you can't get back is the **bond**, the saved home, and its roster entry. A re-tamed horse starts from bond 0, so treat disowning as throwing away the hours you put in, not the animal.
 
 ### Why won't it let me disown a horse?
 
@@ -99,11 +112,13 @@ Bond is a **percentage** bonus on the horse's own base stats, up to +75% at 100 
 
 ### My two horses won't breed.
 
-They're the same gender: *"These horses are the same gender and can't breed."* Check on the [info screen](horse-info-screen) before feeding golden apples, because the apple is consumed either way.
+Almost always the same gender: *"These horses are the same gender and can't breed."* They both go into love mode first, hearts and all, so the hearts aren't a promise. Check on the [info screen](horse-info-screen) *before* feeding golden apples, because both apples are consumed either way.
+
+If you'd rather not think about it, set `gender_breeding` to `no` in the [config](configuration).
 
 ### How do I get a better horse?
 
-Foal stats are `max(parent1, parent2) + roll(−0.5 to +1.0)`, so the foal builds on the **better** parent and can beat both. Breed the best of each generation, retire the rest. The vanilla base stat is the ceiling. Full method: [breeding loop](genetics#a-practical-breeding-loop).
+Foal stats are the **average** of both parents plus one fresh roll from the breed's class range, clamped to that range. So a foal can beat both parents, but a bad pairing drags it down, and no amount of breeding pushes a horse past its class ceiling. Keep only the foals that beat both parents. Full method: [breeding loop](genetics#a-practical-breeding-loop).
 
 ### What is the (mix) tag?
 
@@ -143,7 +158,13 @@ Only [Horse Hooves](equipment/horse-hooves#frost-walker), and only with **Frost 
 
 ### What are the default keys?
 
-<kbd>P</kbd> whistle/info, <kbd>R</kbd> command wheel, <kbd>G</kbd> manage horses. All rebindable in **Options → Controls → Icy's Better Horses**.
+<kbd>P</kbd> whistle/info, <kbd>R</kbd> command wheel, <kbd>G</kbd> manage horses, <kbd>V</kbd> walk cycle, <kbd>H</kbd> rear, <kbd>Left Ctrl</kbd> free look, <kbd>Left Alt</kbd> cart size. All rebindable in **Options → Controls → Icy's Better Horses**.
+
+<kbd>P</kbd>, <kbd>Left Ctrl</kbd> and <kbd>Left Alt</kbd> clash with vanilla Social Interactions, Sprint, and whatever your other mods use. Minecraft flags clashes in red on the controls screen.
+
+### How do I get the big wagon?
+
+Put a cart on a **draft horse** ([Percheron](breeds/percheron), [Clydesdale](breeds/clydesdale), [Shire](breeds/shire), [Belgian](breeds/belgian)), then press <kbd>Left Alt</kbd> while looking at it. Only draft horses can pull it. See [Horse Cart](equipment/horse-cart#the-large-wagon).
 
 ### How do I turn on auto-ride?
 

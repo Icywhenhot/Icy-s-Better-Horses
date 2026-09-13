@@ -119,15 +119,12 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
         }
 
         if (sourceStack.isEmpty()) {
-            int chestGearSlotIndex = gearStartIndex + GearSlot.CHEST.ordinal();
-            if (index == chestGearSlotIndex) {
-                IHorseData.of(horse).bh_onChestGearRemoved(copiedStack);
-            }
             sourceSlot.setByPlayer(ItemStack.EMPTY);
         } else {
             sourceSlot.setChanged();
         }
 
+        sourceSlot.onTake(player, copiedStack);
         cir.setReturnValue(copiedStack);
     }
 

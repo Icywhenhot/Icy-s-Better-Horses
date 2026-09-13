@@ -50,7 +50,8 @@ public final class BhHorseCombatAlert {
     }
 
     private static void defend(IHorseData data, LivingEntity threat) {
-        if (BhHorseTraits.bondTier(data.bh_getBond()) < 1
+        if (!icy.betterhorses.net.feature.HorseCombat.mayTarget(threat)
+                || BhHorseTraits.bondTier(data.bh_getBond()) < 1
                 || data.bh_getCommand() == HorseCommand.STAY
                 || data.bh_getCombatTarget() != null) {
             return;

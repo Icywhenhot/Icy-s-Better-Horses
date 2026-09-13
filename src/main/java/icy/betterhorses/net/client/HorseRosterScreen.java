@@ -595,7 +595,7 @@ public class HorseRosterScreen extends Screen {
         if (!entry.customName().isEmpty()) {
             return Component.literal(entry.customName());
         }
-        return HorseBreed.fromId(entry.breedOrdinal()).displayName(entry.mixedBreed());
+        return HorseBreed.byId(entry.breedId()).displayName(entry.mixedBreed());
     }
 
     private Component subtitle(HorseRosterEntry entry) {

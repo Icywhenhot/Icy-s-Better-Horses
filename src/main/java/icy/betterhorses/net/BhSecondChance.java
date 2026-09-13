@@ -1,6 +1,5 @@
 package icy.betterhorses.net;
 
-import icy.betterhorses.net.feature.breed.SecondChance;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -25,13 +24,8 @@ public final class BhSecondChance {
                 || BhHorseTraits.bondTier(data.bh_getBond()) < 2) {
             return false;
         }
-        SecondChance ability = horse instanceof IHorseAbilityHost host
-                && host.bh_currentAbility() instanceof SecondChance found ? found : null;
-        if (ability == null || !ability.ready()) {
-            return false;
-        }
-
-        ability.spend();
+        if (level.getGameTime() < data.bh_getRescueReadyAt()) return false;
+        data.bh_setRescueReadyAt(level.getGameTime() + 2400L);
         BhSurge.pulse(data, 0);
         if (rider instanceof ServerPlayer saved) {
             BhCriteria.fire(saved, BhCriteria.SECOND_CHANCE);

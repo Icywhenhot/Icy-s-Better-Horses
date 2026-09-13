@@ -45,6 +45,14 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
         return BY_ID.get(entityId);
     }
 
+    public static void remove(AbstractHorse horse) {
+        HorseStabilizerAnimatable value = INSTANCES.remove(horse);
+        if (value != null) {
+            BY_ID.remove(horse.getId(), value);
+            value.horse = null;
+        }
+    }
+
     public static void reset() {
         INSTANCES.clear();
         BY_ID.clear();

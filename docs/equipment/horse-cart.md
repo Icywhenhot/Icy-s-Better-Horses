@@ -7,7 +7,7 @@ nav_order: 7
 # Horse Cart
 {: .no_toc }
 
-Four seats, a double chest of cargo, a plough on the back, and it rolls along behind your horse as you ride.
+Four seats, a double chest of cargo, a plough on the back, and it rolls along behind your horse as you ride. Draft horses can upgrade it to a six-seat wagon.
 {: .fs-5 .fw-300 }
 
 1. TOC
@@ -36,14 +36,19 @@ Quickest method: **right-click the horse while holding the cart**. It goes strai
 
 ## Passengers
 
-An empty cart seats **four**:
+An empty small cart seats **four**:
 
 | Position | Seats | Notes |
 |:---|:---:|:---|
 | Driver's bench (front) | 2 | Whoever sits down **first drives the horse** |
 | Bed (rear) | 2 | Lost if a chest is fitted |
 
+The [large wagon](#the-large-wagon) seats six, and keeps two of its bed seats with a chest fitted.
+
 The cart accepts **anything a boat would**. Animals that wander into the bed climb aboard on their own, so you can herd livestock in and drive them home instead of leading them one at a time. Once you're driving, an animal can ride shotgun in the free seat beside you.
+
+{: .note }
+> Auto-boarding can be switched off with `cart_pickup` in the [config](../configuration). With it off the bed stays empty unless a player sits in it. Which mobs are eligible is a tag, `icys-better-horses:cart_cargo_blocked` to keep something out and `icys-better-horses:cart_cargo_allowed` to let something oversized in. See [datapack hooks](../configuration#datapack-hooks).
 
 ### Unloading
 
@@ -71,11 +76,37 @@ Empty it first, because a loaded chest refuses to come off rather than spilling 
 
 ---
 
+## The large wagon
+
+The cart has a second size. Put one on a **draft horse** and press the **Cart Size key** (default <kbd>Left Alt</kbd>) while looking at the horse or the cart, and it swaps to a longer wagon on a bigger frame.
+
+| | Small cart | Large wagon |
+|:---|:---:|:---:|
+| Who can pull it | Any horse | **Draft only** |
+| Bed seats | 2 | **4** |
+| Bed seats with a chest | 0 | **2** |
+| Chest size | Double chest, 54 slots | **90 slots** |
+| Takes a plough | Yes | No |
+
+Only the four draft breeds can pull it: [Percheron](../breeds/percheron), [Clydesdale](../breeds/clydesdale), [Shire](../breeds/shire), and [Belgian](../breeds/belgian). Ask any other horse and it refuses:
+
+> Only draft horses can pull the large cart.
+
+Press the key again to go back down to the small cart. The swap is refused, with a message saying which, if the wagon is carrying more than the small cart can hold: too many passengers, a plough fitted, or items sitting in the outer chest columns. Clear the problem and it swaps.
+
+{: .note }
+> This is the reason to raise a draft horse. They are the slowest class in the mod, and the wagon is what they are for: six seats and ninety slots is a moving base camp.
+
+---
+
 ## Fitting a plough
 
 **Right-click the small cart with any hoe** and a plough drops down behind the bed. From then on, driving the cart over **grass, dirt or coarse dirt** turns a **three-block-wide** strip into farmland behind you, one pass, no dismounting.
 
-The block above has to be clear, same as tilling by hand, so the plough skips anything with a plant or a block sitting on it.
+The block above has to be clear, same as tilling by hand, so the plough skips anything with a plant or a block sitting on it. It also respects claim and spawn protection: anything the driver couldn't till by hand, the plough leaves alone.
+
+{: .note }
+> Which blocks it turns is the `icys-better-horses:ploughable` tag, so a pack can add its own soil types. See [datapack hooks](../configuration#datapack-hooks).
 
 {: .note }
 > Only the small cart takes a plough. The big wagon has no room for one, and a cart wearing a plough refuses to swap up to the large size until you shear it off.

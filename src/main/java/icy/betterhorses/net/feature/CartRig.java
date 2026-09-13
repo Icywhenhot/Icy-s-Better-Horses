@@ -23,6 +23,7 @@ public final class CartRig implements HorseFeature {
 
     private @Nullable HorseCartEntity cart;
     private boolean dragged;
+    private int missingTicks;
 
     private boolean frozen;
     private float frozenYaw;
@@ -40,7 +41,7 @@ public final class CartRig implements HorseFeature {
     }
 
     private void syncCartEntity(AbstractHorse horse, IHorseData data) {
-        if (!(horse.level() instanceof ServerLevel)) {
+        if (!(horse.level() instanceof ServerLevel level)) {
             return;
         }
 
@@ -52,12 +53,23 @@ public final class CartRig implements HorseFeature {
         }
 
         if (wantsCart && !hasCart) {
+            if (data.bh_getCartId() != null) {
+                if (level.getEntity(data.bh_getCartId()) instanceof HorseCartEntity found && !found.isRemoved()) {
+                    cart = found;
+                    missingTicks = 0;
+                    return;
+                }
+                if (++missingTicks < 100) return;
+            }
             cart = HorseCartEntity.spawnFor(horse);
+            if (cart != null) data.bh_setCartId(cart.getUUID());
+            missingTicks = 0;
         } else if (!wantsCart && cart != null) {
             if (hasCart) {
                 cart.discard();
             }
             cart = null;
+            data.bh_setCartId(null);
         }
     }
 
@@ -98,7 +110,7 @@ public final class CartRig implements HorseFeature {
             }
         }
 
-        if (!frozen) {
+        if (!frozen || frozenPos != null && frozenPos.distanceToSqr(horse.position()) > 16.0D) {
             frozen = true;
             frozenYaw = horse.getYRot();
             frozenPos = horse.position();

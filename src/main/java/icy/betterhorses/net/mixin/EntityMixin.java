@@ -33,6 +33,12 @@ import net.minecraft.world.item.equipment.Equippable;
 @Mixin(Entity.class)
 public abstract class EntityMixin {
 
+    @Inject(method = "setRemoved", at = @At("HEAD"))
+    private void bh_removeEffects(Entity.RemovalReason reason, CallbackInfo ci) {
+        Entity self = (Entity) (Object) this;
+        if (!self.isRemoved() && self instanceof AbstractHorse horse) IHorseData.of(horse).bh_onRemoved();
+    }
+
     @Unique
     private static final Identifier BH_MOUNTED_STEP_HEIGHT_ID =
             Identifier.fromNamespaceAndPath("icys-better-horses", "mounted_step_height");

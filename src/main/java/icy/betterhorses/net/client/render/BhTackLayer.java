@@ -89,7 +89,6 @@ public class BhTackLayer<S extends BhHorseRenderState, M extends BhHorseModel>
         }
 
         BhHorseModel model = state.isBaby ? babyModel : adultModel;
-        model.setupAnim(state);
 
         int color = tint.applyAsInt(state);
 

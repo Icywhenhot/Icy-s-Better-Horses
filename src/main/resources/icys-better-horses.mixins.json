@@ -5,9 +5,11 @@
 	"mixins": [
 		"AbstractHorseMixin",
 		"AnimalMixin",
+		"EquineBreedingMixin",
 		"AbstractChestedHorseCreativeTamingMixin",
 		"AbstractMountInventoryMenuMixin",
 		"EntityMixin",
+		"EntityAccessor",
 		"HorseAccessor",
 		"HorseCreativeTamingMixin",
 		"HorseFinalizeSpawnMixin",
@@ -21,7 +23,6 @@
 		"PanicGoalMixin",
 		"PlayerHurtMixin",
 		"EntitySlowBlockMixin",
-		"HorseProtectionMixin",
 		"PowderSnowBlockMixin",
 		"SpawnPlacementsAccessor",
 		"SlotAccessor"

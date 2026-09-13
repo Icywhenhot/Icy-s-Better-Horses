@@ -87,15 +87,10 @@ public abstract class HorseFinalizeSpawnMixin {
 
     @Unique
     private HorseBreed bh_pickBreedForBiome(ServerLevelAccessor level, Horse self) {
-        Holder<Biome> biome = level.getBiome(self.blockPosition());
-        Optional<ResourceKey<Biome>> biomeKey = biome.unwrapKey();
-        if (biomeKey.isPresent()) {
-            List<HorseBreed> matches = HorseBreed.breedsForBiome(biomeKey.get());
-            if (!matches.isEmpty()) {
-                return matches.get(self.getRandom().nextInt(matches.size()));
-            }
-        }
-        return HorseBreed.fromId(self.getRandom().nextInt(HorseBreed.HORSE_BREED_COUNT));
+        HorseBreed picked = HorseBreed.pickForBiome(level.getBiome(self.blockPosition()), self.getRandom());
+        return picked != null
+                ? picked
+                : HorseBreed.fromId(self.getRandom().nextInt(HorseBreed.HORSE_BREED_COUNT));
     }
 
     @Unique

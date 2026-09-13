@@ -13,17 +13,12 @@ public final class SecondChance implements BreedAbility {
 
     private static final int DURATION = 100;
     private static final int REFRESH = 40;
-    private static final int SAVE_COOLDOWN = 2400;
 
-    private int cooldown;
     private boolean hadRider;
     private boolean wasHurt;
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
-        if (cooldown > 0) {
-            cooldown--;
-        }
         Player up = BhBreedAbilities.rider(horse);
         if (up != null && !hadRider) {
             BhSurge.pulse(data, 0, 1);
@@ -50,11 +45,4 @@ public final class SecondChance implements BreedAbility {
         BhBreedAbilities.applyQuietEffect(rider, MobEffects.RESISTANCE, DURATION, amp);
     }
 
-    public boolean ready() {
-        return cooldown <= 0;
-    }
-
-    public void spend() {
-        cooldown = SAVE_COOLDOWN;
-    }
 }

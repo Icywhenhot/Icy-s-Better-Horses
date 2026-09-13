@@ -14,6 +14,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Player.class)
 public abstract class PlayerHurtMixin {
 
+    @org.spongepowered.asm.mixin.injection.Redirect(method = "actuallyHurt", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/world/entity/player/Player;setHealth(F)V"))
+    private void bh_rescueRider(Player player, float health, ServerLevel level, DamageSource source, float amount) {
+        if (health <= 0.0F && icy.betterhorses.net.BhSecondChance.intercept(level, player, source, player.getHealth() - health)) {
+            return;
+        }
+        player.setHealth(health);
+    }
+
     @Inject(method = "actuallyHurt", at = @At("TAIL"))
     private void bh_rouseHorses(ServerLevel level, DamageSource source, float amount,
                                 CallbackInfo ci) {

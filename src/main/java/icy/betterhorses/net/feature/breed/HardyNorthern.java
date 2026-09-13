@@ -28,18 +28,15 @@ public final class HardyNorthern implements BreedAbility {
             return;
         }
 
-        if (!BhAbility.ICELANDIC_FREEZE.on()) {
-            return;
-        }
-        boolean freezing = horse.getTicksFrozen() > 0;
-        horse.setTicksFrozen(0);
         Player rider = BhBreedAbilities.rider(horse);
-        if (rider != null) {
-            freezing |= rider.getTicksFrozen() > 0;
-            rider.setTicksFrozen(0);
-        }
-        if (freezing) {
-            BhSurge.pulse(data, 0, 1);
+        if (BhAbility.ICELANDIC_FREEZE.on()) {
+            boolean freezing = horse.getTicksFrozen() > 0;
+            horse.setTicksFrozen(0);
+            if (rider != null) {
+                freezing |= rider.getTicksFrozen() > 0;
+                rider.setTicksFrozen(0);
+            }
+            if (freezing) BhSurge.pulse(data, 0, 1);
         }
 
         if (tier < 2 || !BhAbility.ICELANDIC_CLEAR.on() || horse.tickCount % SWEEP != 0) {

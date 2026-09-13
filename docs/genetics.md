@@ -28,7 +28,7 @@ Beyond [bond](ownership-and-bonding), every horse now carries four pieces of ide
 All four are visible on the [Horse Info screen](horse-info-screen). Gender and breed also show in the quick overlay when you hold an [Upgraded Saddle](equipment/upgraded-saddle) and look at a horse.
 
 {: .note }
-> **Existing worlds are safe.** Horses you already own aren't forced into a new appearance. The mod reads the coat they're already wearing and infers a matching breed. Coats with no clean match are filed as [Mustang](breeds/mustang).
+> **Adding the mod to an existing world.** Nothing is deleted and no horse is lost, but every horse **does** change appearance once. The mod reads the vanilla coat it is already wearing, infers the closest matching breed from it, and then gives it one of that breed's own coats. Coats with no clean match are filed as [Mustang](breeds/mustang). Ownership, name, bond, gear, and inventory all carry over untouched; only the colour changes.
 
 ---
 
@@ -36,12 +36,14 @@ All four are visible on the [Horse Info screen](horse-info-screen). Gender and b
 
 ### Gender gate
 
-Two horses of the **same gender won't breed**. Feed a golden apple to a horse whose partner matches its gender and you'll see:
+Two horses of the **same gender won't breed**. Both go into love mode as normal, hearts and all, then pair off with nothing. When they give up you'll see:
 
 > These horses are the same gender and can't breed.
 
 {: .warning }
-> **The apple is still consumed** and love mode resets. Check genders on the [info screen](horse-info-screen) before spending golden apples. This is the single most common way to waste them.
+> **Both apples are still consumed.** Love mode is set the moment you feed, before the mod checks gender, so the hearts are not a promise. Check genders on the [info screen](horse-info-screen) *before* spending golden apples. This is the single most common way to waste them.
+
+The gate only exists while `gender_breeding` is on. Set it to `no` in the [config](configuration) and any two horses pair up, vanilla style.
 
 ### What the foal inherits
 
@@ -50,7 +52,7 @@ Two horses of the **same gender won't breed**. Feed a golden apple to a horse wh
 | **Gender** | A coin flip, 50/50 male or female |
 | **Breed** | Taken from one parent at random, 50/50 |
 | **Coat** | 50/50: either one parent's coat, or a **different** one from its breed's palette |
-| **Health, speed, jump** | `max(parent1, parent2) + delta`, where delta rolls from **−0.5 to +1.0** |
+| **Health, speed, jump** | The average of both parents and a fresh roll from the foal's class range, then clamped to that range |
 
 ### Matching vs. mixed pairs
 
@@ -79,25 +81,30 @@ Cross-species pairs such as horse with donkey give the matching species placehol
 Stat inheritance is the part worth planning around:
 
 ```
-foal stat = max(parent A, parent B) + roll(−0.5 … +1.0)
+foal stat = (parent A + parent B + fresh class roll) / 3, clamped to the class range
 ```
+
+The fresh roll is drawn from the same range the breed's [class](breeds/index) rolls wild horses from, and it leans toward the middle of that range rather than the edges.
 
 Three consequences:
 
-1. **The foal starts from the better parent, not the average.** Pairing a fast horse with a slow one doesn't drag the result down to the middle. The foal builds on the faster of the two.
-2. **Foals can beat both parents.** The delta skews positive (a −0.5 to +1.0 range averages +0.25), so a breeding line trends upward over generations.
-3. **There's a hard ceiling.** The vanilla base stat caps the result, so you can't breed runaway superhorses. Expect diminishing returns as a line approaches the cap.
+1. **It is an average, not a jackpot.** Pairing your best mare with a poor stallion drags the foal toward the middle. Breed good stock to good stock or you undo your own work.
+2. **A foal can beat both parents, but only inside its class range.** The random third of the formula is what lets a line climb, and it is also what makes a foal occasionally come out worse. Expect to cull.
+3. **The class sets the ceiling and the floor.** A [Race](breeds/index) horse cannot be bred past Race top speed, and a [Draft](breeds/index) horse cannot be bred below Draft health. Crossing classes moves the foal onto whichever class its breed landed on, ceiling and all.
+
+{: .note }
+> Because the fresh roll pulls toward the middle of the class range, a line of already-excellent horses trends **down** slightly if you keep the wrong foals. Only keep the ones that beat both parents, and the average carries the line up.
 
 ### A practical breeding loop
 
 1. Scan wild herds holding an [Upgraded Saddle](equipment/upgraded-saddle) and tame the best speed/jump stock you find.
 2. Check genders on the [info screen](horse-info-screen). You need one of each.
-3. Breed with golden apples, keep the foal if it beat its parents, and retire the weaker parent.
-4. Repeat. Each generation nudges the line upward until it hits the ceiling.
+3. Breed with golden apples. Keep the foal **only** if it beat both parents, and retire the weaker parent.
+4. Repeat. Each kept generation nudges the average upward until it presses against the class ceiling.
 5. Then [bond](ownership-and-bonding) the best result to 100 for a further **+75%** on top.
 
 {: .note }
-> Bonding and breeding stack. Breeding raises the base stat; bonding multiplies it. A maxed line at full bond is where **Built Different** (ride at 25 blocks/second) becomes reachable.
+> Bonding and breeding stack. Breeding raises the base stat; bonding multiplies it. A maxed Race line at full bond is where **Built Different** (ride at 25 blocks/second) becomes reachable.
 
 ---
 

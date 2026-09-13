@@ -22,7 +22,7 @@ If you haven't tamed anything yet:
 
 > You don't have any horses yet.
 
-Long lists scroll, with a *"Scroll for N more"* hint at the edge. Selecting a horse shows a live 3D preview on the right, so you can tell your six chestnut mares apart at a glance.
+Long lists scroll, with an arrow at whichever edge has more rows behind it. Selecting a horse shows a live 3D preview on the right, so you can tell your six chestnut mares apart at a glance.
 
 ---
 
@@ -79,10 +79,12 @@ Set one first with **Set Home** on the [command wheel](command-wheel).
 
 ### Disown
 
-Permanently gives up the horse. A confirmation dialog appears, reading *"Are you sure? \<name\> will be gone for good."*, with **Disown** and **Cancel**.
+Releases the horse back into the wild. A confirmation dialog appears, reading *"Are you sure? \<name\> goes back to the wild and forgets you."*, with **Disown** and **Cancel**.
+
+The horse itself is **not deleted**. It stays exactly where it is, untamed, and starts grazing again. What it loses is everything that made it yours: ownership, its bond, its saved home, and its place on your roster.
 
 {: .warning }
-> Disowning is **permanent**. The horse is discarded along with its bond, its home, and its history. This is not a "release back into the wild" button.
+> **The bond does not come back.** You can walk up and tame the same horse again, but it starts from bond 0 and has to be re-bonded from scratch. Re-taming a released horse is the long way round, not an undo button.
 >
 > You can't disown a horse that's still carrying gear: *"Take your equipment off this horse before disowning it."* Strip the saddle and gear first, which also means you don't lose your diamonds by accident.
 
@@ -93,8 +95,11 @@ Permanently gives up the horse. A confirmation dialog appears, reading *"Are you
 | Message | What it means |
 |:---|:---|
 | *That horse is in another dimension.* | Whistle and Send Home only work within one dimension. Travel to it, or send it home from the same dimension. |
+| *That horse's home is in another dimension.* | Send Home can't cross dimensions either. Ride it through the portal yourself. |
 | *That horse can't be found any more.* | The horse no longer exists, killed while you were away or removed by an admin. |
-| *That didn't work. Try again from somewhere more open.* | There was nowhere safe to place the horse. Step out of the cave or off the ledge and retry. |
+| *There is no safe space for this horse nearby.* | Nowhere to put it down. Step out of the cave or off the ledge and retry. |
+| *Build some bond with this horse before it will answer your whistle.* | It's still at bond 0. See [bonding](ownership-and-bonding#the-bond-system). |
+| *Unhitch the cart before calling or teleporting this horse.* | A horse towing a [cart](equipment/horse-cart) can't be whistled or sent home. |
 | *Take your equipment off this horse before disowning it.* | Remove the saddle and gear first. |
 
 ---
@@ -106,3 +111,5 @@ Permanently gives up the horse. A confirmation dialog appears, reading *"Are you
 - [Command wheel](command-wheel): setting a home in the first place
 - [Horse Info screen](horse-info-screen): the detailed stat view
 - [Advancements](advancements): **Stable Genius** wants ten horses at once
+
+A horse with a cart attached cannot be called or teleported. Unhitch the cart first; otherwise the command shows an error. Recall and home teleports also require safe space for the horse.

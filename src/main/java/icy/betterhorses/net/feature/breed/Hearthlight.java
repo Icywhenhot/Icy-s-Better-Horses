@@ -8,14 +8,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LightBlock;
+import icy.betterhorses.net.ModBlocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 public final class Hearthlight implements BreedAbility {
 
-    private static final int LEVEL = 10;
 
     private @Nullable BlockPos lit;
     private boolean hauling;
@@ -34,7 +32,7 @@ public final class Hearthlight implements BreedAbility {
         hauling = cart;
 
         if (tier < 2 || !BhAbility.HAFLINGER_LIGHT.on() || level.isBrightOutside()) {
-            clear(level);
+            clear(level, horse);
             glow(data, false);
             return;
         }
@@ -44,23 +42,20 @@ public final class Hearthlight implements BreedAbility {
 
     private void follow(ServerLevel level, AbstractHorse horse) {
         BlockPos want = spot(level, horse);
-        if (want == null || want.equals(lit)) {
+        if (want == null) {
+            clear(level, horse);
             return;
         }
-        BlockPos was = lit;
-        level.setBlockAndUpdate(want, Blocks.LIGHT.defaultBlockState()
-                .setValue(LightBlock.LEVEL, LEVEL));
+        if (!want.equals(lit)) clear(level, horse);
+        ModBlocks.HEARTHLIGHT.hold(level, want, horse.getUUID());
         lit = want;
-        if (was != null && level.getBlockState(was).is(Blocks.LIGHT)) {
-            level.setBlockAndUpdate(was, Blocks.AIR.defaultBlockState());
-        }
     }
 
     private static @Nullable BlockPos spot(ServerLevel level, AbstractHorse horse) {
         BlockPos head = BlockPos.containing(horse.getEyePosition());
         for (BlockPos pos : new BlockPos[]{head, head.above(), head.below(), horse.blockPosition()}) {
             BlockState at = level.getBlockState(pos);
-            if (at.isAir() || at.is(Blocks.LIGHT)) {
+            if (at.isAir() || at.is(ModBlocks.HEARTHLIGHT)) {
                 return pos;
             }
         }
@@ -70,7 +65,7 @@ public final class Hearthlight implements BreedAbility {
     @Override
     public void onDetach(AbstractHorse horse, IHorseData data) {
         if (horse.level() instanceof ServerLevel level) {
-            clear(level);
+            clear(level, horse);
         }
     }
 
@@ -82,14 +77,9 @@ public final class Hearthlight implements BreedAbility {
         }
     }
 
-    private void clear(ServerLevel level) {
-        if (lit == null) {
-            return;
-        }
-        BlockState state = level.getBlockState(lit);
-        if (state.is(Blocks.LIGHT)) {
-            level.setBlockAndUpdate(lit, Blocks.AIR.defaultBlockState());
-        }
+    private void clear(ServerLevel level, AbstractHorse horse) {
+        if (lit == null) return;
+        ModBlocks.HEARTHLIGHT.release(level, lit, horse.getUUID());
         lit = null;
     }
 }

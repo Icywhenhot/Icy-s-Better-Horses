@@ -32,11 +32,13 @@ The practical effect: you find horses where you actually are, instead of having 
 
 ## Spawn parameters
 
-| Setting | Value |
-|:---|:---|
-| Spawn weight | **5** |
-| Group size | **2–6** horses |
-| Minimum creature spawn probability | **0.10** |
+| Setting | Default | Config key |
+|:---|:---|:---|
+| Spawn weight | **5** | `tuning.spawn_weight` |
+| Group size | **2–6** horses | `tuning.spawn_group_min` / `_max` |
+| Minimum creature spawn probability | **0.10** | `tuning.spawn_probability_floor` |
+
+All three are editable. Setting the weight to `0` stops the mod adding horse spawns entirely, which is what you want if another mod in the pack is managing animal spawning. See [Configuration](configuration#tuning).
 
 Two rules keep this from being intrusive:
 
@@ -56,6 +58,39 @@ A horse needs light level **above 8**, so daylight or a well-lit area, same as v
 | Cold | Snow, snow blocks, powder snow, ice, packed ice |
 
 That block list is what makes mountain and snow spawning work. Vanilla horses need grass; a Better Horses [Icelandic](breeds/icelandic) can spawn on packed ice in an Ice Spikes biome, and a [Haflinger](breeds/haflinger) on the stone of a Jagged Peak.
+
+---
+
+## Modded biomes
+
+Short version: **out of the box, no.** The mod ships a biome list for each breed, and every entry on it is a vanilla biome. Drop the mod into a pack built on Biomes O' Plenty, Terralith, or anything else that replaces the overworld, and horses keep spawning only in whatever vanilla biomes survive.
+
+The fix is a datapack, and it is two lines. Each breed reads a **biome tag**, so adding a modded biome to that tag is all it takes:
+
+```
+data/icys-better-horses/tags/worldgen/biome/spawns/mustang.json
+```
+
+```json
+{
+  "replace": false,
+  "values": [
+    "biomesoplenty:prairie",
+    "terralith:yellowstone"
+  ]
+}
+```
+
+`"replace": false` matters. It adds your biomes to the mod's own list instead of wiping it, so vanilla plains still work.
+
+There are fifteen of these tags, one per breed, named after the breed: `spawns/thoroughbred`, `spawns/icelandic`, `spawns/shire`, and so on. Put a biome in one tag and that breed can spawn there. Put the same biome in several tags and the game rolls between them, weighted by each breed's `spawn_weight`.
+
+{: .tip }
+> Match the breed to the biome rather than dumping every breed into every modded biome. An [Icelandic](breeds/icelandic) belongs in a modded snowfield, a [Shire](breeds/shire) in a modded old-growth wood. The whole point of the biome ranges is that where you explore decides what you find.
+
+You do not need a separate "turn horses on here" step. The umbrella tag `icys-better-horses:spawns_horses` just includes the fifteen breed tags, so a biome listed in any one of them is automatically a horse biome.
+
+Everything else about a breed is a datapack file too, including which class it belongs to and how big its chest is. See [datapack hooks](configuration#datapack-hooks).
 
 ---
 

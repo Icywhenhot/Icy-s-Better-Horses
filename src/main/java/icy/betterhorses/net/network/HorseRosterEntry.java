@@ -8,7 +8,7 @@ import java.util.UUID;
 public record HorseRosterEntry(
         UUID horseId,
         String customName,
-        int breedOrdinal,
+        String breedId,
         int genderOrdinal,
         boolean mixedBreed,
         int bond,
@@ -26,7 +26,7 @@ public record HorseRosterEntry(
     public static void encode(FriendlyByteBuf buf, HorseRosterEntry entry) {
         buf.writeUUID(entry.horseId());
         buf.writeUtf(entry.customName());
-        buf.writeVarInt(entry.breedOrdinal());
+        buf.writeUtf(entry.breedId());
         buf.writeVarInt(entry.genderOrdinal());
         buf.writeBoolean(entry.mixedBreed());
         buf.writeVarInt(entry.bond());
@@ -46,7 +46,7 @@ public record HorseRosterEntry(
         return new HorseRosterEntry(
                 buf.readUUID(),
                 buf.readUtf(),
-                buf.readVarInt(),
+                buf.readUtf(),
                 buf.readVarInt(),
                 buf.readBoolean(),
                 buf.readVarInt(),

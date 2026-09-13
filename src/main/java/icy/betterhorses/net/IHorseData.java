@@ -122,7 +122,21 @@ public interface IHorseData {
 
     boolean bh_hasCartGear();
 
+    int bh_getBondRemainder();
+
+    void bh_setBondRemainder(int value);
+
+    long bh_getRescueReadyAt();
+
+    void bh_setRescueReadyAt(long value);
+
+    void bh_onRemoved();
+
     @Nullable HorseCartEntity bh_getCartEntity();
+
+    @Nullable UUID bh_getCartId();
+
+    void bh_setCartId(@Nullable UUID id);
 
     default boolean bh_hasStabilizerItem() {
         return this instanceof Horse

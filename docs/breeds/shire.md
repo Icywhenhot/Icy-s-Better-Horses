@@ -29,7 +29,7 @@ Anything that has locked onto you but has not swung yet gets snorted and stamped
 |:---|:---|
 | 0 | de-aggros mobs that have targeted you but not yet attacked |
 | 40 | wider radius |
-| 100 | **Brick Break**, same as the [Belgian](belgian)'s: a **3x3 hole** at a gallop, off by default in the config and on the horse |
+| 100 | **Brick Break**, same as the [Belgian](belgian)'s: a **3x3 hole** at a gallop, off by default in the config |
 
 ## Coats
 

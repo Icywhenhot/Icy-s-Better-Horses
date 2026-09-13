@@ -27,8 +27,6 @@ public final class WildInstincts implements BreedAbility {
     private static final float HEAL_AMOUNT = 2.0F;
 
     private int alertCooldown;
-    private int glowExpiry;
-    private final List<UUID> sensed = new ArrayList<>();
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
@@ -37,9 +35,6 @@ public final class WildInstincts implements BreedAbility {
         }
         int tier = BhHorseTraits.bondTier(data.bh_getBond());
 
-        if (glowExpiry != 0 && horse.tickCount >= glowExpiry) {
-            clearGlow(level);
-        }
         if (alertCooldown > 0) {
             alertCooldown--;
         }
@@ -72,30 +67,8 @@ public final class WildInstincts implements BreedAbility {
                 ModSounds.HORSE_ANGRY_SNORT, horse.getSoundSource(), 1.0F, 1.0F);
 
         for (LivingEntity hostile : hostiles) {
-            if (BhBreedAbilities.startGlowing(hostile)) {
-                sensed.add(hostile.getUUID());
-            }
+            hostile.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                    net.minecraft.world.effect.MobEffects.GLOWING, GLOW_TICKS, 0, false, false));
         }
-        if (!sensed.isEmpty()) {
-            glowExpiry = horse.tickCount + GLOW_TICKS;
-        }
-    }
-
-    @Override
-    public void onDetach(AbstractHorse horse, IHorseData data) {
-        if (horse.level() instanceof ServerLevel level) {
-            clearGlow(level);
-        }
-    }
-
-    private void clearGlow(ServerLevel level) {
-        for (UUID id : sensed) {
-            Entity e = level.getEntity(id);
-            if (e != null) {
-                e.setGlowingTag(false);
-            }
-        }
-        sensed.clear();
-        glowExpiry = 0;
     }
 }

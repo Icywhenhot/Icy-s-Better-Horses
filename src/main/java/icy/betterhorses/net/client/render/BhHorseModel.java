@@ -41,10 +41,56 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
     private final Rest[] legRest;
     private final ModelPart[] legs;
 
-    private record Rest(float x, float y, float z, float xRot, float yRot, float zRot) {
+    record Rest(float x, float y, float z, float xRot, float yRot, float zRot) {
         static Rest of(ModelPart p) {
             return new Rest(p.x, p.y, p.z, p.xRot, p.yRot, p.zRot);
         }
+    }
+
+    record PoseKey(List<net.minecraft.client.model.geom.PartPose> rests, List<Float> shape) {}
+
+    static final class Pose {
+        final float[] parts;
+        int revision;
+        float age;
+        BhRiderMotion rider;
+
+        Pose(int size) { parts = new float[size]; }
+    }
+
+    private PoseKey poseKey;
+    private ModelPart[] posedParts;
+
+    private void preparePose() {
+        posedParts = new ModelPart[]{rootPart, body, neck, head, snout, leftEar, rightEar,
+                mane, maneTip, tail, frontLeftLeg, frontRightLeg, backLeftLeg, backRightLeg};
+        poseKey = new PoseKey(java.util.Arrays.stream(posedParts).map(ModelPart::storePose).toList(),
+                List.of(legLever[0], legLever[1], legLever[2], legLever[3], frameScale, grazeNeck, grazeHeadRel,
+                        gaitScale(true), gaitScale(false), gaitShoulderHold(true), gaitShoulderHold(false),
+                        gaitReachScale(true), gaitReachScale(false)));
+    }
+
+    private void restorePose(float[] pose) {
+        int i = 0;
+        for (ModelPart part : posedParts) {
+            part.x = pose[i++]; part.y = pose[i++]; part.z = pose[i++];
+            part.xRot = pose[i++]; part.yRot = pose[i++]; part.zRot = pose[i++];
+            part.xScale = pose[i++]; part.yScale = pose[i++]; part.zScale = pose[i++];
+        }
+    }
+
+    private void savePose(BhHorseRenderState state) {
+        Pose saved = state.poses.computeIfAbsent(poseKey, key -> new Pose(posedParts.length * 9));
+        float[] pose = saved.parts;
+        int i = 0;
+        for (ModelPart part : posedParts) {
+            pose[i++] = part.x; pose[i++] = part.y; pose[i++] = part.z;
+            pose[i++] = part.xRot; pose[i++] = part.yRot; pose[i++] = part.zRot;
+            pose[i++] = part.xScale; pose[i++] = part.yScale; pose[i++] = part.zScale;
+        }
+        saved.revision = state.poseRevision;
+        saved.age = state.ageInTicks;
+        saved.rider = BhRiderMotion.get(state.entityId);
     }
 
     private final float[] legLever;
@@ -202,6 +248,15 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
     @Override
     public void setupAnim(BhHorseRenderState state) {
         super.setupAnim(state);
+        if (poseKey == null) preparePose();
+        Pose pose = state.poses.get(poseKey);
+        if (pose != null && pose.revision == state.poseRevision && pose.age == state.ageInTicks) {
+            restorePose(pose.parts);
+            BhRiderMotion.publish(state.entityId, pose.rider);
+            leftRein.visible = state.isRidden;
+            rightRein.visible = state.isRidden;
+            return;
+        }
 
         final float phase = state.phaseOffset;
         final float age = state.ageInTicks;
@@ -832,6 +887,7 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
         }
 
         publishRiderMotion(state, bodyDrop + swimSink, bodyPitch, arcPitch, bankAngle);
+        savePose(state);
     }
 
     private static final float SADDLE_BODY_Y = -5.0F;

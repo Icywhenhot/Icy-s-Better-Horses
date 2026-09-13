@@ -83,9 +83,11 @@ The mod's ceilings, shown as full bars on the [Horse Info screen](horse-info-scr
 
 | Stat | Maximum |
 |:---|:---|
-| Speed | 25.5 blocks/second |
-| Jump | 9.5 blocks |
-| Health | 30 HP |
+| Speed | 26.2 blocks/second |
+| Jump | 9.7 blocks |
+| Health | 50 HP |
+
+Each ceiling is the best any class can reach, so no single horse hits all three. Speed and jump belong to a fully bonded [Race](breeds/index) horse; the 50 HP belongs to a [Draft](breeds/index) horse, which will never get near the speed bar.
 
 {: .tip }
 > Hitting 100 bond earns the **Ride or Die** advancement, and riding at 25 blocks/second earns **Built Different**. See [Advancements](advancements).
@@ -102,6 +104,15 @@ Press <kbd>P</kbd> (the Horse Whistle key) and your **active** horse responds. W
 | Beyond 32 blocks | The horse **teleports** to you |
 
 While you're already mounted, <kbd>P</kbd> opens the [Horse Info screen](horse-info-screen) instead of whistling.
+
+{: .warning }
+> **A horse at bond 0 will not answer.** Whistling is a bonded behaviour, not a taming perk, so a horse you tamed a minute ago ignores you and tells you why:
+>
+> > Build some bond with this horse before it will answer your whistle.
+>
+> One point of bond is enough. Stand near it for a minute, or hand it a name tag, and the whistle starts working.
+
+The whistle also works in reverse during a fight. If any horse you own is fighting or bolting, <kbd>P</kbd> calls all of them off instead of summoning anything. See [Combat](combat#the-whistle).
 
 Which horse answers is set from the [roster](managing-your-horses) using **Set Active**. If you own a dozen horses, the active one is the one that comes when you whistle.
 

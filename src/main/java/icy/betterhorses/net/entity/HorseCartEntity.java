@@ -1,6 +1,8 @@
 package icy.betterhorses.net.entity;
 
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.IcysBetterHorses;
+import icy.betterhorses.net.BhHorseSteering;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModEntities;
 import icy.betterhorses.net.ModItems;
@@ -11,6 +13,10 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.EntityTypeTags;
@@ -82,6 +88,13 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     private static final float MAX_CARGO_WIDTH = EntityTypes.OAK_BOAT.getWidth();
     private static final double BOARD_SCAN_HEIGHT = 1.6D;
     private static final int RESTORE_BOARD_TICKS = 80;
+
+    private static final TagKey<Block> PLOUGHABLE = TagKey.create(Registries.BLOCK,
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "ploughable"));
+    private static final TagKey<EntityType<?>> CARGO_BLOCKED = TagKey.create(Registries.ENTITY_TYPE,
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "cart_cargo_blocked"));
+    private static final TagKey<EntityType<?>> CARGO_ALLOWED = TagKey.create(Registries.ENTITY_TYPE,
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "cart_cargo_allowed"));
 
     private static final double PLOW_BEHIND = 4.2D;
     private static final int PLOW_HALF_WIDTH = 1;
@@ -247,6 +260,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         this.horse = boundHorse;
         this.horseUuid = boundHorse.getUUID();
         this.entityData.set(DATA_HORSE_ID, boundHorse.getId());
+        IHorseData.of(boundHorse).bh_setCartId(this.getUUID());
     }
 
     @Override
@@ -269,6 +283,12 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         }
 
         AbstractHorse boundHorse = this.resolveHorse();
+        if (boundHorse == null && this.horseUuid != null) {
+            this.closeChestViewers();
+            if (this.horse != null && this.horse.getRemovalReason() != null
+                    && this.horse.getRemovalReason().shouldDestroy()) this.discard();
+            return;
+        }
         if (boundHorse == null || !boundHorse.isAlive() || boundHorse.isRemoved()
                 || !IHorseData.of(boundHorse).bh_hasCartGear()) {
             this.closeChestViewers();
@@ -278,6 +298,13 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         this.followHorse(boundHorse);
         this.updateRollSpeed();
         IHorseData data = IHorseData.of(boundHorse);
+        if (data.bh_getCartId() != null && !getUUID().equals(data.bh_getCartId())
+                && level().getEntity(data.bh_getCartId()) instanceof HorseCartEntity replacement) {
+            for (Entity passenger : List.copyOf(getPassengers())) passenger.startRiding(replacement, true, true);
+            discard();
+            return;
+        }
+        data.bh_setCartId(getUUID());
         this.entityData.set(DATA_HAS_CHEST, data.bh_hasCartChest());
         this.entityData.set(DATA_HAS_PLOW, data.bh_hasCartPlough());
         this.setSize(CartSize.byLarge(data.bh_hasLargeCart()));
@@ -501,11 +528,13 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     public static boolean isCarriableCargo(Entity candidate) {
-        return candidate instanceof LivingEntity
-                && !(candidate instanceof Player)
-                && !(candidate instanceof AbstractHorse)
-                && candidate.getBbWidth() < MAX_CARGO_WIDTH
-                && !candidate.is(EntityTypeTags.CANNOT_BE_PUSHED_ONTO_BOATS);
+        if (!(candidate instanceof LivingEntity)
+                || candidate instanceof Player
+                || candidate instanceof AbstractHorse
+                || candidate.is(CARGO_BLOCKED)) {
+            return false;
+        }
+        return candidate.is(CARGO_ALLOWED) || candidate.getBbWidth() < MAX_CARGO_WIDTH;
     }
 
     private AABB boardScanBox() {
@@ -515,6 +544,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     private void tryBoardNearbyMobs() {
+        if (!BhConfig.cartPickupEnabled()) {
+            return;
+        }
         AbstractHorse boundHorse = this.resolveHorse();
         if (!this.rearSeatsFree() && !this.benchSeatFree(boundHorse)) {
             return;
@@ -591,7 +623,8 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             return InteractionResult.PASS;
         }
 
-        boolean benchHasRoom = boundHorse.getPassengers().size() < 2;
+        boolean benchHasRoom = boundHorse.getPassengers().size()
+                < BhHorseSteering.bh_seatCount(IHorseData.of(boundHorse));
         if (benchHasRoom && this.playerMayTakeBench(boundHorse, player)) {
             IHorseData.of(boundHorse).bh_ridePlayer(player);
             return InteractionResult.CONSUME;
@@ -674,12 +707,18 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             return;
         }
 
+        AbstractHorse boundHorse = this.resolveHorse();
+        LivingEntity driver = boundHorse == null ? null : boundHorse.getControllingPassenger();
+
         float rad = -this.getYRot() * ((float) Math.PI / 180.0F);
         int turned = 0;
         for (int lane = -PLOW_HALF_WIDTH; lane <= PLOW_HALF_WIDTH; lane++) {
             Vec3 spot = this.position().add(new Vec3(lane, 0.0D, -PLOW_BEHIND).yRot(rad));
             BlockPos pos = BlockPos.containing(spot.x, this.getY(), spot.z).below();
             if (!tillable(level.getBlockState(pos)) || !level.getBlockState(pos.above()).isAir()) {
+                continue;
+            }
+            if (driver instanceof ServerPlayer sp && !level.mayInteract(sp, pos)) {
                 continue;
             }
             level.setBlockAndUpdate(pos, Blocks.FARMLAND.defaultBlockState());
@@ -698,7 +737,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     private static boolean tillable(BlockState state) {
-        return state.is(Blocks.GRASS_BLOCK) || state.is(Blocks.DIRT) || state.is(Blocks.COARSE_DIRT);
+        return state.is(PLOUGHABLE);
     }
 
     private @Nullable SimpleContainer chestContainer() {
@@ -784,8 +823,12 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         boolean wide = this.size().isLarge();
         player.openMenu(new SimpleMenuProvider(
                 (containerId, inventory, opener) -> wide
-                        ? new CartChestMenu(containerId, inventory, contents)
-                        : ChestMenu.sixRows(containerId, inventory, contents),
+                        ? new CartChestMenu(containerId, inventory, contents) {
+                            @Override public boolean stillValid(Player viewer) { return mayKeepChestOpen(viewer); }
+                        }
+                        : new ChestMenu(net.minecraft.world.inventory.MenuType.GENERIC_9x6, containerId, inventory, contents, 6) {
+                            @Override public boolean stillValid(Player viewer) { return mayKeepChestOpen(viewer); }
+                        },
                 this.getDisplayName()));
         if (player instanceof ServerPlayer serverPlayer && isViewing(serverPlayer, contents)) {
             this.chestViewers.add(serverPlayer);
@@ -795,7 +838,12 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     private void updateChestViewers() {
         if (!this.chestViewers.isEmpty()) {
             SimpleContainer contents = this.chestContainer();
-            this.chestViewers.removeIf(viewer -> !isViewing(viewer, contents));
+            this.chestViewers.removeIf(viewer -> {
+                if (!isViewing(viewer, contents)) return true;
+                if (mayKeepChestOpen(viewer)) return false;
+                viewer.closeContainer();
+                return true;
+            });
         }
         this.setChestOpen(!this.chestViewers.isEmpty());
     }
@@ -806,6 +854,15 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         }
         this.chestViewers.clear();
         this.setChestOpen(false);
+    }
+
+    private boolean mayKeepChestOpen(Player player) {
+        if (!this.isAlive() || !player.isAlive() || player.level() != level()
+                || player.distanceToSqr(this) > 64.0D || !hasChest()) return false;
+        if (isPlaced()) return true;
+        AbstractHorse horse = resolveHorse();
+        return horse != null && horse.isAlive() && (!BhConfig.horseExclusivityEnabled()
+                || IHorseData.of(horse).bh_mayHandle(player.getUUID()));
     }
 
     private void setChestOpen(boolean open) {
@@ -963,7 +1020,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     @Override
     public boolean shouldBeSaved() {
-        return this.isPlaced() || !this.getPassengers().isEmpty();
+        return this.isPlaced() || this.horseUuid != null || !this.getPassengers().isEmpty();
     }
 
     @Override
@@ -987,6 +1044,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
+        this.horseUuid = input.read("BhHorse", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
         this.entityData.set(DATA_PLACED, input.getBooleanOr("BhPlaced", false));
         if (this.isPlaced()) {
             this.setNoGravity(false);
@@ -1006,6 +1064,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
+        if (this.horseUuid != null) output.store("BhHorse", net.minecraft.core.UUIDUtil.CODEC, this.horseUuid);
         output.putBoolean("BhPlaced", this.isPlaced());
         output.putBoolean("BhHasChest", this.hasChest());
         if (!this.placedPlow.isEmpty()) {

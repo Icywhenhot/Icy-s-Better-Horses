@@ -15,7 +15,10 @@ nav_order: 4
 
 Look at a horse you own and press <kbd>R</kbd>. A radial menu opens with five wedges. Pick one to issue the command, or click outside the wheel to cancel without changing anything.
 
-The wheel only works on **your own** horses, and only when one is in view.
+The wheel works on horses you own and on horses whose owner has [trusted](commands) you, and only when one is in view within 12 blocks.
+
+{: .note }
+> An [Appaloosa](breeds/appaloosa) gets a **sixth** wedge, **Ability**, which pauses and resumes its herding so it stops dragging every cow in the field along behind you. It's the only breed whose ability is worth switching off mid-ride, so it's the only one that gets the wedge.
 
 ---
 

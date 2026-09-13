@@ -14,6 +14,7 @@ import icy.betterhorses.net.network.HorseChargeShakePayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
+import icy.betterhorses.net.network.BreedDataPayload;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
 import net.fabricmc.api.ModInitializer;
@@ -48,8 +49,6 @@ public class IcysBetterHorses implements ModInitializer {
     private static final double CART_SIZE_REACH = 12.0D;
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    private static final int PASSIVE_BOND_INTERVAL_TICKS = 60 * 20;
-
     private static final float COMMAND_ANSWER_CHANCE = 0.5F;
 
     private final List<AbstractHorse> staleHorses = new ArrayList<>();
@@ -66,6 +65,7 @@ public class IcysBetterHorses implements ModInitializer {
         ModMenus.init();
         ModTicketTypes.init();
         BhBiomeSpawns.register();
+        BhBreedLoader.register();
         BhHorseSpawnRules.installSpawnPlacementOverride();
         BhCriteria.init();
         BhBookPages.init();
@@ -92,6 +92,7 @@ public class IcysBetterHorses implements ModInitializer {
         PayloadTypeRegistry.clientboundPlay().register(HorseManageResultPayload.TYPE, new HorseManageResultPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(TrustSyncPayload.TYPE, new TrustSyncPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(ConfigSyncPayload.TYPE, new ConfigSyncPayload.StreamCodec());
+        PayloadTypeRegistry.clientboundPlay().register(BreedDataPayload.TYPE, new BreedDataPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(HorseChargeShakePayload.TYPE, new HorseChargeShakePayload.StreamCodec());
     }
 
@@ -157,7 +158,7 @@ public class IcysBetterHorses implements ModInitializer {
             BhCriteria.fire(player, BhCriteria.OWN_HORSE);
             BhCriteria.fire(player, BhCriteria.HORSE_COUNT, roster.size());
             for (HorseRosterEntry entry : roster) {
-                BhCriteria.fireBreed(player, HorseBreed.fromId(entry.breedOrdinal()));
+                BhCriteria.fireBreed(player, HorseBreed.byId(entry.breedId()));
             }
         }
     }
@@ -266,7 +267,12 @@ public class IcysBetterHorses implements ModInitializer {
                 (handler, sender, server) -> {
                     sendTrustList(handler.getPlayer());
                     ServerPlayNetworking.send(handler.getPlayer(), new ConfigSyncPayload(
-                            BhConfig.packToggles(), BhConfig.packMasters(), BhConfig.packAbilities()));
+                            BhConfig.disabledFeatures(),
+                            BhConfig.classAbilitiesEnabled(),
+                            BhConfig.breedAbilitiesEnabled(),
+                            BhConfig.disabledAbilities(),
+                            BhConfig.tuning()));
+                    ServerPlayNetworking.send(handler.getPlayer(), BreedDataPayload.current());
                 });
     }
 
@@ -291,12 +297,20 @@ public class IcysBetterHorses implements ModInitializer {
 
     private void registerTickEvents() {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            if (server.getTickCount() % PASSIVE_BOND_INTERVAL_TICKS == 0) {
-                growHorseBond(server);
-                HorseTracker.recordLoadedPositions();
+            BhTuning tuning = BhConfig.tuning();
+            if (tuning.bondAmount() > 0 && server.getTickCount() % tuning.bondIntervalTicks() == 0) {
+                growHorseBond(server, tuning.bondAmount());
             }
+            HorseTracker.tick(server.getTickCount());
             discardStaleHorses();
             applyPendingReleases();
+        });
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resources, success) -> {
+            if (!success) return;
+            BreedDataPayload breeds = BreedDataPayload.current();
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                ServerPlayNetworking.send(player, breeds);
+            }
         });
         ServerLifecycleEvents.SERVER_STARTED.register(HorseTracker::attach);
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> HorseTracker.recordLoadedPositions());
@@ -332,7 +346,7 @@ public class IcysBetterHorses implements ModInitializer {
         staleHorses.clear();
     }
 
-    private void growHorseBond(MinecraftServer server) {
+    private void growHorseBond(MinecraftServer server, int amount) {
         for (AbstractHorse horse : HorseTracker.getAll()) {
             IHorseData data = IHorseData.of(horse);
             if (data.bh_getBond() >= 100) continue;
@@ -345,7 +359,7 @@ public class IcysBetterHorses implements ModInitializer {
                 continue;
             }
 
-            BhHorseTraits.grantBond(data, 1);
+            BhHorseTraits.grantBond(data, amount);
         }
     }
 

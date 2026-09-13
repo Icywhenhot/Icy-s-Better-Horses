@@ -64,6 +64,13 @@
     },
     {
       "type": "modonomicon:text",
+      "id": "recall",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.recall.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.recall.text"
+    },
+    {
+      "type": "modonomicon:text",
       "id": "spook",
       "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.spook.title",
       "show_title_separator": true,

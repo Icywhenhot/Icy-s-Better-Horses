@@ -5,6 +5,9 @@ import net.minecraft.resources.Identifier;
 
 public class BhHorseRenderState extends EquineRenderState {
 
+    final java.util.Map<BhHorseModel.PoseKey, BhHorseModel.Pose> poses = new java.util.HashMap<>();
+    int poseRevision;
+
     public Identifier coatTexture;
 
     public float phaseOffset;

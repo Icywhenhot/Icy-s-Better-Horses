@@ -112,10 +112,25 @@ public class HorseTrackerState extends SavedData {
         UUID horseId = horse.getUUID();
         lastKnownPositions.put(horseId, new KnownPosition(horse.level().dimension(), horse.blockPosition()));
         TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, horse.registryAccess());
-        if (horse.save(output)) {
-            snapshots.put(horseId, output.buildResult());
-        }
-        setDirty();
+        horse.saveWithoutId(output);
+        output.putString("id", net.minecraft.world.entity.EntityType.getKey(horse.getType()).toString());
+        CompoundTag snapshot = output.buildResult();
+        IHorseData data = IHorseData.of(horse);
+        CompoundTag summary = new CompoundTag();
+        summary.putString("name", horse.hasCustomName() ? horse.getCustomName().getString() : "");
+        summary.putString("breedId", data.bh_getBreed().id());
+        summary.putInt("gender", data.bh_getGender().ordinal());
+        summary.putBoolean("mixed", data.bh_isMixedBreed());
+        summary.putInt("bond", data.bh_getBond());
+        summary.putBoolean("home", data.bh_getHome() != null);
+        summary.putString("type", net.minecraft.world.entity.EntityType.getKey(horse.getType()).toString());
+        summary.putInt("variant", horse instanceof net.minecraft.world.entity.animal.equine.Horse h ? h.getVariant().ordinal() : -1);
+        summary.putInt("markings", horse instanceof net.minecraft.world.entity.animal.equine.Horse h ? h.getMarkings().ordinal() : -1);
+        summary.putBoolean("baby", horse.isBaby());
+        summary.putInt("coat", horse instanceof icy.betterhorses.net.entity.BhBreedHorse h ? h.bhCoat() : -1);
+        snapshot.put("BH_Roster", summary);
+        CompoundTag old = snapshots.put(horseId, snapshot);
+        if (!snapshot.equals(old)) setDirty();
     }
 
     public void forgetHorse(UUID horseId) {

@@ -31,10 +31,7 @@ See [Breeds](index) for what every class shares.
 
 At a gallop it punches a **three-wide, three-tall** hole, big enough to ride straight through. It costs the horse health, needs 30 seconds to recover, and only ever breaks blocks on the `horse_breakable` tag: cobblestone, bricks, mud bricks, packed mud, dirt, coarse dirt, gravel, sand, terracotta, glass, snow blocks, hay bales, pumpkins and melons. Stone, deepslate, wood and ore are safe.
 
-It is **off by default twice over**, and both switches must be on:
-
-1. Set `brick_break` to `yes` in the config (or tick it in the Mod Menu screen).
-2. Open the **command wheel** on the horse and pick **Ability**.
+It is **off by default**. Set `belgian_brick` to `yes` under `abilities.breed` in the config, or tick **Brick Break** under Breed abilities in the Mod Menu screen. See [Configuration](../configuration#ability-toggles).
 
 You also need bond 100 and enough speed. Walking into a wall does nothing; you have to be at a gallop when you reach it.
 

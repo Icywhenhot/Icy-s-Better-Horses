@@ -4,7 +4,6 @@ import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.feature.breed.HardyNorthern;
-import icy.betterhorses.net.BhSecondChance;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
@@ -66,10 +65,6 @@ public abstract class LivingEntityMixin extends Entity {
         this.bh_triggerHorseMedkitAfterDamage = false;
 
         LivingEntity self = (LivingEntity) (Object) this;
-        if (self instanceof Player && BhSecondChance.intercept(level, self, source, amount)) {
-            ci.cancel();
-            return;
-        }
         if (!(self instanceof AbstractHorse) || !(self instanceof IHorseData data)) {
             return;
         }

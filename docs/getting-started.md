@@ -16,13 +16,20 @@ From a wild horse to a fully equipped mount.
 
 ## Default controls
 
-Three keys do most of the work. All three are rebindable in **Options → Controls → Icy's Better Horses**, or through Mod Menu if you have it installed.
+Three keys do most of the work, and four more cover riding. All seven are rebindable in **Options → Controls → Icy's Better Horses**, or through Mod Menu if you have it installed.
 
 | Key | Name | What it does |
 |:---|:---|:---|
-| <kbd>P</kbd> | Horse Whistle / Info | Calls your active horse. While mounted, opens the [Horse Info screen](horse-info-screen) instead. |
+| <kbd>P</kbd> | Horse Whistle / Info | Calls your active horse. While mounted, opens the [Horse Info screen](horse-info-screen) instead. Calls horses off a fight. |
 | <kbd>R</kbd> | Horse Command Wheel | Opens the [radial command menu](command-wheel) while looking at a horse you own. |
 | <kbd>G</kbd> | Manage Horses | Opens the [roster](managing-your-horses) of every horse you own, wherever they are. |
+| <kbd>V</kbd> | Walk Cycle | Shifts up through the [gaits](riding#gaits) while riding. |
+| <kbd>H</kbd> | Rear | Makes the horse you're riding, or looking at, [rear up](riding#rearing). |
+| <kbd>Left Ctrl</kbd> | Free Look | Held: look anywhere without the horse [turning](riding#free-look). |
+| <kbd>Left Alt</kbd> | Cart Size | Swaps a draft horse's [cart](equipment/horse-cart) between small and large. |
+
+{: .warning }
+> <kbd>P</kbd>, <kbd>Left Ctrl</kbd> and <kbd>Left Alt</kbd> clash with vanilla Social Interactions, Sprint, and common third-party binds. Minecraft shows clashes in red on the controls screen; rebind whichever side you use more.
 
 ---
 
@@ -44,7 +51,7 @@ An owned horse answers only to you. Anyone else who tries to take the reins is b
 
 ## 3. Start bonding
 
-Bond runs from **0 to 100**, and every 20 points makes your horse faster and jump higher, up to **+75%** on both at full bond.
+Bond runs from **0 to 100**, and every 20 points makes your horse faster and jump higher, up to **+75%** on both at full bond. Get it off zero early: a horse at bond 0 won't answer your whistle at all.
 
 | Source | Bond |
 |:---|:---|
@@ -72,7 +79,7 @@ The [Upgraded Saddle](equipment/upgraded-saddle) is the gateway to everything el
 
 | Slot | Item | Why you want it |
 |:---|:---|:---|
-| Chest | Chest or Ender Chest | 27 storage slots, or your shared ender inventory |
+| Chest | Chest or Ender Chest | 27 storage slots, more on a [draft horse](breeds/index), or your shared ender inventory |
 | Hooves | [Horse Hooves](equipment/horse-hooves) | Walk on powder snow, softer fall damage, takes Frost Walker |
 | Medkit | [Horse Medkit](equipment/horse-medkit) | Auto-heals your horse the moment it drops below half health |
 | Stabilizer | [Horse Stabilizer](equipment/horse-stabilizer) | Deploys on long falls and cancels the damage |

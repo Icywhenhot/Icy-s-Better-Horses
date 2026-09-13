@@ -58,7 +58,7 @@ Thirteen goals, from taming your first horse to owning all fifteen breeds.
 
 ### Built Different (25 blocks/second)
 
-This needs breeding *and* bonding. The mod's speed ceiling is 25.5 blk/s, so you need a horse with a strong base speed pushed the rest of the way by a full **+75%** bond bonus.
+This needs breeding *and* bonding. The mod's speed ceiling is 26.2 blk/s and only a [Race](breeds/index) horse gets near it, so you need a strong base speed pushed the rest of the way by a full **+75%** bond bonus.
 
 Route: breed a fast line following the [breeding loop](genetics#a-practical-breeding-loop) until stats stop improving, then bond the best foal to 100. Check progress on the [Horse Info screen](horse-info-screen), which displays speed in blk/s directly.
 

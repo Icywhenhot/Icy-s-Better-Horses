@@ -96,14 +96,10 @@ public final class BhEquineGait {
 
     private static final float MOVE_EPSILON = 0.02F;
 
-    private static final int STALE_FRAMES = 200;
-    private static final int SWEEP_INTERVAL = 600;
 
     private static final Map<Integer, BhEquineGait> ACTIVE = new HashMap<>();
 
-    private static int frameStamp;
 
-    private int seenStamp;
 
     private final float random01;
 
@@ -215,12 +211,7 @@ public final class BhEquineGait {
             state.pullingCart = false;
         }
 
-        if (++frameStamp % SWEEP_INTERVAL == 0) {
-            sweep();
-        }
-
         BhEquineGait gait = ACTIVE.computeIfAbsent(entity.getId(), BhEquineGait::new);
-        gait.seenStamp = frameStamp;
         gait.advance(state, state.ageInTicks);
     }
 
@@ -228,16 +219,12 @@ public final class BhEquineGait {
         ACTIVE.clear();
     }
 
-    private static void sweep() {
-        Iterator<BhEquineGait> gaits = ACTIVE.values().iterator();
-        while (gaits.hasNext()) {
-            if (frameStamp - gaits.next().seenStamp > STALE_FRAMES) {
-                gaits.remove();
-            }
-        }
+    public static void remove(int id) {
+        ACTIVE.remove(id);
     }
 
     public void advance(BhHorseRenderState state, float ageInTicks) {
+        state.poseRevision++;
         float deltaSeconds;
         if (Float.isNaN(lastAgeInTicks)) {
             deltaSeconds = 0.0F;

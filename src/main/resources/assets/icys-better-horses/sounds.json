@@ -1,5 +1,6 @@
 {
   "call_whistle": {
+    "subtitle": "subtitles.icys-better-horses.call_whistle",
     "sounds": [
       "icys-better-horses:call_whistle/w1",
       "icys-better-horses:call_whistle/w2",
@@ -10,6 +11,7 @@
     ]
   },
   "stabilizer_intro": {
+    "subtitle": "subtitles.icys-better-horses.stabilizer_intro",
     "sounds": [
       {
         "name": "icys-better-horses:stabilizer/s1",

@@ -38,7 +38,7 @@ Upgraded Saddle ──┬── Chest / Ender Chest   (storage)
 | Item | Slot | What it does | Worth it when |
 |:---|:---|:---|:---|
 | [Upgraded Saddle](upgraded-saddle) | Worn | Unlocks all five gear slots | Immediately. Everything needs it. |
-| [Chest / Ender Chest](upgraded-saddle#chest-storage) | Chest | 27 slots, or your shared ender inventory | Any trip where you're carrying loot |
+| [Chest / Ender Chest](upgraded-saddle#chest-storage) | Chest | 27 slots, up to 54 on the right breed, or your shared ender inventory | Any trip where you're carrying loot |
 | [Horse Hooves](horse-hooves) | Hooves | Powder snow walking, reduced fall damage, takes Frost Walker | Mountains, snow, crossing water |
 | [Horse Medkit](horse-medkit) | Medkit | One-shot auto-heal below half health | Nether trips, combat, anything risky |
 | [Horse Stabilizer](horse-stabilizer) | Stabilizer | Slows long falls and can cancel the damage entirely | Cliffs, ravines, mountain routes |

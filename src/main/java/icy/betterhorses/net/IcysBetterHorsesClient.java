@@ -30,6 +30,7 @@ import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
+import icy.betterhorses.net.network.BreedDataPayload;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -81,6 +82,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
     private static final double BH_ROUSE_SCAN = 32.0D;
 
     private boolean callKeyWasDown = false;
+    private boolean tookServerBreeds = false;
 
     @Override
     public void onInitializeClient() {
@@ -184,6 +186,13 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                         (BhChargeMeterPage) page));
 
         registerClientHandlers();
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents.ENTITY_UNLOAD.register((entity, level) -> {
+            icy.betterhorses.net.client.render.BhEquineGait.remove(entity.getId());
+            icy.betterhorses.net.client.render.BhRiderMotion.remove(entity.getId());
+            if (entity instanceof net.minecraft.world.entity.animal.equine.AbstractHorse horse) {
+                icy.betterhorses.net.client.render.HorseStabilizerAnimatable.remove(horse);
+            }
+        });
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
     }
 
@@ -209,11 +218,25 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                     if (context.client().hasSingleplayerServer()) {
                         return;
                     }
-                    BhConfig.adoptServer(payload.toggles(), payload.masters(), payload.abilities());
+                    BhConfig.adoptServer(payload.disabledFeatures(), payload.classAbilities(),
+                            payload.breedAbilities(), payload.disabledAbilities(), payload.tuning());
+                }));
+
+        ClientPlayNetworking.registerGlobalReceiver(BreedDataPayload.TYPE, (payload, context) ->
+                context.client().execute(() -> {
+                    if (context.client().hasSingleplayerServer()) {
+                        return;
+                    }
+                    BhBreedData.replaceAll(payload.toMap());
+                    tookServerBreeds = true;
                 }));
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             BhConfig.dropServer();
+            if (tookServerBreeds) {
+                BhBreedData.resetToBuiltIn();
+                tookServerBreeds = false;
+            }
             BhClientCaches.resetAll();
         });
     }

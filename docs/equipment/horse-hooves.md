@@ -42,7 +42,7 @@ A horse wearing enchanted hooves leaves a trail of **frosted ice** as it runs ov
 
 ### Built for speed
 
-The freeze keeps up with a fast horse. At **15+ blocks per second** the freeze radius scales up with your speed, so you don't outrun the ice and drop through a gap in the trail.
+The freeze radius depends on **Frost Walker's enchantment level**. The trail is sampled along the horse's movement so fast horses do not outrun the ice and drop through gaps.
 
 {: .warning }
 > Frost Walker freezes water. **Lava is still lava.** Riding into it will kill your horse regardless of what it's wearing.

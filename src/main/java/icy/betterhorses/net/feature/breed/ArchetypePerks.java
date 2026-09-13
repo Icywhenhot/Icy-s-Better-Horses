@@ -30,6 +30,8 @@ public final class ArchetypePerks {
 
     private double pathBonus = -1.0D;
     private int graceUntil;
+    private double mass = Double.NaN;
+    private double step = Double.NaN;
 
     public void onBreedChanged(AbstractHorse horse, BreedArchetype arch) {
         BhHorseAttributes.apply(horse, Attributes.KNOCKBACK_RESISTANCE,
@@ -38,6 +40,16 @@ public final class ArchetypePerks {
     }
 
     public void tick(AbstractHorse horse, IHorseData data, BreedArchetype arch) {
+        double wantedMass = arch.knockbackResistance();
+        if (wantedMass != mass) {
+            mass = wantedMass;
+            onBreedChanged(horse, arch);
+        }
+        double wantedStep = arch.stepHeight();
+        if (wantedStep != step) {
+            step = wantedStep;
+            horse.getAttribute(Attributes.STEP_HEIGHT).setBaseValue(step);
+        }
         int heal = arch.passiveHealInterval();
         if (heal > 0 && horse.tickCount % heal == 0 && horse.getHealth() < horse.getMaxHealth()) {
             horse.heal(1.0F);

@@ -23,13 +23,13 @@ See [Breeds](index) for what every class shares.
 
 ## Breed ability: Ironclad
 
-Barding counts **double** on a Clydesdale. Iron protects like diamond. Because charge and kick damage both scale off armour, better barding also makes it hit harder.
+Equipped barding grants **25% more armour** on a Clydesdale. Charge and kick damage also read armour, so this gives a modest damage bonus.
 
 | Bond | Effect |
 |:---|:---|
-| 0 | barding counts double |
+| 0 | equipped barding grants 25% more armour |
 | 40 | that protection extends to the rider |
-| 100 | **Deflect**: projectiles bounce off instead of landing |
+| 100 | **Deflect**: projectiles are stopped before they land |
 
 ## Coats
 

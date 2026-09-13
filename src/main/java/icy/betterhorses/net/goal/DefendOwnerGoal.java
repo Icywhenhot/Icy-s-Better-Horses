@@ -25,6 +25,7 @@ public class DefendOwnerGoal extends Goal {
     private LivingEntity target;
     private int swing;
     private boolean charged;
+    private net.minecraft.world.phys.Vec3 origin;
 
     public DefendOwnerGoal(AbstractHorse horse) {
         this.horse = horse;
@@ -33,7 +34,7 @@ public class DefendOwnerGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (horse.isVehicle() || !(horse.level() instanceof ServerLevel level)) {
+        if (!icy.betterhorses.net.BhConfig.horseCombatEnabled() || horse.isVehicle() || !(horse.level() instanceof ServerLevel level)) {
             return false;
         }
         IHorseData data = IHorseData.of(horse);
@@ -45,23 +46,26 @@ public class DefendOwnerGoal extends Goal {
             return false;
         }
         target = level.getEntity(id) instanceof LivingEntity found ? found : null;
-        if (target == null || !target.isAlive() || horse.distanceToSqr(target) > LEASH_SQ) {
+        if (target == null || !target.isAlive() || !HorseCombat.mayTarget(target)
+                || horse.distanceToSqr(target) > LEASH_SQ) {
             data.bh_setCombatTarget(null);
             return false;
         }
+        origin = horse.position();
         return true;
     }
 
     @Override
     public boolean canContinueToUse() {
         IHorseData data = IHorseData.of(horse);
-        if (horse.isVehicle() || data.bh_getCombatTarget() == null
+        if (!icy.betterhorses.net.BhConfig.horseCombatEnabled() || horse.isVehicle() || data.bh_getCombatTarget() == null
                 || data.bh_getCommand() == HorseCommand.STAY) {
             return false;
         }
         if (target == null || !target.isAlive()
                 || horse.getHealth() < horse.getMaxHealth() * BREAK_OFF_HEALTH
-                || horse.distanceToSqr(target) > LEASH_SQ) {
+                || horse.distanceToSqr(target) > LEASH_SQ
+                || origin != null && (horse.position().distanceToSqr(origin) > LEASH_SQ || target.position().distanceToSqr(origin) > LEASH_SQ)) {
             data.bh_setCombatTarget(null);
             return false;
         }

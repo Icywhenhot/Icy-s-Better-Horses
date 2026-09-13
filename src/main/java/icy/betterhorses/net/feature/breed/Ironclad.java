@@ -26,7 +26,7 @@ public final class Ironclad implements BreedAbility {
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
         double armor = BhAbility.CLYDESDALE_ARMOR.on()
-                ? horse.getAttributeBaseValue(Attributes.ARMOR)
+                ? armorBonus(horse)
                 : 0.0D;
         if (armor != applied) {
             applied = armor;
@@ -50,6 +50,17 @@ public final class Ironclad implements BreedAbility {
                 && horse.getAttributeValue(Attributes.ARMOR) > 0.0D) {
             BhBreedAbilities.applyQuietEffect(rider, MobEffects.RESISTANCE, SHIELD_DURATION, 0);
         }
+    }
+
+    private static double armorBonus(AbstractHorse horse) {
+        double[] armor = {0.0D};
+        horse.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.BODY).forEachModifier(
+                net.minecraft.world.entity.EquipmentSlot.BODY, (attr, modifier) -> {
+                    if (attr.equals(Attributes.ARMOR) && modifier.operation() == AttributeModifier.Operation.ADD_VALUE) {
+                        armor[0] += modifier.amount();
+                    }
+                });
+        return armor[0] * 0.25D;
     }
 
     @Override

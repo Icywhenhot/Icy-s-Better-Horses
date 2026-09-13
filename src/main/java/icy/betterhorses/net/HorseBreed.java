@@ -15,7 +15,11 @@ import icy.betterhorses.net.feature.breed.WildInstincts;
 import icy.betterhorses.net.feature.breed.Endurance;
 import icy.betterhorses.net.feature.breed.StandstillBurst;
 import icy.betterhorses.net.feature.breed.TopEnd;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
@@ -65,6 +69,8 @@ public enum HorseBreed {
 
     public record Coat(Variant color, Markings markings) {}
 
+    private final TagKey<Biome> biomeTag = TagKey.create(Registries.BIOME,
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "spawns/" + name().toLowerCase(java.util.Locale.ROOT)));
     private final BreedArchetype archetype;
     private final @Nullable Supplier<BreedAbility> ability;
 
@@ -78,16 +84,15 @@ public enum HorseBreed {
     }
 
     public BreedArchetype archetype() {
+        return BhBreedData.of(this).archetype();
+    }
+
+    BreedArchetype builtInArchetype() {
         return archetype;
     }
 
     public int chestRows(int bondTier) {
-        return switch (this) {
-            case BELGIAN -> 6;
-            case HAFLINGER -> bondTier >= 2 ? 6 : 4;
-            case MORGAN -> bondTier >= 2 ? 4 : archetype.chestRows();
-            default -> archetype.chestRows();
-        };
+        return BhBreedData.of(this).rowsAt(bondTier);
     }
 
     public @Nullable BreedAbility newAbility() {
@@ -98,11 +103,28 @@ public enum HorseBreed {
     public static final int HORSE_BREED_COUNT = 15;
 
     private static final Map<HorseBreed, List<Coat>> COAT_MAP = buildCoatMap();
-    private static final Map<HorseBreed, List<ResourceKey<Biome>>> BIOME_MAP = buildBiomeMap();
+
+    private static final Map<String, HorseBreed> BY_ID = buildIdMap();
 
     public static HorseBreed fromId(int id) {
         if (id < 0 || id >= VALUES.length) return UNKNOWN_SPECIES;
         return VALUES[id];
+    }
+
+    public String id() {
+        return name().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    public static HorseBreed byId(String id) {
+        return BY_ID.getOrDefault(id, UNKNOWN_SPECIES);
+    }
+
+    private static Map<String, HorseBreed> buildIdMap() {
+        Map<String, HorseBreed> map = new java.util.HashMap<>();
+        for (HorseBreed breed : VALUES) {
+            map.put(breed.id(), breed);
+        }
+        return Collections.unmodifiableMap(map);
     }
 
     public boolean isRealBreed() {
@@ -132,28 +154,41 @@ public enum HorseBreed {
         return coats.get(random.nextInt(coats.size()));
     }
 
-    public List<ResourceKey<Biome>> allowedBiomes() {
-        return BIOME_MAP.getOrDefault(this, List.of());
+    public TagKey<Biome> biomeTag() {
+        return biomeTag;
     }
 
-    public static Set<ResourceKey<Biome>> allBreedBiomes() {
-        Set<ResourceKey<Biome>> out = new LinkedHashSet<>();
-        for (HorseBreed breed : VALUES) {
-            if (!breed.isRealBreed()) continue;
-            out.addAll(breed.allowedBiomes());
-        }
-        return Collections.unmodifiableSet(out);
-    }
-
-    public static List<HorseBreed> breedsForBiome(ResourceKey<Biome> biome) {
+    public static List<HorseBreed> breedsForBiome(Holder<Biome> biome) {
         List<HorseBreed> matches = new ArrayList<>();
         for (HorseBreed breed : VALUES) {
             if (!breed.isRealBreed()) continue;
-            if (breed.allowedBiomes().contains(biome)) {
+            if (biome.is(breed.biomeTag())) {
                 matches.add(breed);
             }
         }
         return matches;
+    }
+
+    public static @Nullable HorseBreed pickForBiome(Holder<Biome> biome, RandomSource random) {
+        List<HorseBreed> matches = breedsForBiome(biome);
+        if (matches.isEmpty()) {
+            return null;
+        }
+        int total = 0;
+        for (HorseBreed breed : matches) {
+            total += BhBreedData.of(breed).spawnWeight();
+        }
+        if (total <= 0) {
+            return matches.get(random.nextInt(matches.size()));
+        }
+        int roll = random.nextInt(total);
+        for (HorseBreed breed : matches) {
+            roll -= BhBreedData.of(breed).spawnWeight();
+            if (roll < 0) {
+                return breed;
+            }
+        }
+        return matches.get(matches.size() - 1);
     }
 
     public static List<HorseBreed> breedsMatchingCoat(Variant color, Markings markings) {
@@ -303,73 +338,4 @@ public enum HorseBreed {
         return Collections.unmodifiableMap(map);
     }
 
-    private static Map<HorseBreed, List<ResourceKey<Biome>>> buildBiomeMap() {
-        EnumMap<HorseBreed, List<ResourceKey<Biome>>> map = new EnumMap<>(HorseBreed.class);
-
-        map.put(THOROUGHBRED, List.of(
-                Biomes.PLAINS, Biomes.SUNFLOWER_PLAINS, Biomes.MEADOW,
-                Biomes.FOREST, Biomes.BIRCH_FOREST
-        ));
-        map.put(ARABIAN, List.of(
-                Biomes.DESERT, Biomes.BADLANDS, Biomes.ERODED_BADLANDS,
-                Biomes.SAVANNA, Biomes.SAVANNA_PLATEAU, Biomes.WINDSWEPT_SAVANNA
-        ));
-        map.put(QUARTER, List.of(
-                Biomes.PLAINS, Biomes.SUNFLOWER_PLAINS,
-                Biomes.SAVANNA, Biomes.SAVANNA_PLATEAU, Biomes.WINDSWEPT_SAVANNA
-        ));
-        map.put(FRIESIAN, List.of(
-                Biomes.DARK_FOREST, Biomes.FOREST, Biomes.PALE_GARDEN,
-                Biomes.OLD_GROWTH_SPRUCE_TAIGA, Biomes.TAIGA
-        ));
-        map.put(ANDALUSIAN, List.of(
-                Biomes.MEADOW, Biomes.CHERRY_GROVE, Biomes.FLOWER_FOREST,
-                Biomes.PLAINS, Biomes.FOREST
-        ));
-        map.put(PERCHERON, List.of(
-                Biomes.OLD_GROWTH_SPRUCE_TAIGA, Biomes.FOREST,
-                Biomes.MEADOW, Biomes.PLAINS
-        ));
-        map.put(CLYDESDALE, List.of(
-                Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_GRAVELLY_HILLS,
-                Biomes.WINDSWEPT_FOREST, Biomes.OLD_GROWTH_PINE_TAIGA
-        ));
-        map.put(SHIRE, List.of(
-                Biomes.FOREST, Biomes.BIRCH_FOREST, Biomes.OLD_GROWTH_BIRCH_FOREST,
-                Biomes.WINDSWEPT_FOREST, Biomes.DARK_FOREST
-        ));
-        map.put(BELGIAN, List.of(
-                Biomes.TAIGA, Biomes.OLD_GROWTH_SPRUCE_TAIGA,
-                Biomes.OLD_GROWTH_PINE_TAIGA, Biomes.FOREST
-        ));
-        map.put(ICELANDIC, List.of(
-                Biomes.SNOWY_PLAINS, Biomes.SNOWY_TAIGA, Biomes.ICE_SPIKES,
-                Biomes.FROZEN_PEAKS, Biomes.JAGGED_PEAKS, Biomes.SNOWY_SLOPES, Biomes.GROVE
-        ));
-        map.put(MUSTANG, List.of(
-                Biomes.PLAINS, Biomes.SAVANNA, Biomes.WINDSWEPT_HILLS,
-                Biomes.BADLANDS, Biomes.WOODED_BADLANDS, Biomes.SPARSE_JUNGLE
-        ));
-        map.put(HAFLINGER, List.of(
-                Biomes.SNOWY_SLOPES, Biomes.GROVE, Biomes.MEADOW,
-                Biomes.FROZEN_PEAKS, Biomes.JAGGED_PEAKS, Biomes.STONY_PEAKS
-        ));
-        map.put(MORGAN, List.of(
-                Biomes.PLAINS, Biomes.SUNFLOWER_PLAINS,
-                Biomes.FOREST, Biomes.BIRCH_FOREST, Biomes.MEADOW
-        ));
-        map.put(AMERICAN_PAINT, List.of(
-                Biomes.PLAINS, Biomes.SUNFLOWER_PLAINS,
-                Biomes.SAVANNA, Biomes.SPARSE_JUNGLE
-        ));
-        map.put(APPALOOSA, List.of(
-                Biomes.PLAINS, Biomes.WOODED_BADLANDS,
-                Biomes.SAVANNA_PLATEAU, Biomes.SUNFLOWER_PLAINS
-        ));
-
-        for (Map.Entry<HorseBreed, List<ResourceKey<Biome>>> entry : map.entrySet()) {
-            entry.setValue(Collections.unmodifiableList(entry.getValue()));
-        }
-        return Collections.unmodifiableMap(map);
-    }
 }

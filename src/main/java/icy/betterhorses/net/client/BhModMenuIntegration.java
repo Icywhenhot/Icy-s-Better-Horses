@@ -4,6 +4,8 @@ import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhFeature;
+import icy.betterhorses.net.BhTuning;
 import icy.betterhorses.net.BreedArchetype;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.IcysBetterHorsesClient;
@@ -47,29 +49,37 @@ public class BhModMenuIntegration implements ModMenuApi {
             general.addEntry(eb.startTextDescription(
                     Component.translatable("config.icys-better-horses.server_managed")).build());
         }
-        boolean[] values = {
-                BhConfig.stabilizerEnabled(),
-                BhConfig.medkitEnabled(),
-                BhConfig.hitchpostEnabled(),
-                BhConfig.hoovesEnabled(),
-                BhConfig.horseExclusivityEnabled(),
-                BhConfig.multiRidingEnabled(),
-                BhConfig.horseCombatEnabled(),
-                BhConfig.transparentHorsesEnabled(),
-                BhConfig.genderBreedingEnabled(),
-        };
-        general.addEntry(bh_toggle(eb, "stabilizer", values, 0));
-        general.addEntry(bh_toggle(eb, "medkit", values, 1));
-        general.addEntry(bh_toggle(eb, "hitchpost", values, 2));
-        general.addEntry(bh_toggle(eb, "hooves", values, 3));
-        general.addEntry(bh_toggle(eb, "horse_exclusivity", values, 4));
-        general.addEntry(bh_toggle(eb, "multiriding", values, 5));
-        general.addEntry(bh_toggle(eb, "horse_combat", values, 6));
-        general.addEntry(bh_toggle(eb, "transparent_horses", values, 7));
-        general.addEntry(bh_toggle(eb, "gender_breeding", values, 8));
+        Map<BhFeature, Boolean> picks = new EnumMap<>(BhConfig.featureView());
+        for (BhFeature feature : BhFeature.values()) {
+            general.addEntry(bh_toggle(eb, feature, picks));
+        }
+
+        BhTuning start = BhConfig.tuningView();
+        int[] nums = {start.bondAmount(), start.bondMinutes(), start.spawnWeight(),
+                start.groupMin(), start.groupMax()};
+        double[] floor = {start.spawnFloor()};
+
+        ConfigCategory tuning = builder.getOrCreateCategory(
+                Component.translatable("config.icys-better-horses.category.tuning"));
+        if (locked) {
+            tuning.addEntry(eb.startTextDescription(
+                    Component.translatable("config.icys-better-horses.server_managed")).build());
+        }
+        tuning.addEntry(bh_number(eb, "bond_per_interval", nums, 0, 0, 100));
+        tuning.addEntry(bh_number(eb, "bond_interval_minutes", nums, 1, 1, 1440));
+        tuning.addEntry(bh_number(eb, "spawn_weight", nums, 2, 0, 1000));
+        tuning.addEntry(bh_number(eb, "spawn_group_min", nums, 3, 1, 32));
+        tuning.addEntry(bh_number(eb, "spawn_group_max", nums, 4, 1, 32));
+        tuning.addEntry(eb.startDoubleField(
+                        Component.translatable("config.icys-better-horses.spawn_probability_floor"), floor[0])
+                .setMin(0.0D).setMax(1.0D)
+                .setDefaultValue(BhTuning.defaults().spawnFloor())
+                .setTooltip(Component.translatable("config.icys-better-horses.spawn_probability_floor.tooltip"))
+                .setSaveConsumer(value -> floor[0] = value)
+                .build());
 
         boolean[] masters = {BhConfig.classAbilitiesEnabled(), BhConfig.breedAbilitiesEnabled()};
-        Map<BhAbility, Boolean> picks = new EnumMap<>(BhConfig.abilities());
+        Map<BhAbility, Boolean> abilityPicks = new EnumMap<>(BhConfig.abilities());
 
         ConfigCategory classes = builder.getOrCreateCategory(
                 Component.translatable("config.icys-better-horses.category.class_abilities"));
@@ -78,7 +88,7 @@ public class BhModMenuIntegration implements ModMenuApi {
             List<AbstractConfigListEntry> rows = new ArrayList<>();
             for (BhAbility ability : BhAbility.values()) {
                 if (ability.archetype() == arch) {
-                    rows.add(bh_ability(eb, ability, picks));
+                    rows.add(bh_ability(eb, ability, abilityPicks));
                 }
             }
             if (!rows.isEmpty()) {
@@ -96,7 +106,7 @@ public class BhModMenuIntegration implements ModMenuApi {
             List<AbstractConfigListEntry> rows = new ArrayList<>();
             for (BhAbility ability : BhAbility.values()) {
                 if (ability.breed() == breed) {
-                    rows.add(bh_ability(eb, ability, picks));
+                    rows.add(bh_ability(eb, ability, abilityPicks));
                 }
             }
             if (rows.isEmpty()) {
@@ -143,9 +153,8 @@ public class BhModMenuIntegration implements ModMenuApi {
                 .build());
 
         builder.setSavingRunnable(() -> {
-            BhConfig.apply(values[0], values[1], values[2], values[3], values[4], values[5],
-                    values[6], values[7], values[8]);
-            BhConfig.applyAbilities(masters[0], masters[1], picks);
+            BhConfig.apply(picks, new BhTuning(nums[0], nums[1], nums[2], nums[3], nums[4], floor[0]));
+            BhConfig.applyAbilities(masters[0], masters[1], abilityPicks);
             KeyMapping.resetMapping();
             Minecraft.getInstance().options.save();
         });
@@ -172,10 +181,22 @@ public class BhModMenuIntegration implements ModMenuApi {
     }
 
     private static AbstractConfigListEntry<Boolean> bh_toggle(
-            ConfigEntryBuilder eb, String key, boolean[] values, int index) {
-        return eb.startBooleanToggle(Component.translatable("config.icys-better-horses." + key), values[index])
+            ConfigEntryBuilder eb, BhFeature feature, Map<BhFeature, Boolean> picks) {
+        String base = "config.icys-better-horses." + feature.key();
+        return eb.startBooleanToggle(Component.translatable(base), picks.getOrDefault(feature, true))
                 .setDefaultValue(true)
-                .setTooltip(Component.translatable("config.icys-better-horses." + key + ".tooltip"))
+                .setTooltip(Component.translatable(base + ".tooltip"))
+                .setSaveConsumer(value -> picks.put(feature, value))
+                .build();
+    }
+
+    private static AbstractConfigListEntry<Integer> bh_number(
+            ConfigEntryBuilder eb, String key, int[] values, int index, int min, int max) {
+        String base = "config.icys-better-horses." + key;
+        return eb.startIntField(Component.translatable(base), values[index])
+                .setMin(min)
+                .setMax(max)
+                .setTooltip(Component.translatable(base + ".tooltip"))
                 .setSaveConsumer(value -> values[index] = value)
                 .build();
     }

@@ -103,14 +103,6 @@ public final class BhBreedAbilities {
         applyQuietEffect(target, MobEffects.RESISTANCE, durationTicks, 0);
     }
 
-    public static boolean startGlowing(Entity entity) {
-        if (entity.isCurrentlyGlowing()) {
-            return false;
-        }
-        entity.setGlowingTag(true);
-        return true;
-    }
-
     public static boolean isDarkOutside(AbstractHorse horse) {
         return horse.level() instanceof ServerLevel level
                 && (!level.isBrightOutside() || level.isThundering());

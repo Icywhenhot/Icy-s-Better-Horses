@@ -50,12 +50,13 @@ public final class HorseTracker {
     }
 
     public static void unregister(AbstractHorse horse) {
-        ownedHorses.remove(horse.getUUID(), horse);
+        boolean tracked = ownedHorses.remove(horse.getUUID(), horse);
         HorseTrackerState state = state();
         if (state == null || isStale(horse)) return;
+        if (!tracked && ownedHorses.containsKey(horse.getUUID())) return;
 
         Entity.RemovalReason reason = horse.getRemovalReason();
-        boolean destroyed = (reason != null && reason.shouldDestroy()) || !horse.isAlive();
+        boolean destroyed = reason != null ? reason.shouldDestroy() : horse.isDeadOrDying();
         if (destroyed) {
             state.forgetHorse(horse.getUUID());
             IcysBetterHorses.LOGGER.debug("[whistle] forgot horse {} (destroyed, removalReason={})",
@@ -195,6 +196,14 @@ public final class HorseTracker {
         HorseTrackerState state = state();
         if (state != null) {
             state.setGeneration(horseId, generation);
+        }
+    }
+
+    public static void tick(int tick) {
+        HorseTrackerState state = state();
+        if (state == null) return;
+        for (AbstractHorse horse : ownedHorses.values()) {
+            if (Math.floorMod(horse.getUUID().hashCode(), 1200) == tick % 1200 && horse.isAlive()) state.recordHorse(horse);
         }
     }
 

@@ -13,6 +13,14 @@ import net.minecraft.world.level.material.MapColor;
 
 public final class ModBlocks {
 
+    public static final icy.betterhorses.net.item.HearthlightBlock HEARTHLIGHT =
+            Registry.register(BuiltInRegistries.BLOCK,
+                    Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "hearthlight"),
+                    new icy.betterhorses.net.item.HearthlightBlock(BlockBehaviour.Properties.of()
+                            .setId(ResourceKey.create(Registries.BLOCK,
+                                    Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "hearthlight")))
+                            .noCollision().noOcclusion().replaceable().noLootTable().lightLevel(state -> 10)));
+
     private static final ResourceKey<Block> HITCHPOST_KEY = ResourceKey.create(
             Registries.BLOCK,
             Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "hitchpost"));

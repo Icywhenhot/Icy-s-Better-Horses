@@ -23,8 +23,4 @@ public enum GearSlot {
             case HITCHPOST -> stack.is(ModItems.HITCHPOST);
         };
     }
-
-    public String translationKey() {
-        return "gear.icys-better-horses." + name().toLowerCase();
-    }
 }

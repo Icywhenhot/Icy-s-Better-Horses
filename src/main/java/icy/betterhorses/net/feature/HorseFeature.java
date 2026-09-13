@@ -9,5 +9,7 @@ public interface HorseFeature {
 
     default void onLoad(AbstractHorse horse, IHorseData data) {}
 
+    default void onRemoved(AbstractHorse horse, IHorseData data) {}
+
     default void onInventoryChanged(AbstractHorse horse, IHorseData data) {}
 }

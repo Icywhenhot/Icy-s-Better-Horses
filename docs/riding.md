@@ -18,14 +18,17 @@ The pile of small fixes that make a horse feel like transport instead of a chore
 
 Press the **walk cycle key** (default <kbd>V</kbd>) while riding to shift up through four gaits. Footfall pattern, stride length and the way the body rocks all change with the gear, so you can see which one you're in without reading the action bar.
 
-| Gear | Gait | Speed | Footfall |
+| Gear | Gait | Pace | Footfall |
 |:---|:---|:---|:---|
-| 1 | Walk | 20% | Four beats, lateral |
-| 2 | Trot | 45% | Two beats, diagonal pairs |
-| 3 | Canter | 70% | Three beats, with a leading foreleg |
-| 4 | Gallop | 100% | Four beats, with a moment of suspension |
+| 1 | Walk | ~1.9 blk/s | Four beats, lateral |
+| 2 | Trot | ~4.4 blk/s | Two beats, diagonal pairs |
+| 3 | Canter | ~6.8 blk/s | Three beats, with a leading foreleg |
+| 4 | Gallop | Full speed | Four beats, with a moment of suspension |
 
 Shifting past top gear drops you back to a halt.
+
+{: .note }
+> Gears 1 to 3 are **fixed paces**, not a percentage of the horse. A plodding Shire and a bonded Thoroughbred both trot at the same speed, which is the point: it's a cruise control for riding in company or down a narrow path. Only **Gallop** hands the horse its full stat, so a fast horse is only fast in top gear. If the horse's own top speed is below the gear's pace, the gear can't push it past what it has.
 
 Holding <kbd>W</kbd> or <kbd>S</kbd> hands speed control back to you and the horse animates to whatever pace you actually ride at. Let go and the selected gait takes over again.
 
@@ -42,7 +45,13 @@ Tap any movement key again to take back full manual control.
 
 Mounting no longer snaps your camera to the horse's facing. Instead, **the horse turns to match you**.
 
-While standing still you get up to **90 degrees** of free look before the horse starts to follow your gaze, so you can scan the horizon, check behind you, or line up a shot without dismounting.
+While standing still you get up to **90 degrees** of free look before the horse starts to follow your gaze, so you can scan the horizon, check behind you, or line up a shot without dismounting. The moment you press a movement key the horse takes your facing again.
+
+For the other 270 degrees, **hold the Free Look key** (default <kbd>Left Ctrl</kbd>). While it's held the horse ignores your camera completely and keeps its own heading, so you can look straight behind you at a gallop. Let go and it lines back up.
+
+## Rearing
+
+Press the **Rear key** (default <kbd>H</kbd>) to make a horse rear up: the one you're riding, or the one you're looking at within 12 blocks. It needs to be on the ground, and a war horse with its class perk intact refuses to rear when hurt. It's cosmetic, and it's the vanilla rear animation the mod otherwise suppresses so that jumping looks like jumping.
 
 ## The horse gets out of your way
 
@@ -95,9 +104,10 @@ Using a saddle, vanilla or [upgraded](equipment/upgraded-saddle), on a horse in 
 
 | Improvement | Detail |
 |:---|:---|
-| Gaits | Four gears: walk, trot, canter, gallop |
+| Gaits | Four gears on <kbd>V</kbd>: walk, trot, canter, gallop |
 | Auto-ride | Double-tap <kbd>W</kbd>; any movement key cancels |
-| Free look | Up to 90° while stationary before the horse turns |
+| Free look | Up to 90° while stationary; hold <kbd>Left Ctrl</kbd> for full |
+| Rear | <kbd>H</kbd> on the horse you ride or look at |
 | Camera | Horse fades when you look down; head drops while ridden |
 | Step height | +10% |
 | Mounted mining | Matches on-foot speed; remaining penalty cut 80% |

@@ -156,7 +156,7 @@ public class HorseReturnHomeGoal extends Goal {
         if (horse.level() instanceof ServerLevel serverLevel) {
             serverLevel.getChunkSource().addTicketWithRadius(ModTicketTypes.HORSE_TASK, ChunkPos.containing(home), 1);
         }
-        horse.teleportTo(home.getX() + 0.5, home.getY(), home.getZ() + 0.5);
+        if (!icy.betterhorses.net.HorsePlacement.teleport(horse, home)) return;
         IHorseData.of(horse).bh_setCommand(HorseCommand.STAY);
     }
 }

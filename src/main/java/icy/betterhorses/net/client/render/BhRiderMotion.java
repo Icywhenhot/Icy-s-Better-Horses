@@ -19,6 +19,10 @@ public record BhRiderMotion(float right, float up, float forward, float pitch, f
         return ACTIVE.getOrDefault(horseId, NONE);
     }
 
+    public static void remove(int id) {
+        ACTIVE.remove(id);
+    }
+
     public static void reset() {
         ACTIVE.clear();
     }
