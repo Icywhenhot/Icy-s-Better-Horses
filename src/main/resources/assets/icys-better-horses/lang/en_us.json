@@ -579,7 +579,7 @@
   "book.icys-better-horses.stable_handbook.classes.breed_clydesdale.about.title": "Clydesdale",
   "book.icys-better-horses.stable_handbook.classes.breed_clydesdale.about.text": "Scotland's draft giant, and the showiest of the four. It is a carriage and parade horse before it is a ploughing one.   \n\u00a0   \nSpeed: **7-10** blk/s   \nJump: **1-3** blk   \nHealth: **35-50**",
   "book.icys-better-horses.stable_handbook.classes.breed_clydesdale.ability.title": "Ironclad",
-  "book.icys-better-horses.stable_handbook.classes.breed_clydesdale.ability.text": "**At bond 0:** Equipped barding grants **25% more armour**. Charge and kick damage read armour too, giving a modest damage bonus.   \n\u00a0   \n**At bond 40:** Wearing barding grants the rider Resistance.   \n\u00a0   \n**At bond 100:** **Deflect**: arrows and other projectiles are stopped before they land.",
+  "book.icys-better-horses.stable_handbook.classes.breed_clydesdale.ability.text": "**At bond 0:** Equipped barding grants **25%% more armour**. Charge and kick damage read armour too, giving a modest damage bonus.   \n\u00a0   \n**At bond 40:** Wearing barding grants the rider Resistance.   \n\u00a0   \n**At bond 100:** **Deflect**: arrows and other projectiles are stopped before they land.",
   "book.icys-better-horses.stable_handbook.classes.breed_friesian.name": "Friesian",
   "book.icys-better-horses.stable_handbook.classes.breed_friesian.about.title": "Friesian",
   "book.icys-better-horses.stable_handbook.classes.breed_friesian.about.text": "The all-black horse of the Dutch lowlands - tall and powerful, always show-ready.   \n\u00a0   \nSpeed: **9-15** blk/s   \nJump: **2-5** blk   \nHealth: **25-40**",
