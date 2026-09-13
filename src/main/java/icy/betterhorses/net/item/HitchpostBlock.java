@@ -36,8 +36,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.UUID;
+import net.minecraft.world.entity.EntityReference;
 
-// Standalone hitch post block that keeps its own tethered-horse state instead of delegating to vanilla fence/lead mechanics.
 public class HitchpostBlock extends BaseEntityBlock {
 
     public static final MapCodec<HitchpostBlock> CODEC = simpleCodec(HitchpostBlock::new);
@@ -119,16 +119,15 @@ public class HitchpostBlock extends BaseEntityBlock {
 
         AbstractHorse horse = findHorseToTether(serverLevel, pos, player);
         if (horse == null) {
-            player.sendSystemMessage(Component.translatable("message.icys_better_horses.no_horse_to_tether"));
+            player.sendSystemMessage(Component.translatable("message.icys-better-horses.no_horse_to_tether"));
             return;
         }
 
         if (tetherHorse(serverLevel, pos, state, horse, player)) {
-            player.sendSystemMessage(Component.translatable("message.icys_better_horses.hitchpost_tethered"));
+            player.sendSystemMessage(Component.translatable("message.icys-better-horses.hitchpost_tethered"));
         }
     }
 
-    // 1.21.5+ replaces onRemove with #affectNeighborsAfterRemoval, which is only invoked when the block is actually removed (not for in-place state changes), so we no longer need the !state.is(newState.getBlock()) guard.
     @Override
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         releaseHorseAtPost(level, pos);
@@ -139,7 +138,7 @@ public class HitchpostBlock extends BaseEntityBlock {
         if (!BhConfig.hitchpostEnabled()) {
             return false;
         }
-        if (!level.getBlockState(pos).is(ModBlocks.HITCHPOST.get())) {
+        if (!level.getBlockState(pos).is(ModBlocks.HITCHPOST)) {
             return false;
         }
 
@@ -152,7 +151,7 @@ public class HitchpostBlock extends BaseEntityBlock {
     }
 
     public static void releaseHorse(ServerLevel level, AbstractHorse horse, boolean logRelease) {
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         BlockPos hitchpostPos = data.bh_getHitchpostPos();
         if (hitchpostPos != null) {
             clearPostReference(level, hitchpostPos, horse.getUUID());
@@ -176,7 +175,7 @@ public class HitchpostBlock extends BaseEntityBlock {
         }
 
         if (level.getEntity(horseId) instanceof AbstractHorse horse) {
-            ((IHorseData) horse).bh_setHitchpostPos(null);
+            IHorseData.of(horse).bh_setHitchpostPos(null);
         }
 
         hitchpost.setTetheredHorseId(null);
@@ -203,7 +202,7 @@ public class HitchpostBlock extends BaseEntityBlock {
             return false;
         }
 
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         BlockPos existingPost = data.bh_getHitchpostPos();
         if (existingPost != null && !existingPost.equals(pos)) {
             clearPostReference(level, existingPost, horseId);
@@ -216,7 +215,7 @@ public class HitchpostBlock extends BaseEntityBlock {
         horse.hurtMarked = true;
 
         if (player != null && data.bh_getOwner() == null) {
-            net.minecraft.world.entity.EntityReference<net.minecraft.world.entity.LivingEntity> ownerRef = horse.getOwnerReference();
+            EntityReference<LivingEntity> ownerRef = horse.getOwnerReference();
             UUID horseOwner = ownerRef == null ? null : ownerRef.getUUID();
             if (player.getUUID().equals(horseOwner)) {
                 data.bh_setOwner(player.getUUID());
@@ -250,10 +249,11 @@ public class HitchpostBlock extends BaseEntityBlock {
         }
 
         UUID playerId = player.getUUID();
-        net.minecraft.world.entity.EntityReference<net.minecraft.world.entity.LivingEntity> ownerRef = horse.getOwnerReference();
+        EntityReference<LivingEntity> ownerRef = horse.getOwnerReference();
         UUID ownerId = ownerRef == null ? null : ownerRef.getUUID();
-        UUID modOwnerId = ((IHorseData) horse).bh_getOwner();
-        return playerId.equals(ownerId) || playerId.equals(modOwnerId);
+        IHorseData data = IHorseData.of(horse);
+        return playerId.equals(ownerId)
+                || (data.bh_isOwned() && data.bh_mayHandle(playerId));
     }
 
     private static Vec3 chooseAnchor(BlockPos pos, BlockState state, AbstractHorse horse) {

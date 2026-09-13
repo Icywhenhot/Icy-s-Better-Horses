@@ -1,0 +1,29 @@
+{
+  "criteria": {
+    "mixed_foal": {
+      "conditions": {
+        "key": "mixed_foal"
+      },
+      "trigger": "icys-better-horses:milestone"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.icys-better-horses.best_of_both_worlds.description"
+    },
+    "icon": {
+      "id": "minecraft:golden_carrot"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.icys-better-horses.best_of_both_worlds.title"
+    }
+  },
+  "parent": "icys-better-horses:foal_play",
+  "requirements": [
+    [
+      "mixed_foal"
+    ]
+  ]
+}

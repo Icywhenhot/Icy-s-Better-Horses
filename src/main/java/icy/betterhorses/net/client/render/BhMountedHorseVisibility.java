@@ -1,5 +1,6 @@
 package icy.betterhorses.net.client.render;
 
+import icy.betterhorses.net.BhConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
@@ -17,7 +18,8 @@ public final class BhMountedHorseVisibility {
 
     public static float getOpacity(AbstractHorse horse) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null
+        if (!BhConfig.transparentHorsesEnabled()
+                || minecraft.player == null
                 || !minecraft.options.getCameraType().isFirstPerson()
                 || !horse.hasPassenger(minecraft.player)) {
             return 1.0F;

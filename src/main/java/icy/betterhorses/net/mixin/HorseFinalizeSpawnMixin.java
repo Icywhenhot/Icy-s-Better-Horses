@@ -23,12 +23,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.Optional;
 
-// 1.21.11 vanilla Horse.finalizeSpawn replaces its groupData parameter with a freshly-built HorseGroupData before calling super.finalizeSpawn. That clobbers any BhHorseGroupData a sibling spawn passed in, so an injection on AbstractHorse.finalizeSpawn can never see the original wrapper. <p>This mixin targets Horse.finalizeSpawn directly. HEAD captures the original group data (in particular: the shared breed, if any) into a Unique field; TAIL applies the coat from that breed and propagates a fresh BhHorseGroupData to the next sibling.
 @Mixin(Horse.class)
 public abstract class HorseFinalizeSpawnMixin {
 
     @Unique
-    private static final Logger BH_LOGGER = LoggerFactory.getLogger("icys_better_horses/spawn");
+    private static final Logger BH_LOGGER = LoggerFactory.getLogger("icys-better-horses/spawn");
 
     @Unique
     @Nullable
@@ -54,9 +53,8 @@ public abstract class HorseFinalizeSpawnMixin {
                                       @Nullable SpawnGroupData groupData,
                                       CallbackInfoReturnable<SpawnGroupData> cir) {
         Horse self = (Horse) (Object) this;
-        IHorseData data = (IHorseData) self;
+        IHorseData data = IHorseData.of(self);
 
-        // Skip breed/coat application when an NBT-restored breed already exists (e.g. /summon with stored data).
         if (data.bh_getBreed() != HorseBreed.UNKNOWN_SPECIES) {
             this.bh_pendingGroupBreed = null;
             return;
@@ -70,7 +68,6 @@ public abstract class HorseFinalizeSpawnMixin {
         data.bh_setBreed(breed);
         data.bh_setMixedBreed(false);
 
-        // Re-roll the coat from the breed's allowed list. Vanilla already set a random Variant + Markings just above the super.finalizeSpawn call; we overwrite it here.
         HorseBreed.Coat coat = breed.rollCoat(self.getRandom());
         if (coat != null) {
             ((HorseAccessor) self).bh_setVariantAndMarkings(coat.color(), coat.markings());
@@ -85,21 +82,15 @@ public abstract class HorseFinalizeSpawnMixin {
                     reason, self.blockPosition(), biomeId, breed, coat);
         }
 
-        // Propagate breed to the next sibling in this spawn group. The vanilla return value (HorseGroupData) is preserved inside the wrapper so any downstream code that looked at it is unaffected.
         cir.setReturnValue(new BhHorseGroupData(breed, cir.getReturnValue()));
     }
 
     @Unique
     private HorseBreed bh_pickBreedForBiome(ServerLevelAccessor level, Horse self) {
-        Holder<Biome> biome = level.getBiome(self.blockPosition());
-        Optional<ResourceKey<Biome>> biomeKey = biome.unwrapKey();
-        if (biomeKey.isPresent()) {
-            List<HorseBreed> matches = HorseBreed.breedsForBiome(biomeKey.get());
-            if (!matches.isEmpty()) {
-                return matches.get(self.getRandom().nextInt(matches.size()));
-            }
-        }
-        return HorseBreed.fromId(self.getRandom().nextInt(HorseBreed.HORSE_BREED_COUNT));
+        HorseBreed picked = HorseBreed.pickForBiome(level.getBiome(self.blockPosition()), self.getRandom());
+        return picked != null
+                ? picked
+                : HorseBreed.fromId(self.getRandom().nextInt(HorseBreed.HORSE_BREED_COUNT));
     }
 
     @Unique

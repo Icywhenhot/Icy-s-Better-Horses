@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-// The vanilla RenderLayer.submit(PoseStack, SubmitNodeCollector, int, S, float, float) signature does not carry the CameraRenderState, but our stabilizer layer needs it for GeckoLib 5's performRenderPass call. The owning LivingEntityRenderer.submit has the camera in scope, so we wrap that call: push the camera before the layers run, clear after.
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityRendererSubmitMixin {
 

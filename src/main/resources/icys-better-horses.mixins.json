@@ -1,0 +1,55 @@
+{
+	"required": true,
+	"package": "icy.betterhorses.net.mixin",
+	"compatibilityLevel": "JAVA_25",
+	"mixins": [
+		"AbstractHorseMixin",
+		"AnimalMixin",
+		"EquineBreedingMixin",
+		"AbstractChestedHorseCreativeTamingMixin",
+		"AbstractMountInventoryMenuMixin",
+		"EntityMixin",
+		"EntityAccessor",
+		"HorseAccessor",
+		"HorseCreativeTamingMixin",
+		"HorseFinalizeSpawnMixin",
+		"HorseInventoryMenuMixin",
+		"HorseSaddleSlotMixin",
+		"LeafPassthroughMixin",
+		"MapItemMixin",
+		"LivingEntityMixin",
+		"MobCartPassengerMixin",
+		"MobNameTagBondMixin",
+		"PanicGoalMixin",
+		"PlayerHurtMixin",
+		"EntitySlowBlockMixin",
+		"PowderSnowBlockMixin",
+		"SpawnPlacementsAccessor",
+		"SlotAccessor"
+	],
+	"client": [
+		"AbstractContainerScreenAccessor",
+		"AbstractContainerScreenMixin",
+		"AbstractEquineModelMixin",
+		"AbstractHorseRendererMixin",
+		"CameraMixin",
+		"EquipmentLayerRendererMixin",
+		"EquineRenderStateMixin",
+		"GuiGraphicsExtractorAccessor",
+		"GuiMixin",
+		"HorseMarkingLayerMixin",
+		"HorseInventoryScreenMixin",
+		"HorseModelAccessor",
+		"KeyboardInputMixin",
+		"LivingEntityRenderStateRiderMixin",
+		"LivingEntityRendererMixin",
+		"LivingEntityRendererRiderMixin",
+		"LivingEntityRendererSubmitMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

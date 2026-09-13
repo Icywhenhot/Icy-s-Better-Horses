@@ -1,0 +1,29 @@
+{
+  "criteria": {
+    "set_home": {
+      "conditions": {
+        "key": "set_home"
+      },
+      "trigger": "icys-better-horses:milestone"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.icys-better-horses.home_is_where_the_hay_is.description"
+    },
+    "icon": {
+      "id": "minecraft:hay_block"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.icys-better-horses.home_is_where_the_hay_is.title"
+    }
+  },
+  "parent": "icys-better-horses:hold_your_horses",
+  "requirements": [
+    [
+      "set_home"
+    ]
+  ]
+}

@@ -4,13 +4,13 @@ license="${mod_license}"
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
-logoFile="assets/icys_better_horses/icon.png"
+logoFile="assets/icys-better-horses/icon.png"
 description='''
-Better Horses turns horses into long-term companions with bonding, commands, utility gear, and travel-focused upgrades.
+Turns horses from an early-game novelty into long-term companions: ownership and bonding, fifteen breeds with their own coats and biomes, dedicated tack, carts, and a stack of riding improvements.
 '''
 
 [[mixins]]
-config="icys_better_horses.mixins.json"
+config="icys-better-horses.mixins.json"
 
 [[dependencies.${mod_id}]]
 modId="neoforge"
@@ -30,5 +30,19 @@ side="BOTH"
 modId="geckolib"
 type="required"
 versionRange="[${geckolib_version},)"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.${mod_id}]]
+modId="modonomicon"
+type="required"
+versionRange="[${modonomicon_version},)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="cloth_config"
+type="optional"
+versionRange="[${cloth_config_version},)"
 ordering="NONE"
 side="CLIENT"

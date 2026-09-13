@@ -1,0 +1,40 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:basics/goals",
+  "category": "icys-better-horses:basics",
+  "name": "book.icys-better-horses.stable_handbook.basics.goals.name",
+  "icon": {
+    "id": "minecraft:experience_bottle"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 4,
+  "y": 2,
+  "sort_number": 0,
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "intro",
+      "title": "book.icys-better-horses.stable_handbook.basics.goals.intro.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.goals.intro.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "early",
+      "title": "book.icys-better-horses.stable_handbook.basics.goals.early.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.goals.early.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "late",
+      "title": "book.icys-better-horses.stable_handbook.basics.goals.late.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.goals.late.text"
+    }
+  ]
+}

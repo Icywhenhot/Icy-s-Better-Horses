@@ -1,26 +1,37 @@
 package icy.betterhorses.net;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.RegisterEvent;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public final class ModSounds {
 
-    private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, IcysBetterHorses.MOD_ID);
+    private static final Map<String, SoundEvent> SOUNDS = new LinkedHashMap<>();
 
-    public static final DeferredHolder<SoundEvent, SoundEvent> CALL_WHISTLE =
-            SOUNDS.register("call_whistle", SoundEvent::createVariableRangeEvent);
-    public static final DeferredHolder<SoundEvent, SoundEvent> STABILIZER_INTRO =
-            SOUNDS.register("stabilizer_intro", SoundEvent::createVariableRangeEvent);
-    public static final DeferredHolder<SoundEvent, SoundEvent> STABILIZER_LOOP =
-            SOUNDS.register("stabilizer_loop", SoundEvent::createVariableRangeEvent);
+    public static final SoundEvent CALL_WHISTLE = register("call_whistle");
+    public static final SoundEvent STABILIZER_INTRO = register("stabilizer_intro");
+    public static final SoundEvent STABILIZER_LOOP = register("stabilizer_loop");
 
-    public static void register(IEventBus modEventBus) {
-        SOUNDS.register(modEventBus);
+    public static final SoundEvent HORSE_ANGRY_SNORT = register("horse_angry_snort");
+    public static final SoundEvent HORSE_NEIGH = register("horse_neigh");
+    public static final SoundEvent HORSE_SNORT = register("horse_snort");
+    public static final SoundEvent HORSE_CHARGE_THUD = register("horse_charge_thud");
+
+    public static void register(RegisterEvent event) {
+        event.register(Registries.SOUND_EVENT, helper -> SOUNDS.forEach((path, sound) ->
+                helper.register(Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path), sound)));
+    }
+
+    private static SoundEvent register(String path) {
+        Identifier id = Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
+        SoundEvent sound = SoundEvent.createVariableRangeEvent(id);
+        SOUNDS.put(path, sound);
+        return sound;
     }
 
     private ModSounds() {}
 }
-

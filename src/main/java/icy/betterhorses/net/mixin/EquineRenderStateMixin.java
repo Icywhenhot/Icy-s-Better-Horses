@@ -7,7 +7,6 @@ import net.minecraft.util.Mth;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-// Adds stabilizer-related fields onto vanilla EquineRenderState so the data the live entity carries (via IHorseData) is available at submit-time, when only the render state is reachable in 1.21.11's split-extract/submit pipeline. Populated each frame by AbstractHorseRendererMixin.bh_captureStabilizerState; consumed by HorseStabilizerLayer.submit.
 @Mixin(EquineRenderState.class)
 public abstract class EquineRenderStateMixin implements IBhEquineStabilizerState {
 
@@ -17,6 +16,8 @@ public abstract class EquineRenderStateMixin implements IBhEquineStabilizerState
     @Unique private float bh_partialTick;
     @Unique private boolean bh_riddenByPlayerInFirstPerson;
     @Unique private float bh_opacity = 1.0F;
+    @Unique private boolean bh_hasChestGear;
+    @Unique private boolean bh_hasEnderChestGear;
 
     @Override
     public void bh_setStabilizerData(boolean hasStabilizer, HorseStabilizerState state, int horseId, float partialTick) {
@@ -60,5 +61,21 @@ public abstract class EquineRenderStateMixin implements IBhEquineStabilizerState
     @Override
     public float bh_getOpacity() {
         return this.bh_opacity;
+    }
+
+    @Override
+    public void bh_setChestGear(boolean hasChestGear, boolean enderChest) {
+        this.bh_hasChestGear = hasChestGear;
+        this.bh_hasEnderChestGear = enderChest;
+    }
+
+    @Override
+    public boolean bh_hasChestGear() {
+        return this.bh_hasChestGear;
+    }
+
+    @Override
+    public boolean bh_hasEnderChestGear() {
+        return this.bh_hasEnderChestGear;
     }
 }

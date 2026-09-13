@@ -21,12 +21,17 @@ sourceSets.main.resources {
     exclude("**/*.bbmodel")
     exclude("src/generated/**/.cache")
     exclude("fabric.mod.json")
-    exclude("icys-better-horses.mixins.json")
-    exclude("assets/icys-better-horses/**")
-    exclude("data/icys-better-horses/**")
+    exclude("icys_better_horses.mixins.json")
+    exclude("assets/icys_better_horses/**")
+    exclude("data/icys_better_horses/**")
 }
 
 repositories {
+    maven {
+        name = 'Klikli'
+        url = 'https://dl.cloudsmith.io/public/klikli-dev/mods/maven/'
+        content { includeGroup 'com.klikli_dev' }
+    }
     exclusiveContent {
         forRepository {
             maven {
@@ -61,6 +66,7 @@ java {
 
 neoForge {
     version = project.neo_version
+    interfaceInjectionData.from 'src/main/interface_injections.json'
 
     runs {
         client {
@@ -99,6 +105,11 @@ neoForge {
             sourceSet(sourceSets.main)
         }
     }
+
+    unitTest {
+        enable()
+        testedMod = mods."${mod_id}"
+    }
 }
 
 configurations {
@@ -107,6 +118,10 @@ configurations {
 
 dependencies {
     implementation "maven.modrinth:geckolib:${geckolib_version_id}"
+    implementation("com.klikli_dev:modonomicon-${minecraft_version}-neoforge:${modonomicon_version}") {
+        transitive = false
+    }
+    implementation "maven.modrinth:cloth-config:${cloth_config_version_id}"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
@@ -123,6 +138,8 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_license            : mod_license,
             mod_version            : mod_version,
             geckolib_version       : geckolib_version,
+            modonomicon_version    : modonomicon_version,
+            cloth_config_version   : cloth_config_version,
     ]
     inputs.properties replaceProperties
     expand replaceProperties

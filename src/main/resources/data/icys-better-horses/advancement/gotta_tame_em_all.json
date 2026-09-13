@@ -1,0 +1,159 @@
+{
+  "criteria": {
+    "american_paint": {
+      "conditions": {
+        "key": "breed/american_paint"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
+    "andalusian": {
+      "conditions": {
+        "key": "breed/andalusian"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
+    "appaloosa": {
+      "conditions": {
+        "key": "breed/appaloosa"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
+    "arabian": {
+      "conditions": {
+        "key": "breed/arabian"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
+    "belgian": {
+      "conditions": {
+        "key": "breed/belgian"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
+    "clydesdale": {
+      "conditions": {
+        "key": "breed/clydesdale"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
+    "friesian": {
+      "conditions": {
+        "key": "breed/friesian"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
+    "haflinger": {
+      "conditions": {
+        "key": "breed/haflinger"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
+    "icelandic": {
+      "conditions": {
+        "key": "breed/icelandic"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
+    "morgan": {
+      "conditions": {
+        "key": "breed/morgan"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
+    "mustang": {
+      "conditions": {
+        "key": "breed/mustang"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
+    "percheron": {
+      "conditions": {
+        "key": "breed/percheron"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
+    "quarter": {
+      "conditions": {
+        "key": "breed/quarter"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
+    "shire": {
+      "conditions": {
+        "key": "breed/shire"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
+    "thoroughbred": {
+      "conditions": {
+        "key": "breed/thoroughbred"
+      },
+      "trigger": "icys-better-horses:milestone"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.icys-better-horses.gotta_tame_em_all.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "id": "minecraft:diamond_horse_armor"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.icys-better-horses.gotta_tame_em_all.title"
+    }
+  },
+  "parent": "icys-better-horses:foal_play",
+  "requirements": [
+    [
+      "thoroughbred"
+    ],
+    [
+      "arabian"
+    ],
+    [
+      "quarter"
+    ],
+    [
+      "friesian"
+    ],
+    [
+      "andalusian"
+    ],
+    [
+      "percheron"
+    ],
+    [
+      "clydesdale"
+    ],
+    [
+      "shire"
+    ],
+    [
+      "belgian"
+    ],
+    [
+      "icelandic"
+    ],
+    [
+      "mustang"
+    ],
+    [
+      "haflinger"
+    ],
+    [
+      "morgan"
+    ],
+    [
+      "american_paint"
+    ],
+    [
+      "appaloosa"
+    ]
+  ],
+  "rewards": {
+    "experience": 250
+  }
+}

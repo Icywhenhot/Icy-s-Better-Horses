@@ -12,13 +12,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.UUID;
 
-// 1.21.5+ block-entity save format: loadAdditional/saveAdditional now take ValueInput/ValueOutput (codec-based) instead of CompoundTag. UUIDs are stored via UUIDUtil#CODEC.
 public class HitchpostBlockEntity extends BlockEntity {
 
     private @Nullable UUID tetheredHorseId;
 
     public HitchpostBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.HITCHPOST.get(), pos, state);
+        super(ModBlockEntities.HITCHPOST, pos, state);
     }
 
     public @Nullable UUID getTetheredHorseId() {

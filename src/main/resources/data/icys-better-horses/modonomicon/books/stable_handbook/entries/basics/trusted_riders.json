@@ -1,0 +1,45 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:basics/trusted_riders",
+  "category": "icys-better-horses:basics",
+  "name": "book.icys-better-horses.stable_handbook.basics.trusted_riders.name",
+  "icon": {
+    "id": "minecraft:player_head"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 4,
+  "y": 0,
+  "sort_number": 6,
+  "parents": [
+    {
+      "entry": "icys-better-horses:basics/owner_bucking"
+    }
+  ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "trust",
+      "title": "book.icys-better-horses.stable_handbook.basics.trusted_riders.trust.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.trusted_riders.trust.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "limits",
+      "title": "book.icys-better-horses.stable_handbook.basics.trusted_riders.limits.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.trusted_riders.limits.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "revoke",
+      "title": "book.icys-better-horses.stable_handbook.basics.trusted_riders.revoke.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.trusted_riders.revoke.text"
+    }
+  ]
+}

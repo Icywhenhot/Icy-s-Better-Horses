@@ -3,6 +3,9 @@ package icy.betterhorses.net.mixin;
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
+import icy.betterhorses.net.client.BhAnim;
+import icy.betterhorses.net.client.BhScreenDraw;
+import icy.betterhorses.net.client.BhSlotFlash;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -17,8 +20,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractMountInventoryMenu;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
@@ -28,6 +31,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import java.util.Locale;
+import net.minecraft.world.entity.animal.equine.Horse;
 
 @Mixin(AbstractMountInventoryScreen.class)
 public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<AbstractMountInventoryMenu> {
@@ -43,16 +48,13 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
     @Unique private static final int BH_VANILLA_IMAGE_HEIGHT = 166;
     @Unique private static final int BH_TOP_SECTION_HEIGHT = 77;
-    @Unique private static final int BH_PLAYER_SECTION_Y_OFFSET = 54;
-    @Unique private static final int BH_PLAYER_SLOT_Y_OFFSET = 54;
-    @Unique private static final int BH_EXTENDED_IMAGE_HEIGHT = BH_VANILLA_IMAGE_HEIGHT + BH_PLAYER_SECTION_Y_OFFSET;
+    @Unique private static final int BH_ROW_HEIGHT = 18;
     @Unique private static final int BH_DEFAULT_INVENTORY_LABEL_Y = BH_VANILLA_IMAGE_HEIGHT - 94;
     @Unique private static final int BH_GEAR_PANEL_X = 79;
     @Unique private static final int BH_GEAR_PANEL_Y = 17;
     @Unique private static final int BH_CHEST_PANEL_X = 7;
     @Unique private static final int BH_CHEST_PANEL_Y = 78;
     @Unique private static final int BH_CHEST_PANEL_WIDTH = 9 * 18;
-    @Unique private static final int BH_CHEST_PANEL_HEIGHT = 3 * 18;
     @Unique private static final int BH_SIDE_BORDER_WIDTH = 7;
     @Unique private static final int BH_HINT_TINT = 0xA06B5A46;
     @Unique private static final int BH_MIDDLE_FILL = 0xFFC6C6C6;
@@ -62,8 +64,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final int BH_STATS_TEXT_Y = 38;
     @Unique private static final int BH_STATS_LINE_SPACING = 10;
     @Unique private static final int BH_TEXT_COLOR = 0xFF404040;
+    @Unique private static final float BH_LOCK_FLASH_ALPHA = 0.65F;
 
-    // Pseudo-constructor required for compilation — never actually called at runtime
     protected HorseInventoryScreenMixin(AbstractMountInventoryMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
     }
@@ -79,10 +81,9 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         if (!(menu instanceof HorseInventoryLayoutAccess layoutAccess) || !(mount instanceof AbstractHorse)) {
             return;
         }
-        // Pre-size the screen so AbstractContainerScreen.init() centers topPos against the right imageHeight. Otherwise hasClickedOutside uses topPos+166 as the bottom bound while the shifted player-inventory slots sit below it — clicks become "outside GUI" and items get tossed.
         ((AbstractContainerScreenAccessor) (Object) this).bh_setImageHeight(
                 layoutAccess.bh_hasChestStorageLayout()
-                        ? BH_EXTENDED_IMAGE_HEIGHT
+                        ? BH_VANILLA_IMAGE_HEIGHT + layoutAccess.bh_getChestRows() * BH_ROW_HEIGHT
                         : BH_VANILLA_IMAGE_HEIGHT);
         this.inventoryLabelY = layoutAccess.bh_hasUpgradedSaddleLayout()
                 ? this.imageHeight + 1000
@@ -103,17 +104,17 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
         int x = this.leftPos;
         int y = this.topPos;
+        int chestHeight = this.bh_chestRows() * BH_ROW_HEIGHT;
         bh_blitGui(gfx, BH_HORSE_TEXTURE, x, y, 0, 0, this.imageWidth, BH_TOP_SECTION_HEIGHT);
-        this.bh_drawMiddlePanel(gfx, x, y + BH_TOP_SECTION_HEIGHT, this.imageWidth, BH_PLAYER_SECTION_Y_OFFSET);
+        this.bh_drawMiddlePanel(gfx, x, y + BH_TOP_SECTION_HEIGHT, this.imageWidth, chestHeight);
         bh_blitGui(gfx, BH_HORSE_TEXTURE,
                 x,
-                y + BH_TOP_SECTION_HEIGHT + BH_PLAYER_SECTION_Y_OFFSET,
+                y + BH_TOP_SECTION_HEIGHT + chestHeight,
                 0,
                 BH_TOP_SECTION_HEIGHT,
                 this.imageWidth,
                 BH_VANILLA_IMAGE_HEIGHT - BH_TOP_SECTION_HEIGHT);
 
-        // 1.21.11 split horse slot rendering: vanilla draws an 18x18 "container/slot" sprite for the slot frame, and AbstractContainerScreen.renderSlot overlays the 16x16 empty-icon sprite (saddle / horse_armor / llama_armor) on top when the slot is empty. Replicate the frame here; the empty-icon overlay is drawn automatically by vanilla's slot rendering.
         if (horse.canUseSlot(EquipmentSlot.SADDLE)) {
             gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SLOT_SPRITE, x + 7, y + 17, 18, 18);
         }
@@ -150,7 +151,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         this.bh_drawGearPanel(gfx);
     }
 
-    // Bond label and speed/jump stat lines are drawn at the very end of render() so they sit on top of every layer (slots, hovered-slot highlight, vanilla labels) and aren't masked by anything drawn after renderBg. The vanilla label-rendering matrix is already popped by this point, so coordinates here are in absolute screen space.
     @Inject(method = "extractRenderState", at = @At("TAIL"))
     private void bh_drawTextOverlay(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
         AbstractHorse horse = this.bh_getHorseOrNull();
@@ -171,7 +171,9 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
         boolean chestLayout = layoutAccess.bh_hasChestStorageLayout();
         boolean upgradedSaddleLayout = layoutAccess.bh_hasUpgradedSaddleLayout();
-        int desiredImageHeight = chestLayout ? BH_EXTENDED_IMAGE_HEIGHT : BH_VANILLA_IMAGE_HEIGHT;
+        int desiredImageHeight = chestLayout
+                ? BH_VANILLA_IMAGE_HEIGHT + this.bh_chestRows() * BH_ROW_HEIGHT
+                : BH_VANILLA_IMAGE_HEIGHT;
 
         if (this.imageHeight != desiredImageHeight) {
             ((AbstractContainerScreenAccessor) (Object) this).bh_setImageHeight(desiredImageHeight);
@@ -184,9 +186,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
     @Unique
     private void bh_drawBondLabel(GuiGraphicsExtractor gfx, AbstractHorse horse) {
-        String text = "Bond: " + ((IHorseData) horse).bh_getBond();
+        String text = "Bond: " + IHorseData.of(horse).bh_getBond();
         int textWidth = this.font.width(text);
-        // shadow=false: with the dark-grey BH_TEXT_COLOR the offset shadow looks like a doubled duplicate letter, which reads as "muddy" on top of the slot panel.
         gfx.text(this.font, text,
                 this.leftPos + this.imageWidth - textWidth - 8,
                 this.topPos + 6,
@@ -196,12 +197,10 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
     @Unique
     private void bh_drawStatsLines(GuiGraphicsExtractor gfx, AbstractHorse horse) {
-        // Horse base speed 0.225 * 43.2 ~= 9.7 blk/s (matches vanilla roughly).
         double speedBps = horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * 43.2D;
-        // Base horse jump 0.7 yields ~3.2 block height; linear fit within vanilla jump range.
         double jumpBlk = Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D);
-        String speedText = String.format(java.util.Locale.ROOT, "Speed: %.1f blk/s", speedBps);
-        String jumpText = String.format(java.util.Locale.ROOT, "Jump:  %.1f blk", jumpBlk);
+        String speedText = String.format(Locale.ROOT, "Speed: %.1f blk/s", speedBps);
+        String jumpText = String.format(Locale.ROOT, "Jump:  %.1f blk", jumpBlk);
 
         gfx.text(this.font, speedText,
                 this.leftPos + BH_STATS_TEXT_X,
@@ -228,8 +227,32 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         this.bh_drawGearHint(gfx, x, y, GearSlot.CHEST, Items.CHEST);
         this.bh_drawGearHint(gfx, x, y, GearSlot.HOOVES, ModItems.HORSE_HOOVES);
         this.bh_drawGearHint(gfx, x, y, GearSlot.MEDKIT, ModItems.HORSE_MEDKIT);
-        this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, ModItems.HORSE_STABILIZER);
+        Item stabilizerSlotHint = this.bh_mountTakesStabilizer() && (System.currentTimeMillis() / 1000L) % 2L == 0L
+                ? ModItems.HORSE_STABILIZER
+                : ModItems.HORSE_CART;
+        this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, stabilizerSlotHint);
         this.bh_drawGearHint(gfx, x, y, GearSlot.HITCHPOST, ModItems.HITCHPOST);
+        this.bh_drawLockedSlotFlash(gfx);
+    }
+
+    @Unique
+    private void bh_drawLockedSlotFlash(GuiGraphicsExtractor gfx) {
+        float intensity = BhSlotFlash.intensity();
+        int flashed = BhSlotFlash.flashingSlot();
+        if (intensity <= 0.0F || flashed < 0 || flashed >= this.menu.slots.size()) {
+            return;
+        }
+
+        Slot slot = this.menu.slots.get(flashed);
+        int slotX = this.leftPos + slot.x;
+        int slotY = this.topPos + slot.y;
+        gfx.fill(slotX, slotY, slotX + 16, slotY + 16,
+                BhAnim.fade(BhScreenDraw.BTN_ERROR, intensity * BH_LOCK_FLASH_ALPHA));
+    }
+
+    @Unique
+    private int bh_chestRows() {
+        return this.getMenu() instanceof HorseInventoryLayoutAccess access ? access.bh_getChestRows() : 3;
     }
 
     @Unique
@@ -239,7 +262,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         }
         int x = this.leftPos + BH_CHEST_PANEL_X;
         int y = this.topPos + BH_CHEST_PANEL_Y;
-        for (int row = 0; row < 3; row++) {
+        for (int row = 0; row < this.bh_chestRows(); row++) {
             for (int col = 0; col < 9; col++) {
                 gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SLOT_SPRITE, x + col * 18, y + row * 18, 18, 18);
             }
@@ -251,18 +274,22 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int innerLeft = x + BH_SIDE_BORDER_WIDTH;
         int innerRight = x + width - BH_SIDE_BORDER_WIDTH;
 
-        bh_blitGui(gfx, BH_HORSE_TEXTURE, x, y, 0, BH_TOP_SECTION_HEIGHT, BH_SIDE_BORDER_WIDTH, height);
-        bh_blitGui(gfx, BH_HORSE_TEXTURE, innerRight, y,
-                this.imageWidth - BH_SIDE_BORDER_WIDTH, BH_TOP_SECTION_HEIGHT, BH_SIDE_BORDER_WIDTH, height);
+        for (int drawn = 0; drawn < height; drawn += BH_ROW_HEIGHT) {
+            int slice = Math.min(BH_ROW_HEIGHT, height - drawn);
+            bh_blitGui(gfx, BH_HORSE_TEXTURE, x, y + drawn,
+                    0, BH_TOP_SECTION_HEIGHT, BH_SIDE_BORDER_WIDTH, slice);
+            bh_blitGui(gfx, BH_HORSE_TEXTURE, innerRight, y + drawn,
+                    this.imageWidth - BH_SIDE_BORDER_WIDTH, BH_TOP_SECTION_HEIGHT,
+                    BH_SIDE_BORDER_WIDTH, slice);
+        }
 
         gfx.fill(innerLeft, y, innerRight, y + height, BH_MIDDLE_FILL);
         gfx.fill(innerLeft, y, innerRight, y + 1, BH_MIDDLE_HIGHLIGHT);
         gfx.fill(innerLeft, y + height - 1, innerRight, y + height, BH_MIDDLE_SHADOW);
     }
 
-    // 1.21.11 removed gfx.setColor (the old way to tint a renderItem call). To replicate the "ghost" feel of the old hint icons, we draw the item normally and then lay a translucent overlay rectangle on top of it: a milky-white wash dims & desaturates the icon so it reads as a placeholder rather than a real equipped item.
     @Unique
-    private void bh_drawGearHint(GuiGraphicsExtractor gfx, int x, int y, GearSlot slot, ItemLike item) {
+    private void bh_drawGearHint(GuiGraphicsExtractor gfx, int x, int y, GearSlot slot, Item item) {
         int slotIndex = this.bh_getGearSlotIndex(slot.ordinal());
         if (slotIndex < 0 || this.menu.getSlot(slotIndex).hasItem()) {
             return;
@@ -271,11 +298,9 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int iconX = x + slot.ordinal() * 18 + 1;
         int iconY = y + 1;
         gfx.item(new ItemStack(item), iconX, iconY);
-        // Translucent wash. ARGB: alpha 0xA0 (~63%), warm-grey RGB matching old BH_HINT_TINT.
         gfx.fill(iconX, iconY, iconX + 16, iconY + 16, 0xA0B7AB99);
     }
 
-    // Helper for the new 1.21.11 blit signature, which now requires an explicit com.mojang.blaze3d.pipeline.RenderPipeline and texture sheet dimensions. The vanilla horse GUI texture is the standard 256×256 sheet.
     @Unique
     private static void bh_blitGui(GuiGraphicsExtractor gfx, Identifier texture,
                                    int x, int y, int u, int v, int width, int height) {
@@ -285,6 +310,11 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique
     private boolean bh_hasUpgradedSaddleInMenu() {
         return this.menu.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE);
+    }
+
+    @Unique
+    private boolean bh_mountTakesStabilizer() {
+        return this.mount instanceof Horse;
     }
 
     @Unique

@@ -21,8 +21,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import net.minecraft.world.item.Items;
 
-// 1.21.11 moved mount shift-click logic up from HorseInventoryMenu to AbstractMountInventoryMenu. Keep the upgraded-saddle gear/chest routes wired in there.
 @Mixin(AbstractMountInventoryMenu.class)
 public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerMenu {
 
@@ -59,6 +59,14 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
             return;
         }
 
+        boolean lockedCart = index == gearStartIndex + GearSlot.STABILIZER.ordinal()
+                && layoutAccess.bh_isCartSlotLocked();
+        boolean lockedSaddle = index == 0 && layoutAccess.bh_isSaddleSlotLocked();
+        if (lockedCart || lockedSaddle) {
+            cir.setReturnValue(ItemStack.EMPTY);
+            return;
+        }
+
         ItemStack sourceStack = sourceSlot.getItem();
         ItemStack copiedStack = sourceStack.copy();
 
@@ -85,7 +93,8 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
             if (!moved && this.bh_hasUpgradedSaddleInMenu()) {
                 moved = this.bh_moveIntoFirstMatchingGearSlot(sourceStack, gearStartIndex, chestStartIndex);
                 if (!moved && this.bh_hasChestGearInMenu(gearStartIndex)) {
-                    moved = this.moveItemStackTo(sourceStack, chestStartIndex, chestStartIndex + 27, false);
+                    moved = this.moveItemStackTo(sourceStack, chestStartIndex,
+                            chestStartIndex + layoutAccess.bh_getChestRows() * 9, false);
                 }
             }
 
@@ -110,15 +119,12 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
         }
 
         if (sourceStack.isEmpty()) {
-            int chestGearSlotIndex = gearStartIndex + GearSlot.CHEST.ordinal();
-            if (index == chestGearSlotIndex) {
-                ((IHorseData) horse).bh_onChestGearRemoved(copiedStack);
-            }
             sourceSlot.setByPlayer(ItemStack.EMPTY);
         } else {
             sourceSlot.setChanged();
         }
 
+        sourceSlot.onTake(player, copiedStack);
         cir.setReturnValue(copiedStack);
     }
 
@@ -151,7 +157,7 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
         }
 
         ItemStack chestStack = this.slots.get(chestGearSlotIndex).getItem();
-        return chestStack.is(net.minecraft.world.item.Items.CHEST)
-                || chestStack.is(net.minecraft.world.item.Items.ENDER_CHEST);
+        return chestStack.is(Items.CHEST)
+                || chestStack.is(Items.ENDER_CHEST);
     }
 }
