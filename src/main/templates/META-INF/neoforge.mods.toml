@@ -31,7 +31,7 @@ modId="geckolib"
 type="required"
 versionRange="[${geckolib_version},)"
 ordering="NONE"
-side="CLIENT"
+side="BOTH"
 
 [[dependencies.${mod_id}]]
 modId="modonomicon"

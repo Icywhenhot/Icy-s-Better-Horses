@@ -7,11 +7,11 @@
             "condition": "minecraft:entity_properties",
             "entity": "this",
             "predicate": {
-              "minecraft:location": {
+              "location": {
                 "dimension": "minecraft:the_nether"
               },
-              "minecraft:vehicle": {
-                "minecraft:entity_type": "#icys-better-horses:horses"
+              "vehicle": {
+                "type": "#icys-better-horses:horses"
               }
             }
           }
