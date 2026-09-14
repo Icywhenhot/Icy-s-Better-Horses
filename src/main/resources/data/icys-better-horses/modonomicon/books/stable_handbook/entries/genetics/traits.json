@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:genetics/traits",
+  "category": "icys-better-horses:basics",
+  "name": "book.icys-better-horses.stable_handbook.genetics.traits.name",
+  "icon": {
+    "id": "minecraft:paper"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": -2,
+  "y": 2,
+  "sort_number": 0,
+  "parents": [
+    {
+      "entry": "icys-better-horses:basics/ownership_and_bonding"
+    }
+  ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "four",
+      "title": "book.icys-better-horses.stable_handbook.genetics.traits.four.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.genetics.traits.four.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "see",
+      "title": "book.icys-better-horses.stable_handbook.genetics.traits.see.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.genetics.traits.see.text"
+    }
+  ]
+}

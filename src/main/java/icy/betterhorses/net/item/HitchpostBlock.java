@@ -37,7 +37,6 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.UUID;
 
-// Standalone hitch post that tracks its own tethered horse instead of using vanilla leads.
 public class HitchpostBlock extends BaseEntityBlock {
 
     public static final MapCodec<HitchpostBlock> CODEC = simpleCodec(HitchpostBlock::new);
@@ -119,20 +118,18 @@ public class HitchpostBlock extends BaseEntityBlock {
 
         AbstractHorse horse = findHorseToTether(serverLevel, pos, player);
         if (horse == null) {
-            player.displayClientMessage(Component.translatable("message.icys_better_horses.no_horse_to_tether"), false);
+            player.sendSystemMessage(Component.translatable("message.icys-better-horses.no_horse_to_tether"));
             return;
         }
 
         if (tetherHorse(serverLevel, pos, state, horse, player)) {
-            player.displayClientMessage(Component.translatable("message.icys_better_horses.hitchpost_tethered"), false);
+            player.sendSystemMessage(Component.translatable("message.icys-better-horses.hitchpost_tethered"));
         }
     }
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if (!state.is(newState.getBlock()) && level instanceof ServerLevel serverLevel) {
-            releaseHorseAtPost(serverLevel, pos);
-        }
+        if (level instanceof ServerLevel serverLevel) releaseHorseAtPost(serverLevel, pos);
         super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
@@ -140,7 +137,7 @@ public class HitchpostBlock extends BaseEntityBlock {
         if (!BhConfig.hitchpostEnabled()) {
             return false;
         }
-        if (!level.getBlockState(pos).is(ModBlocks.HITCHPOST.get())) {
+        if (!level.getBlockState(pos).is(ModBlocks.HITCHPOST)) {
             return false;
         }
 
@@ -153,7 +150,7 @@ public class HitchpostBlock extends BaseEntityBlock {
     }
 
     public static void releaseHorse(ServerLevel level, AbstractHorse horse, boolean logRelease) {
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         BlockPos hitchpostPos = data.bh_getHitchpostPos();
         if (hitchpostPos != null) {
             clearPostReference(level, hitchpostPos, horse.getUUID());
@@ -177,7 +174,7 @@ public class HitchpostBlock extends BaseEntityBlock {
         }
 
         if (level.getEntity(horseId) instanceof AbstractHorse horse) {
-            ((IHorseData) horse).bh_setHitchpostPos(null);
+            IHorseData.of(horse).bh_setHitchpostPos(null);
         }
 
         hitchpost.setTetheredHorseId(null);
@@ -204,7 +201,7 @@ public class HitchpostBlock extends BaseEntityBlock {
             return false;
         }
 
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         BlockPos existingPost = data.bh_getHitchpostPos();
         if (existingPost != null && !existingPost.equals(pos)) {
             clearPostReference(level, existingPost, horseId);
@@ -251,8 +248,9 @@ public class HitchpostBlock extends BaseEntityBlock {
 
         UUID playerId = player.getUUID();
         UUID ownerId = horse.getOwnerUUID();
-        UUID modOwnerId = ((IHorseData) horse).bh_getOwner();
-        return playerId.equals(ownerId) || playerId.equals(modOwnerId);
+        IHorseData data = IHorseData.of(horse);
+        return playerId.equals(ownerId)
+                || (data.bh_isOwned() && data.bh_mayHandle(playerId));
     }
 
     private static Vec3 chooseAnchor(BlockPos pos, BlockState state, AbstractHorse horse) {

@@ -1,0 +1,115 @@
+---
+title: Managing your horses
+nav_order: 6
+---
+
+# Managing your horses
+{: .no_toc }
+
+The roster screen: every horse you own, in one list, from anywhere in the world.
+{: .fs-5 .fw-300 }
+
+1. TOC
+{:toc}
+
+---
+
+## Opening the roster
+
+Press <kbd>G</kbd> to open **Your Horses**. It lists every horse registered to you regardless of where it is: following you, parked at home, or standing in a different dimension.
+
+If you haven't tamed anything yet:
+
+> You don't have any horses yet.
+
+Long lists scroll, with an arrow at whichever edge has more rows behind it. Selecting a horse shows a live 3D preview on the right, so you can tell your six chestnut mares apart at a glance.
+
+---
+
+## The preview pane
+
+Under the 3D model, three lines describe the selected horse:
+
+| Line | Meaning |
+|:---|:---|
+| **X, Y, Z** | Where the horse is standing right now |
+| **Bond N** | Current bond out of 100 |
+| **Home set** / **No home** | Whether the horse has a saved home location |
+
+### Coordinates
+
+The first line is the horse's block position, so you can write it down and go fetch a mount that's too far away to whistle — or too far away to whistle *across dimensions*.
+
+For a horse loaded near you the readout follows it live as it moves. For a **resting** horse it's the last place it was standing before its chunk unloaded, which is where it will still be when you get there.
+
+{: .note }
+> Coordinates are given in the horse's own dimension, shown in the list row next to its gender. A horse resting in the Nether at `120, 68, -340` is at Nether coordinates.
+
+---
+
+## What each list row shows
+
+| Label | Meaning |
+|:---|:---|
+| **Resting** | The horse is in an unloaded chunk. It's safe and will be restored when called. |
+| **Active** | This is the horse your <kbd>P</kbd> whistle calls |
+
+{: .note }
+> **Resting** isn't a problem. The mod stores owned horses persistently, so a horse in an unloaded chunk still exists and still answers the whistle. It gets restored when you call it.
+
+---
+
+## The four actions
+
+### Set Active
+
+Marks this horse as the one your [whistle](ownership-and-bonding#whistling-for-your-horse) calls. With several horses to your name, only the active one responds to <kbd>P</kbd>. The button reads **Active** once it's selected.
+
+### Whistle
+
+Calls the horse to you from the screen. Within 32 blocks it walks over; beyond that it teleports.
+
+### Send Home
+
+Sends the horse back to its saved home without you having to ride it there. If it never had a home set:
+
+> No home set for this horse.
+
+Set one first with **Set Home** on the [command wheel](command-wheel).
+
+### Disown
+
+Releases the horse back into the wild. A confirmation dialog appears, reading *"Are you sure? \<name\> goes back to the wild and forgets you."*, with **Disown** and **Cancel**.
+
+The horse itself is **not deleted**. It stays exactly where it is, untamed, and starts grazing again. What it loses is everything that made it yours: ownership, its bond, its saved home, and its place on your roster.
+
+{: .warning }
+> **The bond does not come back.** You can walk up and tame the same horse again, but it starts from bond 0 and has to be re-bonded from scratch. Re-taming a released horse is the long way round, not an undo button.
+>
+> You can't disown a horse that's still carrying gear: *"Take your equipment off this horse before disowning it."* Strip the saddle and gear first, which also means you don't lose your diamonds by accident.
+
+---
+
+## When something doesn't work
+
+| Message | What it means |
+|:---|:---|
+| *That horse is in another dimension.* | Whistle and Send Home only work within one dimension. Travel to it, or send it home from the same dimension. |
+| *That horse's home is in another dimension.* | Send Home can't cross dimensions either. Ride it through the portal yourself. |
+| *That horse can't be found any more.* | The horse no longer exists, killed while you were away or removed by an admin. |
+| *There is no safe space for this horse nearby.* | Nowhere to put it down. Step out of the cave or off the ledge and retry. |
+| *Build some bond with this horse before it will answer your whistle.* | It's still at bond 0. See [bonding](ownership-and-bonding#the-bond-system). |
+| *Unhitch the cart before calling or teleporting this horse.* | A horse towing a [cart](equipment/horse-cart) can't be whistled or sent home. |
+| *Take your equipment off this horse before disowning it.* | Remove the saddle and gear first. |
+
+---
+
+## Related pages
+
+- [Ownership & bonding](ownership-and-bonding): whistling and bond
+- [Commands](commands): letting other players ride your horses
+- [Command wheel](command-wheel): setting a home in the first place
+- [Horse Info screen](horse-info-screen): the detailed stat view
+- [Advancements](advancements): **Stable Genius** wants ten horses at once
+
+A horse with a cart attached cannot be called or teleported. Unhitch the cart first; otherwise the command shows an error. Recall and home teleports also require safe space for the horse.

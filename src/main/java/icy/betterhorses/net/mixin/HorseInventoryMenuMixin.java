@@ -2,7 +2,6 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.IHorseData;
-import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -16,43 +15,39 @@ import net.minecraft.world.inventory.PlayerEnderChestContainer;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import icy.betterhorses.net.BhCriteria;
+import icy.betterhorses.net.ModItems;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.animal.horse.Horse;
+import org.jetbrains.annotations.Nullable;
 
 @Mixin(HorseInventoryMenu.class)
 public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu implements HorseInventoryLayoutAccess {
-
-    @Shadow @Final
-    private Container horseContainer;
-
-    @Shadow @Final
-    private AbstractHorse horse;
 
     @Unique private static final int BH_GEAR_SLOT_X = 80;
     @Unique private static final int BH_GEAR_SLOT_Y = 18;
     @Unique private static final int BH_CHEST_SLOT_X = 8;
     @Unique private static final int BH_CHEST_SLOT_Y = 79;
-    @Unique private static final int BH_CHEST_SLOT_COUNT = 27;
-    @Unique private static final int BH_PLAYER_SLOT_Y_OFFSET = 54;
+    @Unique private static final int BH_ENDER_SLOT_COUNT = 27;
+    @Unique private static final int BH_MAX_CHEST_ROWS = 6;
+    @Unique private static final int BH_ROW_HEIGHT = 18;
 
     @Unique private int bh_gearStartIndex = -1;
     @Unique private int bh_chestStartIndex = -1;
     @Unique private int bh_playerInventoryStartIndex = -1;
     @Unique private int bh_playerInventoryEndIndex = -1;
-    @Unique private boolean bh_playerInventoryShifted = false;
-
-    // Snapshot of the player's ender chest shown in the chest slots; synced back on close/removal.
-    @Unique private final SimpleContainer bh_enderChestView = new SimpleContainer(BH_CHEST_SLOT_COUNT);
+    @Unique private int bh_appliedShift = 0;
+    @Unique private int bh_chestRows = 3;
+    @Unique private @Nullable AbstractHorse bh_horse = null;
+    @Unique private @Nullable SimpleContainer bh_gearContainer = null;
+    @Unique private final SimpleContainer bh_enderChestView = new SimpleContainer(BH_ENDER_SLOT_COUNT);
     @Unique private PlayerEnderChestContainer bh_playerEnderChest = null;
-    @Unique private boolean bh_enderChestViewLoaded = false;
-    @Unique private SimpleContainer bh_gearForListener = null;
-    @Unique private SimpleContainer bh_chestForListener = null;
+    @Unique private @Nullable Player bh_menuPlayer = null;
 
     protected HorseInventoryMenuMixin(MenuType<?> type, int id) {
         super(type, id);
@@ -66,41 +61,91 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             AbstractHorse horse,
             int horseChestColumns,
             CallbackInfo ci) {
-        final IHorseData data = (IHorseData) horse;
+        final IHorseData data = IHorseData.of(horse);
+        this.bh_horse = horse;
         final SimpleContainer gear = data.bh_getGearContainer();
+        this.bh_gearContainer = gear;
+        this.bh_chestRows = this.bh_resolveChestRows();
         final SimpleContainer chest = data.bh_getChestContainer();
-        this.bh_gearForListener = gear;
-        this.bh_chestForListener = chest;
-        // Server side: snapshot the player's ender chest so the view container can mirror it.
+        this.bh_menuPlayer = playerInventory.player;
         this.bh_playerEnderChest = playerInventory.player.level().isClientSide()
                 ? null
                 : playerInventory.player.getEnderChestInventory();
         if (this.bh_isEnderChestGear(gear.getItem(GearSlot.CHEST.ordinal()))) {
-            this.bh_loadEnderChestView();
+            if (playerInventory.player instanceof ServerPlayer serverPlayer) {
+                BhCriteria.fire(serverPlayer, BhCriteria.ENDER_CHEST_GEAR);
+            }
         }
-
-        // Delegate container that swaps storage based on which chest item is in the gear slot.
         final Container extraStorage = new Container() {
             private Container bh_active() {
                 return HorseInventoryMenuMixin.this.bh_isEnderChestGear(gear.getItem(GearSlot.CHEST.ordinal()))
-                        ? HorseInventoryMenuMixin.this.bh_enderChestView
+                        ? (HorseInventoryMenuMixin.this.bh_playerEnderChest == null
+                                ? HorseInventoryMenuMixin.this.bh_enderChestView
+                                : HorseInventoryMenuMixin.this.bh_playerEnderChest)
                         : chest;
             }
 
-            @Override public int getContainerSize() { return chest.getContainerSize(); }
-            @Override public boolean isEmpty() { return this.bh_active().isEmpty(); }
-            @Override public ItemStack getItem(int slot) { return this.bh_active().getItem(slot); }
-            @Override public ItemStack removeItem(int slot, int amount) { return this.bh_active().removeItem(slot, amount); }
-            @Override public ItemStack removeItemNoUpdate(int slot) { return this.bh_active().removeItemNoUpdate(slot); }
-            @Override public void setItem(int slot, ItemStack stack) { this.bh_active().setItem(slot, stack); }
-            @Override public void setChanged() { this.bh_active().setChanged(); }
-            @Override public boolean stillValid(Player player) { return this.bh_active().stillValid(player); }
-            @Override public void startOpen(Player user) { this.bh_active().startOpen(user); }
-            @Override public void stopOpen(Player user) { this.bh_active().stopOpen(user); }
-            @Override public void clearContent() { this.bh_active().clearContent(); }
-        };
+            @Override
+            public int getContainerSize() {
+                return BH_MAX_CHEST_ROWS * 9;
+            }
 
-        // Player inventory starts after the horse container (+1 for the separate armor slot).
+            private boolean bh_holds(int slot) {
+                return slot >= 0 && slot < this.bh_active().getContainerSize();
+            }
+
+            @Override
+            public boolean isEmpty() {
+                return this.bh_active().isEmpty();
+            }
+
+            @Override
+            public ItemStack getItem(int slot) {
+                return this.bh_holds(slot) ? this.bh_active().getItem(slot) : ItemStack.EMPTY;
+            }
+
+            @Override
+            public ItemStack removeItem(int slot, int amount) {
+                return this.bh_holds(slot) ? this.bh_active().removeItem(slot, amount) : ItemStack.EMPTY;
+            }
+
+            @Override
+            public ItemStack removeItemNoUpdate(int slot) {
+                return this.bh_holds(slot) ? this.bh_active().removeItemNoUpdate(slot) : ItemStack.EMPTY;
+            }
+
+            @Override
+            public void setItem(int slot, ItemStack stack) {
+                if (this.bh_holds(slot)) {
+                    this.bh_active().setItem(slot, stack);
+                }
+            }
+
+            @Override
+            public void setChanged() {
+                this.bh_active().setChanged();
+            }
+
+            @Override
+            public boolean stillValid(Player player) {
+                return this.bh_active().stillValid(player);
+            }
+
+            @Override
+            public void startOpen(Player user) {
+                this.bh_active().startOpen(user);
+            }
+
+            @Override
+            public void stopOpen(Player user) {
+                this.bh_active().stopOpen(user);
+            }
+
+            @Override
+            public void clearContent() {
+                this.bh_active().clearContent();
+            }
+        };
         this.bh_playerInventoryStartIndex = horseContainer.getContainerSize() + 1;
         this.bh_playerInventoryEndIndex = Math.min(this.bh_playerInventoryStartIndex + 36, this.slots.size());
 
@@ -108,7 +153,23 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         for (GearSlot slot : GearSlot.values()) {
             final GearSlot type = slot;
             this.addSlot(new Slot(gear, slot.ordinal(), BH_GEAR_SLOT_X + slot.ordinal() * 18, BH_GEAR_SLOT_Y) {
-                @Override public boolean mayPlace(ItemStack stack) { return type.accepts(stack); }
+                @Override public boolean mayPlace(ItemStack stack) {
+                    if (type == GearSlot.STABILIZER
+                            && HorseInventoryMenuMixin.this.bh_isCartSlotLocked()) {
+                        return false;
+                    }
+                    if (type == GearSlot.STABILIZER
+                            && stack.is(ModItems.HORSE_STABILIZER)
+                            && !(horse instanceof Horse)) {
+                        return false;
+                    }
+                    return type.accepts(stack);
+                }
+
+                @Override public boolean mayPickup(Player player) {
+                    return !(type == GearSlot.STABILIZER
+                            && HorseInventoryMenuMixin.this.bh_isCartSlotLocked());
+                }
                 @Override public boolean isActive() { return HorseInventoryMenuMixin.this.bh_hasUpgradedSaddleInMenu(); }
                 @Override public int getMaxStackSize() { return 1; }
 
@@ -119,6 +180,9 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                     if (type == GearSlot.CHEST) {
                         HorseInventoryMenuMixin.this.bh_handleChestGearChange(previousStack, stack, data);
                     }
+                    if (type == GearSlot.CHEST) {
+                        HorseInventoryMenuMixin.this.bh_refreshLayout();
+                    }
                 }
 
                 @Override
@@ -126,22 +190,20 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                     super.onTake(player, stack);
                     if (type == GearSlot.CHEST) {
                         data.bh_onChestGearRemoved(stack);
-                        if (HorseInventoryMenuMixin.this.bh_isEnderChestGear(stack)) {
-                            HorseInventoryMenuMixin.this.bh_saveEnderChestView();
-                        }
                     }
                 }
             });
         }
 
         this.bh_chestStartIndex = this.slots.size();
-        for (int row = 0; row < 3; row++) {
+        for (int row = 0; row < BH_MAX_CHEST_ROWS; row++) {
             for (int col = 0; col < 9; col++) {
-                final int index = col + row * 9;
-                this.addSlot(new Slot(extraStorage, index, BH_CHEST_SLOT_X + col * 18, BH_CHEST_SLOT_Y + row * 18) {
+                final int chestSlot = col + row * 9;
+                this.addSlot(new Slot(extraStorage, chestSlot, BH_CHEST_SLOT_X + col * 18, BH_CHEST_SLOT_Y + row * 18) {
                     @Override
                     public boolean isActive() {
-                        return HorseInventoryMenuMixin.this.bh_hasUpgradedSaddleInMenu()
+                        return chestSlot < HorseInventoryMenuMixin.this.bh_chestRows * 9
+                                && HorseInventoryMenuMixin.this.bh_hasUpgradedSaddleInMenu()
                                 && HorseInventoryMenuMixin.this.bh_isChestGear(gear.getItem(GearSlot.CHEST.ordinal()));
                     }
                 });
@@ -151,121 +213,25 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         this.bh_refreshLayout();
     }
 
-    @Inject(method = "quickMoveStack", at = @At("HEAD"), cancellable = true)
-    private void bh_quickMoveStack(Player player, int index, CallbackInfoReturnable<ItemStack> cir) {
-        if (index < 0 || index >= this.slots.size() || bh_gearStartIndex < 0 || bh_chestStartIndex < 0) {
-            return;
-        }
-
-        Slot sourceSlot = this.slots.get(index);
-        if (!sourceSlot.hasItem()) {
-            cir.setReturnValue(ItemStack.EMPTY);
-            return;
-        }
-
-        ItemStack sourceStack = sourceSlot.getItem();
-        ItemStack copiedStack = sourceStack.copy();
-
-        int horseSlotEnd = this.horseContainer.getContainerSize() + 1;
-        int playerInventoryStart = horseSlotEnd;
-        int playerInventoryEnd = playerInventoryStart + 27;
-        int hotbarStart = playerInventoryEnd;
-        int hotbarEnd = hotbarStart + 9;
-
-        boolean moved;
-        if (index < horseSlotEnd || index >= bh_gearStartIndex) {
-            moved = this.moveItemStackTo(sourceStack, playerInventoryStart, hotbarEnd, true);
-        } else {
-            moved = this.getSlot(1).mayPlace(sourceStack)
-                    && !this.getSlot(1).hasItem()
-                    && this.moveItemStackTo(sourceStack, 1, 2, false);
-
-            if (!moved) {
-                moved = this.getSlot(0).mayPlace(sourceStack)
-                        && !this.getSlot(0).hasItem()
-                        && this.moveItemStackTo(sourceStack, 0, 1, false);
-            }
-
-            if (!moved && this.bh_hasUpgradedSaddleInMenu()) {
-                moved = bh_moveIntoFirstMatchingGearSlot(sourceStack);
-                if (!moved && this.bh_hasChestGearInMenu()) {
-                    moved = this.moveItemStackTo(sourceStack, bh_chestStartIndex, bh_chestStartIndex + BH_CHEST_SLOT_COUNT, false);
-                }
-            }
-
-            if (!moved && horseSlotEnd > 2) {
-                moved = this.moveItemStackTo(sourceStack, 2, horseSlotEnd, false);
-            }
-
-            if (!moved) {
-                if (index < playerInventoryEnd) {
-                    moved = this.moveItemStackTo(sourceStack, hotbarStart, hotbarEnd, false);
-                } else if (index < hotbarEnd) {
-                    moved = this.moveItemStackTo(sourceStack, playerInventoryStart, playerInventoryEnd, false);
-                } else {
-                    moved = this.moveItemStackTo(sourceStack, playerInventoryStart, hotbarEnd, false);
-                }
-            }
-        }
-
-        if (!moved) {
-            cir.setReturnValue(ItemStack.EMPTY);
-            return;
-        }
-
-        if (sourceStack.isEmpty()) {
-            int chestGearSlotIndex = this.bh_gearStartIndex + GearSlot.CHEST.ordinal();
-            if (index == chestGearSlotIndex) {
-                ((IHorseData) this.horse).bh_onChestGearRemoved(copiedStack);
-            }
-            sourceSlot.setByPlayer(ItemStack.EMPTY);
-        } else {
-            sourceSlot.setChanged();
-        }
-
-        cir.setReturnValue(copiedStack);
-    }
-
-    @Inject(method = "removed", at = @At("HEAD"))
-    private void bh_onMenuRemoved(Player player, CallbackInfo ci) {
-        // Persist the ender chest view back to the real ender chest if it was active.
-        this.bh_saveEnderChestView();
-    }
-
-    @Unique
-    private boolean bh_moveIntoFirstMatchingGearSlot(ItemStack stack) {
-        for (int slotIndex = bh_gearStartIndex; slotIndex < bh_chestStartIndex; slotIndex++) {
-            Slot slot = this.slots.get(slotIndex);
-            if (!slot.isActive() || slot.hasItem() || !slot.mayPlace(stack)) {
-                continue;
-            }
-
-            if (this.moveItemStackTo(stack, slotIndex, slotIndex + 1, false)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     @Override
     public void bh_refreshLayout() {
+        this.bh_chestRows = this.bh_resolveChestRows();
         if (this.bh_playerInventoryStartIndex < 0 || this.bh_playerInventoryEndIndex < 0) {
             return;
         }
 
-        boolean shouldShiftPlayerInventory = this.bh_hasChestStorageLayout();
-        if (shouldShiftPlayerInventory == this.bh_playerInventoryShifted) {
+        int wanted = this.bh_hasChestStorageLayout() ? this.bh_chestRows * BH_ROW_HEIGHT : 0;
+        if (wanted == this.bh_appliedShift) {
             return;
         }
 
-        int offset = shouldShiftPlayerInventory ? BH_PLAYER_SLOT_Y_OFFSET : -BH_PLAYER_SLOT_Y_OFFSET;
+        int delta = wanted - this.bh_appliedShift;
         for (int slotIndex = this.bh_playerInventoryStartIndex; slotIndex < this.bh_playerInventoryEndIndex; slotIndex++) {
             Slot slot = this.slots.get(slotIndex);
-            ((SlotAccessor) slot).bh_setY(slot.y + offset);
+            ((SlotAccessor) slot).bh_setY(slot.y + delta);
         }
 
-        this.bh_playerInventoryShifted = shouldShiftPlayerInventory;
+        this.bh_appliedShift = wanted;
     }
 
     @Override
@@ -279,6 +245,37 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     }
 
     @Override
+    public boolean bh_isCartSlotLocked() {
+        return this.bh_horse != null
+                && IHorseData.of(this.bh_horse).bh_hasCartGear()
+                && IHorseData.of(this.bh_horse).bh_hasCartChest();
+    }
+
+    @Override
+    public boolean bh_isSaddleSlotLocked() {
+        return this.bh_horse != null && IHorseData.of(this.bh_horse).bh_hasCartGear();
+    }
+
+    @Override
+    public int bh_getChestRows() {
+        this.bh_chestRows = this.bh_resolveChestRows();
+        return this.bh_chestRows;
+    }
+
+    @Unique
+    private int bh_resolveChestRows() {
+        if (this.bh_horse == null) {
+            return this.bh_chestRows;
+        }
+        int rows = IHorseData.of(this.bh_horse).bh_getChestRows();
+        if (this.bh_gearContainer != null
+                && this.bh_isEnderChestGear(this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal()))) {
+            rows = Math.min(rows, BH_ENDER_SLOT_COUNT / 9);
+        }
+        return rows;
+    }
+
+    @Override
     public int bh_getGearStartIndex() {
         return this.bh_gearStartIndex;
     }
@@ -289,21 +286,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     }
 
     @Unique
-    private boolean bh_hasUpgradedSaddleInMenu() {
-        return this.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE.get());
-    }
-
-    @Unique
-    private boolean bh_hasChestGearInMenu() {
-        int chestGearSlotIndex = bh_gearStartIndex + GearSlot.CHEST.ordinal();
-        if (bh_gearStartIndex < 0 || chestGearSlotIndex >= this.slots.size()) {
-            return false;
-        }
-        return this.bh_isChestGear(this.slots.get(chestGearSlotIndex).getItem());
-    }
-
-    @Unique
-    boolean bh_isChestGear(ItemStack stack) {
+    private boolean bh_isChestGear(ItemStack stack) {
         return this.bh_isStorageChestGear(stack) || this.bh_isEnderChestGear(stack);
     }
 
@@ -313,7 +296,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     }
 
     @Unique
-    boolean bh_isEnderChestGear(ItemStack stack) {
+    private boolean bh_isEnderChestGear(ItemStack stack) {
         return stack.is(Items.ENDER_CHEST);
     }
 
@@ -327,38 +310,24 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         if (wasStorageChest && !isStorageChest) {
             data.bh_onChestGearRemoved(previousStack);
         }
-        if (wasEnderChest && !isEnderChest) {
-            this.bh_saveEnderChestView();
-        }
         if (!wasEnderChest && isEnderChest) {
-            this.bh_loadEnderChestView();
+            if (this.bh_menuPlayer instanceof ServerPlayer serverPlayer) {
+                BhCriteria.fire(serverPlayer, BhCriteria.ENDER_CHEST_GEAR);
+            }
         }
     }
 
     @Unique
-    private void bh_loadEnderChestView() {
-        this.bh_enderChestView.clearContent();
-        if (this.bh_playerEnderChest == null) {
-            this.bh_enderChestViewLoaded = false;
-            return;
-        }
-
-        for (int slot = 0; slot < BH_CHEST_SLOT_COUNT; slot++) {
-            this.bh_enderChestView.setItem(slot, this.bh_playerEnderChest.getItem(slot).copy());
-        }
-        this.bh_enderChestViewLoaded = true;
+    private boolean bh_hasUpgradedSaddleInMenu() {
+        return this.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE);
     }
 
     @Unique
-    private void bh_saveEnderChestView() {
-        if (this.bh_playerEnderChest == null || !this.bh_enderChestViewLoaded) {
-            return;
+    private boolean bh_hasChestGearInMenu() {
+        int chestGearSlotIndex = bh_gearStartIndex + GearSlot.CHEST.ordinal();
+        if (bh_gearStartIndex < 0 || chestGearSlotIndex >= this.slots.size()) {
+            return false;
         }
-
-        for (int slot = 0; slot < BH_CHEST_SLOT_COUNT; slot++) {
-            this.bh_playerEnderChest.setItem(slot, this.bh_enderChestView.getItem(slot).copy());
-        }
-        this.bh_playerEnderChest.setChanged();
-        this.bh_enderChestViewLoaded = false;
+        return this.bh_isChestGear(this.slots.get(chestGearSlotIndex).getItem());
     }
 }

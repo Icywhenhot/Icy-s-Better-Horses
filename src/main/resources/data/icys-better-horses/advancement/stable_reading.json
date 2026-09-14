@@ -1,0 +1,45 @@
+{
+  "criteria": {
+    "has_handbook": {
+      "conditions": {
+        "items": [
+          {
+            "components": {
+              "modonomicon:book_id": "icys-better-horses:stable_handbook"
+            },
+            "items": "modonomicon:modonomicon"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.icys-better-horses.stable_reading.description"
+    },
+    "icon": {
+      "components": {
+        "modonomicon:book_id": "icys-better-horses:stable_handbook"
+      },
+      "id": "modonomicon:modonomicon"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.icys-better-horses.stable_reading.title"
+    }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "modonomicon"
+    }
+  ],
+  "parent": "icys-better-horses:hold_your_horses",
+  "requirements": [
+    [
+      "has_handbook"
+    ]
+  ]
+}

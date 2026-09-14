@@ -16,7 +16,7 @@ public class HitchpostBlockEntity extends BlockEntity {
     private @Nullable UUID tetheredHorseId;
 
     public HitchpostBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.HITCHPOST.get(), pos, state);
+        super(ModBlockEntities.HITCHPOST, pos, state);
     }
 
     public @Nullable UUID getTetheredHorseId() {
@@ -27,21 +27,22 @@ public class HitchpostBlockEntity extends BlockEntity {
         if (Objects.equals(this.tetheredHorseId, horseId)) {
             return;
         }
+
         this.tetheredHorseId = horseId;
         this.setChanged();
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        this.tetheredHorseId = tag.hasUUID("TetheredHorse") ? tag.getUUID("TetheredHorse") : null;
+    protected void loadAdditional(CompoundTag input, HolderLookup.Provider registries) {
+        super.loadAdditional(input, registries);
+        this.tetheredHorseId = input.hasUUID("TetheredHorse") ? input.getUUID("TetheredHorse") : null;
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+    protected void saveAdditional(CompoundTag output, HolderLookup.Provider registries) {
+        super.saveAdditional(output, registries);
         if (this.tetheredHorseId != null) {
-            tag.putUUID("TetheredHorse", this.tetheredHorseId);
+            output.putUUID("TetheredHorse", this.tetheredHorseId);
         }
     }
 }

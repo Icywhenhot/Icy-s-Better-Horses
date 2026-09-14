@@ -1,0 +1,50 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:classes/breed_american_paint",
+  "category": "icys-better-horses:classes",
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.name",
+  "icon": {
+    "id": "icys-better-horses:american_paint_horse_spawn_egg"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": -5,
+  "y": 1,
+  "sort_number": 19,
+  "parents": [
+    {
+      "entry": "icys-better-horses:classes/western"
+    }
+  ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.about.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.about.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "ability",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.ability.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.ability.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "spawns",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.spawns.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.spawns.text"
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "id": "coats",
+      "entity": "icys-better-horses:american_paint_horse"
+    }
+  ]
+}

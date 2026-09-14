@@ -20,13 +20,14 @@ sourceSets.main.resources {
     srcDir('src/generated/resources')
     exclude("**/*.bbmodel")
     exclude("src/generated/**/.cache")
-    exclude("fabric.mod.json")
-    exclude("icys-better-horses.mixins.json")
-    exclude("assets/icys-better-horses/**")
-    exclude("data/icys-better-horses/**")
 }
 
 repositories {
+    maven {
+        name = 'Klikli'
+        url = 'https://dl.cloudsmith.io/public/klikli-dev/mods/maven/'
+        content { includeGroup 'com.klikli_dev' }
+    }
     exclusiveContent {
         forRepository {
             maven {
@@ -38,6 +39,11 @@ repositories {
             includeGroupAndSubgroups 'com.geckolib'
             includeGroupAndSubgroups 'software.bernie.geckolib'
         }
+    }
+    maven {
+        name = 'Shedaniel'
+        url = 'https://maven.shedaniel.me/'
+        content { includeGroup 'me.shedaniel.cloth' }
     }
     exclusiveContent {
         forRepository {
@@ -112,6 +118,11 @@ neoForge {
             sourceSet(sourceSets.main)
         }
     }
+
+    unitTest {
+        enable()
+        testedMod = mods."${mod_id}"
+    }
 }
 
 configurations {
@@ -120,12 +131,8 @@ configurations {
 
 dependencies {
     implementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
-    compileOnly "org.jetbrains:annotations:26.0.2"
-    runtimeOnly "org.jetbrains:annotations:26.0.2"
-
-    // Patchouli — optional at runtime, only present in the dev environment so the Stable
-    // Handbook book loads when you launch runClient. Not bundled into the shipped jar.
-    localRuntime "maven.modrinth:patchouli:1.21.1-93-neoforge"
+    implementation "com.klikli_dev:modonomicon-${minecraft_version}-neoforge:${modonomicon_version}"
+    implementation "me.shedaniel.cloth:cloth-config-neoforge:${cloth_config_version}"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
@@ -144,6 +151,8 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_license            : mod_license,
             mod_version            : mod_version,
             geckolib_version       : geckolib_version,
+            modonomicon_version    : modonomicon_version,
+            cloth_config_version   : cloth_config_version,
     ]
     inputs.properties replaceProperties
     expand replaceProperties
@@ -156,6 +165,7 @@ neoForge.ideSyncTask generateModMetadata
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    options.compilerArgs.addAll(['-Xmaxerrs', '300'])
 }
 
 test {

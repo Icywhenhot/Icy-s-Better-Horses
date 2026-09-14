@@ -27,6 +27,6 @@ public class UpgradedSaddleItem extends Item {
                 stack.shrink(1);
             }
         }
-        return InteractionResult.sidedSuccess(player.level().isClientSide());
+        return player.level().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }
 }

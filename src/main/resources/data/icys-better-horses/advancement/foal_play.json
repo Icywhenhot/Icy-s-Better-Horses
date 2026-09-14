@@ -1,0 +1,29 @@
+{
+  "criteria": {
+    "foal": {
+      "conditions": {
+        "key": "foal"
+      },
+      "trigger": "icys-better-horses:milestone"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.icys-better-horses.foal_play.description"
+    },
+    "icon": {
+      "id": "minecraft:golden_apple"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.icys-better-horses.foal_play.title"
+    }
+  },
+  "parent": "icys-better-horses:hold_your_horses",
+  "requirements": [
+    [
+      "foal"
+    ]
+  ]
+}

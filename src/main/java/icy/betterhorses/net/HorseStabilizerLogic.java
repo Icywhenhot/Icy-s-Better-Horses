@@ -6,7 +6,6 @@ public final class HorseStabilizerLogic {
     public static final double MIN_DEPLOY_DESCENT_SPEED = -0.08D;
     public static final double MIN_SUSTAINED_DESCENT_SPEED = -0.02D;
 
-    // verticalSpeed is unused (stays 0 on ridden horses); fallDistance is the reliable signal.
     public static HorseStabilizerState computeState(boolean equipped, boolean onGround, boolean inWater,
                                                     boolean inLava, boolean passenger, double verticalSpeed,
                                                     float fallDistance, HorseStabilizerState currentState) {
@@ -19,10 +18,17 @@ public final class HorseStabilizerLogic {
         }
 
         if (currentState == HorseStabilizerState.HALF_OPEN) {
-            if (fallDistance >= OPEN_FALL_DISTANCE) {
+            if (fallDistance >= OPEN_FALL_DISTANCE && verticalSpeed < MIN_SUSTAINED_DESCENT_SPEED) {
                 return HorseStabilizerState.OPEN;
             }
-            return HorseStabilizerState.HALF_OPEN;
+
+            return verticalSpeed < MIN_SUSTAINED_DESCENT_SPEED
+                    ? HorseStabilizerState.HALF_OPEN
+                    : HorseStabilizerState.CLOSED;
+        }
+
+        if (verticalSpeed >= MIN_DEPLOY_DESCENT_SPEED) {
+            return HorseStabilizerState.CLOSED;
         }
 
         if (fallDistance >= OPEN_FALL_DISTANCE) {

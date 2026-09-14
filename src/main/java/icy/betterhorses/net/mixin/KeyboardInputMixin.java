@@ -1,6 +1,8 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.client.HorseAutodriveController;
+import icy.betterhorses.net.client.HorseGearController;
+import icy.betterhorses.net.client.HorseFreeLookController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.Input;
@@ -13,7 +15,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-// Feeds the autodrive controller after each input tick and writes its movement back.
 @Mixin(KeyboardInput.class)
 public abstract class KeyboardInputMixin extends Input {
 
@@ -23,22 +24,27 @@ public abstract class KeyboardInputMixin extends Input {
         LocalPlayer player = client.player;
         Screen screen = client.screen;
 
-        boolean eligible = false;
+        boolean mounted = false;
         int horseId = 0;
         long tick = 0L;
+        AbstractHorse riddenHorse = null;
 
-        if (screen == null && client.level != null && player != null) {
+        if (client.level != null && player != null) {
             Entity vehicle = player.getControlledVehicle();
             if (vehicle instanceof AbstractHorse horse && horse.getControllingPassenger() == player) {
-                eligible = true;
+                mounted = true;
                 horseId = horse.getId();
+                riddenHorse = horse;
                 tick = client.level.getGameTime();
             }
         }
+        boolean eligible = mounted && screen == null;
+
+        HorseFreeLookController.INSTANCE.tick(eligible ? riddenHorse : null);
 
         HorseAutodriveController.Output output = HorseAutodriveController.INSTANCE.tick(
                 tick,
-                eligible,
+                mounted,
                 horseId,
                 this.up,
                 this.down,
@@ -48,11 +54,23 @@ public abstract class KeyboardInputMixin extends Input {
                 this.leftImpulse
         );
 
-        this.up = output.forwardDown();
+        boolean forwardDown = output.forwardDown();
+        float forwardImpulse = output.forwardImpulse();
+        float leftImpulse = output.leftImpulse();
+        if (output.active()) {
+            HorseGearController.INSTANCE.reset();
+        } else if (HorseGearController.INSTANCE
+                .tick(eligible, riddenHorse, this.up, this.down)
+                .geared()) {
+            forwardDown = true;
+            forwardImpulse = 1.0F;
+        }
+
+        this.up = forwardDown;
         this.down = output.backDown();
         this.left = output.leftDown();
         this.right = output.rightDown();
-        this.leftImpulse = output.leftImpulse();
-        this.forwardImpulse = output.forwardImpulse();
+        this.leftImpulse = leftImpulse;
+        this.forwardImpulse = forwardImpulse;
     }
 }

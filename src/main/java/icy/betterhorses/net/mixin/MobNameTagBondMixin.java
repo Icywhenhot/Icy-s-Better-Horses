@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -16,7 +17,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// Grants +10 bond the first time a player name-tags a tamed horse (hooks Mob.interact).
 @Mixin(Mob.class)
 public abstract class MobNameTagBondMixin {
 
@@ -57,12 +57,11 @@ public abstract class MobNameTagBondMixin {
             if (now == null || now.equals(this.bh$nameBeforeInteract)) {
                 return;
             }
-            // Only the first nametag grants bond; later renames still apply but can't be farmed.
             if (horseData.bh_hasReceivedNameTagBond()) {
                 return;
             }
             horseData.bh_setReceivedNameTagBond(true);
-            horseData.bh_setBond(horseData.bh_getBond() + 10);
+            BhHorseTraits.grantBond(horseData, 10);
         } finally {
             this.bh$nameTagInteractInFlight = false;
             this.bh$nameBeforeInteract = null;

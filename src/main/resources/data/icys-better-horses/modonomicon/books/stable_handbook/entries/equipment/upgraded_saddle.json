@@ -1,0 +1,58 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:equipment/upgraded_saddle",
+  "category": "icys-better-horses:equipment",
+  "name": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.name",
+  "icon": {
+    "id": "icys-better-horses:upgraded_saddle"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 0,
+  "y": 0,
+  "sort_number": 2,
+  "pages": [
+    {
+      "type": "modonomicon:crafting_recipe",
+      "id": "recipe",
+      "recipe_id_1": "icys-better-horses:upgraded_saddle",
+      "title1": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.recipe.title1",
+      "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.recipe.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "unlocks",
+      "title": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.unlocks.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.unlocks.text"
+    },
+    {
+      "type": "modonomicon:spotlight",
+      "id": "chest",
+      "item": {
+        "item": "minecraft:chest"
+      },
+      "title": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.chest.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.chest.text"
+    },
+    {
+      "type": "modonomicon:spotlight",
+      "id": "ender_chest",
+      "item": {
+        "item": "minecraft:ender_chest"
+      },
+      "title": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.ender_chest.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.ender_chest.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "stats",
+      "title": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.stats.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.stats.text"
+    }
+  ]
+}

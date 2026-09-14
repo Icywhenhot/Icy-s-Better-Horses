@@ -1,0 +1,138 @@
+package icy.betterhorses.net.feature;
+
+import icy.betterhorses.net.BhHorseAttributes;
+import icy.betterhorses.net.BhHorseTraits;
+import icy.betterhorses.net.BreedArchetype;
+import icy.betterhorses.net.HorseBreed;
+import icy.betterhorses.net.BhAbility;
+import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.entity.HorseCartEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
+
+public final class CartRig implements HorseFeature {
+
+    private static final String DRAG_KEY = "cart";
+    private static final double DRAG = 0.30D;
+
+    private @Nullable HorseCartEntity cart;
+    private boolean dragged;
+    private int missingTicks;
+
+    private boolean frozen;
+    private float frozenYaw;
+    private @Nullable Vec3 frozenPos;
+
+    public @Nullable HorseCartEntity cart() {
+        return cart;
+    }
+
+    @Override
+    public void tick(AbstractHorse horse, IHorseData data) {
+        syncCartEntity(horse, data);
+        cartDrag(horse, data);
+        freezeWhenUnridden(horse, data);
+    }
+
+    private void syncCartEntity(AbstractHorse horse, IHorseData data) {
+        if (!(horse.level() instanceof ServerLevel level)) {
+            return;
+        }
+
+        boolean wantsCart = data.bh_hasCartGear();
+        boolean hasCart = cart != null && cart.isAlive() && !cart.isRemoved();
+
+        if (!wantsCart) {
+            data.bh_dropCartChest();
+        }
+
+        if (wantsCart && !hasCart) {
+            if (data.bh_getCartId() != null) {
+                if (level.getEntity(data.bh_getCartId()) instanceof HorseCartEntity found && !found.isRemoved()) {
+                    cart = found;
+                    missingTicks = 0;
+                    return;
+                }
+                if (++missingTicks < 100) return;
+            }
+            cart = HorseCartEntity.spawnFor(horse);
+            if (cart != null) data.bh_setCartId(cart.getUUID());
+            missingTicks = 0;
+        } else if (!wantsCart && cart != null) {
+            if (hasCart) {
+                cart.discard();
+            }
+            cart = null;
+            data.bh_setCartId(null);
+        }
+    }
+
+    private void cartDrag(AbstractHorse horse, IHorseData data) {
+        if (horse.level().isClientSide()) {
+            return;
+        }
+        boolean want = data.bh_hasCartGear() && !pullsFree(data);
+        if (want == dragged) {
+            return;
+        }
+        dragged = want;
+        BhHorseAttributes.apply(horse, Attributes.MOVEMENT_SPEED,
+                BhHorseAttributes.Source.GEAR, DRAG_KEY, want ? -DRAG : 0.0D,
+                AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+    }
+
+    private static boolean pullsFree(IHorseData data) {
+        HorseBreed breed = data.bh_getBreed();
+        if (breed.archetype() == BreedArchetype.DRAFT) {
+            return BhAbility.DRAFT_HAUL.on();
+        }
+        return breed == HorseBreed.HAFLINGER
+                && BhHorseTraits.bondTier(data.bh_getBond()) >= 1
+                && BhAbility.HAFLINGER_HAUL.on();
+    }
+
+    private void freezeWhenUnridden(AbstractHorse horse, IHorseData data) {
+        if (horse.level().isClientSide() || !data.bh_hasCartGear()) {
+            frozen = false;
+            return;
+        }
+
+        for (Entity passenger : horse.getPassengers()) {
+            if (passenger instanceof Player) {
+                frozen = false;
+                return;
+            }
+        }
+
+        if (!frozen || frozenPos != null && frozenPos.distanceToSqr(horse.position()) > 16.0D) {
+            frozen = true;
+            frozenYaw = horse.getYRot();
+            frozenPos = horse.position();
+        }
+
+        if (frozenPos != null) {
+            horse.setPos(frozenPos.x, horse.getY(), frozenPos.z);
+        }
+        Vec3 motion = horse.getDeltaMovement();
+        horse.setDeltaMovement(0.0D, Math.min(motion.y, 0.0D), 0.0D);
+        horse.hurtMarked = true;
+        horse.getNavigation().stop();
+        horse.xxa = 0.0F;
+        horse.yya = 0.0F;
+        horse.zza = 0.0F;
+
+        float yaw = frozenYaw;
+        horse.setYRot(yaw);
+        horse.yRotO = yaw;
+        horse.setYHeadRot(yaw);
+        horse.setYBodyRot(yaw);
+        horse.yHeadRotO = yaw;
+        horse.yBodyRotO = yaw;
+    }
+}

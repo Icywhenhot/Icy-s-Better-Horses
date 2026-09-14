@@ -1,0 +1,34 @@
+package icy.betterhorses.net.network;
+
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+
+import java.util.UUID;
+
+public record HorseManageResultPayload(UUID horseId, int actionOrdinal, boolean success, String messageKey)
+        implements CustomPacketPayload {
+
+    public static final Type<HorseManageResultPayload> TYPE =
+            new Type<>(ResourceLocation.fromNamespaceAndPath("icys-better-horses", "horse_manage_result"));
+
+    @Override
+    public Type<HorseManageResultPayload> type() {
+        return TYPE;
+    }
+
+    public static class StreamCodec implements net.minecraft.network.codec.StreamCodec<FriendlyByteBuf, HorseManageResultPayload> {
+        @Override
+        public HorseManageResultPayload decode(FriendlyByteBuf buf) {
+            return new HorseManageResultPayload(buf.readUUID(), buf.readVarInt(), buf.readBoolean(), buf.readUtf());
+        }
+
+        @Override
+        public void encode(FriendlyByteBuf buf, HorseManageResultPayload value) {
+            buf.writeUUID(value.horseId());
+            buf.writeVarInt(value.actionOrdinal());
+            buf.writeBoolean(value.success());
+            buf.writeUtf(value.messageKey());
+        }
+    }
+}

@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "#minecraft:cannot_be_pushed_onto_boats",
+      "required": false
+    }
+  ]
+}

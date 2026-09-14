@@ -12,6 +12,8 @@ import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,9 +23,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.Optional;
 
-// Captures the group breed at HEAD, then applies the coat and propagates it to siblings at TAIL.
 @Mixin(Horse.class)
 public abstract class HorseFinalizeSpawnMixin {
+
+    @Unique
+    private static final Logger BH_LOGGER = LoggerFactory.getLogger("icys-better-horses/spawn");
 
     @Unique
     @Nullable
@@ -49,9 +53,8 @@ public abstract class HorseFinalizeSpawnMixin {
                                       @Nullable SpawnGroupData groupData,
                                       CallbackInfoReturnable<SpawnGroupData> cir) {
         Horse self = (Horse) (Object) this;
-        IHorseData data = (IHorseData) self;
+        IHorseData data = IHorseData.of(self);
 
-        // Skip breed/coat application when an NBT-restored breed already exists (e.g. /summon with stored data).
         if (data.bh_getBreed() != HorseBreed.UNKNOWN_SPECIES) {
             this.bh_pendingGroupBreed = null;
             return;
@@ -65,26 +68,33 @@ public abstract class HorseFinalizeSpawnMixin {
         data.bh_setBreed(breed);
         data.bh_setMixedBreed(false);
 
-        // Overwrite the random coat vanilla just set with one from the breed's allowed list.
         HorseBreed.Coat coat = breed.rollCoat(self.getRandom());
         if (coat != null) {
             ((HorseAccessor) self).bh_setVariantAndMarkings(coat.color(), coat.markings());
         }
 
-        // Propagate breed to the next sibling; vanilla's return value is kept inside the wrapper.
+        if (bh_isNaturalHorseSpawn(reason)) {
+            String biomeId = level.getBiome(self.blockPosition())
+                    .unwrapKey()
+                    .map(key -> key.location().toString())
+                    .orElse("<unregistered>");
+            BH_LOGGER.info("[HORSE_NATURAL_SPAWN] reason={} pos={} biome={} breed={} coat={}",
+                    reason, self.blockPosition(), biomeId, breed, coat);
+        }
+
         cir.setReturnValue(new BhHorseGroupData(breed, cir.getReturnValue()));
     }
 
     @Unique
     private HorseBreed bh_pickBreedForBiome(ServerLevelAccessor level, Horse self) {
-        Holder<Biome> biome = level.getBiome(self.blockPosition());
-        Optional<ResourceKey<Biome>> biomeKey = biome.unwrapKey();
-        if (biomeKey.isPresent()) {
-            List<HorseBreed> matches = HorseBreed.breedsForBiome(biomeKey.get());
-            if (!matches.isEmpty()) {
-                return matches.get(self.getRandom().nextInt(matches.size()));
-            }
-        }
-        return HorseBreed.fromId(self.getRandom().nextInt(HorseBreed.HORSE_BREED_COUNT));
+        HorseBreed picked = HorseBreed.pickForBiome(level.getBiome(self.blockPosition()), self.getRandom());
+        return picked != null
+                ? picked
+                : HorseBreed.fromId(self.getRandom().nextInt(HorseBreed.HORSE_BREED_COUNT));
+    }
+
+    @Unique
+    private boolean bh_isNaturalHorseSpawn(MobSpawnType reason) {
+        return reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION;
     }
 }

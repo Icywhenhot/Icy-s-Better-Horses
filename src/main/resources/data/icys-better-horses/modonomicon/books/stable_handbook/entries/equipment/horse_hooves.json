@@ -1,0 +1,54 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:equipment/horse_hooves",
+  "category": "icys-better-horses:equipment",
+  "name": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.name",
+  "icon": {
+    "id": "icys-better-horses:horse_hooves_gear"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": -2,
+  "y": -1,
+  "sort_number": 3,
+  "parents": [
+    {
+      "entry": "icys-better-horses:equipment/upgraded_saddle"
+    }
+  ],
+  "pages": [
+    {
+      "type": "modonomicon:crafting_recipe",
+      "id": "recipe",
+      "recipe_id_1": "icys-better-horses:horse_hooves_gear",
+      "title1": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.recipe.title1",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.recipe.text"
+    },
+    {
+      "type": "modonomicon:spotlight",
+      "id": "info",
+      "item": {
+        "item": "icys-better-horses:horse_hooves_gear"
+      },
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.info.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.info.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "frost_walker",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.frost_walker.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.frost_walker.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "speed",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.speed.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.speed.text"
+    }
+  ]
+}

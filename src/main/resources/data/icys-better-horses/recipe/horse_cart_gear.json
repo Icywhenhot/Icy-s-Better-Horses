@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "S S",
+    "PPP",
+    "W W"
+  ],
+  "key": {
+    "S": {
+      "tag": "minecraft:wooden_slabs"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "W": {
+      "item": "icys-better-horses:wheel"
+    }
+  },
+  "result": {
+    "id": "icys-better-horses:horse_cart_gear",
+    "count": 1
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "criteria": {
+    "top_speed": {
+      "conditions": {
+        "key": "top_speed",
+        "value": {
+          "min": 25
+        }
+      },
+      "trigger": "icys-better-horses:milestone"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.icys-better-horses.built_different.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "minecraft:elytra"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.icys-better-horses.built_different.title"
+    }
+  },
+  "parent": "icys-better-horses:ride_or_die",
+  "requirements": [
+    [
+      "top_speed"
+    ]
+  ]
+}

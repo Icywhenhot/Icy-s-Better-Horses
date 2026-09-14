@@ -16,7 +16,6 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-// GeckoLib animation state holder for the stabilizer wings.
 public final class HorseStabilizerAnimatable implements GeoAnimatable {
 
     private static final RawAnimation DEPLOY_AND_GLIDE = RawAnimation.begin()
@@ -46,6 +45,10 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
             }
         }
         return null;
+    }
+
+    public static void remove(AbstractHorse horse) {
+        INSTANCES.remove(horse);
     }
 
     public void syncFromHorse(AbstractHorse horse, HorseStabilizerState state, double tick) {

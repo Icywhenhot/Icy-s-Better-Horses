@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Locale;
+import icy.betterhorses.net.client.BhAbilityBadges;
 
 @Mixin(Gui.class)
 public abstract class GuiMixin {
@@ -48,12 +49,12 @@ public abstract class GuiMixin {
         String jumpValue = String.format(Locale.ROOT, "%.1f",
                 Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D));
 
-        IHorseData data = (IHorseData) horse;
-        Component title = Component.translatable("hud.icys_better_horses.horse_stats");
-        Component genderLine = Component.translatable("hud.icys_better_horses.gender", data.bh_getGender().displayName());
-        Component breedLine = Component.translatable("hud.icys_better_horses.breed", data.bh_getBreed().displayName(data.bh_isMixedBreed()));
-        Component speedLine = Component.translatable("hud.icys_better_horses.speed", speedValue);
-        Component jumpLine = Component.translatable("hud.icys_better_horses.jump", jumpValue);
+        IHorseData data = IHorseData.of(horse);
+        Component title = Component.translatable("hud.icys-better-horses.horse_stats");
+        Component genderLine = Component.translatable("hud.icys-better-horses.gender", data.bh_getGender().displayName());
+        Component breedLine = Component.translatable("hud.icys-better-horses.breed", data.bh_getBreed().displayName(data.bh_isMixedBreed()));
+        Component speedLine = Component.translatable("hud.icys-better-horses.speed", speedValue);
+        Component jumpLine = Component.translatable("hud.icys-better-horses.jump", jumpValue);
 
         Component[] lines = {genderLine, breedLine, speedLine, jumpLine};
         int lineHeight = this.minecraft.font.lineHeight + 2;
@@ -63,7 +64,9 @@ public abstract class GuiMixin {
         }
         int boxWidth = contentWidth + BH_STATS_HUD_PADDING * 2;
         int boxHeight = BH_STATS_HUD_PADDING * 2 + lineHeight * (lines.length + 1);
-        int left = (this.minecraft.getWindow().getGuiScaledWidth() - boxWidth) / 2;
+        int scaledWidth = this.minecraft.getWindow().getGuiScaledWidth();
+        int scaledHeight = this.minecraft.getWindow().getGuiScaledHeight();
+        int left = (scaledWidth - boxWidth) / 2;
         int top = BH_STATS_HUD_TOP;
 
         gfx.fill(left, top, left + boxWidth, top + boxHeight, BH_STATS_HUD_BACKGROUND);
@@ -75,6 +78,20 @@ public abstract class GuiMixin {
         for (int i = 0; i < lines.length; i++) {
             gfx.drawString(this.minecraft.font, lines[i], textX, textY + lineHeight * (i + 1), BH_STATS_HUD_TEXT_COLOR, false);
         }
+    }
+
+    @Inject(method = "render", at = @At("TAIL"))
+    private void bh_renderAbilityBadges(GuiGraphics gfx, DeltaTracker deltaTracker, CallbackInfo ci) {
+        if (this.minecraft.player == null || this.minecraft.level == null
+                || this.minecraft.screen != null) {
+            return;
+        }
+        if (!(this.minecraft.player.getVehicle() instanceof AbstractHorse horse)) {
+            return;
+        }
+        int scaledWidth = this.minecraft.getWindow().getGuiScaledWidth();
+        int scaledHeight = this.minecraft.getWindow().getGuiScaledHeight();
+        BhAbilityBadges.render(gfx, this.minecraft.font, scaledWidth, scaledHeight, horse);
     }
 
     @Unique

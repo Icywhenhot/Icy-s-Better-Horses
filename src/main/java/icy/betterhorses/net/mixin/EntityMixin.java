@@ -1,13 +1,21 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.HorseCommand;
+import icy.betterhorses.net.HorseTracker;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.entity.HorseCartEntity;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -19,18 +27,28 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Entity.class)
 public abstract class EntityMixin {
 
+    @Inject(method = "setRemoved", at = @At("HEAD"))
+    private void bh_removeEffects(Entity.RemovalReason reason, CallbackInfo ci) {
+        Entity self = (Entity) (Object) this;
+        if (!self.isRemoved() && self instanceof AbstractHorse horse) IHorseData.of(horse).bh_onRemoved();
+    }
+
     @Unique
     private static final ResourceLocation BH_MOUNTED_STEP_HEIGHT_ID =
-            ResourceLocation.fromNamespaceAndPath("icys_better_horses", "mounted_step_height");
+            ResourceLocation.fromNamespaceAndPath("icys-better-horses", "mounted_step_height");
     @Unique
     private static final ResourceLocation BH_MOUNTED_BREAK_SPEED_ID =
-            ResourceLocation.fromNamespaceAndPath("icys_better_horses", "mounted_break_speed");
+            ResourceLocation.fromNamespaceAndPath("icys-better-horses", "mounted_break_speed");
     @Unique private static final double BH_MOUNTED_STEP_HEIGHT_BONUS = 0.1D;
     @Unique private static final double BH_MOUNTED_BREAK_SPEED_BONUS = 5.0D;
-    @Unique private @Nullable AbstractHorse bh_dismountHorse = null;
-    @Unique private boolean bh_shouldSetHorseToWanderOnDismount = false;
 
-    // 1.21.1 startRiding(Entity, boolean) — 2-arg form (3-arg variant is 1.21.5+).
+    @Inject(method = "isInWall", at = @At("HEAD"), cancellable = true)
+    private void bh_cartRidersDoNotSuffocate(CallbackInfoReturnable<Boolean> cir) {
+        if (((Entity) (Object) this).getVehicle() instanceof HorseCartEntity) {
+            cir.setReturnValue(false);
+        }
+    }
+
     @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;Z)Z", at = @At("TAIL"))
     private void bh_applyMountedHorseBonuses(
             Entity vehicle,
@@ -39,6 +57,10 @@ public abstract class EntityMixin {
         Entity self = (Entity) (Object) this;
         if (!cir.getReturnValueZ() || !(self instanceof ServerPlayer player) || !(vehicle instanceof AbstractHorse horse)) {
             return;
+        }
+
+        if (player.getUUID().equals(IHorseData.of(horse).bh_getOwner())) {
+            HorseTracker.setLastRidden(player.getUUID(), horse);
         }
 
         @Nullable AttributeInstance stepHeight = horse.getAttribute(Attributes.STEP_HEIGHT);
@@ -66,18 +88,12 @@ public abstract class EntityMixin {
             return;
         }
 
-        this.bh_dismountHorse = null;
-        this.bh_shouldSetHorseToWanderOnDismount = false;
         Entity vehicle = player.getVehicle();
-        if (vehicle instanceof AbstractHorse horse) {
-            if (horse.getPassengers().size() == 1) {
-                @Nullable AttributeInstance stepHeight = horse.getAttribute(Attributes.STEP_HEIGHT);
-                if (stepHeight != null) {
-                    stepHeight.removeModifier(BH_MOUNTED_STEP_HEIGHT_ID);
-                }
+        if (vehicle instanceof AbstractHorse horse && horse.getPassengers().size() == 1) {
+            @Nullable AttributeInstance stepHeight = horse.getAttribute(Attributes.STEP_HEIGHT);
+            if (stepHeight != null) {
+                stepHeight.removeModifier(BH_MOUNTED_STEP_HEIGHT_ID);
             }
-            this.bh_dismountHorse = horse;
-            this.bh_shouldSetHorseToWanderOnDismount = player.getUUID().equals(((IHorseData) horse).bh_getOwner());
         }
 
         @Nullable AttributeInstance breakSpeed = player.getAttribute(Attributes.BLOCK_BREAK_SPEED);
@@ -86,21 +102,21 @@ public abstract class EntityMixin {
         }
     }
 
-    @Inject(method = "removeVehicle", at = @At("TAIL"))
-    private void bh_setHorseToWanderAfterOwnerDismount(CallbackInfo ci) {
+    @Inject(method = "removeVehicle", at = @At("HEAD"))
+    private void bh_wanderAfterDismount(CallbackInfo ci) {
         Entity self = (Entity) (Object) this;
-        if (!(self instanceof ServerPlayer player)) {
+        if (!(self instanceof ServerPlayer player) || !(player.getVehicle() instanceof AbstractHorse horse)) {
             return;
         }
 
-        AbstractHorse horse = this.bh_dismountHorse;
-        boolean shouldSetWander = this.bh_shouldSetHorseToWanderOnDismount;
-        this.bh_dismountHorse = null;
-        this.bh_shouldSetHorseToWanderOnDismount = false;
-        if (!shouldSetWander || horse == null || horse.level().isClientSide()) {
+        IHorseData data = IHorseData.of(horse);
+        if (!player.getUUID().equals(data.bh_getOwner())) {
             return;
         }
 
-        ((IHorseData) horse).bh_setWanderCommand(player.blockPosition());
+        HorseTracker.setLastRidden(player.getUUID(), horse);
+        data.bh_setWanderCenter(horse.blockPosition());
+        data.bh_setCommand(HorseCommand.WANDER);
     }
+
 }

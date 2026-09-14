@@ -7,7 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 public record CallHorsePayload() implements CustomPacketPayload {
 
     public static final Type<CallHorsePayload> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath("icys_better_horses", "call_horse"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath("icys-better-horses", "call_horse"));
 
     public static final StreamCodec STREAM_CODEC = new StreamCodec();
 
@@ -24,9 +24,6 @@ public record CallHorsePayload() implements CustomPacketPayload {
 
         @Override
         public void encode(FriendlyByteBuf buf, CallHorsePayload value) {
-            // no data
         }
     }
 }
-
-

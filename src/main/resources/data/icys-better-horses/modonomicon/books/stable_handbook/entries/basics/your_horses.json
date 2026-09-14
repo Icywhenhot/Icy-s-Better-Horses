@@ -1,0 +1,52 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:basics/your_horses",
+  "category": "icys-better-horses:basics",
+  "name": "book.icys-better-horses.stable_handbook.basics.your_horses.name",
+  "icon": {
+    "id": "minecraft:compass"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": -4,
+  "y": 0,
+  "sort_number": 7,
+  "parents": [
+    {
+      "entry": "icys-better-horses:basics/horse_info_screen"
+    }
+  ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "open",
+      "title": "book.icys-better-horses.stable_handbook.basics.your_horses.open.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.your_horses.open.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "preview",
+      "title": "book.icys-better-horses.stable_handbook.basics.your_horses.preview.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.your_horses.preview.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "coords",
+      "title": "book.icys-better-horses.stable_handbook.basics.your_horses.coords.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.your_horses.coords.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "actions",
+      "title": "book.icys-better-horses.stable_handbook.basics.your_horses.actions.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.your_horses.actions.text"
+    }
+  ]
+}
