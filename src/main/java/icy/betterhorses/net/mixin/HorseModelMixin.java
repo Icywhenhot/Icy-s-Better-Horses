@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-// Tilts the head down/back when the rider is in first-person, so it doesn't block the view.
 @Mixin(HorseModel.class)
 public abstract class HorseModelMixin<T extends AbstractHorse> extends AgeableListModel<T> {
 

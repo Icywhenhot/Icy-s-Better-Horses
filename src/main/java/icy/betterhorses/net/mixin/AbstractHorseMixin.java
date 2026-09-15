@@ -44,7 +44,6 @@ import icy.betterhorses.net.goal.HorseStayGoal;
 import icy.betterhorses.net.goal.SpookGoal;
 import icy.betterhorses.net.goal.HorseWanderBoundsGoal;
 import icy.betterhorses.net.inventory.GearSlot;
-import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -53,6 +52,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -110,6 +110,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private int eatingCounter;
 
     @Shadow
+    private int standCounter;
+
+    @Shadow
     protected abstract void doPlayerRide(Player player);
 
 
@@ -130,9 +133,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             AbstractHorseMixin.this.bh_syncGearFlags();
         }
     };
-    @Unique
-    private static final Codec<ResourceKey<Level>> BH_DIMENSION_CODEC =
-            ResourceKey.codec(Registries.DIMENSION);
     @Unique private static final int BH_CHEST_MAX_SLOTS = 54;
     @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(BH_CHEST_MAX_SLOTS);
     @Unique private static final int BH_CART_CHEST_SIZE = CartChestMenu.SLOTS;
@@ -359,7 +359,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public boolean bh_hasUpgradedSaddle() {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        return inventory != null && inventory.getItem(0).is(ModItems.UPGRADED_SADDLE);
+        return self.level().isClientSide()
+                ? self.getData(BhHorseAttachments.UPGRADED_SADDLE)
+                : inventory != null && inventory.getItem(0).is(ModItems.UPGRADED_SADDLE);
     }
 
     @Override
@@ -591,17 +593,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
                 : null;
         bh_wanderCenter = BhHorseStorage.readLegacyBlockPos(input, "BH_WanderCenter");
         bh_hitchpostPos = BhHorseStorage.readLegacyBlockPos(input, "BH_Hitchpost");
-        if (bh_home == null) {
-            bh_home = BhHorseStorage.readLegacyBlockPos(input, "BH_Home");
-        }
         if (bh_home != null && bh_homeDim == null) {
             bh_homeDim = ((AbstractHorse) (Object) this).level().dimension();
-        }
-        if (bh_wanderCenter == null) {
-            bh_wanderCenter = BhHorseStorage.readLegacyBlockPos(input, "BH_WanderCenter");
-        }
-        if (bh_hitchpostPos == null) {
-            bh_hitchpostPos = BhHorseStorage.readLegacyBlockPos(input, "BH_Hitchpost");
         }
         ((AbstractHorse) (Object) this).setData(BhHorseAttachments.HITCHPOST_POS, Optional.ofNullable(bh_hitchpostPos));
         bh_applyBondAttributes();
@@ -686,6 +679,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Inject(method = "createInventory", at = @At("TAIL"))
     private void bh_onCreateInventory(CallbackInfo ci) {
         bh_afterInventoryChange();
+        this.bh_syncGearFlags();
+    }
+
+    @Inject(method = "containerChanged", at = @At("TAIL"))
+    private void bh_onContainerChanged(Container invBasic, CallbackInfo ci) {
         this.bh_syncGearFlags();
     }
 
@@ -1278,6 +1276,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         }
         ((AbstractHorse) (Object) this).setData(BhHorseAttachments.ENDER_CHEST,
                 this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal()).is(Items.ENDER_CHEST));
+        ((AbstractHorse) (Object) this).setData(BhHorseAttachments.UPGRADED_SADDLE,
+                this.inventory != null && this.inventory.getItem(0).is(ModItems.UPGRADED_SADDLE));
     }
 
     @Override
@@ -1293,6 +1293,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public void bh_ridePlayer(Player player) {
         this.doPlayerRide(player);
+    }
+
+    @Override
+    public void bh_clearStanding() {
+        ((AbstractHorse) (Object) this).setStanding(false);
+        this.standCounter = 0;
     }
 
     @Redirect(

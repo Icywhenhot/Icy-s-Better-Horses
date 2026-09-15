@@ -1,7 +1,6 @@
 package icy.betterhorses.net.client.render;
 
 import icy.betterhorses.net.IcysBetterHorses;
-import icy.betterhorses.net.ModItems;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -51,8 +50,8 @@ public final class BhTackTextures {
         return ender ? enderChest : chest;
     }
 
-    public ResourceLocation saddle(ItemStack stack) {
-        return stack.is(ModItems.UPGRADED_SADDLE) ? saddleUpgraded : saddle;
+    public ResourceLocation saddle(boolean upgraded) {
+        return upgraded ? saddleUpgraded : saddle;
     }
 
     public ResourceLocation armor(ItemStack stack) {

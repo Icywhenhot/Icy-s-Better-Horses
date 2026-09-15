@@ -129,7 +129,9 @@ public class HitchpostBlock extends BaseEntityBlock {
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if (level instanceof ServerLevel serverLevel) releaseHorseAtPost(serverLevel, pos);
+        if (!state.is(newState.getBlock()) && level instanceof ServerLevel serverLevel) {
+            releaseHorseAtPost(serverLevel, pos);
+        }
         super.onRemove(state, level, pos, newState, movedByPiston);
     }
 

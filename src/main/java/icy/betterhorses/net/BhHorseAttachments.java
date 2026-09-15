@@ -24,6 +24,7 @@ public final class BhHorseAttachments {
     public static final AttachmentType<Boolean> CART_CHEST = bool(false);
     public static final AttachmentType<Boolean> CART_PLOW = bool(false);
     public static final AttachmentType<Boolean> ENDER_CHEST = bool(false);
+    public static final AttachmentType<Boolean> UPGRADED_SADDLE = bool(false);
     public static final AttachmentType<Optional<BlockPos>> HITCHPOST_POS = optionalBlockPos();
     public static final AttachmentType<Integer> GENDER = integer(0);
     public static final AttachmentType<Integer> BREED = integer(HorseBreed.UNKNOWN_SPECIES.ordinal());
@@ -52,6 +53,7 @@ public final class BhHorseAttachments {
         register(event, "cart_chest", CART_CHEST);
         register(event, "cart_plow", CART_PLOW);
         register(event, "ender_chest", ENDER_CHEST);
+        register(event, "upgraded_saddle", UPGRADED_SADDLE);
         register(event, "hitchpost_pos", HITCHPOST_POS);
         register(event, "gender", GENDER);
         register(event, "breed", BREED);

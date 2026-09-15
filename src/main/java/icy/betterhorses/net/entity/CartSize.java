@@ -44,9 +44,9 @@ public enum CartSize {
              double bedCenterBehind, double bedHalfLength, double benchHeight,
              double rearSeatBehind, double rearRowSpacing,
              int rearSeatCount, int rearSeatsWithChest, int chestSlots) {
-        this.model = id(asset);
+        this.model = id("geo/" + asset + ".geo.json");
         this.texture = id("textures/entity/" + asset + ".png");
-        this.animation = id(asset);
+        this.animation = id("animations/" + asset + ".animation.json");
         this.chestBone = chestBone;
         this.wheelsRolling = RawAnimation.begin().thenLoop(wheelAnim);
         this.chestOpening = RawAnimation.begin().thenPlayAndHold(chestOpenAnim);

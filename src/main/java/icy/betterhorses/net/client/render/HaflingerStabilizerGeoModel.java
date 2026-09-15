@@ -7,11 +7,11 @@ import software.bernie.geckolib.model.GeoModel;
 public final class HaflingerStabilizerGeoModel extends GeoModel<HorseStabilizerAnimatable> {
 
     private static final ResourceLocation MODEL =
-            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "geckolib/models/st_haflinger.geo.json");
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "geo/st_haflinger.geo.json");
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
             IcysBetterHorses.RESOURCE_NAMESPACE, "textures/entity/horse/haflinger/stabilizer.png");
     private static final ResourceLocation ANIMATION =
-            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "geckolib/animations/st.animation.json");
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "animations/st.animation.json");
 
     @Override
     public ResourceLocation getModelResource(HorseStabilizerAnimatable animatable) {

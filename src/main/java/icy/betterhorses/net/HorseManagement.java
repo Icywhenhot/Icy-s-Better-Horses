@@ -323,9 +323,18 @@ public final class HorseManagement {
         return nearest;
     }
 
+    private static @Nullable AbstractHorse anyLevel(ServerPlayer player, UUID horseId) {
+        for (ServerLevel level : player.server.getAllLevels()) {
+            if (level.getEntity(horseId) instanceof AbstractHorse horse) {
+                return horse;
+            }
+        }
+        return null;
+    }
+
     private static @Nullable AbstractHorse findLoadedOwned(ServerPlayer player, UUID horseId) {
         AbstractHorse tracked = HorseTracker.getLoaded(horseId);
-        if (tracked == null && ((ServerLevel) player.level()).getEntity(horseId) instanceof AbstractHorse found) {
+        if (tracked == null && anyLevel(player, horseId) instanceof AbstractHorse found) {
             tracked = found;
             if (player.getUUID().equals(IHorseData.of(found).bh_getOwner())) {
                 HorseTracker.register(found);
@@ -338,7 +347,7 @@ public final class HorseManagement {
     private static boolean ownsStoredHorse(ServerPlayer player, UUID horseId) {
         AbstractHorse tracked = HorseTracker.getLoaded(horseId);
         if (tracked != null && tracked.isAlive()) return player.getUUID().equals(IHorseData.of(tracked).bh_getOwner());
-        if (((ServerLevel) player.level()).getEntity(horseId) instanceof AbstractHorse horse && horse.isAlive()) {
+        if (anyLevel(player, horseId) instanceof AbstractHorse horse && horse.isAlive()) {
             return player.getUUID().equals(IHorseData.of(horse).bh_getOwner());
         }
         AbstractHorse loaded = findLoadedOwned(player, horseId);

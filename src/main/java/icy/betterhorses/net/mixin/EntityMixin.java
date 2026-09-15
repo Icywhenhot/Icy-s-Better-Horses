@@ -42,6 +42,13 @@ public abstract class EntityMixin {
     @Unique private static final double BH_MOUNTED_STEP_HEIGHT_BONUS = 0.1D;
     @Unique private static final double BH_MOUNTED_BREAK_SPEED_BONUS = 5.0D;
 
+    @Inject(method = "canCollideWith", at = @At("HEAD"), cancellable = true)
+    private void bh_ignoreOwnCart(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+        if (entity instanceof HorseCartEntity cart && !cart.bh_collidesWith((Entity) (Object) this)) {
+            cir.setReturnValue(false);
+        }
+    }
+
     @Inject(method = "isInWall", at = @At("HEAD"), cancellable = true)
     private void bh_cartRidersDoNotSuffocate(CallbackInfoReturnable<Boolean> cir) {
         if (((Entity) (Object) this).getVehicle() instanceof HorseCartEntity) {

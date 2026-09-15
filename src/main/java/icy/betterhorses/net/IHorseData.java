@@ -169,6 +169,8 @@ public interface IHorseData {
 
     void bh_ridePlayer(Player player);
 
+    void bh_clearStanding();
+
     boolean bh_hasUpgradedSaddle();
 
     SimpleContainer bh_getGearContainer();

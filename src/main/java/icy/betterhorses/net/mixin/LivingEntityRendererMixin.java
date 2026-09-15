@@ -14,7 +14,6 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// Fades the horse out when the rider looks down (translucent render type + scaled alpha).
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityRendererMixin {
 

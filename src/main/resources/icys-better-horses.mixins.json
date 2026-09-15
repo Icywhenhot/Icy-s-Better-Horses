@@ -37,7 +37,8 @@
 		"HorseModelAccessor",
 		"HorseModelMixin",
 		"KeyboardInputMixin",
-		"LivingEntityRendererMixin"
+		"LivingEntityRendererMixin",
+		"LivingEntityRendererRiderMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

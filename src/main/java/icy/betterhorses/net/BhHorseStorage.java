@@ -1,7 +1,5 @@
 package icy.betterhorses.net;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -16,14 +14,6 @@ import org.jetbrains.annotations.Nullable;
 public final class BhHorseStorage {
 
     private BhHorseStorage() {}
-
-    public record SlotEntry(int slot, ItemStack stack) {
-        public static final Codec<SlotEntry> CODEC =
-                RecordCodecBuilder.create(instance -> instance.group(
-                        Codec.INT.fieldOf("Slot").forGetter(SlotEntry::slot),
-                        ItemStack.CODEC.fieldOf("Item").forGetter(SlotEntry::stack)
-                ).apply(instance, SlotEntry::new));
-    }
 
     public static void writeContainer(CompoundTag tag, String key, SimpleContainer container,
                                       HolderLookup.Provider registries) {

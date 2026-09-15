@@ -2,6 +2,44 @@ package icy.betterhorses.net.client.render;
 
 public class BhHorseRenderState {
 
+    private static final java.util.Map<Integer, BhHorseRenderState> ACTIVE = new java.util.HashMap<>();
+
+    private static final int PREVIEW_BASE = Integer.MIN_VALUE;
+    private static boolean previewing;
+
+    public static void beginPreview() {
+        previewing = true;
+    }
+
+    public static void endPreview() {
+        previewing = false;
+    }
+
+    public static int renderId(int entityId) {
+        return previewing ? PREVIEW_BASE + entityId : entityId;
+    }
+
+    public static int previewId(int entityId) {
+        return PREVIEW_BASE + entityId;
+    }
+
+    static BhHorseRenderState forEntity(int id) {
+        return ACTIVE.computeIfAbsent(id, ignored -> new BhHorseRenderState());
+    }
+
+    public static void remove(int id) {
+        ACTIVE.remove(id);
+        ACTIVE.remove(PREVIEW_BASE + id);
+    }
+
+    public static void reset() {
+        ACTIVE.clear();
+    }
+
+    static {
+        icy.betterhorses.net.client.BhClientCaches.register(BhHorseRenderState::reset);
+    }
+
     final java.util.Map<BhHorseModel.PoseKey, BhHorseModel.Pose> poses = new java.util.HashMap<>();
     int poseRevision;
     public float ageInTicks;

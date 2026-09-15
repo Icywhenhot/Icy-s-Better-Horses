@@ -272,7 +272,7 @@ public final class HorseCombat implements HorseFeature {
         }
 
         strike(level, horse, data, attacker);
-        horse.setStanding(false);
+        data.bh_clearStanding();
         if (data.bh_getCombatTarget() == null) {
             data.bh_setSpookTicks(BOLT_TICKS);
         }

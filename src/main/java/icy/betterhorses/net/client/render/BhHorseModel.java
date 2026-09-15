@@ -4,6 +4,8 @@ import icy.betterhorses.net.BhGears;
 import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedHorse;
+import icy.betterhorses.net.BreedArchetype;
+import icy.betterhorses.net.entity.FriesianHorse;
 import icy.betterhorses.net.entity.IcelandicHorse;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
@@ -105,6 +107,15 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
 
     private final float grazeNeck;
     private final float grazeHeadRel;
+
+    private static float bhHeadDrop(BhBreedHorse horse) {
+        if (horse instanceof IcelandicHorse || horse instanceof FriesianHorse) {
+            return 0.0F;
+        }
+        return horse.bhFixedBreed().archetype() == BreedArchetype.DRAFT
+                ? 20.0F * Mth.DEG_TO_RAD
+                : 25.0F * Mth.DEG_TO_RAD;
+    }
 
     private static ModelPart childOrEmpty(ModelPart parent, String name) {
         return parent.hasChild(name)
@@ -268,7 +279,7 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
     @Override
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount,
                           float ageInTicks, float netHeadYaw, float headPitch) {
-        BhHorseRenderState state = new BhHorseRenderState();
+        BhHorseRenderState state = BhHorseRenderState.forEntity(BhHorseRenderState.renderId(entity.getId()));
         state.ageInTicks = ageInTicks;
         state.walkAnimationPos = limbSwing;
         state.walkAnimationSpeed = limbSwingAmount;
@@ -288,10 +299,9 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
                 ? Mth.clamp(entity.getHealth() / entity.getMaxHealth(), 0.0F, 1.0F)
                 : 1.0F;
         state.phaseOffset = (entity.getId() * 0.6180339887F % 1.0F) * Mth.TWO_PI;
-        state.riddenHeadDrop = entity.bhFixedBreed().archetype() == icy.betterhorses.net.BreedArchetype.DRAFT
-                ? 20.0F * Mth.DEG_TO_RAD : 25.0F * Mth.DEG_TO_RAD;
+        state.riddenHeadDrop = bhHeadDrop(entity);
         state.commandedToStay = IHorseData.of(entity).bh_getCommand() == HorseCommand.STAY;
-        state.entityId = entity.getId();
+        state.entityId = BhHorseRenderState.renderId(entity.getId());
         if (entity instanceof IcelandicHorse) {
             state.gaitedBlend = 1.0F;
             IHorseData data = IHorseData.of(entity);

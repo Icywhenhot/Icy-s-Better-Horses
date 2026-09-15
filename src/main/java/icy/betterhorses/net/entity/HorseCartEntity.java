@@ -63,8 +63,6 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public final class HorseCartEntity extends Entity implements GeoEntity {
 
@@ -969,11 +967,15 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     @Override
     public boolean canCollideWith(Entity entity) {
+        return this.bh_collidesWith(entity);
+    }
+
+    public boolean bh_collidesWith(Entity mover) {
         AbstractHorse bound = this.boundHorse();
-        if (bound != null && (entity == bound || entity.getVehicle() == bound)) {
+        if (bound != null && (mover == bound || mover.getVehicle() == bound)) {
             return false;
         }
-        return !this.hasPassenger(entity);
+        return !this.hasPassenger(mover);
     }
 
     @Override
@@ -1082,14 +1084,6 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             }
         }
         output.put("BhChestItems", items);
-    }
-
-    public record BhCartSlot(int slot, ItemStack stack) {
-        public static final Codec<BhCartSlot> CODEC =
-                RecordCodecBuilder.create(instance -> instance.group(
-                        Codec.INT.fieldOf("Slot").forGetter(BhCartSlot::slot),
-                        ItemStack.CODEC.fieldOf("Item").forGetter(BhCartSlot::stack)
-                ).apply(instance, BhCartSlot::new));
     }
 
     @Override

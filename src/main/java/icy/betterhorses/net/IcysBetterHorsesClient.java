@@ -284,8 +284,12 @@ public class IcysBetterHorsesClient {
     private void onEntityLeave(EntityLeaveLevelEvent event) {
         if (!event.getLevel().isClientSide()) return;
         Entity entity = event.getEntity();
+        int previewId = icy.betterhorses.net.client.render.BhHorseRenderState.previewId(entity.getId());
         icy.betterhorses.net.client.render.BhEquineGait.remove(entity.getId());
+        icy.betterhorses.net.client.render.BhEquineGait.remove(previewId);
         icy.betterhorses.net.client.render.BhRiderMotion.remove(entity.getId());
+        icy.betterhorses.net.client.render.BhRiderMotion.remove(previewId);
+        icy.betterhorses.net.client.render.BhHorseRenderState.remove(entity.getId());
         if (entity instanceof AbstractHorse horse) {
             icy.betterhorses.net.client.render.HorseStabilizerAnimatable.remove(horse);
         }
