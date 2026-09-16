@@ -30,7 +30,6 @@ The default file, abbreviated. The `abilities` block holds one entry for every c
 {
   "stabilizer": "yes",
   "medkit": "yes",
-  "hitchpost": "yes",
   "hooves": "yes",
   "horse_exclusivity": "yes",
   "multiriding": "yes",
@@ -71,7 +70,6 @@ The default file, abbreviated. The `abilities` block holds one entry for every c
 |:---|:---:|:---|
 | `stabilizer` | `yes` | [Horse Stabilizers](equipment/horse-stabilizer) stop deploying, so no gliding descent and no fall protection |
 | `medkit` | `yes` | [Horse Medkits](equipment/horse-medkit) never activate |
-| `hitchpost` | `yes` | [Hitchposts](equipment/hitchpost) stop tethering horses, and any horse already tied is released |
 | `hooves` | `yes` | [Horse Hooves](equipment/horse-hooves) lose snow walking, fall reduction, and Frost Walker |
 | `horse_exclusivity` | `yes` | **Any player can ride any owned horse**, useful for shared stables |
 | `multiriding` | `yes` | Only one player per horse; no second rider |

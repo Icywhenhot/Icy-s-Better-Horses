@@ -7,7 +7,6 @@ Put custom item sprites here:
 - `src/main/resources/assets/icys-better-horses/textures/item/upgraded_saddle.png`
 - `src/main/resources/assets/icys-better-horses/textures/item/horse_chest_gear.png`
 - `src/main/resources/assets/icys-better-horses/textures/item/horse_hooves_gear.png`
-- `src/main/resources/assets/icys-better-horses/textures/item/hitchpost.png`
 - `src/main/resources/assets/icys-better-horses/textures/item/horse_stabilizer_gear.png`
 
 The matching model files already live here:

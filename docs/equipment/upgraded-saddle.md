@@ -33,7 +33,6 @@ Equip it on a horse and the horse's inventory screen gains **five gear slots**:
 | Hooves | [Horse Hooves](horse-hooves) |
 | Medkit | [Horse Medkit](horse-medkit) |
 | Stabilizer | [Horse Stabilizer](horse-stabilizer) **or** [Horse Cart](horse-cart) |
-| Hitchpost | [Hitchpost](hitchpost) |
 
 ---
 

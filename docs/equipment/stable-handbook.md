@@ -29,7 +29,6 @@ Any of these work as the second ingredient:
 - [Horse Medkit](horse-medkit)
 - [Canister](canister)
 - [Horse Stabilizer](horse-stabilizer)
-- [Hitchpost](hitchpost)
 - [Wheel](wheel)
 - [Horse Cart](horse-cart)
 

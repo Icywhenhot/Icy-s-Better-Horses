@@ -47,16 +47,9 @@ horse_cart_gear:
     - [planks, planks, planks]
     - [wheel, "", wheel]
 
-hitchpost:
-  result: hitchpost
-  shape:
-    - [lead, "", ""]
-    - [fence, "", ""]
-    - ["", "", ""]
-
 stable_handbook:
   result: stable_handbook
   shapeless: true
   note: "Plus any one Better Horses item — a plain Chest counts, so this is craftable on day one."
   ingredients: [book, chest]
-  alternatives: [upgraded_saddle, chest, horse_hooves_gear, horse_medkit_gear, canister, horse_stabilizer_gear, hitchpost, wheel, horse_cart_gear]
+  alternatives: [upgraded_saddle, chest, horse_hooves_gear, horse_medkit_gear, canister, horse_stabilizer_gear, wheel, horse_cart_gear]
