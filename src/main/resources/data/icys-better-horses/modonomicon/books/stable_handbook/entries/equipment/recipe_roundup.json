@@ -37,13 +37,8 @@
       "type": "modonomicon:crafting_recipe",
       "id": "r4",
       "recipe_id_1": "icys-better-horses:wheel",
-      "recipe_id_2": "icys-better-horses:horse_cart_gear"
-    },
-    {
-      "type": "modonomicon:crafting_recipe",
-      "id": "r5",
-      "recipe_id_1": "icys-better-horses:hitchpost",
-      "text": "book.icys-better-horses.stable_handbook.equipment.recipe_roundup.r5.text"
+      "recipe_id_2": "icys-better-horses:horse_cart_gear",
+      "text": "book.icys-better-horses.stable_handbook.equipment.recipe_roundup.r4.text"
     }
   ]
 }

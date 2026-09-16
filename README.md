@@ -12,7 +12,7 @@ A Fabric mod for Minecraft 26.2 that turns horses from an early-game novelty int
 - **Fifteen breeds**: real breeds with their own coat palettes and biome ranges, plus gender, mixed-breed foals, and stat inheritance.
 - **Command wheel**: a radial menu to make a horse follow, stay, wander, or return to a saved home.
 - **Horse roster**: a screen listing every horse you own, so you can whistle it, send it home, or disown it from anywhere.
-- **Upgraded Saddle**: unlocks five gear slots for a chest, hooves, medkit, stabilizer, and hitchpost.
+- **Upgraded Saddle**: unlocks four gear slots for a chest, hooves, medkit, and stabilizer.
 - **Horse carts**: a four-seat cart your horse tows, with an optional double chest of cargo.
 - **Riding improvements**: auto-ride, free look, leaf passthrough, water floating, higher step height, and two riders per horse.
 - **Stable Handbook**: an in-game Modonomicon guide covering all of it.
@@ -31,7 +31,7 @@ Full detail on each: **[the wiki](https://icywhenhot.github.io/Icy-s-Better-Hors
 
 ## Configuration
 
-Six toggles in `config/icys-better-horses.json` let a server disable stabilizers, medkits, hitchposts, hooves, owner-only riding, or multi-riding. See [Configuration](https://icywhenhot.github.io/Icy-s-Better-Horses/configuration).
+Five toggles in `config/icys-better-horses.json` let a server disable stabilizers, medkits, hooves, owner-only riding, or multi-riding. See [Configuration](https://icywhenhot.github.io/Icy-s-Better-Horses/configuration).
 
 ## Building
 
