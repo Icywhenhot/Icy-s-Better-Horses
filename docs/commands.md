@@ -62,7 +62,6 @@ A trusted player is treated as you are, with **one** exception: they can't give 
 | Use its saddlebags and a cart's chest | **Yes** |
 | Fit a cart or stabilizer by hand | **Yes** |
 | Shear off the saddle | **Yes** |
-| Tie it to a [hitchpost](equipment/hitchpost) | **Yes** |
 | Use the [command wheel](command-wheel) on it | **Yes** |
 | Disown it | No |
 

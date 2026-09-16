@@ -1,6 +1,5 @@
 package icy.betterhorses.net;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.attachment.AttachmentSyncHandler;
@@ -10,7 +9,6 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -25,7 +23,6 @@ public final class BhHorseAttachments {
     public static final AttachmentType<Boolean> CART_PLOW = bool(false);
     public static final AttachmentType<Boolean> ENDER_CHEST = bool(false);
     public static final AttachmentType<Boolean> UPGRADED_SADDLE = bool(false);
-    public static final AttachmentType<Optional<BlockPos>> HITCHPOST_POS = optionalBlockPos();
     public static final AttachmentType<Integer> GENDER = integer(0);
     public static final AttachmentType<Integer> BREED = integer(HorseBreed.UNKNOWN_SPECIES.ordinal());
     public static final AttachmentType<Boolean> BREED_MIXED = bool(false);
@@ -54,7 +51,6 @@ public final class BhHorseAttachments {
         register(event, "cart_plow", CART_PLOW);
         register(event, "ender_chest", ENDER_CHEST);
         register(event, "upgraded_saddle", UPGRADED_SADDLE);
-        register(event, "hitchpost_pos", HITCHPOST_POS);
         register(event, "gender", GENDER);
         register(event, "breed", BREED);
         register(event, "breed_mixed", BREED_MIXED);
@@ -90,16 +86,6 @@ public final class BhHorseAttachments {
 
     private static AttachmentType<String> string(String initial) {
         return synced(() -> initial, RegistryFriendlyByteBuf::writeUtf, RegistryFriendlyByteBuf::readUtf);
-    }
-
-    private static AttachmentType<Optional<BlockPos>> optionalBlockPos() {
-        return synced(
-                Optional::empty,
-                (buffer, value) -> {
-                    buffer.writeBoolean(value.isPresent());
-                    value.ifPresent(buffer::writeBlockPos);
-                },
-                buffer -> buffer.readBoolean() ? Optional.of(buffer.readBlockPos()) : Optional.empty());
     }
 
     private static <T> AttachmentType<T> synced(

@@ -25,7 +25,6 @@ What it takes to fully equip one horse, from scratch:
 | [Horse Medkit](equipment/horse-medkit) | 3 wool, 2 golden carrots, 1 regen potion, 3 golden apples |
 | [Horse Stabilizer](equipment/horse-stabilizer) | 18 copper, 4 gold, 1 leather *(includes 2 canisters)* |
 | [Horse Cart](equipment/horse-cart) | 10 planks, 8 sticks, 2 slabs *(includes 2 wheels)* |
-| [Hitchpost](equipment/hitchpost) | 1 lead, 1 fence |
 | [Stable Handbook](equipment/stable-handbook) | 1 book, 1 Better Horses item |
 
 Copper is the backbone of the tack room, so budget around **28 copper ingots** for a full kit with both a stabilizer and hooves.
@@ -88,21 +87,13 @@ Four seats and an optional double chest. Any wood type. → [Details](equipment/
 
 ---
 
-## Hitchpost
-
-{% include craft.html id="hitchpost" %}
-
-Any fence type works. → [Details](equipment/hitchpost)
-
----
-
 ## Stable Handbook
 
 {% include craft.html id="stable_handbook" %}
 
 **Shapeless:** 1 Book + any one Better Horses item.
 
-Qualifying items: Upgraded Saddle, **Chest** *(vanilla)*, Horse Hooves, Horse Medkit, Canister, Horse Stabilizer, Hitchpost, Wheel, Horse Cart.
+Qualifying items: Upgraded Saddle, **Chest** *(vanilla)*, Horse Hooves, Horse Medkit, Canister, Horse Stabilizer, Wheel, Horse Cart.
 
 Because a plain chest counts, this is craftable on day one. → [Details](equipment/stable-handbook)
 
@@ -114,7 +105,6 @@ Three recipes accept tags rather than specific items, so modded materials work t
 
 | Recipe | Tag | Means |
 |:---|:---|:---|
-| [Hitchpost](equipment/hitchpost) | `#minecraft:fences` | Any fence, including modded |
 | [Wheel](equipment/wheel), [Horse Cart](equipment/horse-cart) | `#minecraft:planks`, `#minecraft:wooden_slabs` | Any wood type, mixed freely |
 | [Horse Medkit](equipment/horse-medkit) | `#minecraft:wool` | Any colour |
 

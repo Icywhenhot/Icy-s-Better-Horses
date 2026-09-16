@@ -73,4 +73,3 @@ Sends the horse back to its saved home. If it has no home set yet you'll get:
 
 - [Ownership & bonding](ownership-and-bonding): whistling and the bond system
 - [Managing your horses](managing-your-horses): send a horse home from anywhere
-- [Hitchpost](equipment/hitchpost): a physical alternative to Stay

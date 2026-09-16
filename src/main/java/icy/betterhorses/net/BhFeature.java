@@ -9,7 +9,6 @@ public enum BhFeature {
 
     STABILIZER("stabilizer"),
     MEDKIT("medkit"),
-    HITCHPOST("hitchpost"),
     HOOVES("hooves"),
     HORSE_EXCLUSIVITY("horse_exclusivity"),
     MULTI_RIDING("multiriding"),

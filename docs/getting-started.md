@@ -83,7 +83,6 @@ The [Upgraded Saddle](equipment/upgraded-saddle) is the gateway to everything el
 | Hooves | [Horse Hooves](equipment/horse-hooves) | Walk on powder snow, softer fall damage, takes Frost Walker |
 | Medkit | [Horse Medkit](equipment/horse-medkit) | Auto-heals your horse the moment it drops below half health |
 | Stabilizer | [Horse Stabilizer](equipment/horse-stabilizer) | Deploys on long falls and cancels the damage |
-| Hitchpost | [Hitchpost](equipment/hitchpost) | Tether the horse in place |
 
 The **Stabilizer slot is shared with the [Horse Cart](equipment/horse-cart)**, so a horse tows one or wears the other, never both.
 

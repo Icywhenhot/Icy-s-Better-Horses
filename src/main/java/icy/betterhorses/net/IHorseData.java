@@ -30,9 +30,6 @@ public interface IHorseData {
     @Nullable BlockPos bh_getWanderCenter();
     void bh_setWanderCenter(@Nullable BlockPos pos);
 
-    @Nullable BlockPos bh_getHitchpostPos();
-    void bh_setHitchpostPos(@Nullable BlockPos pos);
-
     int bh_getBond();
     void bh_setBond(int level);
 
@@ -111,10 +108,6 @@ public interface IHorseData {
 
     int bh_getCharge();
     void bh_setCharge(int fill);
-
-    default boolean bh_isHitched() {
-        return bh_getHitchpostPos() != null;
-    }
 
     default boolean bh_hasGear(GearSlot slot) {
         return (bh_getGearFlags() & (1 << slot.ordinal())) != 0;
