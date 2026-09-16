@@ -4,6 +4,9 @@ import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -30,6 +33,18 @@ public final class SlowBlockImmunity implements BreedAbility {
                 || state.is(Blocks.SWEET_BERRY_BUSH)
                 || state.is(Blocks.SOUL_SAND)
                 || state.is(Blocks.HONEY_BLOCK);
+    }
+
+    public static boolean ignoresSlowBlocks(Entity entity) {
+        if (entity instanceof AbstractHorse horse) {
+            return ignoresSlowBlocks(IHorseData.of(horse));
+        }
+        return entity.getVehicle() instanceof AbstractHorse mount
+                && ignoresSlowBlocks(IHorseData.of(mount));
+    }
+
+    public static boolean shrugsOffSlowBlockDamage(Entity entity, DamageSource source) {
+        return source.is(DamageTypes.SWEET_BERRY_BUSH) && ignoresSlowBlocks(entity);
     }
 
     public static boolean ignoresSlowBlocks(IHorseData data) {

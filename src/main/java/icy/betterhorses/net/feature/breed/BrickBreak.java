@@ -28,6 +28,7 @@ public final class BrickBreak implements BreedAbility {
 
     public static final double MIN_SPEED = 0.30D;
     private static final double REACH = 1.2D;
+    private static final int WALL_HEIGHT = 3;
     private static final int WINDUP = 8;
     private static final int COOLDOWN = 600;
     private static final float SELF_DAMAGE = 4.0F;
@@ -51,6 +52,17 @@ public final class BrickBreak implements BreedAbility {
 
     public BrickBreak(int badge) {
         this.badge = badge;
+    }
+
+    private static boolean wall(ServerLevel level, Vec3 nose, double footY) {
+        BlockPos foot = BlockPos.containing(nose.x, footY, nose.z);
+        for (int up = 0; up < WALL_HEIGHT; up++) {
+            BlockPos pos = foot.above(up);
+            if (level.getBlockState(pos).getCollisionShape(level, pos).isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -79,10 +91,14 @@ public final class BrickBreak implements BreedAbility {
         }
 
         Vec3 nose = horse.position().add(heading.scale(REACH));
+        if (!wall(level, nose, horse.getY())) {
+            return;
+        }
+
         Vec3 side = new Vec3(-heading.z, 0.0D, heading.x);
         boolean broke = false;
         for (int across = -1; across <= 1; across++) {
-            for (int up = 0; up < 3; up++) {
+            for (int up = 0; up < WALL_HEIGHT; up++) {
                 BlockPos pos = BlockPos.containing(
                         nose.add(side.scale(across)).add(0.0D, up, 0.0D));
                 BlockState st = level.getBlockState(pos);

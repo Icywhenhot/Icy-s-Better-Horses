@@ -97,6 +97,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     private static final double PLOW_BEHIND = 4.2D;
     private static final int PLOW_HALF_WIDTH = 1;
+    private static final int PLOW_LIFT = 1;
 
     private static final double SPEED_SMOOTHING_UP = 0.12D;
     private static final int STOP_RAMP_TICKS = 16;
@@ -713,15 +714,13 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         int turned = 0;
         for (int lane = -PLOW_HALF_WIDTH; lane <= PLOW_HALF_WIDTH; lane++) {
             Vec3 spot = this.position().add(new Vec3(lane, 0.0D, -PLOW_BEHIND).yRot(rad));
-            BlockPos pos = BlockPos.containing(spot.x, this.getY(), spot.z).below();
-            if (!tillable(level.getBlockState(pos)) || !level.getBlockState(pos.above()).isAir()) {
-                continue;
+            BlockPos furrow = BlockPos.containing(spot.x, this.getY(), spot.z).below();
+            for (int lift = PLOW_LIFT; lift >= 0; lift--) {
+                if (this.turnOver(level, furrow.above(lift), driver)) {
+                    turned++;
+                    break;
+                }
             }
-            if (driver instanceof ServerPlayer sp && !level.mayInteract(sp, pos)) {
-                continue;
-            }
-            level.setBlockAndUpdate(pos, Blocks.FARMLAND.defaultBlockState());
-            turned++;
         }
         if (turned == 0) {
             return;
@@ -733,6 +732,21 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             this.setPlough(ItemStack.EMPTY);
             this.playSound(SoundEvents.ITEM_BREAK.value(), 0.8F, 0.9F);
         }
+    }
+
+    private boolean turnOver(ServerLevel level, BlockPos pos, @Nullable LivingEntity driver) {
+        BlockState ground = level.getBlockState(pos);
+        if (!tillable(ground) || !level.getBlockState(pos.above()).isAir()) {
+            return false;
+        }
+        if (driver instanceof ServerPlayer sp && !level.mayInteract(sp, pos)) {
+            return false;
+        }
+        if (ground.is(Blocks.ROOTED_DIRT)) {
+            Block.popResource(level, pos, new ItemStack(Items.HANGING_ROOTS));
+        }
+        level.setBlockAndUpdate(pos, Blocks.FARMLAND.defaultBlockState());
+        return true;
     }
 
     private static boolean tillable(BlockState state) {
