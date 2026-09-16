@@ -72,7 +72,6 @@ public class IcysBetterHorses {
         BhConfig.load();
         BhBookPages.init();
         modEventBus.addListener(ModBlocks::register);
-        modEventBus.addListener(ModBlockEntities::register);
         modEventBus.addListener(ModEntities::register);
         modEventBus.addListener(ModEntities::registerAttributes);
         modEventBus.addListener(ModItems::register);

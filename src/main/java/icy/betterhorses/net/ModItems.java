@@ -6,7 +6,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
@@ -36,9 +35,6 @@ public final class ModItems {
 
     public static final Item CANISTER = register("canister",
             new Item(itemProperties("canister")));
-
-    public static final Item HITCHPOST = register("hitchpost",
-            new BlockItem(ModBlocks.HITCHPOST, blockItemProperties("hitchpost").stacksTo(16)));
 
     public static final Item HORSE_STABILIZER = register("horse_stabilizer_gear",
             new Item(itemProperties("horse_stabilizer_gear").stacksTo(1)));
@@ -137,7 +133,6 @@ public final class ModItems {
                         entries.accept(HORSE_STABILIZER);
                         entries.accept(WHEEL);
                         entries.accept(HORSE_CART);
-                        entries.accept(HITCHPOST);
                         BREED_SPAWN_EGGS.forEach(entries::accept);
                     })
                     .build();
@@ -158,10 +153,6 @@ public final class ModItems {
 
     private static Item.Properties itemProperties(String path) {
         return new Item.Properties().setId(itemKey(path));
-    }
-
-    private static Item.Properties blockItemProperties(String path) {
-        return itemProperties(path).useBlockDescriptionPrefix();
     }
 
     private static ResourceKey<Item> itemKey(String path) {

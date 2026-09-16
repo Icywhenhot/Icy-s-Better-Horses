@@ -23,7 +23,6 @@ Almost everything starts with the [Upgraded Saddle](upgraded-saddle). It's the o
 Upgraded Saddle ──┬── Chest / Ender Chest   (storage)
                   ├── Horse Hooves          (snow walking, fall damage)
                   ├── Horse Medkit          (emergency heal)
-                  ├── Hitchpost             (tethering)
                   └── Stabilizer slot ──┬── Horse Stabilizer  ← Canister ×2
                                         └── Horse Cart        ← Wheel ×2
 ```
@@ -43,7 +42,6 @@ Upgraded Saddle ──┬── Chest / Ender Chest   (storage)
 | [Horse Medkit](horse-medkit) | Medkit | One-shot auto-heal below half health | Nether trips, combat, anything risky |
 | [Horse Stabilizer](horse-stabilizer) | Stabilizer | Slows long falls and can cancel the damage entirely | Cliffs, ravines, mountain routes |
 | [Horse Cart](horse-cart) | Stabilizer | Tows a 4-seat cart, optional double chest and plough | Bulk hauling, co-op travel, ploughing fields |
-| [Hitchpost](hitchpost) | Hitchpost | Tethers a horse to a fixed point | Stables, towns, anywhere you park |
 | [Canister](canister) | Component | Component for the stabilizer | Only as a stabilizer ingredient |
 | [Wheel](wheel) | Component | Component for the cart | Only as a cart ingredient |
 | [Stable Handbook](stable-handbook) | Held | The in-game guide | Early, and keep a spare |
@@ -71,7 +69,7 @@ Chests must be emptied before removal, because a loaded chest refuses to come of
 
 ## Config toggles
 
-Four gear pieces can be switched off entirely by a server admin: stabilizers, medkits, hitchposts, and hooves.
+Three gear pieces can be switched off entirely by a server admin: stabilizers, medkits, and hooves.
 
 Disabled items don't vanish from the game. They drop into **dummy mode** and stay craftable as decorative models. Nothing fires in the world, but you can still build a display stable. See [Configuration](../configuration).
 

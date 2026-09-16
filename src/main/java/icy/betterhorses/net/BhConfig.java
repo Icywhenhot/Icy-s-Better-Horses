@@ -277,10 +277,6 @@ public final class BhConfig {
         return featureEnabled(BhFeature.MEDKIT);
     }
 
-    public static boolean hitchpostEnabled() {
-        return featureEnabled(BhFeature.HITCHPOST);
-    }
-
     public static boolean hoovesEnabled() {
         return featureEnabled(BhFeature.HOOVES);
     }

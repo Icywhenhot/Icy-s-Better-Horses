@@ -23,5 +23,4 @@ canister:              { name: Canister,                sprite: canister,       
 horse_stabilizer_gear: { name: Horse Stabilizer,        sprite: horse_stabilizer_gear, page: /equipment/horse-stabilizer }
 horse_cart_gear:       { name: Horse Cart,              sprite: horse_cart_gear,       page: /equipment/horse-cart }
 wheel:                 { name: Wheel,                   sprite: wheel,                 page: /equipment/wheel }
-hitchpost:             { name: Hitchpost,               sprite: hitchpost,             page: /equipment/hitchpost }
 stable_handbook:       { name: Stable Handbook,         sprite: stable_handbook,       page: /equipment/stable-handbook }

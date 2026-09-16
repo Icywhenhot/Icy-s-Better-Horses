@@ -25,7 +25,6 @@ import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.feature.breed.Ironclad;
 import icy.betterhorses.net.feature.HorseCombat;
 import icy.betterhorses.net.feature.FrostHooves;
-import icy.betterhorses.net.feature.HitchTether;
 import icy.betterhorses.net.feature.HorseFeature;
 import icy.betterhorses.net.feature.RiderGate;
 import icy.betterhorses.net.feature.Stabilizer;
@@ -36,7 +35,6 @@ import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.entity.CartSize;
 import icy.betterhorses.net.inventory.CartChestMenu;
 import icy.betterhorses.net.entity.HorseCartEntity;
-import icy.betterhorses.net.item.HitchpostBlock;
 import icy.betterhorses.net.goal.HorseFollowOwnerGoal;
 import icy.betterhorses.net.goal.HorseReturnHomeGoal;
 import icy.betterhorses.net.goal.DefendOwnerGoal;
@@ -122,7 +120,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private @Nullable BlockPos bh_home = null;
     @Unique private @Nullable ResourceKey<Level> bh_homeDim = null;
     @Unique private @Nullable BlockPos bh_wanderCenter = null;
-    @Unique private @Nullable BlockPos bh_hitchpostPos = null;
     @Unique private int bh_bond = 0;
     @Unique private boolean bh_nameTagBondReceived = false;
     @Unique private int bh_generation = 0;
@@ -154,7 +151,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Unique private final SaddleWatch bh_saddle = new SaddleWatch();
     @Unique private final CartRig bh_cartRig = new CartRig();
-    @Unique private final HitchTether bh_hitch = new HitchTether();
     @Unique private final HorseCombat bh_combat = new HorseCombat();
     @Unique private final BreedAbilities bh_abilities = new BreedAbilities();
 
@@ -168,7 +164,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             bh_cartRig,
             new SwimBoost(),
             new FrostHooves(),
-            bh_hitch,
             bh_combat,
             bh_abilities,
     };
@@ -250,20 +245,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public void bh_setWanderCenter(@Nullable BlockPos pos) {
         this.bh_wanderCenter = pos == null ? null : pos.immutable();
-    }
-
-    @Override
-    public @Nullable BlockPos bh_getHitchpostPos() {
-        return bh_hitchpostPos;
-    }
-
-    @Override
-    public void bh_setHitchpostPos(@Nullable BlockPos pos) {
-        this.bh_hitchpostPos = pos == null ? null : pos.immutable();
-        this.bh_hitch.anchorAt(this.bh_hitchpostPos == null
-                ? null
-                : ((AbstractHorse) (Object) this).position());
-        ((AbstractHorse) (Object) this).setData(BhHorseAttachments.HITCHPOST_POS, Optional.ofNullable(this.bh_hitchpostPos));
     }
 
     @Override
@@ -523,7 +504,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         self.setTamed(false);
         bh_setBond(0);
         bh_setHome(null);
-        bh_setHitchpostPos(null);
         bh_setWanderCenter(self.blockPosition());
         bh_setCommand(HorseCommand.WANDER);
         bh_setOwner(null);
@@ -549,9 +529,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         }
         if (bh_wanderCenter != null) {
             output.store("BH_WanderCenter", BlockPos.CODEC, bh_wanderCenter);
-        }
-        if (bh_hitchpostPos != null) {
-            output.store("BH_Hitchpost", BlockPos.CODEC, bh_hitchpostPos);
         }
         BhHorseStorage.writeContainer(output.list("BH_Gear", BhHorseStorage.SlotEntry.CODEC), bh_gearContainer);
         BhHorseStorage.writeContainer(output.list("BH_Chest", BhHorseStorage.SlotEntry.CODEC), bh_chestContainer);
@@ -591,7 +568,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         bh_home = input.read("BH_Home", BlockPos.CODEC).orElse(null);
         bh_homeDim = input.read("BH_HomeDim", BH_DIMENSION_CODEC).orElse(null);
         bh_wanderCenter = input.read("BH_WanderCenter", BlockPos.CODEC).orElse(null);
-        bh_hitchpostPos = input.read("BH_Hitchpost", BlockPos.CODEC).orElse(null);
         if (bh_home == null) {
             bh_home = BhHorseStorage.readLegacyBlockPos(input, "BH_Home");
         }
@@ -601,10 +577,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (bh_wanderCenter == null) {
             bh_wanderCenter = BhHorseStorage.readLegacyBlockPos(input, "BH_WanderCenter");
         }
-        if (bh_hitchpostPos == null) {
-            bh_hitchpostPos = BhHorseStorage.readLegacyBlockPos(input, "BH_Hitchpost");
-        }
-        ((AbstractHorse) (Object) this).setData(BhHorseAttachments.HITCHPOST_POS, Optional.ofNullable(bh_hitchpostPos));
         bh_applyBondAttributes();
         BhHorseStorage.readContainer(input.listOrEmpty("BH_Gear", BhHorseStorage.SlotEntry.CODEC), bh_gearContainer);
         BhHorseStorage.readContainer(input.listOrEmpty("BH_Chest", BhHorseStorage.SlotEntry.CODEC), bh_chestContainer);
@@ -1122,9 +1094,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private void bh_dropGearAndChest(ServerLevel level, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (self.level().isClientSide()) return;
-        if (this.bh_hitchpostPos != null) {
-            HitchpostBlock.releaseHorse(level, self, false);
-        }
         bh_dropCartChest();
         bh_dropCartPlough();
         BhHorseStorage.dropContainerContents(self, level, bh_gearContainer);

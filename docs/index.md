@@ -24,7 +24,7 @@ Vanilla horses are an early-game novelty you abandon the moment you find elytra.
 | [Command wheel](command-wheel) | A radial menu to make a horse follow, stay, wander, or return to a saved home. |
 | [Fifteen breeds](breeds/) | Real breeds with their own coat palettes and biome ranges, plus gender and mixed-breed foals. |
 | [Genetics & breeding](genetics) | Gender-gated breeding, 50/50 breed inheritance, and stat rolls that can beat both parents. |
-| [Tack & gear](equipment/) | An upgraded saddle with five gear slots: hooves, medkit, stabilizer, chest, hitchpost. |
+| [Tack & gear](equipment/) | An upgraded saddle with four gear slots: hooves, medkit, stabilizer, chest. |
 | [Horse carts](equipment/horse-cart) | A four-seat cart your horse tows, with a double chest or a plough. Draft horses upgrade it to a six-seat wagon. |
 | [Riding fixes](riding) | Four gaits, auto-ride, free look, leaf passthrough, water floating, higher step height, two riders per horse. |
 | [Horse roster](managing-your-horses) | A screen listing every horse you own, with its live coordinates, so you can whistle, send home, or disown from anywhere. |
