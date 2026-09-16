@@ -57,6 +57,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final int BH_CHEST_PANEL_WIDTH = 9 * 18;
     @Unique private static final int BH_SIDE_BORDER_WIDTH = 7;
     @Unique private static final int BH_HINT_TINT = 0xA06B5A46;
+    @Unique private static final int BH_SLOT_OVERLAY_Z = 200;
     @Unique private static final int BH_MIDDLE_FILL = 0xFFC6C6C6;
     @Unique private static final int BH_MIDDLE_HIGHLIGHT = 0xFFF7F7F7;
     @Unique private static final int BH_MIDDLE_SHADOW = 0xFF8B8B8B;
@@ -238,7 +239,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
                 ? ModItems.HORSE_STABILIZER
                 : ModItems.HORSE_CART;
         this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, stabilizerSlotHint);
-        this.bh_drawGearHint(gfx, x, y, GearSlot.HITCHPOST, ModItems.HITCHPOST);
         this.bh_drawLockedSlotFlash(gfx);
     }
 
@@ -253,7 +253,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         Slot slot = this.menu.slots.get(flashed);
         int slotX = this.leftPos + slot.x;
         int slotY = this.topPos + slot.y;
-        gfx.fill(slotX, slotY, slotX + 16, slotY + 16,
+        gfx.fill(slotX, slotY, slotX + 16, slotY + 16, BH_SLOT_OVERLAY_Z,
                 BhAnim.fade(BhScreenDraw.BTN_ERROR, intensity * BH_LOCK_FLASH_ALPHA));
     }
 
@@ -305,7 +305,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int iconX = x + slot.ordinal() * 18 + 1;
         int iconY = y + 1;
         gfx.renderItem(new ItemStack(item), iconX, iconY);
-        gfx.fill(iconX, iconY, iconX + 16, iconY + 16, 0xA0B7AB99);
+        gfx.fill(iconX, iconY, iconX + 16, iconY + 16, BH_SLOT_OVERLAY_Z, 0xA0B7AB99);
     }
 
     @Unique

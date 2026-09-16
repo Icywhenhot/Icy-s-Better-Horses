@@ -126,13 +126,18 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
                 MODEL_BOX_HEIGHT * MODEL_FILL / visualHeight,
                 BookEntryScreen.PAGE_WIDTH * MODEL_FILL / boxWidth)));
 
+        var pose = guiGraphics.pose();
+        pose.pushPose();
+        pose.translate(-pageX, -pageY, 0.0F);
         try {
             InventoryScreen.renderEntityInInventoryFollowsMouse(
-                    guiGraphics, x0, y0, x1, y1, scale, 0.0F, mouseX, (y0 + y1) / 2f, horse);
+                    guiGraphics, x0, y0, x1, y1, scale, 0.0F, pageX + mouseX, (y0 + y1) / 2f, horse);
         } catch (Exception exception) {
             errored = true;
             IcysBetterHorses.LOGGER.warn("[handbook] could not draw the coat preview for {}",
                     this.getPage().getEntityId(), exception);
+        } finally {
+            pose.popPose();
         }
     }
 

@@ -38,7 +38,7 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
     private static final int LARGE_SCALE = 12;
     private static final float SMALL_HEIGHT = 1.7F;
     private static final float LARGE_HEIGHT = 3.1F;
-    private static final float BASE_YAW = 200.0F;
+    private static final float BASE_YAW = 45.0F;
     private static final float SPIN_RANGE = 20.0F;
     private static final float DEG = (float) Math.PI / 180.0F;
 
@@ -123,8 +123,8 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
         int y0 = pageY + MODEL_CENTER_Y - MODEL_BOX_HEIGHT / 2;
         int y1 = y0 + MODEL_BOX_HEIGHT;
 
-        float spin = (float) Math.atan(((x0 + x1) / 2.0F - mouseX) / 40.0F);
-        float lean = (float) Math.atan(((y0 + y1) / 2.0F - mouseY) / 40.0F);
+        float spin = (float) Math.atan(((x0 + x1) / 2.0F - (pageX + mouseX)) / 40.0F);
+        float lean = (float) Math.atan(((y0 + y1) / 2.0F - (pageY + mouseY)) / 40.0F);
         Quaternionf flip = new Quaternionf().rotateZ((float) Math.PI);
         Quaternionf pitch = new Quaternionf().rotateX(lean * SPIN_RANGE * DEG);
         flip.mul(pitch);
@@ -135,22 +135,28 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
         cart.setYBodyRot(yaw);
         cart.setYHeadRot(yaw);
 
+        var pose = guiGraphics.pose();
+        pose.pushPose();
+        pose.translate(-pageX, -pageY, 0.0F);
         try {
-            Vec3 shift = new Vec3(0.0D, 0.0D, size.bedCenterBehind()).yRot(-yaw * DEG).scale(-1.0D);
+            Vec3 shift = new Vec3(0.0D, 0.0D, size.bedCenterBehind()).yRot(-yaw * DEG);
             Vector3f offset = new Vector3f((float) shift.x,
                     (size.isLarge() ? LARGE_HEIGHT : SMALL_HEIGHT) / 2.0F,
-                    (float) shift.z);
+                    (float) -shift.z);
 
             drawCart(guiGraphics, size.isLarge() ? LARGE_SCALE : SMALL_SCALE,
-                    offset, flip, pitch, x0, y0, x1, y1);
+                    offset, flip, pitch, yaw, x0, y0, x1, y1);
         } catch (Exception exception) {
             errored = true;
             IcysBetterHorses.LOGGER.warn("[handbook] could not draw the cart preview", exception);
+        } finally {
+            pose.popPose();
         }
     }
 
     private void drawCart(GuiGraphics guiGraphics, int scale, Vector3f offset,
-                          Quaternionf spin, Quaternionf lean, int x0, int y0, int x1, int y1) {
+                          Quaternionf spin, Quaternionf lean, float yaw,
+                          int x0, int y0, int x1, int y1) {
         HorseCartEntity drawn = this.cart;
         if (drawn == null) {
             return;
@@ -163,6 +169,7 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
         pose.scale(scale, scale, -scale);
         pose.translate(offset.x, offset.y, offset.z);
         pose.mulPose(spin);
+        pose.mulPose(new Quaternionf().rotateY(yaw * DEG));
 
         Lighting.setupForEntityInInventory();
         EntityRenderDispatcher dispatcher = this.mc.getEntityRenderDispatcher();

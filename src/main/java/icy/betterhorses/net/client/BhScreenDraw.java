@@ -1,5 +1,6 @@
 package icy.betterhorses.net.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -73,9 +74,7 @@ public final class BhScreenDraw {
 
     public static void textureButton(GuiGraphics gfx, Font font, ResourceLocation texture,
                                      int x, int y, int width, int height, Component label, int textColor, int tint) {
-        tint(gfx, tint);
-        gfx.blit(texture, x, y, 0.0F, 0.0F, width, height, width, height);
-        gfx.setColor(1f, 1f, 1f, 1f);
+        tintedBlit(gfx, texture, x, y, width, height, tint);
         int textY = y + (height - font.lineHeight) / 2 + 1;
         gfx.drawString(font, label, x + width / 2 - font.width(label) / 2, textY, textColor, false);
     }
@@ -91,17 +90,23 @@ public final class BhScreenDraw {
                                    int width, int height, int baseAlpha, float alpha) {
         int a = Math.round(baseAlpha * BhAnim.clamp01(alpha));
         if (a <= 0) return;
-        tint(gfx, a << 24);
-        gfx.blit(texture, x, y, 0.0F, 0.0F, width, height, width, height);
-        gfx.setColor(1f, 1f, 1f, 1f);
+        tintedBlit(gfx, texture, x, y, width, height, a << 24);
     }
 
     public static void panelTexture(GuiGraphics gfx, int x, int y, int width, int height,
                                     ResourceLocation texture, float alpha) {
         int a = Math.round(255f * BhAnim.clamp01(alpha));
-        tint(gfx, (a << 24) | 0xFFFFFF);
+        tintedBlit(gfx, texture, x, y, width, height, (a << 24) | 0xFFFFFF);
+    }
+
+    private static void tintedBlit(GuiGraphics gfx, ResourceLocation texture, int x, int y,
+                                   int width, int height, int color) {
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        tint(gfx, color);
         gfx.blit(texture, x, y, 0.0F, 0.0F, width, height, width, height);
         gfx.setColor(1f, 1f, 1f, 1f);
+        RenderSystem.disableBlend();
     }
 
     public static void rowPlate(GuiGraphics gfx, int x, int rowTop, int rowWidth, int rowHeight) {
