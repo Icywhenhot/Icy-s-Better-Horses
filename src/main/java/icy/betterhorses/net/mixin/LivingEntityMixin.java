@@ -4,6 +4,7 @@ import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.feature.breed.HardyNorthern;
+import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
@@ -58,6 +59,13 @@ public abstract class LivingEntityMixin extends Entity {
             BhSurge.pulse(IHorseData.of(warden), 0, 0);
         }
         cir.setReturnValue(false);
+    }
+
+    @Inject(method = "isInvulnerableTo", at = @At("HEAD"), cancellable = true)
+    private void bh_shrugOffSlowBlocks(ServerLevel level, DamageSource source, CallbackInfoReturnable<Boolean> cir) {
+        if (SlowBlockImmunity.shrugsOffSlowBlockDamage((LivingEntity) (Object) this, source)) {
+            cir.setReturnValue(true);
+        }
     }
 
     @Inject(method = "actuallyHurt", at = @At("HEAD"), cancellable = true)

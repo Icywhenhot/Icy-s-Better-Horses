@@ -1,9 +1,7 @@
 package icy.betterhorses.net.mixin;
 
-import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -36,12 +34,6 @@ public abstract class EntitySlowBlockMixin {
 
     @Unique
     private boolean bh_unbogged() {
-        Object self = this;
-        if (self instanceof AbstractHorse horse) {
-            return SlowBlockImmunity.ignoresSlowBlocks(IHorseData.of(horse));
-        }
-        return self instanceof Entity rider
-                && rider.getVehicle() instanceof AbstractHorse mount
-                && SlowBlockImmunity.ignoresSlowBlocks(IHorseData.of(mount));
+        return SlowBlockImmunity.ignoresSlowBlocks((Entity) (Object) this);
     }
 }
