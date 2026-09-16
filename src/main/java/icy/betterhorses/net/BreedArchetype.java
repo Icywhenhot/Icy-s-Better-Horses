@@ -136,7 +136,7 @@ public enum BreedArchetype {
     }
 
     public double stepHeight() {
-        return this == PONY && BhAbility.PONY_STEP.on() ? 2.0D : 1.0D;
+        return this == PONY && BhAbility.PONY_STEP.on() ? 2.0D : 1.125D;
     }
 
     public static double topSpeed() {
