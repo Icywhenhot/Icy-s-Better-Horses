@@ -1,9 +1,11 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.HorseTracker;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.HorseCartEntity;
+import icy.betterhorses.net.feature.breed.Ironclad;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -18,6 +20,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
@@ -47,6 +51,20 @@ public abstract class EntityMixin {
             Identifier.fromNamespaceAndPath("icys-better-horses", "mounted_break_speed");
     @Unique private static final double BH_MOUNTED_STEP_HEIGHT_BONUS = 0.1D;
     @Unique private static final double BH_MOUNTED_BREAK_SPEED_BONUS = 5.0D;
+
+    @Inject(method = "deflection", at = @At("HEAD"), cancellable = true)
+    private void bh_ridersDeflectProjectiles(Projectile projectile, CallbackInfoReturnable<ProjectileDeflection> cir) {
+        Entity self = (Entity) (Object) this;
+        if (!(self instanceof Player)
+                || !(self.getVehicle() instanceof AbstractHorse mount)
+                || !Ironclad.deflectsProjectiles(IHorseData.of(mount))) {
+            return;
+        }
+        if (!mount.level().isClientSide()) {
+            BhSurge.pulse(IHorseData.of(mount), 0, 1);
+        }
+        cir.setReturnValue(ProjectileDeflection.REVERSE);
+    }
 
     @Inject(method = "isInWall", at = @At("HEAD"), cancellable = true)
     private void bh_cartRidersDoNotSuffocate(CallbackInfoReturnable<Boolean> cir) {

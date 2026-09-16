@@ -1,10 +1,12 @@
 package icy.betterhorses.net.client.render;
 
+import com.geckolib.constant.DataTickets;
 import com.geckolib.constant.dataticket.DataTicket;
 import com.geckolib.renderer.GeoObjectRenderer;
 import com.geckolib.renderer.base.BoneSnapshots;
 import com.geckolib.renderer.base.GeoRenderState;
 import com.geckolib.renderer.base.RenderPassInfo;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
@@ -33,6 +35,14 @@ public final class HorseStabilizerGeoRenderer
             float partialTick) {
         renderState.addGeckolibData(WINGS_ACTIVE, animatable.isActive());
         renderState.addGeckolibData(OPACITY, BhRenderContext.currentOpacity());
+
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level != null) {
+            renderState.addGeckolibData(
+                    DataTickets.TICK,
+                    (double) minecraft.level.getGameTime()
+                            + minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false));
+        }
     }
 
     @Override
