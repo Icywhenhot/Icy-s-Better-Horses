@@ -30,9 +30,6 @@ public final class ModItems {
     public static final RegistryObject<Item> CANISTER = ITEMS.register(
             "canister",
             () -> new Item(new Item.Properties()));
-    public static final RegistryObject<BlockItem> HITCHPOST = ITEMS.register(
-            "hitchpost",
-            () -> new BlockItem(ModBlocks.HITCHPOST.get(), new Item.Properties().stacksTo(16)));
     public static final RegistryObject<Item> HORSE_STABILIZER = ITEMS.register(
             "horse_stabilizer_gear",
             () -> new Item(new Item.Properties().stacksTo(1)));
@@ -50,7 +47,6 @@ public final class ModItems {
                         output.accept(HORSE_MEDKIT.get());
                         output.accept(CANISTER.get());
                         output.accept(HORSE_STABILIZER.get());
-                        output.accept(HITCHPOST.get());
                     })
                     .build());
 

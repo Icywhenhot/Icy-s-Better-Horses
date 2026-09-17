@@ -1,11 +1,8 @@
 package icy.betterhorses.net;
 
-import icy.betterhorses.net.item.HitchpostBlock;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.MapColor;
+import icy.betterhorses.net.item.HearthlightBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -13,14 +10,15 @@ import net.minecraftforge.registries.RegistryObject;
 
 public final class ModBlocks {
 
-    private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, IcysBetterHorses.RESOURCE_NAMESPACE);
+    private static final DeferredRegister<Block> BLOCKS =
+            DeferredRegister.create(ForgeRegistries.BLOCKS, IcysBetterHorses.RESOURCE_NAMESPACE);
 
-    public static final RegistryObject<HitchpostBlock> HITCHPOST = BLOCKS.register("hitchpost", () ->
-            new HitchpostBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.WOOD)
-                    .strength(2.0f, 3.0f)
-                    .sound(SoundType.WOOD)
-                    .noOcclusion()));
+    public static final RegistryObject<HearthlightBlock> HEARTHLIGHT = BLOCKS.register("hearthlight", () ->
+            new HearthlightBlock(BlockBehaviour.Properties.of()
+                    .noCollission()
+                    .noOcclusion()
+                    .noLootTable()
+                    .lightLevel(state -> 10)));
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);
@@ -28,4 +26,3 @@ public final class ModBlocks {
 
     private ModBlocks() {}
 }
-

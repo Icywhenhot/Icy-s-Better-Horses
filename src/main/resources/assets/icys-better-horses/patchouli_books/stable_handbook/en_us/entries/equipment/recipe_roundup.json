@@ -27,10 +27,8 @@
       "link_recipe2": false
     },
     {
-      "type": "patchouli:crafting",
-      "recipe": "icys-better-horses:hitchpost",
-      "text": "Every craft in the tack room is laid out here if you just need the quick version before heading back out on the trail.",
-      "link_recipe": false
+      "type": "patchouli:text",
+      "text": "Every craft in the tack room is laid out here if you just need the quick version before heading back out on the trail."
     }
   ]
 }

@@ -26,11 +26,11 @@ public interface IHorseData {
         bh_setCommand(HorseCommand.WANDER);
     }
 
-    @Nullable BlockPos bh_getHitchpostPos();
-    void bh_setHitchpostPos(@Nullable BlockPos pos);
-
     int bh_getBond();
     void bh_setBond(int level);
+
+    int bh_getBondRemainder();
+    void bh_setBondRemainder(int value);
 
     /** True once this horse has already been awarded the one-time name-tag bond. */
     boolean bh_hasReceivedNameTagBond();
@@ -53,10 +53,6 @@ public interface IHorseData {
         return bh_getOwner() != null;
     }
 
-    default boolean bh_isHitched() {
-        return bh_getHitchpostPos() != null;
-    }
-
     default boolean bh_hasGear(GearSlot slot) {
         return (bh_getGearFlags() & (1 << slot.ordinal())) != 0;
     }
@@ -69,7 +65,7 @@ public interface IHorseData {
     /** Place the given upgraded saddle stack into the horse saddle slot (1.20.1 has no equipSaddle(stack)). */
     void bh_equipUpgradedSaddle(ItemStack saddle);
 
-    /** 5-slot container for the CHEST, HOOVES, MEDKIT, STABILIZER, HITCHPOST gear items. */
+    /** 4-slot container for the CHEST, HOOVES, MEDKIT, STABILIZER gear items. */
     SimpleContainer bh_getGearContainer();
 
     /** 27-slot sub-inventory, only usable when chest gear is equipped. */

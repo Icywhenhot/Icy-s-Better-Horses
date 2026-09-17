@@ -205,7 +205,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         this.bh_drawGearHint(gfx, x, y, GearSlot.HOOVES, ModItems.HORSE_HOOVES.get());
         this.bh_drawGearHint(gfx, x, y, GearSlot.MEDKIT, ModItems.HORSE_MEDKIT.get());
         this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, ModItems.HORSE_STABILIZER.get());
-        this.bh_drawGearHint(gfx, x, y, GearSlot.HITCHPOST, ModItems.HITCHPOST.get());
     }
 
     @Unique

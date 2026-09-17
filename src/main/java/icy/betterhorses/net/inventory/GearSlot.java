@@ -8,8 +8,7 @@ public enum GearSlot {
     CHEST,
     HOOVES,
     MEDKIT,
-    STABILIZER,
-    HITCHPOST;
+    STABILIZER;
 
     public static final int COUNT = values().length;
 
@@ -20,7 +19,6 @@ public enum GearSlot {
             case HOOVES -> stack.is(ModItems.HORSE_HOOVES.get());
             case MEDKIT -> stack.is(ModItems.HORSE_MEDKIT.get());
             case STABILIZER -> stack.is(ModItems.HORSE_STABILIZER.get());
-            case HITCHPOST -> stack.is(ModItems.HITCHPOST.get());
         };
     }
 

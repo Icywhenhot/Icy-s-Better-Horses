@@ -1,6 +1,7 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.HorseGender;
@@ -10,7 +11,6 @@ import icy.betterhorses.net.HorseTracker;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModAttachments;
 import icy.betterhorses.net.ModItems;
-import icy.betterhorses.net.item.HitchpostBlock;
 import icy.betterhorses.net.goal.HorseFollowOwnerGoal;
 import icy.betterhorses.net.goal.HorseReturnHomeGoal;
 import icy.betterhorses.net.goal.HorseStayGoal;
@@ -80,8 +80,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private HorseCommand bh_command = HorseCommand.FOLLOW;
     @Unique private @Nullable BlockPos bh_home = null;
     @Unique private @Nullable BlockPos bh_wanderCenter = null;
-    @Unique private @Nullable BlockPos bh_hitchpostPos = null;
-    @Unique private @Nullable Vec3 bh_hitchAnchor = null;
+    @Unique private int bh_bondRemainder = 0;
     @Unique private boolean bh_nameTagBondReceived = false;
     // Deliberately NO initializer: defineSynchedData() runs from the Entity super-constructor,
     // before this subclass's @Unique field initializers would run. The lazy bh_syncState() getter
@@ -203,16 +202,13 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Override
-    public @Nullable BlockPos bh_getHitchpostPos() {
-        return bh_hitchpostPos;
+    public int bh_getBondRemainder() {
+        return this.bh_bondRemainder;
     }
 
     @Override
-    public void bh_setHitchpostPos(@Nullable BlockPos pos) {
-        this.bh_hitchpostPos = pos == null ? null : pos.immutable();
-        this.bh_hitchAnchor = this.bh_hitchpostPos == null
-                ? null
-                : ((AbstractHorse) (Object) this).position();
+    public void bh_setBondRemainder(int value) {
+        this.bh_bondRemainder = value;
     }
 
     @Override
@@ -338,9 +334,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         output.putInt("BH_Command", bh_command.ordinal());
         output.putInt("BH_Bond", this.bh_getBond());
         output.putInt("BH_NameTagBondGiven", bh_nameTagBondReceived ? 1 : 0);
+        output.putInt("BH_BondRemainder", bh_bondRemainder);
         bh_writeBlockPos(output, "BH_Home", bh_home);
         bh_writeBlockPos(output, "BH_WanderCenter", bh_wanderCenter);
-        bh_writeBlockPos(output, "BH_Hitchpost", bh_hitchpostPos);
         output.put("BH_Gear", bh_writeContainer(bh_gearContainer));
         output.put("BH_Chest", bh_writeContainer(bh_chestContainer));
         output.putInt("BH_Gender", this.bh_getGender().ordinal());
@@ -359,13 +355,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         bh_command = HorseCommand.fromId(input.contains("BH_Command") ? input.getInt("BH_Command") : HorseCommand.FOLLOW.ordinal());
         this.bh_syncState().bond = Math.max(0, Math.min(100, input.contains("BH_Bond") ? input.getInt("BH_Bond") : 0));
         bh_nameTagBondReceived = (input.contains("BH_NameTagBondGiven") ? input.getInt("BH_NameTagBondGiven") : (this.bh_syncState().bond > 0 ? 1 : 0)) != 0;
+        bh_bondRemainder = input.getInt("BH_BondRemainder");
         bh_home = bh_readBlockPos(input, "BH_Home");
         bh_wanderCenter = bh_readBlockPos(input, "BH_WanderCenter");
-        bh_hitchpostPos = bh_readBlockPos(input, "BH_Hitchpost");
         if (bh_home == null) bh_home = bh_readLegacyBlockPos(input, "BH_Home");
         if (bh_wanderCenter == null) bh_wanderCenter = bh_readLegacyBlockPos(input, "BH_WanderCenter");
-        if (bh_hitchpostPos == null) bh_hitchpostPos = bh_readLegacyBlockPos(input, "BH_Hitchpost");
-        bh_hitchAnchor = null;
         bh_applyBondAttributes();
         bh_readContainer(input, "BH_Gear", bh_gearContainer);
         bh_readContainer(input, "BH_Chest", bh_chestContainer);
@@ -835,33 +829,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.bh_applyFrostWalkerTrail(serverLevel, previousPos, currentPos, frostWalkerLevel);
     }
 
-    @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_tickHitchpost(CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (this.bh_hitchpostPos == null) {
-            return;
-        }
-
-        if (!BhConfig.hitchpostEnabled()) {
-            if (self.level() instanceof ServerLevel serverLevel) {
-                HitchpostBlock.releaseHorse(serverLevel, self, true);
-            }
-            return;
-        }
-
-        if (self.level() instanceof ServerLevel serverLevel
-                && !HitchpostBlock.isValidTether(serverLevel, self, this.bh_hitchpostPos)) {
-            HitchpostBlock.releaseHorse(serverLevel, self, true);
-            return;
-        }
-
-        if (this.bh_hitchAnchor == null) {
-            this.bh_hitchAnchor = self.position();
-        }
-
-        this.bh_applyHitchpostConstraint(self);
-    }
-
     @Inject(method = "causeFallDamage", at = @At("HEAD"), cancellable = true)
     private void bh_adjustFallDamage(float distance, float damageMultiplier, DamageSource source, CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -912,9 +879,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     private void bh_dropGearAndChest(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!(self.level() instanceof ServerLevel level)) return;
-        if (this.bh_hitchpostPos != null) {
-            HitchpostBlock.releaseHorse(level, self, false);
-        }
         bh_dropContainerContents(self, level, bh_gearContainer);
         bh_dropContainerContents(self, level, bh_chestContainer);
         bh_syncGearFlags();
@@ -1018,27 +982,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Unique
     private void bh_applyBondAttributes() {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        int bondLevel = Math.min(this.bh_getBond() / 20, 5);
-        double bonus = bondLevel * 0.15;
-
-        AttributeInstance speed = self.getAttribute(Attributes.MOVEMENT_SPEED);
-        if (speed != null) {
-            speed.removeModifier(BH_SPEED_ID);
-            if (bondLevel > 0) {
-                speed.addTransientModifier(new AttributeModifier(
-                        BH_SPEED_ID, "bh_bond_speed", bonus, AttributeModifier.Operation.MULTIPLY_BASE));
-            }
-        }
-
-        AttributeInstance jump = self.getAttribute(Attributes.JUMP_STRENGTH);
-        if (jump != null) {
-            jump.removeModifier(BH_JUMP_ID);
-            if (bondLevel > 0) {
-                jump.addTransientModifier(new AttributeModifier(
-                        BH_JUMP_ID, "bh_bond_jump", bonus, AttributeModifier.Operation.MULTIPLY_BASE));
-            }
-        }
+        BhHorseTraits.applyBondAttributes((AbstractHorse) (Object) this, this.bh_getBond());
     }
 
     @Unique
@@ -1129,24 +1073,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                 level.scheduleTick(icePos, Blocks.FROSTED_ICE, Mth.nextInt(level.getRandom(), 60, 120));
             }
         }
-    }
-
-    @Unique
-    private void bh_applyHitchpostConstraint(AbstractHorse horse) {
-        if (this.bh_hitchAnchor == null) {
-            return;
-        }
-
-        horse.getNavigation().stop();
-        Vec3 currentPos = horse.position();
-        double horizontalDistanceSq = (currentPos.x - this.bh_hitchAnchor.x) * (currentPos.x - this.bh_hitchAnchor.x)
-                + (currentPos.z - this.bh_hitchAnchor.z) * (currentPos.z - this.bh_hitchAnchor.z);
-        if (horizontalDistanceSq > 0.04D || Math.abs(currentPos.y - this.bh_hitchAnchor.y) > 1.25D) {
-            horse.teleportTo(this.bh_hitchAnchor.x, this.bh_hitchAnchor.y, this.bh_hitchAnchor.z);
-        }
-
-        horse.setDeltaMovement(Vec3.ZERO);
-        horse.hurtMarked = true;
     }
 
     @Unique

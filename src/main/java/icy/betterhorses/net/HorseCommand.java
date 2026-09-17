@@ -5,7 +5,15 @@ public enum HorseCommand {
     STAY,
     RETURN_HOME,
     SET_HOME,
-    WANDER;
+    WANDER,
+    ABILITY;
+
+    public static boolean toggleable(HorseBreed breed) {
+        return switch (breed) {
+            case APPALOOSA -> true;
+            default -> false;
+        };
+    }
 
     public static HorseCommand fromId(int id) {
         HorseCommand[] values = values();

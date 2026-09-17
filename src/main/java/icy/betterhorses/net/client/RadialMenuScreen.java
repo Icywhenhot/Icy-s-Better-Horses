@@ -237,7 +237,7 @@ public class RadialMenuScreen extends Screen {
             case WANDER -> "command.icys-better-horses.wander";
             case STAY -> "command.icys-better-horses.stay";
             case RETURN_HOME -> "command.icys-better-horses.return_home";
-            case SET_HOME -> "command.icys-better-horses.set_home";
+            case SET_HOME -> "command.icys-better-horses.set_home";            case ABILITY -> "command.icys-better-horses.ability";
         };
     }
 }
