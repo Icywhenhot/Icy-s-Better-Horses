@@ -1,0 +1,27 @@
+{
+  "name": "Breeding Rules",
+  "category": "icys-better-horses:genetics",
+  "icon": "minecraft:golden_apple",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Breeding is no longer a one-size-fits-all affair.$(br2)Two horses of the $(thing)same gender$() refuse to mate — feed a $(item)Golden Apple$() to a horse whose love-mode neighbor matches its gender and you'll get the message $(thing)\"These horses are the same gender and can't breed.\"$() The apple is still consumed, but love mode is reset."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Inheritance",
+      "text": "When a foal is successfully born:$(br2)$(li)$(thing)Gender$() is a coin flip.$(li)$(thing)Breed$() comes from one parent at 50/50. If the parents share a breed, the foal inherits it cleanly. If they don't, the foal gets a $(thing)(mix)$() tag.$(li)Cross-species pairings (horse + donkey) yield the appropriate $(thing)species placeholder$()."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Stat Inheritance",
+      "text": "Health, speed, and jump are computed as$(br2)$(thing)max(parent1, parent2) + delta$()$(br2)where $(thing)delta$() is a uniform roll between $(thing)-0.5$() and $(thing)+1.0$() (HP, blk/s, blk). Foals can outperform both parents, but the ceiling is the vanilla base — no infinite-loop breeding superhorses."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Coat Re-roll",
+      "text": "The foal's coat is re-rolled from the list of coats allowed by its inherited breed. A pair of $(thing)Quarter$() horses will always produce a Quarter-pattern coat; a Quarter × Thoroughbred pairing might surprise you with either side's palette."
+    }
+  ]
+}

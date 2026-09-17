@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 public final class BhNetworking {
 
     private static final String PROTOCOL_VERSION = "1";
-    private static final ResourceLocation CHANNEL_ID = new ResourceLocation(IcysBetterHorses.MOD_ID, "main");
+    private static final ResourceLocation CHANNEL_ID = new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "main");
     private static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(CHANNEL_ID)
             .networkProtocolVersion(() -> PROTOCOL_VERSION)

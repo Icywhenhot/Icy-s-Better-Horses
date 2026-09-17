@@ -1,0 +1,26 @@
+{
+  "name": "Friesian",
+  "category": "icys-better-horses:breeds",
+  "icon": "minecraft:saddle",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "minecraft:horse{Variant:4}",
+      "name": "Friesian",
+      "text": "The dramatic all-black horse of the Dutch lowlands. Tall, powerful, and almost always show-ready \u2014 there's no mistaking one for any other breed.",
+      "scale": 0.6,
+      "offset": 0.25
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Coat",
+      "text": "$(li)Black$()$(br2)Only one coat. Friesians are always black."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where They Live",
+      "text": "Damp temperate woodland:$(br2)$(li)Dark Forest$()$(li)Forest$()$(li)Old Growth Spruce Taiga$()$(li)Taiga$()"
+    }
+  ]
+}

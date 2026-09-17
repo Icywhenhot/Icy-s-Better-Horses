@@ -12,11 +12,11 @@ import software.bernie.geckolib.model.GeoModel;
 public final class HorseStabilizerGeoModel extends GeoModel<HorseStabilizerAnimatable> {
 
     private static final ResourceLocation MODEL =
-            new ResourceLocation(IcysBetterHorses.MOD_ID, "geo/st.geo.json");
+            new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "geo/st.geo.json");
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation(IcysBetterHorses.MOD_ID, "textures/entity/horse_stabilizer.png");
+            new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "textures/entity/horse_stabilizer.png");
     private static final ResourceLocation ANIMATION =
-            new ResourceLocation(IcysBetterHorses.MOD_ID, "animations/st.animation.json");
+            new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "animations/st.animation.json");
 
     @Override
     public ResourceLocation getModelResource(HorseStabilizerAnimatable animatable) {

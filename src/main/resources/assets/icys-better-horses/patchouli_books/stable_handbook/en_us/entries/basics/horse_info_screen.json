@@ -1,0 +1,22 @@
+{
+  "name": "The Horse Info Screen",
+  "category": "icys-better-horses:basics",
+  "icon": "minecraft:writable_book",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Press $(item)P$() while mounted to open a full profile of the horse you're riding. Pressing $(item)P$() $(thing)without$() a horse under you still whistles your nearby mount, same as before."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "What's Shown",
+      "text": "$(li)$(thing)Gender$() and $(thing)Breed$() (with a $(thing)(mix)$() tag if cross-bred).$(li)$(thing)Coat$() — color plus markings.$(li)$(thing)Bond$() — raw value out of 100 with a fill bar.$(li)$(thing)Speed$() — blocks per second.$(li)$(thing)Jump$() — block height.$(li)$(thing)Health$() — hit points."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Reading the Bars",
+      "text": "Every bar starts at zero and fills toward the mod-attainable maximum at full bond:$(br2)$(li)Speed up to $(thing)25.5 blk/s$().$(li)Jump up to $(thing)9.5 blk$().$(li)Health up to $(thing)30 HP$().$(br2)A short bar means the stat has room to grow; bonding closes that gap."
+    }
+  ]
+}

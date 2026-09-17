@@ -552,7 +552,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                     self.resetLove();
                     if (player instanceof ServerPlayer serverPlayer) {
                         serverPlayer.sendSystemMessage(Component.translatable(
-                                "message.icys_better_horses.same_gender_breed"));
+                                "message.icys-better-horses.same_gender_breed"));
                     }
                 }
             }
@@ -578,7 +578,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         if (bh_ownerIsPrimaryPassenger(self, owner)) return;
         self.playSound(net.minecraft.sounds.SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
         if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.translatable("message.icys_better_horses.not_owner"));
+            serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_owner"));
         }
         // Belt-and-suspenders force-eject — covers the case where another mod/path already
         // attached the player as a passenger before our gate ran, or where the client
@@ -684,7 +684,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.bh_setOwner(player.getUUID());
         this.bh_setWanderCommand(self.blockPosition());
         if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.translatable("message.icys_better_horses.claimed"));
+            serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.claimed"));
         }
     }
 
@@ -702,7 +702,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
         self.playSound(SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
         if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.translatable("message.icys_better_horses.not_inventory_owner"));
+            serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_inventory_owner"));
         }
         ci.cancel();
     }

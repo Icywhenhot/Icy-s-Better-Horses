@@ -21,17 +21,17 @@ import java.util.UUID;
 @Mod.EventBusSubscriber(modid = IcysBetterHorses.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class IcysBetterHorsesClient {
 
-    private static final String KEY_CATEGORY = "key.categories.icys_better_horses";
+    private static final String KEY_CATEGORY = "key.categories.icys-better-horses";
     private static final double RADIAL_REACH = 12.0D;
 
     public static final KeyMapping CALL_KEY = new KeyMapping(
-            "key.icys_better_horses.call",
+            "key.icys-better-horses.call",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_P,
             KEY_CATEGORY);
 
     public static final KeyMapping RADIAL_KEY = new KeyMapping(
-            "key.icys_better_horses.radial",
+            "key.icys-better-horses.radial",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_R,
             KEY_CATEGORY);

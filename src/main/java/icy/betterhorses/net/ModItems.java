@@ -15,8 +15,8 @@ import net.minecraftforge.registries.RegistryObject;
 
 public final class ModItems {
 
-    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, IcysBetterHorses.MOD_ID);
-    private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, IcysBetterHorses.MOD_ID);
+    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, IcysBetterHorses.RESOURCE_NAMESPACE);
+    private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, IcysBetterHorses.RESOURCE_NAMESPACE);
 
     public static final RegistryObject<UpgradedSaddleItem> UPGRADED_SADDLE = ITEMS.register(
             "upgraded_saddle",
@@ -39,10 +39,10 @@ public final class ModItems {
 
     public static final RegistryObject<CreativeModeTab> STABLE_SUPPLIES_TAB = TABS.register("stable_supplies", () ->
             CreativeModeTab.builder()
-                    .title(Component.translatable("itemGroup.icys_better_horses.stable_supplies"))
+                    .title(Component.translatable("itemGroup.icys-better-horses.stable_supplies"))
                     .icon(() -> UPGRADED_SADDLE.get().getDefaultInstance())
                     .displayItems((parameters, output) -> {
-                        net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(new ResourceLocation(IcysBetterHorses.MOD_ID, "stable_handbook"))
+                        net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "stable_handbook"))
                                 .filter(item -> item != Items.AIR)
                                 .ifPresent(output::accept);
                         output.accept(UPGRADED_SADDLE.get());

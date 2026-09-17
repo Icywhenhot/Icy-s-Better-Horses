@@ -38,6 +38,7 @@ import java.util.UUID;
 public final class IcysBetterHorses {
 
     public static final String MOD_ID = "icys_better_horses";
+    public static final String RESOURCE_NAMESPACE = "icys-better-horses";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static final int PASSIVE_BOND_INTERVAL_TICKS = 60 * 20;
@@ -125,7 +126,7 @@ public final class IcysBetterHorses {
         if (command == HorseCommand.SET_HOME) {
             data.bh_setHome(horse.blockPosition());
             data.bh_setCommand(HorseCommand.STAY);
-            player.sendSystemMessage(Component.translatable("message.icys_better_horses.home_set"));
+            player.sendSystemMessage(Component.translatable("message.icys-better-horses.home_set"));
             return;
         }
 

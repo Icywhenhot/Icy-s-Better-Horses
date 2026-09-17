@@ -1,0 +1,36 @@
+{
+  "name": "Recipe Roundup",
+  "category": "icys-better-horses:equipment",
+  "icon": "icys-better-horses:upgraded_saddle",
+  "priority": true,
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "icys-better-horses:stable_handbook",
+      "recipe2": "icys-better-horses:upgraded_saddle",
+      "link_recipe": false,
+      "link_recipe2": false
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "icys-better-horses:horse_hooves_gear",
+      "recipe2": "icys-better-horses:horse_medkit_gear",
+      "link_recipe": false,
+      "link_recipe2": false
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "icys-better-horses:canister",
+      "recipe2": "icys-better-horses:horse_stabilizer_gear",
+      "link_recipe": false,
+      "link_recipe2": false
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "icys-better-horses:hitchpost",
+      "text": "Every craft in the tack room is laid out here if you just need the quick version before heading back out on the trail.",
+      "link_recipe": false
+    }
+  ]
+}

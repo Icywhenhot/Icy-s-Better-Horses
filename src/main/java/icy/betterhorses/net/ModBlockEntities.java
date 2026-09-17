@@ -9,7 +9,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 public final class ModBlockEntities {
 
-    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, IcysBetterHorses.MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, IcysBetterHorses.RESOURCE_NAMESPACE);
 
     public static final RegistryObject<BlockEntityType<HitchpostBlockEntity>> HITCHPOST =
             BLOCK_ENTITY_TYPES.register("hitchpost",

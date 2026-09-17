@@ -1,0 +1,22 @@
+{
+  "name": "Traits at a Glance",
+  "category": "icys-better-horses:genetics",
+  "icon": "minecraft:paper",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Every $(thing)AbstractHorse$() now carries four pieces of identity in addition to its $(thing)Bond$():$(br2)$(li)$(thing)Gender$() — male or female. Even donkeys and mules get one.$(li)$(thing)Breed$() — one of fifteen real-world breeds for plain horses; a species label for donkeys, mules, skeleton, and zombie horses.$(li)$(thing)Mixed-Breed$() — flagged with a $(thing)(mix)$() suffix when a foal inherits two different breeds.$(li)$(thing)Coat$() — color plus markings, tied to the breed."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where to See It",
+      "text": "Press $(item)P$() while mounted to open the $(thing)Horse Info Screen$() — gender, breed, coat, and every stat bar are listed there.$(br2)While holding the $(item)Upgraded Saddle$() and looking at any horse, the in-world stats overlay also calls out the gender and breed under the horse's name."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Pre-Existing Mounts",
+      "text": "Horses that were already in your world before the update aren't forced into a new look. The mod $(thing)infers$() their breed from the coat they already wear, so an old palomino keeps being a palomino.$(br2)If a coat has no clean match, the horse is filed under $(thing)Mustang$() — a sensible catch-all."
+    }
+  ]
+}

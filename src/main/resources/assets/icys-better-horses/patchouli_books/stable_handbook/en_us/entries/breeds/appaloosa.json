@@ -1,0 +1,26 @@
+{
+  "name": "Appaloosa",
+  "category": "icys-better-horses:breeds",
+  "icon": "minecraft:saddle",
+  "sortnum": 14,
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "minecraft:horse{Variant:770}",
+      "name": "Appaloosa",
+      "text": "Famous for the leopard-spot pattern \u2014 Appaloosas are the only breed in the guide whose coat always carries $(thing)dots$(). Tough, athletic, and historically a Nez Perce favorite.",
+      "scale": 0.6,
+      "offset": 0.25
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Coat",
+      "text": "Always with $(thing)Dots$() markings:$(br2)$(li)White + Black Dots$()$(li)Gray + Black Dots$()$(li)Chestnut + White Dots$()$(li)Brown + White Dots$()$(li)Black + White Dots$()$(li)Dark Brown + White Dots$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where They Live",
+      "text": "$(li)Plains$()$(li)Wooded Badlands$()$(li)Savanna Plateau$()$(li)Sunflower Plains$()"
+    }
+  ]
+}

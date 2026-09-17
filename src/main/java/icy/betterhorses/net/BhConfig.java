@@ -25,7 +25,7 @@ public final class BhConfig {
     private static final String KEY_HORSE_EXCLUSIVITY = "horse_exclusivity";
     private static final String KEY_MULTI_RIDING = "multiriding";
 
-    private static final Path CONFIG_PATH = FMLPaths.CONFIGDIR.get().resolve(IcysBetterHorses.MOD_ID + ".json");
+    private static final Path CONFIG_PATH = FMLPaths.CONFIGDIR.get().resolve(IcysBetterHorses.RESOURCE_NAMESPACE + ".json");
     private static final Gson GSON = new GsonBuilder()
             .disableHtmlEscaping()
             .setPrettyPrinting()
