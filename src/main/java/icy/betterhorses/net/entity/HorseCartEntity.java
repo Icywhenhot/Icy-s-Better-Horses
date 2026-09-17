@@ -429,9 +429,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         this.followHorse(boundHorse);
 
         Vec3 previous = cartPosFor(boundHorse.xo, boundHorse.yo, boundHorse.zo, boundHorse.yBodyRotO);
-        this.xo = previous.x;
-        this.yo = previous.y;
-        this.zo = previous.z;
+        this.xo = this.xOld = previous.x;
+        this.yo = this.yOld = previous.y;
+        this.zo = this.zOld = previous.z;
         this.yRotO = boundHorse.yBodyRotO + YAW_OFFSET;
     }
 
