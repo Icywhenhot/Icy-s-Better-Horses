@@ -71,7 +71,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         final SimpleContainer chest = data.bh_getChestContainer();
         this.bh_gearForListener = gear;
         this.bh_chestForListener = chest;
-        // Server side: snapshot the player's ender chest so the view container can mirror it.
         this.bh_playerEnderChest = playerInventory.player.level().isClientSide()
                 ? null
                 : playerInventory.player.getEnderChestInventory();
@@ -230,7 +229,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
     @Inject(method = "removed", at = @At("HEAD"))
     private void bh_onMenuRemoved(Player player, CallbackInfo ci) {
-        // Persist the ender chest view back to the real ender chest if it was active.
         this.bh_saveEnderChestView();
     }
 

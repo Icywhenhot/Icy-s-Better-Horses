@@ -75,7 +75,6 @@ public abstract class AnimalMixin {
         IHorseData partnerData = (IHorseData) partnerHorse;
         IHorseData childData = (IHorseData) childHorse;
 
-        // Gender: random for the child.
         childData.bh_setGender(self.getRandom().nextBoolean() ? HorseGender.MALE : HorseGender.FEMALE);
 
         // Breed inheritance — only meaningful if both parents are real horses (not donkey/mule mixes).
@@ -95,7 +94,6 @@ public abstract class AnimalMixin {
                 childData.bh_setMixedBreed(true);
             }
         } else {
-            // Cross-species (e.g. horse + donkey -> mule). Use the placeholder for the child's species.
             HorseBreed species = HorseBreed.speciesFor(childHorse);
             childData.bh_setBreed(species != null ? species : HorseBreed.UNKNOWN_SPECIES);
             childData.bh_setMixedBreed(false);
@@ -108,10 +106,8 @@ public abstract class AnimalMixin {
         bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.MOVEMENT_SPEED, VANILLA_MAX_SPEED, SPEED_DISPLAY_PER_RAW);
         bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.JUMP_STRENGTH, VANILLA_MAX_JUMP, JUMP_DISPLAY_PER_RAW);
 
-        // Ensure max-health change actually heals the child to its new ceiling.
         childHorse.setHealth(childHorse.getMaxHealth());
 
-        // Coat follows breed: roll a coat from the child's assigned breed's allowed list.
         if (childHorse instanceof Horse childHorseEntity) {
             HorseBreed childBreed = childData.bh_getBreed();
             HorseBreed.Coat coat = childBreed.rollCoat(self.getRandom());
@@ -132,16 +128,9 @@ public abstract class AnimalMixin {
     private static final double JUMP_DISPLAY_PER_RAW = 6.0D;
     private static final double HEALTH_DISPLAY_PER_RAW = 1.0D;
 
-    // Variance is uniform in display units: at worst 0.5 worse than the better parent, at best 1.0 better.
     private static final double VARIANCE_DISPLAY_MIN = -0.5D;
     private static final double VARIANCE_DISPLAY_MAX = 1.0D;
 
-    /**
-     * Resolve a parent's effective breed for inheritance. Normally this is the stored breed; but
-     * if the parent is a real Horse with an UNKNOWN_SPECIES tag (spawned through a path that
-     * bypassed our breed assignment), fall back to matching its current coat to a known breed so
-     * the child still inherits a real breed instead of dropping to the cross-species branch.
-     */
     private static HorseBreed bh_resolveBreed(AbstractHorse parent, IHorseData parentData) {
         HorseBreed stored = parentData.bh_getBreed();
         if (stored.isRealBreed() || !(parent instanceof Horse horseParent)) {

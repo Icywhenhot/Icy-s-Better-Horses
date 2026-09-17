@@ -14,14 +14,6 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * Fades the horse out when the rider looks down. 1.21.1 implementation:
- *   - HEAD of render(): push opacity onto BhMountedHorseVisibility's thread-local.
- *   - Swap render type to entityTranslucent when faded so alpha blending is enabled.
- *   - ModifyArg on EntityModel.renderToBuffer() index=7 (the float alpha; 1.20.1 passes separate
- *     r,g,b,a floats rather than 1.21's packed int color): scale the alpha by the pushed opacity.
- *   - RETURN of render(): pop the thread-local back to 1.0.
- */
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityRendererMixin {
 

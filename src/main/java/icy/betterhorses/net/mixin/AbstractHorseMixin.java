@@ -1,6 +1,10 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhGears;
+import icy.betterhorses.net.BhHorseStorage;
+import icy.betterhorses.net.BhSurge;
+import icy.betterhorses.net.BreedArchetype;
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.HorseCommand;
@@ -19,6 +23,7 @@ import icy.betterhorses.net.inventory.BhSlotEntry;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -76,11 +81,29 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Shadow
     protected abstract void doPlayerRide(net.minecraft.world.entity.player.Player player);
 
+    @Shadow
+    protected abstract void setStanding(boolean standing);
+
+    @Shadow
+    protected int standCounter;
+
+    @Unique private static final int BH_CART_CHEST_SIZE = 54;
+
     @Unique private @Nullable UUID bh_owner = null;
     @Unique private HorseCommand bh_command = HorseCommand.FOLLOW;
     @Unique private @Nullable BlockPos bh_home = null;
     @Unique private @Nullable BlockPos bh_wanderCenter = null;
     @Unique private int bh_bondRemainder = 0;
+    @Unique private int bh_generation = 0;
+    @Unique private boolean bh_abilityPaused = false;
+    @Unique private long bh_rescueReadyAt = 0L;
+    @Unique private int bh_gear = 0;
+    @Unique private int bh_spookTicks = 0;
+    @Unique private @Nullable UUID bh_combatTarget = null;
+    @Unique private @Nullable UUID bh_cartId = null;
+    @Unique private @Nullable ResourceKey<Level> bh_homeDim = null;
+    @Unique private @Nullable SimpleContainer bh_cartChestContainer = null;
+    @Unique private ItemStack bh_cartPlow = ItemStack.EMPTY;
     @Unique private boolean bh_nameTagBondReceived = false;
     // Deliberately NO initializer: defineSynchedData() runs from the Entity super-constructor,
     // before this subclass's @Unique field initializers would run. The lazy bh_syncState() getter
@@ -138,6 +161,35 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
     @Unique private static final EntityDataAccessor<Boolean> BH_BREED_MIXED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
+    @Unique private static final EntityDataAccessor<Integer> BH_GEAR = bh_intKey();
+    @Unique private static final EntityDataAccessor<Integer> BH_GAIT_GEAR = bh_intKey();
+    @Unique private static final EntityDataAccessor<Integer> BH_COMBAT = bh_intKey();
+    @Unique private static final EntityDataAccessor<Integer> BH_KICK = bh_intKey();
+    @Unique private static final EntityDataAccessor<Integer> BH_STOMP = bh_intKey();
+    @Unique private static final EntityDataAccessor<Integer> BH_SURGE = bh_intKey();
+    @Unique private static final EntityDataAccessor<Integer> BH_PULSE = bh_intKey();
+    @Unique private static final EntityDataAccessor<Integer> BH_PERK = bh_intKey();
+    @Unique private static final EntityDataAccessor<Integer> BH_CHARGE = bh_intKey();
+    @Unique private static final EntityDataAccessor<Integer> BH_COMMAND_ID = bh_intKey();
+    @Unique private static final EntityDataAccessor<Boolean> BH_FREE_LOOK = bh_boolKey();
+    @Unique private static final EntityDataAccessor<Boolean> BH_CART = bh_boolKey();
+    @Unique private static final EntityDataAccessor<Boolean> BH_CART_CHEST = bh_boolKey();
+    @Unique private static final EntityDataAccessor<Boolean> BH_CART_PLOW = bh_boolKey();
+    @Unique private static final EntityDataAccessor<Boolean> BH_CART_LARGE = bh_boolKey();
+    @Unique private static final EntityDataAccessor<Boolean> BH_ENDER_CHEST = bh_boolKey();
+    @Unique private static final EntityDataAccessor<Boolean> BH_UPGRADED_SADDLE = bh_boolKey();
+    @Unique private static final EntityDataAccessor<String> BH_OWNER_ID =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.STRING);
+
+    @Unique
+    private static EntityDataAccessor<Integer> bh_intKey() {
+        return SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
+    }
+
+    @Unique
+    private static EntityDataAccessor<Boolean> bh_boolKey() {
+        return SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
+    }
 
     protected AbstractHorseMixin(EntityType<? extends Animal> type, Level level) {
         super(type, level);
@@ -151,6 +203,34 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.entityData.define(BH_GENDER_ID, this.bh_syncState().genderId);
         this.entityData.define(BH_BREED_ID, this.bh_syncState().breedId);
         this.entityData.define(BH_BREED_MIXED, this.bh_syncState().breedMixed);
+        this.entityData.define(BH_GEAR, 0);
+        this.entityData.define(BH_GAIT_GEAR, 0);
+        this.entityData.define(BH_COMBAT, 0);
+        this.entityData.define(BH_KICK, 0);
+        this.entityData.define(BH_STOMP, 0);
+        this.entityData.define(BH_SURGE, 0);
+        this.entityData.define(BH_PULSE, 0);
+        this.entityData.define(BH_PERK, 0);
+        this.entityData.define(BH_CHARGE, BhSurge.HIDDEN);
+        this.entityData.define(BH_COMMAND_ID, HorseCommand.FOLLOW.ordinal());
+        this.entityData.define(BH_FREE_LOOK, false);
+        this.entityData.define(BH_CART, false);
+        this.entityData.define(BH_CART_CHEST, false);
+        this.entityData.define(BH_CART_PLOW, false);
+        this.entityData.define(BH_CART_LARGE, false);
+        this.entityData.define(BH_ENDER_CHEST, false);
+        this.entityData.define(BH_UPGRADED_SADDLE, false);
+        this.entityData.define(BH_OWNER_ID, "");
+    }
+
+    @Unique
+    private <T> void bh_push(EntityDataAccessor<T> key, T value) {
+        if (((AbstractHorse) (Object) this).level().isClientSide()) {
+            return;
+        }
+        if (!this.entityData.get(key).equals(value)) {
+            this.entityData.set(key, value);
+        }
     }
 
     @Override
@@ -416,7 +496,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             this.bh_syncState().breedMixed = false;
             return;
         }
-        HorseBreed picked = HorseBreed.MUSTANG; // fallback for unmapped coats
+        HorseBreed picked = HorseBreed.MUSTANG;
         if (self instanceof Horse horse) {
             java.util.List<HorseBreed> matches = HorseBreed.breedsMatchingCoat(horse.getVariant(), horse.getMarkings());
             if (!matches.isEmpty()) {
@@ -503,11 +583,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.bh_syncGearFlags();
     }
 
-    /**
-     * 1.21.11 dropped {@code AbstractHorse.containerChanged(Container)} (the old
-     * {@code ContainerListener} hook). Watch for upgraded-saddle removal from a tick poll instead.
-     * Cheap: one item-slot check per horse per tick on the server.
-     */
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_pollUpgradedSaddleRemoval(CallbackInfo ci) {
         if (((AbstractHorse) (Object) this).level().isClientSide()) {
@@ -535,7 +610,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
             this.bh_setBond(this.bh_getBond() + 2);
 
-            // If horse just entered love mode and a same-gender horse is already in love nearby, cancel and warn.
             if (self.isInLove()) {
                 HorseGender myGender = this.bh_getGender();
                 java.util.List<AbstractHorse> nearby = self.level().getEntitiesOfClass(
@@ -555,14 +629,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     }
 
-    /**
-     * Block non-owners from becoming the primary rider of an owned horse. A non-owner is allowed
-     * to mount only when the owner is already the primary rider (the 2-rider scenario the
-     * second-passenger feature enables). Wild/untamed horses fall through to vanilla so taming
-     * still works. We hook {@code doPlayerRide} rather than {@code mobInteract} because vanilla,
-     * commands like {@code /ride}, and some other mods all funnel through this method — gating
-     * here covers every path. Server-side only: clients don't have authoritative owner state.
-     */
     @Inject(method = "doPlayerRide", at = @At("HEAD"), cancellable = true)
     private void bh_gateOwnerOnlyMount(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -574,21 +640,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         if (player instanceof ServerPlayer serverPlayer) {
             serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_owner"));
         }
-        // Belt-and-suspenders force-eject — covers the case where another mod/path already
-        // attached the player as a passenger before our gate ran, or where the client
-        // optimistically predicted a mount. Idempotent if they aren't actually riding.
         if (player.getVehicle() == self) {
             player.stopRiding();
         }
         ci.cancel();
     }
 
-    /**
-     * Catch-all: if at any tick the primary rider isn't the owner of an owned horse, eject
-     * every passenger. Covers owner-dismount-while-friend-was-secondary (friend slides into the
-     * primary slot), forced mounts from plugins/datapacks, and any future path we don't gate
-     * explicitly at mount time. Cheap — only runs when the horse is being ridden.
-     */
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_enforceOwnerPrimaryRider(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -645,8 +702,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             return;
         }
 
-        // Defense in depth: even if HEAD-cancel from bh_gateOwnerOnlyMount didn't suppress
-        // this injector for some mixin-ordering reason, never mount a non-owner here.
         UUID owner = this.bh_getOwner();
         if (BhConfig.horseExclusivityEnabled()
                 && owner != null
@@ -676,7 +731,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
 
         this.bh_setOwner(player.getUUID());
-        this.bh_setWanderCommand(self.blockPosition());
+        this.bh_setWanderCenter(self.blockPosition());
+        this.bh_setCommand(HorseCommand.WANDER);
         if (player instanceof ServerPlayer serverPlayer) {
             serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.claimed"));
         }
@@ -1129,5 +1185,285 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         this.entityData.set(BH_GENDER_ID, this.bh_syncState().genderId);
         this.entityData.set(BH_BREED_ID, this.bh_syncState().breedId);
         this.entityData.set(BH_BREED_MIXED, this.bh_syncState().breedMixed);
+    }
+
+    @Override
+    public int bh_getGeneration() {
+        return this.bh_generation;
+    }
+
+    @Override
+    public void bh_setGeneration(int generation) {
+        this.bh_generation = generation;
+    }
+
+    @Override
+    public @Nullable ResourceKey<Level> bh_getHomeDimension() {
+        return this.bh_homeDim;
+    }
+
+    @Override
+    public boolean bh_isAbilityPaused() {
+        return this.bh_abilityPaused;
+    }
+
+    @Override
+    public void bh_setAbilityPaused(boolean paused) {
+        this.bh_abilityPaused = paused;
+    }
+
+    @Override
+    public long bh_getRescueReadyAt() {
+        return this.bh_rescueReadyAt;
+    }
+
+    @Override
+    public void bh_setRescueReadyAt(long value) {
+        this.bh_rescueReadyAt = value;
+    }
+
+    @Override
+    public int bh_getGear() {
+        return level().isClientSide() ? this.entityData.get(BH_GEAR) : this.bh_gear;
+    }
+
+    @Override
+    public void bh_setGear(int gear) {
+        this.bh_gear = Mth.clamp(gear, 0, BhGears.TOP_GEAR);
+        bh_push(BH_GEAR, this.bh_gear);
+    }
+
+    @Override
+    public int bh_getGaitGear() {
+        return this.entityData.get(BH_GAIT_GEAR);
+    }
+
+    @Override
+    public void bh_setGaitGear(int gear) {
+        bh_push(BH_GAIT_GEAR, Mth.clamp(gear, 0, BhGears.TOP_GEAR));
+    }
+
+    @Override
+    public @Nullable UUID bh_getCombatTarget() {
+        return this.bh_combatTarget;
+    }
+
+    @Override
+    public void bh_setCombatTarget(@Nullable UUID target) {
+        this.bh_combatTarget = target;
+        this.bh_syncCombatState();
+    }
+
+    @Override
+    public int bh_getSpookTicks() {
+        return this.bh_spookTicks;
+    }
+
+    @Override
+    public void bh_setSpookTicks(int ticks) {
+        this.bh_spookTicks = Math.max(0, ticks);
+        this.bh_syncCombatState();
+    }
+
+    @Override
+    public int bh_getCombatState() {
+        return this.entityData.get(BH_COMBAT);
+    }
+
+    @Unique
+    private void bh_syncCombatState() {
+        bh_push(BH_COMBAT, this.bh_spookTicks > 0 ? 2 : this.bh_combatTarget != null ? 1 : 0);
+    }
+
+    @Override
+    public int bh_getKickTicks() {
+        return this.entityData.get(BH_KICK);
+    }
+
+    @Override
+    public void bh_setKickTicks(int ticks) {
+        bh_push(BH_KICK, Math.max(0, ticks));
+    }
+
+    @Override
+    public int bh_getStompTicks() {
+        return this.entityData.get(BH_STOMP);
+    }
+
+    @Override
+    public void bh_setStompTicks(int ticks) {
+        bh_push(BH_STOMP, Math.max(0, ticks));
+    }
+
+    @Override
+    public int bh_getSurge() {
+        return this.entityData.get(BH_SURGE);
+    }
+
+    @Override
+    public void bh_setSurge(int packed) {
+        bh_push(BH_SURGE, packed);
+    }
+
+    @Override
+    public int bh_getPerkSurge() {
+        return this.entityData.get(BH_PERK);
+    }
+
+    @Override
+    public void bh_setPerkSurge(int packed) {
+        bh_push(BH_PERK, packed);
+    }
+
+    @Override
+    public int bh_getPulse() {
+        return this.entityData.get(BH_PULSE);
+    }
+
+    @Override
+    public void bh_setPulse(int packed) {
+        bh_push(BH_PULSE, packed);
+    }
+
+    @Override
+    public int bh_getCharge() {
+        return this.entityData.get(BH_CHARGE);
+    }
+
+    @Override
+    public void bh_setCharge(int fill) {
+        bh_push(BH_CHARGE, fill);
+    }
+
+    @Override
+    public boolean bh_isFreeLook() {
+        return this.entityData.get(BH_FREE_LOOK);
+    }
+
+    @Override
+    public void bh_setFreeLook(boolean freeLook) {
+        bh_push(BH_FREE_LOOK, freeLook);
+    }
+
+    @Override
+    public boolean bh_hasCartGear() {
+        return this.entityData.get(BH_CART);
+    }
+
+    @Override
+    public boolean bh_hasEnderChestGear() {
+        return this.entityData.get(BH_ENDER_CHEST);
+    }
+
+    @Override
+    public @Nullable UUID bh_getCartId() {
+        return this.bh_cartId;
+    }
+
+    @Override
+    public void bh_setCartId(@Nullable UUID id) {
+        this.bh_cartId = id;
+    }
+
+    @Override
+    public boolean bh_hasLargeCart() {
+        return this.entityData.get(BH_CART_LARGE);
+    }
+
+    @Override
+    public void bh_setLargeCart(boolean large) {
+        bh_push(BH_CART_LARGE, large && bh_getBreed().archetype() == BreedArchetype.DRAFT);
+    }
+
+    @Override
+    public boolean bh_hasCartChest() {
+        return this.entityData.get(BH_CART_CHEST);
+    }
+
+    @Override
+    public void bh_setCartChest(boolean attached) {
+        bh_push(BH_CART_CHEST, attached);
+    }
+
+    @Override
+    public SimpleContainer bh_getCartChestContainer() {
+        if (this.bh_cartChestContainer == null) {
+            this.bh_cartChestContainer = new SimpleContainer(BH_CART_CHEST_SIZE);
+        }
+        return this.bh_cartChestContainer;
+    }
+
+    @Override
+    public void bh_dropCartChest() {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (!(self.level() instanceof ServerLevel serverLevel) || !bh_hasCartChest()) {
+            return;
+        }
+        bh_setCartChest(false);
+        if (this.bh_cartChestContainer != null) {
+            BhHorseStorage.dropContainerContents(self, serverLevel, this.bh_cartChestContainer);
+        }
+        self.spawnAtLocation(new ItemStack(Items.CHEST));
+    }
+
+    @Override
+    public boolean bh_hasCartPlough() {
+        return this.entityData.get(BH_CART_PLOW);
+    }
+
+    @Override
+    public ItemStack bh_getCartPlough() {
+        return this.bh_cartPlow;
+    }
+
+    @Override
+    public void bh_setCartPlough(ItemStack hoe) {
+        this.bh_cartPlow = hoe;
+        bh_push(BH_CART_PLOW, !hoe.isEmpty());
+    }
+
+    @Override
+    public void bh_dropCartPlough() {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (!(self.level() instanceof ServerLevel serverLevel) || this.bh_cartPlow.isEmpty()) {
+            return;
+        }
+        ItemStack hoe = this.bh_cartPlow;
+        bh_setCartPlough(ItemStack.EMPTY);
+        self.spawnAtLocation(hoe);
+    }
+
+    @Override
+    public void bh_ridePlayer(net.minecraft.world.entity.player.Player player) {
+        this.doPlayerRide(player);
+    }
+
+    @Override
+    public void bh_clearStanding() {
+        ((AbstractHorse) (Object) this).setStanding(false);
+        this.standCounter = 0;
+    }
+
+    @Override
+    public boolean bh_hasAnyEquipment() {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.isSaddled()) {
+            return true;
+        }
+        return !this.inventory.isEmpty() || !bh_gearContainer.isEmpty() || !bh_chestContainer.isEmpty()
+                || bh_hasCartChest() || bh_hasCartPlough();
+    }
+
+    @Override
+    public void bh_disown() {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        self.ejectPassengers();
+        self.setOwnerUUID(null);
+        self.setTamed(false);
+        bh_setBond(0);
+        bh_setHome(null);
+        bh_setWanderCenter(self.blockPosition());
+        bh_setCommand(HorseCommand.WANDER);
+        bh_setOwner(null);
     }
 }

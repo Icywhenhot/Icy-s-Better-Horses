@@ -29,7 +29,6 @@ public class HorseInfoScreen extends Screen {
     private static final int BAR_BG_COLOR = 0xFF1A2235;
     private static final int BAR_FILL_COLOR = 0xFF6CB8FF;
 
-    // Display-unit conversions: blocks/sec for speed, blocks for jump height, HP for health.
     // Matches the in-world stats HUD: speed_blocks_per_sec = raw * 43.2, jump_blocks = max(0, raw*6 - 1).
     private static final double SPEED_DISPLAY_FACTOR = 43.2D;
 

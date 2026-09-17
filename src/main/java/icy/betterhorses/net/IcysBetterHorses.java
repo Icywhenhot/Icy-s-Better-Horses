@@ -127,8 +127,7 @@ public final class IcysBetterHorses {
         }
 
         if (command == HorseCommand.WANDER) {
-            data.bh_setWanderCommand(horse.blockPosition());
-            return;
+            data.bh_setWanderCenter(horse.blockPosition());
         }
         data.bh_setCommand(command);
     }
@@ -160,7 +159,8 @@ public final class IcysBetterHorses {
         BlockPos target = player.blockPosition();
         if (horse.distanceToSqr(player) > 400.0) {
             horse.teleportTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
-            data.bh_setWanderCommand(target);
+            data.bh_setWanderCenter(target);
+            data.bh_setCommand(HorseCommand.WANDER);
             return;
         }
 

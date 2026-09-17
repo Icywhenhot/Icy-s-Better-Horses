@@ -64,9 +64,6 @@ public abstract class MobNameTagBondMixin {
             if (now == null || now.equals(this.bh$nameBeforeInteract)) {
                 return;
             }
-            // Only the first nametag grants bond. Subsequent renames still apply (vanilla
-            // already changed the name in checkAndHandleImportantInteractions) but can't be
-            // farmed for bond.
             if (horseData.bh_hasReceivedNameTagBond()) {
                 return;
             }

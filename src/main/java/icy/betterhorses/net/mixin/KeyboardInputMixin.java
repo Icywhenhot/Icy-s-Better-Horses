@@ -13,10 +13,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * 1.21.1: KeyboardInput extends Input directly; the boolean state lives in mutable fields
- * (up/down/left/right/jumping/shiftKeyDown) and impulses in leftImpulse/forwardImpulse.
- */
 @Mixin(KeyboardInput.class)
 public abstract class KeyboardInputMixin extends Input {
 

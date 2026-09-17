@@ -18,6 +18,16 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> STABILIZER_LOOP =
             SOUNDS.register("stabilizer_loop", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "stabilizer_loop")));
 
+    public static final RegistryObject<SoundEvent> HORSE_ANGRY_SNORT = horseSound("horse_angry_snort");
+    public static final RegistryObject<SoundEvent> HORSE_NEIGH = horseSound("horse_neigh");
+    public static final RegistryObject<SoundEvent> HORSE_SNORT = horseSound("horse_snort");
+    public static final RegistryObject<SoundEvent> HORSE_CHARGE_THUD = horseSound("horse_charge_thud");
+
+    private static RegistryObject<SoundEvent> horseSound(String path) {
+        return SOUNDS.register(path, () -> SoundEvent.createVariableRangeEvent(
+                new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, path)));
+    }
+
     public static void register(IEventBus modEventBus) {
         SOUNDS.register(modEventBus);
     }

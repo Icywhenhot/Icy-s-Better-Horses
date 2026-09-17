@@ -56,6 +56,33 @@ public final class BhSurge {
         return span <= 0 ? 1.0F : Mth.clamp((float) ticks(packed) / span, 0.0F, 1.0F);
     }
 
+    public static void pulse(IHorseData data, int percent) {
+        pulse(data, percent, 0);
+    }
+
+    public static void pulse(IHorseData data, int percent, int variant) {
+        data.bh_setPulse(pack(PULSE, PULSE_TICKS, PULSE_TICKS, percent, variant));
+    }
+
+    public static void decay(IHorseData data) {
+        int packed = data.bh_getPulse();
+        if (phase(packed) == PULSE) {
+            data.bh_setPulse(step(packed));
+        }
+    }
+
+    public static void pulsePerk(IHorseData data, int variant) {
+        data.bh_setPerkSurge(pack(PULSE, PULSE_TICKS, PULSE_TICKS, 0, variant));
+    }
+
+    public static void decayPerk(IHorseData data) {
+        int packed = data.bh_getPerkSurge();
+        if (phase(packed) != PULSE) {
+            return;
+        }
+        data.bh_setPerkSurge(step(packed));
+    }
+
     private static int step(int packed) {
         int left = ticks(packed) - 1;
         return left <= 0

@@ -127,7 +127,6 @@ public class RadialMenuScreen extends Screen {
         }
     }
 
-    // Filled disc via horizontal scanlines.
     private void bh_drawDisc(GuiGraphics gfx, int cx, int cy, int radius, int color) {
         int r2 = radius * radius;
         for (int dy = -radius; dy <= radius; dy++) {
@@ -136,7 +135,6 @@ public class RadialMenuScreen extends Screen {
         }
     }
 
-    // Full ring via horizontal scanlines (no angular clipping needed).
     private void bh_drawFullRing(GuiGraphics gfx, int cx, int cy, int innerRadius, int outerRadius, int color) {
         int outerR2 = outerRadius * outerRadius;
         int innerR2 = innerRadius * innerRadius;
@@ -177,7 +175,6 @@ public class RadialMenuScreen extends Screen {
         return runs;
     }
 
-    // Walk x over the span, emitting {x0, y, x1} runs for pixels whose angle is inside the arc.
     private void bh_collectClippedRun(List<int[]> runs, int xStart, int xEnd, int yPx, int dy, int cx,
                                       double startAngle, double endAngle) {
         if (xEnd < xStart) return;

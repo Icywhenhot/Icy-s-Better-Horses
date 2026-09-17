@@ -44,7 +44,6 @@ public final class IcysBetterHorsesClient {
         event.register(RADIAL_KEY);
     }
 
-    /** Open the command wheel for the tamed horse the player is looking at, if any. Client-side only. */
     public static void bh_tryOpenRadial(Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || client.screen != null) {

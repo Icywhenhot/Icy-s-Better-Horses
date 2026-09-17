@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -27,9 +28,6 @@ public abstract class EntityMixin {
     @Unique private @Nullable AbstractHorse bh_dismountHorse = null;
     @Unique private boolean bh_shouldSetHorseToWanderOnDismount = false;
 
-    /**
-     * 1.21.1 Entity.startRiding(Entity, boolean) — 2-arg form (the 3-arg sendGameEvent variant is 1.21.5+).
-     */
     @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;Z)Z", at = @At("TAIL"))
     private void bh_applyMountedHorseBonuses(
             Entity vehicle,
@@ -87,6 +85,8 @@ public abstract class EntityMixin {
             return;
         }
 
-        ((IHorseData) horse).bh_setWanderCommand(player.blockPosition());
+        IHorseData data = (IHorseData) horse;
+        data.bh_setWanderCenter(player.blockPosition());
+        data.bh_setCommand(HorseCommand.WANDER);
     }
 }
