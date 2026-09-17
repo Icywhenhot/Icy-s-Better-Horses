@@ -13,8 +13,6 @@ public final class ModAttachments {
     }
 
     public static void register(IEventBus modEventBus) {
-        // Forge 1.20.1 does not have NeoForge attachments. Horse sync now lives on
-        // vanilla synched entity data, so this stays as a compatibility no-op.
     }
 
     private ModAttachments() {}

@@ -12,13 +12,26 @@ import icy.betterhorses.net.HorseGender;
 import icy.betterhorses.net.HorseStabilizerLogic;
 import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.HorseTracker;
+import icy.betterhorses.net.IHorseAbilityHost;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.feature.breed.BreedAbility;
 import icy.betterhorses.net.ModAttachments;
 import icy.betterhorses.net.ModItems;
+import icy.betterhorses.net.feature.BreedAbilities;
+import icy.betterhorses.net.feature.FrostHooves;
+import icy.betterhorses.net.feature.HorseCombat;
+import icy.betterhorses.net.feature.HorseFeature;
+import icy.betterhorses.net.feature.RiderGate;
+import icy.betterhorses.net.feature.SaddleWatch;
+import icy.betterhorses.net.feature.SpeedRecord;
+import icy.betterhorses.net.feature.Stabilizer;
+import icy.betterhorses.net.feature.SwimBoost;
+import icy.betterhorses.net.goal.DefendOwnerGoal;
 import icy.betterhorses.net.goal.HorseFollowOwnerGoal;
 import icy.betterhorses.net.goal.HorseReturnHomeGoal;
 import icy.betterhorses.net.goal.HorseStayGoal;
 import icy.betterhorses.net.goal.HorseWanderBoundsGoal;
+import icy.betterhorses.net.goal.SpookGoal;
 import icy.betterhorses.net.inventory.BhSlotEntry;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.core.BlockPos;
@@ -73,7 +86,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Mixin(AbstractHorse.class)
-public abstract class AbstractHorseMixin extends Animal implements IHorseData {
+public abstract class AbstractHorseMixin extends Animal implements IHorseData, IHorseAbilityHost {
 
     @Shadow
     protected SimpleContainer inventory;
@@ -105,10 +118,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private @Nullable SimpleContainer bh_cartChestContainer = null;
     @Unique private ItemStack bh_cartPlow = ItemStack.EMPTY;
     @Unique private boolean bh_nameTagBondReceived = false;
-    // Deliberately NO initializer: defineSynchedData() runs from the Entity super-constructor,
-    // before this subclass's @Unique field initializers would run. The lazy bh_syncState() getter
-    // constructs it on first access (during defineSynchedData); a "= null" initializer would run
-    // after super() and wipe that instance, so the field is left bare.
     @Unique private ModAttachments.BhHorseSyncState bh_syncState;
     @Unique
     private final SimpleContainer bh_gearContainer = new SimpleContainer(GearSlot.COUNT) {
@@ -119,9 +128,41 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
     };
     @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(27);
-    @Unique private boolean bh_hadUpgradedSaddle = false;
+    @Unique private HorseCombat bh_combat;
+    @Unique private BreedAbilities bh_abilities;
+    @Unique private HorseFeature[] bh_features;
+
+    @Unique
+    private HorseCombat bh_combatFeature() {
+        bh_features();
+        return this.bh_combat;
+    }
+
+    @Unique
+    private BreedAbilities bh_abilitiesFeature() {
+        bh_features();
+        return this.bh_abilities;
+    }
+
+    @Unique
+    private HorseFeature[] bh_features() {
+        if (this.bh_features == null) {
+            this.bh_combat = new HorseCombat();
+            this.bh_abilities = new BreedAbilities();
+            this.bh_features = new HorseFeature[]{
+                    new SaddleWatch(),
+                    new SpeedRecord(),
+                    new RiderGate(),
+                    new Stabilizer(),
+                    new SwimBoost(),
+                    new FrostHooves(),
+                    this.bh_combat,
+                    this.bh_abilities,
+            };
+        }
+        return this.bh_features;
+    }
     @Unique private boolean bh_fedGoldenAppleThisTick = false;
-    @Unique private @Nullable Vec3 bh_lastFrostWalkerPos = null;
 
     @Unique
     private static final java.util.UUID BH_SPEED_ID =
@@ -134,12 +175,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     @Unique private static final double BH_STABILIZER_MAX_DESCENT_SPEED = -0.125D;
     @Unique private static final double BH_STABILIZER_SMOOTHING = 0.35D;
     @Unique private static final double BH_STABILIZER_HALF_OPEN_SMOOTHING = 0.2D;
-    // Horse bbox is 1.39625 wide (±0.698 from center). The 2nd-passenger player hitbox is
-    // ±0.3 around their attachment point, so any rear offset more negative than -0.398 pushes
-    // the rear of their hitbox past the horse's bbox — when the horse backs into a wall, the
-    // rider clips into the block and takes in-wall (suffocation) damage. -0.35 keeps the rear
-    // edge at -0.65, leaving ~0.05 of buffer against the horse's rear edge. Front offset is
-    // mirrored for visual balance and to keep the 1st passenger symmetric with the 2nd.
     @Unique private static final double BH_FRONT_PASSENGER_Z_OFFSET = 0.35D;
     @Unique private static final double BH_REAR_PASSENGER_Z_OFFSET = -0.35D;
     @Unique private static final float BH_FREE_CAMERA_ANGLE_THRESHOLD = 90.0F;
@@ -235,12 +270,17 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public @Nullable UUID bh_getOwner() {
-        return bh_owner;
+        if (!level().isClientSide()) {
+            return bh_owner;
+        }
+        String id = this.entityData.get(BH_OWNER_ID);
+        return id.isEmpty() ? null : UUID.fromString(id);
     }
 
     @Override
     public void bh_setOwner(@Nullable UUID owner) {
         this.bh_owner = owner;
+        bh_push(BH_OWNER_ID, owner == null ? "" : owner.toString());
         if (!level().isClientSide()) {
             AbstractHorse self = (AbstractHorse) (Object) this;
             if (owner != null) {
@@ -253,12 +293,15 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Override
     public HorseCommand bh_getCommand() {
-        return bh_command;
+        return level().isClientSide()
+                ? HorseCommand.fromId(this.entityData.get(BH_COMMAND_ID))
+                : bh_command;
     }
 
     @Override
     public void bh_setCommand(HorseCommand command) {
         this.bh_command = command;
+        bh_push(BH_COMMAND_ID, command.ordinal());
     }
 
     @Override
@@ -445,7 +488,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         bh_readContainer(input, "BH_Chest", bh_chestContainer);
         bh_restoreUpgradedSaddle(input);
         bh_syncGearFlags();
-        bh_hadUpgradedSaddle = this.bh_hasUpgradedSaddle();
 
         if (input.contains("BH_Gender")) {
             this.bh_syncState().genderId = input.getInt("BH_Gender");
@@ -459,6 +501,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             bh_assignBreedPreservingCoat();
         }
         this.bh_syncHorseData();
+        AbstractHorse loaded = (AbstractHorse) (Object) this;
+        for (HorseFeature feature : this.bh_features()) {
+            feature.onLoad(loaded, this);
+        }
     }
 
     @Inject(method = "finalizeSpawn", at = @At("TAIL"))
@@ -468,16 +514,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                                         @Nullable net.minecraft.world.entity.SpawnGroupData groupData,
                                         @Nullable net.minecraft.nbt.CompoundTag dataTag,
                                         CallbackInfoReturnable<net.minecraft.world.entity.SpawnGroupData> cir) {
-        // Always randomize gender on fresh spawn — default int 0 doesn't distinguish "unset" from MALE.
         this.bh_syncState().genderId = this.random.nextBoolean() ? 0 : 1;
 
         if (this.bh_getBreed() != HorseBreed.UNKNOWN_SPECIES) {
             return;
         }
 
-        // Real horses are handled by HorseFinalizeSpawnMixin so we can read the original
-        // BhHorseGroupData passed from sibling spawns (vanilla Horse.finalizeSpawn clobbers
-        // its groupData arg before super, so we can't see the wrapper from here).
         AbstractHorse self = (AbstractHorse) (Object) this;
         HorseBreed species = HorseBreed.speciesFor(self);
         if (species != null) {
@@ -505,7 +547,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         }
         this.bh_syncState().breedId = picked.ordinal();
         this.bh_syncState().breedMixed = false;
-        // Intentionally do NOT touch the coat — pre-existing horses keep the look they had.
     }
 
     @Unique
@@ -579,20 +620,39 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Inject(method = "createInventory", at = @At("TAIL"))
     private void bh_onCreateInventory(CallbackInfo ci) {
-        this.bh_hadUpgradedSaddle = this.bh_hasUpgradedSaddle();
         this.bh_syncGearFlags();
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        for (HorseFeature feature : this.bh_features()) {
+            feature.onInventoryChanged(self, this);
+        }
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_pollUpgradedSaddleRemoval(CallbackInfo ci) {
-        if (((AbstractHorse) (Object) this).level().isClientSide()) {
-            return;
+    private void bh_tickFeatures(CallbackInfo ci) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        for (HorseFeature feature : this.bh_features()) {
+            feature.tick(self, this);
         }
-        boolean hasUpgradedSaddle = this.bh_hasUpgradedSaddle();
-        if (this.bh_hadUpgradedSaddle && !hasUpgradedSaddle) {
-            this.bh_onUpgradedSaddleRemoved(ItemStack.EMPTY);
+    }
+
+    @Override
+    public @Nullable BreedAbility bh_currentAbility() {
+        return this.bh_abilitiesFeature().current();
+    }
+
+    @Inject(method = "hurt", at = @At("RETURN"))
+    private void bh_combatOnHurt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        if (cir.getReturnValueZ()) {
+            this.bh_combatFeature().onHurt((AbstractHorse) (Object) this, this, source);
         }
-        this.bh_hadUpgradedSaddle = hasUpgradedSaddle;
+    }
+
+    @Override
+    public void bh_onRemoved() {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        for (HorseFeature feature : this.bh_features()) {
+            feature.onRemoved(self, this);
+        }
     }
 
     @Inject(method = "handleEating", at = @At("HEAD"))
@@ -646,38 +706,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         ci.cancel();
     }
 
-    @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_enforceOwnerPrimaryRider(CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self.level().isClientSide()) return;
-        java.util.List<Entity> passengers = self.getPassengers();
-        if (passengers.isEmpty()) return;
-
-        if (!BhConfig.multiRidingEnabled() && passengers.size() > 1) {
-            for (int i = 1; i < passengers.size(); i++) {
-                passengers.get(i).stopRiding();
-            }
-            passengers = self.getPassengers();
-            if (passengers.isEmpty()) {
-                return;
-            }
-        }
-
-        if (!BhConfig.horseExclusivityEnabled()) {
-            return;
-        }
-
-        UUID owner = this.bh_getOwner();
-        if (owner == null) return;
-        Entity primary = passengers.get(0);
-        if (!(primary instanceof net.minecraft.world.entity.player.Player)) return;
-        if (primary.getUUID().equals(owner)) return;
-        self.playSound(net.minecraft.sounds.SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
-        for (Entity passenger : new java.util.ArrayList<>(passengers)) {
-            passenger.stopRiding();
-        }
-    }
-
     @Inject(method = "doPlayerRide", at = @At("TAIL"))
     private void bh_trackLastRidden(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -697,7 +725,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
             cancellable = true)
     private void bh_rotateHorseInsteadOfPlayer(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        // Owner data only exists server-side. Let the client run vanilla's doPlayerRide body.
         if (self.level().isClientSide()) {
             return;
         }
@@ -799,36 +826,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         cir.setReturnValue((self.level().isClientSide() ? net.minecraft.world.InteractionResult.SUCCESS : net.minecraft.world.InteractionResult.CONSUME));
     }
 
-    @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_tickStabilizer(CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        HorseStabilizerState state = this.bh_computeStabilizerState(self);
-
-        if (state == HorseStabilizerState.OPEN || state == HorseStabilizerState.HALF_OPEN) {
-            Vec3 motion = self.getDeltaMovement();
-            double targetSpeed = state == HorseStabilizerState.OPEN
-                    ? BH_STABILIZER_MAX_DESCENT_SPEED
-                    : BH_STABILIZER_HALF_OPEN_DESCENT_SPEED;
-            double smoothing = state == HorseStabilizerState.OPEN
-                    ? BH_STABILIZER_SMOOTHING
-                    : BH_STABILIZER_HALF_OPEN_SMOOTHING;
-
-            if (motion.y < targetSpeed) {
-                double smoothedY = Mth.lerp(smoothing, motion.y, targetSpeed);
-                if (smoothedY > targetSpeed) {
-                    smoothedY = targetSpeed;
-                }
-                self.setDeltaMovement(motion.x, smoothedY, motion.z);
-                self.hurtMarked = true;
-            }
-            if (state == HorseStabilizerState.OPEN) {
-                this.fallDistance = 0.0F;
-            }
-        }
-
-        this.bh_setStabilizerState(state);
-    }
-
     @Override
     protected float getWaterSlowDown() {
         float vanillaSlowDown = super.getWaterSlowDown();
@@ -859,30 +856,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
                 waterHeight > self.getFluidJumpThreshold() ? BH_WATER_RISE_SPEED : BH_WATER_SURFACE_SPEED;
         double verticalSpeed = Math.max(movement.y, minVerticalSpeed);
         return new Vec3(movement.x, Math.min(verticalSpeed, BH_WATER_MAX_RISE_SPEED), movement.z);
-    }
-
-    @Inject(method = "tick", at = @At("TAIL"))
-    private void bh_freezeWaterWithFrostWalkerHooves(CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        Vec3 currentPos = self.position();
-        Vec3 previousPos = this.bh_lastFrostWalkerPos;
-        this.bh_lastFrostWalkerPos = currentPos;
-
-        if (!(self.level() instanceof ServerLevel serverLevel)) {
-            return;
-        }
-
-        int frostWalkerLevel = this.bh_getHoovesFrostWalkerLevel();
-        if (frostWalkerLevel <= 0 || self.isInLava() || (!self.onGround() && !self.isInWater())) {
-            return;
-        }
-
-        if (previousPos == null
-                || previousPos.distanceToSqr(currentPos) > BH_FROST_WALKER_RESET_DISTANCE * BH_FROST_WALKER_RESET_DISTANCE) {
-            previousPos = currentPos;
-        }
-
-        this.bh_applyFrostWalkerTrail(serverLevel, previousPos, currentPos, frostWalkerLevel);
     }
 
     @Inject(method = "causeFallDamage", at = @At("HEAD"), cancellable = true)
@@ -947,14 +920,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
         goalSelector.addGoal(3, new HorseFollowOwnerGoal(self));
         goalSelector.addGoal(3, new HorseReturnHomeGoal(self));
         goalSelector.addGoal(3, new HorseWanderBoundsGoal(self));
+        goalSelector.addGoal(1, new SpookGoal(self));
+        goalSelector.addGoal(2, new DefendOwnerGoal(self));
     }
 
-    /**
-     * 1.20.1 has no {@code getPassengerAttachmentPoint}; passenger placement happens in
-     * {@code positionRider(Entity, MoveFunction)}, which forwards the rider position to
-     * {@code MoveFunction.accept}. Redirect that call so a second rider is shifted front/back
-     * horizontally for the multi-riding feature.
-     */
     @Redirect(
             method = "positionRider(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/Entity$MoveFunction;)V",
             at = @At(value = "INVOKE",
@@ -1042,61 +1011,13 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
     }
 
     @Unique
-    private HorseStabilizerState bh_computeStabilizerState(AbstractHorse horse) {
-        return HorseStabilizerLogic.computeState(
-                this.bh_hasStabilizerGear(),
-                horse.onGround(),
-                horse.isInWater(),
-                horse.isInLava(),
-                horse.isPassenger(),
-                horse.getDeltaMovement().y,
-                (float) this.fallDistance,
-                this.bh_getStabilizerState());
-    }
-
-    @Unique
     private boolean bh_hasHoovesGear() {
         return BhConfig.hoovesEnabled() && this.bh_hasGear(GearSlot.HOOVES);
     }
 
     @Unique
     private boolean bh_hasStabilizerGear() {
-        return BhConfig.stabilizerEnabled() && this.bh_hasGear(GearSlot.STABILIZER);
-    }
-
-    @Unique
-    private int bh_getHoovesFrostWalkerLevel() {
-        if (!BhConfig.hoovesEnabled()) {
-            return 0;
-        }
-        ItemStack hooves = this.bh_gearContainer.getItem(GearSlot.HOOVES.ordinal());
-        if (hooves.isEmpty()) {
-            return 0;
-        }
-
-        return net.minecraft.world.item.enchantment.EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FROST_WALKER, hooves);
-    }
-
-    @Unique
-    private void bh_applyFrostWalkerTrail(ServerLevel level, Vec3 start, Vec3 end, int frostWalkerLevel) {
-        int radius = Math.min(16, 3 + frostWalkerLevel);
-        double dx = end.x - start.x;
-        double dz = end.z - start.z;
-        double horizontalDistance = Math.sqrt(dx * dx + dz * dz);
-        if (horizontalDistance < 1.0E-6D) {
-            this.bh_freezeWaterAtSample(level, end, radius);
-            return;
-        }
-        int samples = Math.max(1, Mth.ceil(horizontalDistance / BH_FROST_WALKER_SAMPLE_STEP));
-
-        for (int i = 0; i <= samples; i++) {
-            double progress = (double) i / (double) samples;
-            this.bh_freezeWaterAtSample(level, new Vec3(
-                    Mth.lerp(progress, start.x, end.x),
-                    Mth.lerp(progress, start.y, end.y),
-                    Mth.lerp(progress, start.z, end.z)),
-                    radius);
-        }
+        return Stabilizer.hasStabilizerGear(this);
     }
 
     @Unique
@@ -1160,6 +1081,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
         this.bh_syncState().gearFlags = flags;
         this.bh_syncHorseData();
+        bh_push(BH_ENDER_CHEST, this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal()).is(Items.ENDER_CHEST));
+        bh_push(BH_UPGRADED_SADDLE, this.inventory != null
+                && this.inventory.getItem(0).is(ModItems.UPGRADED_SADDLE.get()));
     }
 
     @Unique
@@ -1172,10 +1096,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData {
 
     @Unique
     private void bh_syncHorseData() {
-        // SERVER ONLY. bh_syncState is a server-authoritative scratch copy; the client receives the
-        // real values through SynchedEntityData. Per-tick setters such as bh_setStabilizerState run on
-        // both sides, so writing entityData here on the client would clobber the just-synced bond /
-        // gender / breed back to this client-local copy's defaults (UNKNOWN/0/MALE) every tick.
         if (((AbstractHorse) (Object) this).level().isClientSide()) {
             return;
         }

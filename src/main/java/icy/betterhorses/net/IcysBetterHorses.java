@@ -27,6 +27,10 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.event.server.ServerStartedEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.common.MinecraftForge;
 import org.slf4j.Logger;
@@ -52,8 +56,28 @@ public final class IcysBetterHorses {
         BhNetworking.register();
         BhBiomeSpawns.register(modEventBus);
         modEventBus.addListener(this::registerSpawnPlacements);
+        modEventBus.addListener(this::onCommonSetup);
         MinecraftForge.EVENT_BUS.register(this);
         LOGGER.info("Icy's Better Horses initialized.");
+    }
+
+    private void onCommonSetup(FMLCommonSetupEvent event) {
+        event.enqueueWork(BhCriteria::register);
+    }
+
+    @SubscribeEvent
+    public void onServerStarted(ServerStartedEvent event) {
+        HorseTracker.attach(event.getServer());
+    }
+
+    @SubscribeEvent
+    public void onServerStopping(ServerStoppingEvent event) {
+        HorseTracker.recordLoadedPositions();
+    }
+
+    @SubscribeEvent
+    public void onServerStopped(ServerStoppedEvent event) {
+        HorseTracker.detach();
     }
 
     private void registerSpawnPlacements(SpawnPlacementRegisterEvent event) {
@@ -98,13 +122,9 @@ public final class IcysBetterHorses {
         if (tuning.bondAmount() > 0 && server.getTickCount() % tuning.bondIntervalTicks() == 0) {
             growHorseBond(server, tuning.bondAmount());
         }
+        HorseTracker.tick(server.getTickCount());
     }
 
-    /**
-     * 1.20.1 has no {@code minecraft:block_break_speed} attribute (added in 1.20.5), so the
-     * mounted mining-speed bonus is applied through Forge's {@link PlayerEvent.BreakSpeed} event
-     * instead of an attribute modifier (matching the +500% multiply-base bonus used on newer versions).
-     */
     @SubscribeEvent
     public void onMountedBreakSpeed(PlayerEvent.BreakSpeed event) {
         if (event.getEntity().getVehicle() instanceof AbstractHorse) {

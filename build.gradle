@@ -116,18 +116,11 @@ minecraft {
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
-// Generate the mixin refmap so mixins resolve their SRG targets in a production (obfuscated) jar.
-// Dev runs use named mappings and work without it, but distributed jars need the refmap.
-// `mixin.add` makes the annotation processor emit SRG-mapped refmap entries.
 mixin {
     add sourceSets.main, "${mod_id}.refmap.json"
     config "${mod_id}.mixins.json"
 }
 
-// The mixin annotation processor writes the refmap as a side-output (build/tmp/compileJava) that
-// isn't part of compileJava's declared outputs, so a cached/FROM-CACHE compileJava never
-// regenerates it and `addMixinsToJar` has no refmap to inject. Keep compileJava out of the build
-// cache so the processor runs every build and the refmap is always produced for packaging.
 tasks.named('compileJava').configure {
     outputs.cacheIf { false }
 }

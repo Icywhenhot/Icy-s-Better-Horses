@@ -113,7 +113,6 @@ public class RadialMenuScreen extends Screen {
         gfx.fill(cx - 2, cy - 2, cx + 2, cy + 2, hoveredIndex >= 0 ? CENTER_DOT_HOVER_COLOR : CENTER_DOT_COLOR);
     }
 
-    // Precompute each wedge's horizontal fill runs once, so render() never re-runs atan2.
     @SuppressWarnings("unchecked")
     private void bh_rebuildGeometry() {
         int cx = width / 2;
@@ -153,7 +152,6 @@ public class RadialMenuScreen extends Screen {
         }
     }
 
-    // Collect the horizontal fill runs of an annular arc clipped to [startAngle, endAngle].
     private List<int[]> bh_collectAnnulusRuns(int cx, int cy, int innerRadius, int outerRadius,
                                               double startAngle, double endAngle) {
         List<int[]> runs = new ArrayList<>();
@@ -200,7 +198,6 @@ public class RadialMenuScreen extends Screen {
         return diff <= (end - start);
     }
 
-    // Maps a mouse angle to a segment index (segment 0 centered on "up").
     private int bh_angleToIndex(double angle) {
         double segAngle = Math.PI * 2.0D / SEGMENT_COUNT;
         double adjusted = angle + Math.PI / 2.0D + segAngle / 2.0D;

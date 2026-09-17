@@ -36,9 +36,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final ResourceLocation BH_HORSE_TEXTURE =
             new ResourceLocation("textures/gui/container/horse.png");
 
-    // 1.20.1 has no GUI sprite atlas; empty-slot graphics are blitted by UV from horse.png.
-    // Plain slot lives in the chest-grid region (u=0,v=166); the saddle/armor empty slots sit
-    // in the row at v=220 (vanilla imageHeight 166 + 54).
     @Unique private static final int BH_SLOT_U = 0;
     @Unique private static final int BH_SLOT_V = 166;
     @Unique private static final int BH_SADDLE_SLOT_U = 18;
@@ -66,7 +63,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final float BH_STATS_TEXT_SCALE = 0.8F;
     @Unique private static final int BH_STATS_TEXT_X_OFFSET = 2;
 
-    // Pseudo-constructor required for compilation — never actually called at runtime
     protected HorseInventoryScreenMixin(HorseInventoryMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
     }
@@ -160,7 +156,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         IHorseData data = (IHorseData) this.horse;
         String text = "Bond: " + data.bh_getBond();
         int textWidth = this.font.width(text);
-        // renderBg is not matrix-translated, so use absolute screen coords.
         gfx.drawString(this.font, text, this.leftPos + this.imageWidth - textWidth - 7, this.topPos + 6, 0x404040, false);
     }
 
@@ -169,13 +164,10 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         double speedAttr = this.horse.getAttributeValue(Attributes.MOVEMENT_SPEED);
         double jumpAttr = this.horse.getAttributeValue(Attributes.JUMP_STRENGTH);
 
-        // Horse base speed 0.225 * 43.2 ~= 9.7 blk/s (matches vanilla roughly).
         double speedBps = speedAttr * 43.2;
-        // Base horse jump 0.7 gives ~3.2 block height; linear fit within vanilla jump range.
         double jumpHeight = Math.max(0.0, jumpAttr * 6.0 - 1.0);
 
         int x = this.leftPos + BH_GEAR_PANEL_X + BH_STATS_TEXT_X_OFFSET;
-        // Gear slots occupy y=17..34, so draw stats at y=37 and y=47 (2 rows, 10px spacing).
         int y = this.topPos + BH_GEAR_PANEL_Y + 20;
         int lineSpacing = Math.round(10.0F / BH_STATS_TEXT_SCALE);
 

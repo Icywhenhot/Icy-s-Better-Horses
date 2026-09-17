@@ -21,6 +21,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Entity.class)
 public abstract class EntityMixin {
 
+    @Inject(method = "setRemoved", at = @At("HEAD"))
+    private void bh_removeEffects(Entity.RemovalReason reason, CallbackInfo ci) {
+        Entity self = (Entity) (Object) this;
+        if (!self.isRemoved() && self instanceof AbstractHorse horse) IHorseData.of(horse).bh_onRemoved();
+    }
+
     @Unique
     private static final UUID BH_MOUNTED_STEP_HEIGHT_ID =
             UUID.fromString("4d2b1f3a-7c9e-4a51-8b6f-1c2d3e4f5a6b");

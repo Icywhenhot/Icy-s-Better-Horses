@@ -29,13 +29,9 @@ public class HorseInfoScreen extends Screen {
     private static final int BAR_BG_COLOR = 0xFF1A2235;
     private static final int BAR_FILL_COLOR = 0xFF6CB8FF;
 
-    // Matches the in-world stats HUD: speed_blocks_per_sec = raw * 43.2, jump_blocks = max(0, raw*6 - 1).
     private static final double SPEED_DISPLAY_FACTOR = 43.2D;
 
-    // Mod-attainable max = vanilla base ceiling * full-bond multiplier.
-    // Bond gives up to 5 levels * 15% ADD_MULTIPLIED_BASE = +75% on top of base speed and jump.
     private static final double BOND_MAX_MULTIPLIER = 1.0D + 5 * 0.15D;
-    // Bar ceilings (in display units). Bars are zero-baselined: fill = value / max.
     private static final double SPEED_MAX = 0.3375D * BOND_MAX_MULTIPLIER * SPEED_DISPLAY_FACTOR;
     private static final double JUMP_MAX = Math.max(0.0D, 1.0D * BOND_MAX_MULTIPLIER * 6.0D - 1.0D);
     private static final double HEALTH_MAX = 30.0D;

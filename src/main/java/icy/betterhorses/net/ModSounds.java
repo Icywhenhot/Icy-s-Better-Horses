@@ -34,4 +34,3 @@ public final class ModSounds {
 
     private ModSounds() {}
 }
-

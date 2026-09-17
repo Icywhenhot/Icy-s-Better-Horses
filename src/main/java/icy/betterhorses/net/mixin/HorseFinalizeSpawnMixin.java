@@ -58,7 +58,6 @@ public abstract class HorseFinalizeSpawnMixin {
         Horse self = (Horse) (Object) this;
         IHorseData data = (IHorseData) self;
 
-        // Skip breed/coat application when an NBT-restored breed already exists (e.g. /summon with stored data).
         if (data.bh_getBreed() != HorseBreed.UNKNOWN_SPECIES) {
             this.bh_pendingGroupBreed = null;
             return;
@@ -72,8 +71,6 @@ public abstract class HorseFinalizeSpawnMixin {
         data.bh_setBreed(breed);
         data.bh_setMixedBreed(false);
 
-        // Re-roll the coat from the breed's allowed list. Vanilla already set a random
-        // Variant + Markings just above the super.finalizeSpawn call; we overwrite it here.
         HorseBreed.Coat coat = breed.rollCoat(self.getRandom());
         if (coat != null) {
             ((HorseAccessor) self).bh_setVariantAndMarkings(coat.color(), coat.markings());

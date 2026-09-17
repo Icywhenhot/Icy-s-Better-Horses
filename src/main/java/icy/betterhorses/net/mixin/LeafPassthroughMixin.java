@@ -19,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(BlockBehaviour.BlockStateBase.class)
 public abstract class LeafPassthroughMixin {
 
-    // getBlock() is directly on BlockBehaviour.BlockStateBase — safe to @Shadow
     @Shadow public abstract net.minecraft.world.level.block.Block getBlock();
 
     @Inject(

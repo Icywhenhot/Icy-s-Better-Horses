@@ -47,8 +47,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Unique private int bh_playerInventoryEndIndex = -1;
     @Unique private boolean bh_playerInventoryShifted = false;
 
-    /** Snapshot view of the player's ender chest, shown in the horse's chest slots when an Ender
-     *  Chest is in the chest gear slot. Synced back to the real ender chest on close / removal. */
     @Unique private final SimpleContainer bh_enderChestView = new SimpleContainer(BH_CHEST_SLOT_COUNT);
     @Unique private PlayerEnderChestContainer bh_playerEnderChest = null;
     @Unique private boolean bh_enderChestViewLoaded = false;
@@ -78,7 +76,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             this.bh_loadEnderChestView();
         }
 
-        // Delegate container that swaps storage based on which chest item is in the gear slot.
         final Container extraStorage = new Container() {
             private Container bh_active() {
                 return HorseInventoryMenuMixin.this.bh_isEnderChestGear(gear.getItem(GearSlot.CHEST.ordinal()))
@@ -99,9 +96,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             @Override public void clearContent() { this.bh_active().clearContent(); }
         };
 
-        // 1.20.1 HorseInventoryMenu adds saddle + armor + (chest) slots, then the 36 player-inventory
-        // slots last. We inject at TAIL (before adding our own slots), so the player inventory is
-        // exactly the final 36 vanilla slots — robust regardless of horse/chest slot count.
         this.bh_playerInventoryStartIndex = this.slots.size() - 36;
         this.bh_playerInventoryEndIndex = this.slots.size();
 

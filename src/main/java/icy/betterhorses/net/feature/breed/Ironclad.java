@@ -56,14 +56,8 @@ public final class Ironclad implements BreedAbility {
     }
 
     private static double armorBonus(AbstractHorse horse) {
-        double[] armor = {0.0D};
-        horse.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.BODY).forEachModifier(
-                net.minecraft.world.entity.EquipmentSlot.BODY, (attr, modifier) -> {
-                    if (attr.equals(Attributes.ARMOR) && modifier.operation() == AttributeModifier.Operation.ADDITION) {
-                        armor[0] += modifier.amount();
-                    }
-                });
-        return armor[0] * 0.25D;
+        ItemStack barding = ((AbstractHorseAccessor) horse).bh_inventory().getItem(AbstractHorse.INV_SLOT_ARMOR);
+        return barding.getItem() instanceof HorseArmorItem armor ? armor.getProtection() * 0.25D : 0.0D;
     }
 
     @Override

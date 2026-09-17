@@ -10,7 +10,7 @@ import java.util.EnumSet;
 
 public class HorseWanderBoundsGoal extends Goal {
 
-    private static final double WANDER_HALF_EXTENT = 16.0D; // 32x32 total roam area
+    private static final double WANDER_HALF_EXTENT = 16.0D;
     private static final double RETURN_PADDING = 2.0D;
     private static final double RETURN_SPEED = 1.0D;
     private static final double MIN_TARGET_DISTANCE_SQ = 1.0D;
@@ -28,7 +28,7 @@ public class HorseWanderBoundsGoal extends Goal {
     @Override
     public boolean canUse() {
         if (horse.isVehicle()) return false;
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         if (!data.bh_isOwned() || data.bh_getCommand() != HorseCommand.WANDER) return false;
         wanderCenter = data.bh_getWanderCenter();
         if (wanderCenter == null) {
@@ -40,7 +40,7 @@ public class HorseWanderBoundsGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        IHorseData data = (IHorseData) horse;
+        IHorseData data = IHorseData.of(horse);
         if (data.bh_getCommand() != HorseCommand.WANDER) return false;
         wanderCenter = data.bh_getWanderCenter();
         return wanderCenter != null && bh_isOutsideBounds(wanderCenter, WANDER_HALF_EXTENT - RETURN_PADDING);

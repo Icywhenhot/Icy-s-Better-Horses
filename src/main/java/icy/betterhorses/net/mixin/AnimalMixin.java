@@ -29,14 +29,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Animal.class)
 public abstract class AnimalMixin {
 
-    /**
-     * Vanilla {@code checkAnimalSpawnRules} only allows spawning on blocks in
-     * {@code BlockTags.ANIMALS_SPAWNABLE_ON} (grass blocks). That blocks horses
-     * from ever spawning in deserts, snowy plains, badlands etc., even after we
-     * add a spawn entry to those biomes. Relax the ground check for horse-like
-     * entities specifically — sand, snow, dirt, gravel, terracotta, ice and
-     * stone all count as valid horse ground.
-     */
     @Inject(method = "checkAnimalSpawnRules", at = @At("HEAD"), cancellable = true)
     private static void bh_relaxHorseGroundCheck(EntityType<? extends Animal> type,
                                                  LevelAccessor level,
@@ -77,10 +69,6 @@ public abstract class AnimalMixin {
 
         childData.bh_setGender(self.getRandom().nextBoolean() ? HorseGender.MALE : HorseGender.FEMALE);
 
-        // Breed inheritance — only meaningful if both parents are real horses (not donkey/mule mixes).
-        // If a parent is a real Horse but its stored breed is UNKNOWN (e.g. spawned through a path
-        // that bypassed our finalizeSpawn injection), derive a real breed from its coat so the
-        // child doesn't fall into the cross-species branch and end up UNKNOWN itself.
         HorseBreed selfBreed = bh_resolveBreed(selfHorse, selfData);
         HorseBreed partnerBreed = bh_resolveBreed(partnerHorse, partnerData);
 
@@ -99,9 +87,6 @@ public abstract class AnimalMixin {
             childData.bh_setMixedBreed(false);
         }
 
-        // Stat inheritance: child = max(parent1, parent2) + random delta in display units
-        // (blocks/sec for speed, blocks for jump, HP for health), clamped at the vanilla horse
-        // base ceiling so bond's +75% multiplier still tops out at the mod-attainable max.
         bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.MAX_HEALTH, VANILLA_MAX_HEALTH, HEALTH_DISPLAY_PER_RAW);
         bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.MOVEMENT_SPEED, VANILLA_MAX_SPEED, SPEED_DISPLAY_PER_RAW);
         bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.JUMP_STRENGTH, VANILLA_MAX_JUMP, JUMP_DISPLAY_PER_RAW);
@@ -117,13 +102,10 @@ public abstract class AnimalMixin {
         }
     }
 
-    // Vanilla horse base attribute ceilings — these are the caps breeding can never exceed.
     private static final double VANILLA_MAX_HEALTH = 30.0D;
     private static final double VANILLA_MAX_SPEED = 0.3375D;
     private static final double VANILLA_MAX_JUMP = 1.0D;
 
-    // display_value = raw * factor. Used to convert the -0.5..+1.0 delta from display units back to raw.
-    // Speed: blocks/sec = raw * 43.2. Jump: blocks = raw * 6 - 1 (slope is 6). Health: HP = raw * 1.
     private static final double SPEED_DISPLAY_PER_RAW = 43.2D;
     private static final double JUMP_DISPLAY_PER_RAW = 6.0D;
     private static final double HEALTH_DISPLAY_PER_RAW = 1.0D;
