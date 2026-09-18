@@ -31,13 +31,17 @@
 	],
 	"client": [
 		"AbstractContainerScreenAccessor",
+		"AbstractContainerScreenMixin",
 		"AbstractHorseRendererMixin",
+		"AbstractMountInventoryMenuMixin",
+		"CameraMixin",
 		"GuiMixin",
 		"HorseInventoryScreenMixin",
 		"HorseModelAccessor",
 		"HorseModelMixin",
 		"KeyboardInputMixin",
-		"LivingEntityRendererMixin"
+		"LivingEntityRendererMixin",
+		"LivingEntityRendererRiderMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

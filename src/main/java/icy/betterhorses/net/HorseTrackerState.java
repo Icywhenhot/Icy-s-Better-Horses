@@ -135,6 +135,7 @@ public class HorseTrackerState extends SavedData {
         summary.putInt("variant", horse instanceof net.minecraft.world.entity.animal.horse.Horse h ? h.getVariant().ordinal() : -1);
         summary.putInt("markings", horse instanceof net.minecraft.world.entity.animal.horse.Horse h ? h.getMarkings().ordinal() : -1);
         summary.putBoolean("baby", horse.isBaby());
+        summary.putInt("coat", horse instanceof icy.betterhorses.net.entity.BhBreedHorse h ? h.bhCoat() : -1);
         snapshot.put("BH_Roster", summary);
         CompoundTag old = snapshots.put(horseId, snapshot);
         if (!snapshot.equals(old)) setDirty();

@@ -26,6 +26,22 @@ public final class BhMountedHorseVisibility {
         return CURRENT_OPACITY.get();
     }
 
+    public static float red(int color) {
+        return color == -1 ? 1.0F : ((color >> 16) & 0xFF) / 255.0F;
+    }
+
+    public static float green(int color) {
+        return color == -1 ? 1.0F : ((color >> 8) & 0xFF) / 255.0F;
+    }
+
+    public static float blue(int color) {
+        return color == -1 ? 1.0F : (color & 0xFF) / 255.0F;
+    }
+
+    public static float alpha(int color, float opacity) {
+        return (color == -1 ? 1.0F : ((color >>> 24) & 0xFF) / 255.0F) * opacity;
+    }
+
     private BhMountedHorseVisibility() {}
 
     public static float getOpacity(AbstractHorse horse) {

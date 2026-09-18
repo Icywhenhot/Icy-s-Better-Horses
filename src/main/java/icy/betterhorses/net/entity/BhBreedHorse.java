@@ -17,6 +17,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -74,6 +76,16 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
         if (inst != null) {
             inst.setBaseValue(value);
         }
+    }
+
+    @Override
+    protected float getStandingEyeHeight(Pose pose, EntityDimensions size) {
+        return size.height * 0.95F;
+    }
+
+    @Override
+    public double getPassengersRidingOffset() {
+        return this.getBbHeight() * 0.90D;
     }
 
     @Override

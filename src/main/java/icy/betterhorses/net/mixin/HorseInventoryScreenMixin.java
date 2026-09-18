@@ -3,21 +3,28 @@ package icy.betterhorses.net.mixin;
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
+import icy.betterhorses.net.client.BhAnim;
+import icy.betterhorses.net.client.BhScreenDraw;
+import icy.betterhorses.net.client.BhSlotFlash;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
+import icy.betterhorses.net.client.render.BhHorseRenderState;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Llama;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.HorseInventoryMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.ItemLike;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -25,6 +32,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import java.util.Locale;
+import net.minecraft.world.entity.animal.horse.Horse;
 
 @Mixin(HorseInventoryScreen.class)
 public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<HorseInventoryMenu> {
@@ -34,8 +43,19 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Shadow private float yMouse;
 
     @Unique private static final ResourceLocation BH_HORSE_TEXTURE =
-            new ResourceLocation("textures/gui/container/horse.png");
+            new ResourceLocation("minecraft", "textures/gui/container/horse.png");
 
+    @Unique private static final int BH_VANILLA_IMAGE_HEIGHT = 166;
+    @Unique private static final int BH_TOP_SECTION_HEIGHT = 77;
+    @Unique private static final int BH_ROW_HEIGHT = 18;
+    @Unique private static final int BH_DEFAULT_INVENTORY_LABEL_Y = BH_VANILLA_IMAGE_HEIGHT - 94;
+    @Unique private static final int BH_GEAR_PANEL_X = 79;
+    @Unique private static final int BH_GEAR_PANEL_Y = 17;
+    @Unique private static final int BH_CHEST_PANEL_X = 7;
+    @Unique private static final int BH_CHEST_PANEL_Y = 78;
+    @Unique private static final int BH_CHEST_PANEL_WIDTH = 9 * 18;
+    @Unique private static final int BH_SIDE_BORDER_WIDTH = 7;
+    @Unique private static final int BH_HINT_TINT = 0xA06B5A46;
     @Unique private static final int BH_SLOT_U = 0;
     @Unique private static final int BH_SLOT_V = 166;
     @Unique private static final int BH_SADDLE_SLOT_U = 18;
@@ -43,25 +63,15 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final int BH_ARMOR_SLOT_U = 0;
     @Unique private static final int BH_LLAMA_ARMOR_SLOT_U = 36;
     @Unique private static final int BH_ARMOR_SLOT_V = 220;
-
-    @Unique private static final int BH_VANILLA_IMAGE_HEIGHT = 166;
-    @Unique private static final int BH_TOP_SECTION_HEIGHT = 77;
-    @Unique private static final int BH_PLAYER_SECTION_Y_OFFSET = 54;
-    @Unique private static final int BH_EXTENDED_IMAGE_HEIGHT = BH_VANILLA_IMAGE_HEIGHT + BH_PLAYER_SECTION_Y_OFFSET;
-    @Unique private static final int BH_DEFAULT_INVENTORY_LABEL_Y = BH_VANILLA_IMAGE_HEIGHT - 94;
-    @Unique private static final int BH_GEAR_PANEL_X = 79;
-    @Unique private static final int BH_GEAR_PANEL_Y = 17;
-    @Unique private static final int BH_CHEST_PANEL_X = 7;
-    @Unique private static final int BH_CHEST_PANEL_Y = 78;
-    @Unique private static final int BH_CHEST_PANEL_WIDTH = 9 * 18;
-    @Unique private static final int BH_CHEST_PANEL_HEIGHT = 3 * 18;
-    @Unique private static final int BH_SIDE_BORDER_WIDTH = 7;
-    @Unique private static final int BH_HINT_TINT = 0xA06B5A46;
+    @Unique private static final int BH_SLOT_OVERLAY_Z = 200;
     @Unique private static final int BH_MIDDLE_FILL = 0xFFC6C6C6;
     @Unique private static final int BH_MIDDLE_HIGHLIGHT = 0xFFF7F7F7;
     @Unique private static final int BH_MIDDLE_SHADOW = 0xFF8B8B8B;
-    @Unique private static final float BH_STATS_TEXT_SCALE = 0.8F;
-    @Unique private static final int BH_STATS_TEXT_X_OFFSET = 2;
+    @Unique private static final int BH_STATS_TEXT_X = 81;
+    @Unique private static final int BH_STATS_TEXT_Y = 38;
+    @Unique private static final int BH_STATS_LINE_SPACING = 10;
+    @Unique private static final int BH_TEXT_COLOR = 0xFF404040;
+    @Unique private static final float BH_LOCK_FLASH_ALPHA = 0.65F;
 
     protected HorseInventoryScreenMixin(HorseInventoryMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -69,10 +79,16 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void bh_configureInitialLayout(
-            HorseInventoryMenu menu, Inventory inventory, AbstractHorse horse,
+            HorseInventoryMenu menu,
+            Inventory inventory,
+            AbstractHorse horse,
+            int inventoryColumns,
             CallbackInfo ci) {
         HorseInventoryLayoutAccess layoutAccess = (HorseInventoryLayoutAccess) menu;
-        this.imageHeight = layoutAccess.bh_hasChestStorageLayout() ? BH_EXTENDED_IMAGE_HEIGHT : BH_VANILLA_IMAGE_HEIGHT;
+        ((AbstractContainerScreenAccessor) (Object) this).bh_setImageHeight(
+                layoutAccess.bh_hasChestStorageLayout()
+                        ? BH_VANILLA_IMAGE_HEIGHT + layoutAccess.bh_getChestRows() * BH_ROW_HEIGHT
+                        : BH_VANILLA_IMAGE_HEIGHT);
         this.inventoryLabelY = layoutAccess.bh_hasUpgradedSaddleLayout()
                 ? this.imageHeight + 1000
                 : BH_DEFAULT_INVENTORY_LABEL_Y;
@@ -80,6 +96,11 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
     @Inject(method = "renderBg", at = @At("HEAD"), cancellable = true)
     private void bh_renderChestLayout(GuiGraphics gfx, float partialTick, int mouseX, int mouseY, CallbackInfo ci) {
+        AbstractHorse horse = this.bh_getHorseOrNull();
+        if (horse == null) {
+            return;
+        }
+
         this.bh_applyLayoutState();
         if (!this.bh_hasChestStorageLayout()) {
             return;
@@ -87,28 +108,27 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
         int x = this.leftPos;
         int y = this.topPos;
-        gfx.blit(BH_HORSE_TEXTURE, x, y, 0, 0, this.imageWidth, BH_TOP_SECTION_HEIGHT);
-        this.bh_drawMiddlePanel(gfx, x, y + BH_TOP_SECTION_HEIGHT, this.imageWidth, BH_PLAYER_SECTION_Y_OFFSET);
-        gfx.blit(
-                BH_HORSE_TEXTURE,
+        int chestHeight = this.bh_chestRows() * BH_ROW_HEIGHT;
+        bh_blitGui(gfx, BH_HORSE_TEXTURE, x, y, 0, 0, this.imageWidth, BH_TOP_SECTION_HEIGHT);
+        this.bh_drawMiddlePanel(gfx, x, y + BH_TOP_SECTION_HEIGHT, this.imageWidth, chestHeight);
+        bh_blitGui(gfx, BH_HORSE_TEXTURE,
                 x,
-                y + BH_TOP_SECTION_HEIGHT + BH_PLAYER_SECTION_Y_OFFSET,
+                y + BH_TOP_SECTION_HEIGHT + chestHeight,
                 0,
                 BH_TOP_SECTION_HEIGHT,
                 this.imageWidth,
                 BH_VANILLA_IMAGE_HEIGHT - BH_TOP_SECTION_HEIGHT);
 
-        if (this.horse.isSaddleable()) {
+        if (horse.isSaddleable()) {
             gfx.blit(BH_HORSE_TEXTURE, x + 7, y + 17, BH_SADDLE_SLOT_U, BH_SADDLE_SLOT_V, 18, 18);
         }
 
-        if (this.horse.canWearArmor()) {
-            int armorSlotU = this.horse instanceof Llama ? BH_LLAMA_ARMOR_SLOT_U : BH_ARMOR_SLOT_U;
+        if (horse.canWearArmor()) {
+            int armorSlotU = horse instanceof Llama ? BH_LLAMA_ARMOR_SLOT_U : BH_ARMOR_SLOT_U;
             gfx.blit(BH_HORSE_TEXTURE, x + 7, y + 35, armorSlotU, BH_ARMOR_SLOT_V, 18, 18);
         }
 
         this.bh_drawGearPanel(gfx);
-        this.bh_drawStatsPanel(gfx);
         this.bh_drawChestPanel(gfx);
         InventoryScreen.renderEntityInInventoryFollowsMouse(
                 gfx,
@@ -116,34 +136,59 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
                 y + 70,
                 17,
                 (float) (x + 52) - this.xMouse,
-                (float) (y + 20) - this.yMouse,
-                this.horse);
-        this.bh_drawBondLabel(gfx);
+                (float) (y + 44) - this.yMouse,
+                horse);
         ci.cancel();
     }
 
     @Inject(method = "renderBg", at = @At("TAIL"))
     private void bh_renderGearOnlyOverlay(GuiGraphics gfx, float partialTick, int mouseX, int mouseY, CallbackInfo ci) {
+        if (this.bh_getHorseOrNull() == null) {
+            return;
+        }
         if (!this.bh_hasUpgradedSaddleInMenu() || this.bh_hasChestStorageLayout()) {
             return;
         }
 
         this.bh_drawGearPanel(gfx);
-        this.bh_drawStatsPanel(gfx);
-        this.bh_drawBondLabel(gfx);
+    }
+
+    @Inject(method = "render", at = @At("HEAD"))
+    private void bh_beginHorsePreview(GuiGraphics gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+        BhHorseRenderState.beginPreview();
+    }
+
+    @Inject(method = "render", at = @At("RETURN"))
+    private void bh_endHorsePreview(GuiGraphics gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+        BhHorseRenderState.endPreview();
+    }
+
+    @Inject(method = "render", at = @At("TAIL"))
+    private void bh_drawTextOverlay(GuiGraphics gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+        AbstractHorse horse = this.bh_getHorseOrNull();
+        if (horse == null || !this.bh_hasUpgradedSaddleInMenu()) {
+            return;
+        }
+        this.bh_drawStatsLines(gfx, horse);
+        this.bh_drawBondLabel(gfx, horse);
     }
 
     @Unique
     private void bh_applyLayoutState() {
-        HorseInventoryLayoutAccess layoutAccess = (HorseInventoryLayoutAccess) this.menu;
+        HorseInventoryLayoutAccess layoutAccess = this.bh_getLayoutAccessOrNull();
+        if (layoutAccess == null || this.bh_getHorseOrNull() == null) {
+            return;
+        }
         layoutAccess.bh_refreshLayout();
 
         boolean chestLayout = layoutAccess.bh_hasChestStorageLayout();
         boolean upgradedSaddleLayout = layoutAccess.bh_hasUpgradedSaddleLayout();
-        int desiredImageHeight = chestLayout ? BH_EXTENDED_IMAGE_HEIGHT : BH_VANILLA_IMAGE_HEIGHT;
+        int desiredImageHeight = chestLayout
+                ? BH_VANILLA_IMAGE_HEIGHT + this.bh_chestRows() * BH_ROW_HEIGHT
+                : BH_VANILLA_IMAGE_HEIGHT;
 
         if (this.imageHeight != desiredImageHeight) {
-            this.imageHeight = desiredImageHeight;
+            ((AbstractContainerScreenAccessor) (Object) this).bh_setImageHeight(desiredImageHeight);
             this.topPos = (this.height - this.imageHeight) / 2;
             this.leftPos = (this.width - this.imageWidth) / 2;
         }
@@ -152,34 +197,33 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     }
 
     @Unique
-    private void bh_drawBondLabel(GuiGraphics gfx) {
-        IHorseData data = (IHorseData) this.horse;
-        String text = "Bond: " + data.bh_getBond();
+    private void bh_drawBondLabel(GuiGraphics gfx, AbstractHorse horse) {
+        String text = "Bond: " + IHorseData.of(horse).bh_getBond();
         int textWidth = this.font.width(text);
-        gfx.drawString(this.font, text, this.leftPos + this.imageWidth - textWidth - 7, this.topPos + 6, 0x404040, false);
+        gfx.drawString(this.font, text,
+                this.leftPos + this.imageWidth - textWidth - 8,
+                this.topPos + 6,
+                BH_TEXT_COLOR,
+                false);
     }
 
     @Unique
-    private void bh_drawStatsPanel(GuiGraphics gfx) {
-        double speedAttr = this.horse.getAttributeValue(Attributes.MOVEMENT_SPEED);
-        double jumpAttr = this.horse.getAttributeValue(Attributes.JUMP_STRENGTH);
+    private void bh_drawStatsLines(GuiGraphics gfx, AbstractHorse horse) {
+        double speedBps = horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * 43.2D;
+        double jumpBlk = Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D);
+        String speedText = String.format(Locale.ROOT, "Speed: %.1f blk/s", speedBps);
+        String jumpText = String.format(Locale.ROOT, "Jump:  %.1f blk", jumpBlk);
 
-        double speedBps = speedAttr * 43.2;
-        double jumpHeight = Math.max(0.0, jumpAttr * 6.0 - 1.0);
-
-        int x = this.leftPos + BH_GEAR_PANEL_X + BH_STATS_TEXT_X_OFFSET;
-        int y = this.topPos + BH_GEAR_PANEL_Y + 20;
-        int lineSpacing = Math.round(10.0F / BH_STATS_TEXT_SCALE);
-
-        String speedText = String.format("Speed: %.1f blk/s", speedBps);
-        String jumpText = String.format("Jump:  %.1f blk", jumpHeight);
-
-        gfx.pose().pushPose();
-        gfx.pose().translate(x, y, 0.0F);
-        gfx.pose().scale(BH_STATS_TEXT_SCALE, BH_STATS_TEXT_SCALE, 1.0F);
-        gfx.drawString(this.font, speedText, 0, 0, 0x404040, false);
-        gfx.drawString(this.font, jumpText, 0, lineSpacing, 0x404040, false);
-        gfx.pose().popPose();
+        gfx.drawString(this.font, speedText,
+                this.leftPos + BH_STATS_TEXT_X,
+                this.topPos + BH_STATS_TEXT_Y,
+                BH_TEXT_COLOR,
+                false);
+        gfx.drawString(this.font, jumpText,
+                this.leftPos + BH_STATS_TEXT_X,
+                this.topPos + BH_STATS_TEXT_Y + BH_STATS_LINE_SPACING,
+                BH_TEXT_COLOR,
+                false);
     }
 
     @Unique
@@ -195,7 +239,31 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         this.bh_drawGearHint(gfx, x, y, GearSlot.CHEST, Items.CHEST);
         this.bh_drawGearHint(gfx, x, y, GearSlot.HOOVES, ModItems.HORSE_HOOVES.get());
         this.bh_drawGearHint(gfx, x, y, GearSlot.MEDKIT, ModItems.HORSE_MEDKIT.get());
-        this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, ModItems.HORSE_STABILIZER.get());
+        Item stabilizerSlotHint = this.bh_mountTakesStabilizer() && (System.currentTimeMillis() / 1000L) % 2L == 0L
+                ? ModItems.HORSE_STABILIZER.get()
+                : ModItems.HORSE_CART.get();
+        this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, stabilizerSlotHint);
+        this.bh_drawLockedSlotFlash(gfx);
+    }
+
+    @Unique
+    private void bh_drawLockedSlotFlash(GuiGraphics gfx) {
+        float intensity = BhSlotFlash.intensity();
+        int flashed = BhSlotFlash.flashingSlot();
+        if (intensity <= 0.0F || flashed < 0 || flashed >= this.menu.slots.size()) {
+            return;
+        }
+
+        Slot slot = this.menu.slots.get(flashed);
+        int slotX = this.leftPos + slot.x;
+        int slotY = this.topPos + slot.y;
+        gfx.fill(slotX, slotY, slotX + 16, slotY + 16, BH_SLOT_OVERLAY_Z,
+                BhAnim.fade(BhScreenDraw.BTN_ERROR, intensity * BH_LOCK_FLASH_ALPHA));
+    }
+
+    @Unique
+    private int bh_chestRows() {
+        return this.getMenu() instanceof HorseInventoryLayoutAccess access ? access.bh_getChestRows() : 3;
     }
 
     @Unique
@@ -205,7 +273,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         }
         int x = this.leftPos + BH_CHEST_PANEL_X;
         int y = this.topPos + BH_CHEST_PANEL_Y;
-        for (int row = 0; row < 3; row++) {
+        for (int row = 0; row < this.bh_chestRows(); row++) {
             for (int col = 0; col < 9; col++) {
                 gfx.blit(BH_HORSE_TEXTURE, x + col * 18, y + row * 18, BH_SLOT_U, BH_SLOT_V, 18, 18);
             }
@@ -217,8 +285,14 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int innerLeft = x + BH_SIDE_BORDER_WIDTH;
         int innerRight = x + width - BH_SIDE_BORDER_WIDTH;
 
-        gfx.blit(BH_HORSE_TEXTURE, x, y, 0, BH_TOP_SECTION_HEIGHT, BH_SIDE_BORDER_WIDTH, height);
-        gfx.blit(BH_HORSE_TEXTURE, innerRight, y, this.imageWidth - BH_SIDE_BORDER_WIDTH, BH_TOP_SECTION_HEIGHT, BH_SIDE_BORDER_WIDTH, height);
+        for (int drawn = 0; drawn < height; drawn += BH_ROW_HEIGHT) {
+            int slice = Math.min(BH_ROW_HEIGHT, height - drawn);
+            bh_blitGui(gfx, BH_HORSE_TEXTURE, x, y + drawn,
+                    0, BH_TOP_SECTION_HEIGHT, BH_SIDE_BORDER_WIDTH, slice);
+            bh_blitGui(gfx, BH_HORSE_TEXTURE, innerRight, y + drawn,
+                    this.imageWidth - BH_SIDE_BORDER_WIDTH, BH_TOP_SECTION_HEIGHT,
+                    BH_SIDE_BORDER_WIDTH, slice);
+        }
 
         gfx.fill(innerLeft, y, innerRight, y + height, BH_MIDDLE_FILL);
         gfx.fill(innerLeft, y, innerRight, y + 1, BH_MIDDLE_HIGHLIGHT);
@@ -226,24 +300,32 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     }
 
     @Unique
-    private void bh_drawGearHint(GuiGraphics gfx, int x, int y, GearSlot slot, ItemLike item) {
+    private void bh_drawGearHint(GuiGraphics gfx, int x, int y, GearSlot slot, Item item) {
         int slotIndex = this.bh_getGearSlotIndex(slot.ordinal());
         if (slotIndex < 0 || this.menu.getSlot(slotIndex).hasItem()) {
             return;
         }
 
-        gfx.setColor(
-                ((BH_HINT_TINT >> 16) & 0xFF) / 255.0F,
-                ((BH_HINT_TINT >> 8) & 0xFF) / 255.0F,
-                (BH_HINT_TINT & 0xFF) / 255.0F,
-                ((BH_HINT_TINT >> 24) & 0xFF) / 255.0F);
-        gfx.renderItem(new ItemStack(item), x + slot.ordinal() * 18 + 1, y + 1);
-        gfx.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+        int iconX = x + slot.ordinal() * 18 + 1;
+        int iconY = y + 1;
+        gfx.renderItem(new ItemStack(item), iconX, iconY);
+        gfx.fill(iconX, iconY, iconX + 16, iconY + 16, BH_SLOT_OVERLAY_Z, 0xA0B7AB99);
+    }
+
+    @Unique
+    private static void bh_blitGui(GuiGraphics gfx, ResourceLocation texture,
+                                   int x, int y, int u, int v, int width, int height) {
+        gfx.blit(texture, x, y, (float) u, (float) v, width, height, 256, 256);
     }
 
     @Unique
     private boolean bh_hasUpgradedSaddleInMenu() {
         return this.menu.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE.get());
+    }
+
+    @Unique
+    private boolean bh_mountTakesStabilizer() {
+        return this.horse instanceof Horse;
     }
 
     @Unique
@@ -259,7 +341,12 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
     @Unique
     private int bh_getGearSlotIndex(int slotOffset) {
-        int gearStartIndex = ((HorseInventoryLayoutAccess) this.menu).bh_getGearStartIndex();
+        HorseInventoryLayoutAccess layoutAccess = this.bh_getLayoutAccessOrNull();
+        if (layoutAccess == null) {
+            return -1;
+        }
+
+        int gearStartIndex = layoutAccess.bh_getGearStartIndex();
         if (gearStartIndex < 0 || gearStartIndex + slotOffset >= this.menu.slots.size()) {
             return -1;
         }
@@ -268,6 +355,17 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
     @Unique
     private boolean bh_hasChestStorageLayout() {
-        return ((HorseInventoryLayoutAccess) this.menu).bh_hasChestStorageLayout();
+        HorseInventoryLayoutAccess layoutAccess = this.bh_getLayoutAccessOrNull();
+        return layoutAccess != null && layoutAccess.bh_hasChestStorageLayout();
+    }
+
+    @Unique
+    private @Nullable HorseInventoryLayoutAccess bh_getLayoutAccessOrNull() {
+        return this.menu instanceof HorseInventoryLayoutAccess layoutAccess ? layoutAccess : null;
+    }
+
+    @Unique
+    private @Nullable AbstractHorse bh_getHorseOrNull() {
+        return this.horse;
     }
 }

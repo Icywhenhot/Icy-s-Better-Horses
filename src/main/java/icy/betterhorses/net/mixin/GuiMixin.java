@@ -1,6 +1,7 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.client.BhAbilityBadges;
 import icy.betterhorses.net.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -29,6 +30,21 @@ public abstract class GuiMixin {
     @Unique private static final int BH_STATS_HUD_TITLE_COLOR = 0xFFF2C15B;
     @Unique private static final int BH_STATS_HUD_BACKGROUND = 0xA0101010;
     @Unique private static final int BH_STATS_HUD_ACCENT = 0xD06E5324;
+
+    @Inject(method = "render", at = @At("TAIL"))
+    private void bh_renderAbilityBadges(GuiGraphics gfx, float partialTick, CallbackInfo ci) {
+        if (this.minecraft.player == null || this.minecraft.level == null
+                || this.minecraft.screen != null) {
+            return;
+        }
+        if (!(this.minecraft.player.getVehicle() instanceof AbstractHorse horse)) {
+            return;
+        }
+        BhAbilityBadges.render(gfx, this.minecraft.font,
+                this.minecraft.getWindow().getGuiScaledWidth(),
+                this.minecraft.getWindow().getGuiScaledHeight(),
+                horse);
+    }
 
     @Inject(method = "render", at = @At("TAIL"))
     private void bh_renderHorseStatsHud(GuiGraphics gfx, float partialTick, CallbackInfo ci) {
@@ -62,7 +78,8 @@ public abstract class GuiMixin {
         }
         int boxWidth = contentWidth + BH_STATS_HUD_PADDING * 2;
         int boxHeight = BH_STATS_HUD_PADDING * 2 + lineHeight * (lines.length + 1);
-        int left = (this.minecraft.getWindow().getGuiScaledWidth() - boxWidth) / 2;
+        int scaledWidth = this.minecraft.getWindow().getGuiScaledWidth();
+        int left = (scaledWidth - boxWidth) / 2;
         int top = BH_STATS_HUD_TOP;
 
         gfx.fill(left, top, left + boxWidth, top + boxHeight, BH_STATS_HUD_BACKGROUND);

@@ -2,6 +2,7 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhHorseSteering;
+import icy.betterhorses.net.BhRiderSeat;
 import icy.betterhorses.net.BhGears;
 import icy.betterhorses.net.BhHorseStorage;
 import icy.betterhorses.net.BhSurge;
@@ -940,11 +941,21 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             Entity passenger, double x, double y, double z) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (this.bh_hasCartGear()) {
+            if (self.level().isClientSide()) {
+                BhRiderSeat.publish(self.getId(), Vec3.ZERO);
+            }
             Vec3 bench = HorseCartEntity.benchSeatOffset(
                     self, BhHorseSteering.benchSeatIndex(self, passenger), self.yBodyRot);
             moveFunction.accept(passenger, self.getX() + bench.x, self.getY() + bench.y, self.getZ() + bench.z);
             return;
         }
+
+        double lift = BhRiderSeat.seatLift(self);
+        if (self.level().isClientSide()) {
+            BhRiderSeat.publish(self.getId(), new Vec3(0.0D, lift, 0.0D));
+        }
+        y += lift;
+
         Vec3 offset = BhHorseSteering.multiRiderOffset(self, passenger);
         if (offset != null) {
             x += offset.x;

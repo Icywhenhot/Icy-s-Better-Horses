@@ -6,7 +6,11 @@ import icy.betterhorses.net.network.BreedDataPayload;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.CartSizePayload;
 import icy.betterhorses.net.network.ConfigSyncPayload;
+import icy.betterhorses.net.network.HorseChargeShakePayload;
 import icy.betterhorses.net.network.HorseGearPayload;
+import icy.betterhorses.net.network.HorseManageResultPayload;
+import icy.betterhorses.net.network.HorseRosterSyncPayload;
+import icy.betterhorses.net.network.TrustSyncPayload;
 import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
@@ -65,6 +69,14 @@ public final class BhNetworking {
         toServer(CartSizePayload.class, CartSizePayload::encode, CartSizePayload::decode,
                 (payload, player) -> IcysBetterHorses.handleCartSize(player, payload.targetId()));
 
+        toClient(HorseRosterSyncPayload.class, HorseRosterSyncPayload::encode, HorseRosterSyncPayload::decode,
+                payload -> () -> IcysBetterHorsesClient.receiveHorseRoster(payload));
+        toClient(HorseManageResultPayload.class, HorseManageResultPayload::encode, HorseManageResultPayload::decode,
+                payload -> () -> IcysBetterHorsesClient.receiveManageResult(payload));
+        toClient(TrustSyncPayload.class, TrustSyncPayload::encode, TrustSyncPayload::decode,
+                payload -> () -> IcysBetterHorsesClient.receiveTrust(payload));
+        toClient(HorseChargeShakePayload.class, HorseChargeShakePayload::encode, HorseChargeShakePayload::decode,
+                payload -> () -> IcysBetterHorsesClient.receiveChargeShake(payload));
         toClient(ConfigSyncPayload.class, ConfigSyncPayload::encode, ConfigSyncPayload::decode,
                 payload -> () -> IcysBetterHorsesClient.receiveConfig(payload));
         toClient(BreedDataPayload.class, BreedDataPayload::encode, BreedDataPayload::decode,

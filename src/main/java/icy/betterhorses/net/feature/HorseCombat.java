@@ -2,6 +2,7 @@ package icy.betterhorses.net.feature;
 
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhNetworking;
 import icy.betterhorses.net.BhGears;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhHorseTraits;
@@ -11,6 +12,8 @@ import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BreedArchetype;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.network.HorseChargeShakePayload;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -132,6 +135,9 @@ public final class HorseCombat implements HorseFeature {
             killed |= target.isDeadOrDying();
         }
         horse.playSound(ModSounds.HORSE_CHARGE_THUD.get(), 0.5F, 1.0F);
+        if (rider instanceof ServerPlayer serverRider) {
+            BhNetworking.sendToPlayer(serverRider, new HorseChargeShakePayload());
+        }
         if (neighing == 0) {
             horse.playSound(ModSounds.HORSE_NEIGH.get(), 1.0F, 1.0F);
             neighing = NEIGH_TICKS;
