@@ -1,6 +1,6 @@
 {
-  "name": "Trail Notes",
-  "description": "A few easy riding tricks for long roads, rough water, forest shortcuts, and hauling a friend along for the trip.",
+  "name": "book.icys-better-horses.stable_handbook.travel.name",
+  "description": "book.icys-better-horses.stable_handbook.travel.description",
   "icon": "minecraft:water_bucket",
   "sortnum": 1
 }

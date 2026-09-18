@@ -1,10 +1,12 @@
 {
-  "name": "Stable Handbook",
-  "landing_text": "Pull up a hay bale, stablemaster. This handbook is your barn-side cheat sheet for turning an ordinary horse into a trail partner worth keeping.",
-  "subtitle": "Barnside Field Guide",
+  "name": "book.icys-better-horses.stable_handbook.name",
+  "landing_text": "book.icys-better-horses.stable_handbook.landing_text",
+  "subtitle": "book.icys-better-horses.stable_handbook.tooltip",
   "version": "2",
+  "i18n": true,
+  "model": "icys-better-horses:stable_handbook_book",
   "use_blocky_font": true,
-  "creative_tab": "tools_and_utilities",
+  "creative_tab": "icys-better-horses:stable_supplies",
   "use_resource_pack": true,
   "text_overflow_mode": "resize",
   "index_icon": "icys-better-horses:upgraded_saddle"

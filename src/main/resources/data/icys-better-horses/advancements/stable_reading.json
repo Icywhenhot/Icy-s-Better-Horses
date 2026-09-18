@@ -1,0 +1,43 @@
+{
+  "criteria": {
+    "has_handbook": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "patchouli:guide_book"
+            ],
+            "nbt": "{\"patchouli:book\":\"icys-better-horses:stable_handbook\"}"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.icys-better-horses.stable_reading.description"
+    },
+    "icon": {
+      "nbt": "{\"patchouli:book\":\"icys-better-horses:stable_handbook\"}",
+      "item": "patchouli:guide_book"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.icys-better-horses.stable_reading.title"
+    }
+  },
+  "parent": "icys-better-horses:hold_your_horses",
+  "requirements": [
+    [
+      "has_handbook"
+    ]
+  ],
+  "forge:conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "patchouli"
+    }
+  ]
+}

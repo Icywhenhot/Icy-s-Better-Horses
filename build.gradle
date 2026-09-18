@@ -130,7 +130,7 @@ dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
     implementation fg.deobf("software.bernie.geckolib:geckolib-forge-1.20.1:${geckolib_version}")
-    runtimeOnly fg.deobf("maven.modrinth:patchouli:${patchouli_version}")
+    implementation fg.deobf("maven.modrinth:patchouli:${patchouli_version}")
     implementation fg.deobf("maven.modrinth:cloth-config:${cloth_config_version}")
 
     compileOnly "org.jetbrains:annotations:26.0.2"

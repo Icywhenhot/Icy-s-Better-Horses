@@ -1,21 +1,22 @@
 {
-  "name": "Stable Handbook",
+  "name": "book.icys-better-horses.stable_handbook.equipment.stable_handbook.name",
   "category": "icys-better-horses:equipment",
   "icon": "minecraft:book",
   "sortnum": 1,
-  "extra_recipe_mappings": {
-    "icys-better-horses:stable_handbook": 0
-  },
   "pages": [
     {
       "type": "patchouli:crafting",
       "recipe": "icys-better-horses:stable_handbook",
-      "title": "Pack Your Handbook",
-      "text": "Any $(thing)Better Horses$() item paired with a $(item)Book$() will turn into a fresh handbook, so it is easy to replace one after a rough ride or lend a copy to another ranch hand."
+      "title": "book.icys-better-horses.stable_handbook.equipment.stable_handbook.recipe.title1"
     },
     {
-      "type": "patchouli:text",
-      "text": "Keep one by the bed, toss one in your travel chest, and lend one to the friend who keeps asking why your horse is better behaved than theirs."
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.equipment.stable_handbook.recipe.text"
+    },
+    {
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.equipment.stable_handbook.spares.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.stable_handbook.spares.text"
     }
   ]
 }

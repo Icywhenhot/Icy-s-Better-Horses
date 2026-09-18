@@ -1,27 +1,28 @@
 {
-  "name": "Welcome to the Barn",
+  "name": "book.icys-better-horses.stable_handbook.basics.welcome.name",
   "category": "icys-better-horses:basics",
   "icon": "minecraft:book",
-  "priority": true,
-  "read_by_default": true,
   "sortnum": 0,
   "pages": [
     {
-      "type": "patchouli:text",
-      "text": "If you've ever wished your horse felt more like a trail partner and less like a disposable cart with legs, you're in the right barn. $(thing)Better Horses$() is built for ranchers, scouts, and stubborn adventurers alike."
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.welcome.intro.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.welcome.intro.text"
     },
     {
       "type": "patchouli:entity",
-      "entity": "minecraft:horse",
-      "name": "A Good Horse",
-      "text": "Once a horse is fully tamed, this mod marks it as yours right away. From there you can turn an ordinary mount into a proper road companion.",
-      "scale": 0.6,
+      "entity": "icys-better-horses:mustang_horse",
+      "name": "book.icys-better-horses.stable_handbook.basics.welcome.horse.name",
+      "text": "book.icys-better-horses.stable_handbook.basics.welcome.horse.text",
+      "scale": 0.55,
       "offset": 0.25
     },
     {
-      "type": "patchouli:text",
-      "title": "How to Read This Thing",
-      "text": "Start with $(thing)Claiming a Mount$() if you're fresh off the saddle. After that, the $(thing)Tack Room$() has every recipe in the mod, and $(thing)Trail Notes$() covers the riding comforts that make long trips feel easy."
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.welcome.owned.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.welcome.owned.text"
     }
-  ]
+  ],
+  "priority": true,
+  "read_by_default": true
 }

@@ -1,26 +1,27 @@
 {
-  "name": "Arabian",
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_arabian.name",
   "category": "icys-better-horses:breeds",
-  "icon": "minecraft:saddle",
-  "sortnum": 1,
+  "icon": "icys-better-horses:arabian_horse_spawn_egg",
+  "sortnum": 4,
   "pages": [
     {
-      "type": "patchouli:entity",
-      "entity": "minecraft:horse{Variant:5}",
-      "name": "Arabian",
-      "text": "Compact, hot-blooded, and built for hard country. Arabians are the breed you want for desert crossings and badlands runs.",
-      "scale": 0.6,
-      "offset": 0.25
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_arabian.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_arabian.about.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Coat",
-      "text": "$(li)Gray$()$(li)Gray + White$()$(li)White$()$(li)Chestnut$()$(li)Brown$()$(li)Black$()"
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_arabian.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_arabian.ability.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Where They Live",
-      "text": "Hot and arid biomes:$(br2)$(li)Desert$()$(li)Badlands$()$(li)Eroded Badlands$()$(li)Savanna$()$(li)Savanna Plateau$()$(li)Windswept Savanna$()"
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_arabian.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_arabian.spawns.text"
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "entity": "icys-better-horses:arabian_horse"
     }
   ]
 }

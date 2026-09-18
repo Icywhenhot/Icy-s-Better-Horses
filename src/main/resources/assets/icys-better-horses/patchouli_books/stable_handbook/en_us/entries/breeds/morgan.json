@@ -1,26 +1,27 @@
 {
-  "name": "Morgan",
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_morgan.name",
   "category": "icys-better-horses:breeds",
-  "icon": "minecraft:saddle",
-  "sortnum": 12,
+  "icon": "icys-better-horses:morgan_horse_spawn_egg",
+  "sortnum": 21,
   "pages": [
     {
-      "type": "patchouli:entity",
-      "entity": "minecraft:horse{Variant:3}",
-      "name": "Morgan",
-      "text": "An American foundation breed \u2014 compact, hardworking, and famously versatile. The horse you can ride to town in the morning and plow a field with in the afternoon.",
-      "scale": 0.6,
-      "offset": 0.25
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_morgan.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_morgan.about.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Coat",
-      "text": "$(li)Brown$()$(li)Chestnut$()$(li)Black$()$(li)Dark Brown$()$(li)Brown + White$()"
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_morgan.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_morgan.ability.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Where They Live",
-      "text": "Settled grasslands and woodland:$(br2)$(li)Plains$()$(li)Sunflower Plains$()$(li)Forest$()$(li)Birch Forest$()$(li)Meadow$()"
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_morgan.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_morgan.spawns.text"
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "entity": "icys-better-horses:morgan_horse"
     }
   ]
 }

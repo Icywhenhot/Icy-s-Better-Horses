@@ -1,26 +1,27 @@
 {
-  "name": "Shire",
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_shire.name",
   "category": "icys-better-horses:breeds",
-  "icon": "minecraft:saddle",
-  "sortnum": 7,
+  "icon": "icys-better-horses:shire_horse_spawn_egg",
+  "sortnum": 13,
   "pages": [
     {
-      "type": "patchouli:entity",
-      "entity": "minecraft:horse{Variant:516}",
-      "name": "Shire",
-      "text": "England's largest draft horse \u2014 taller than a Clydesdale and just as patient. Black or brown with bold white field markings is the classic look.",
-      "scale": 0.6,
-      "offset": 0.25
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_shire.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_shire.about.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Coat",
-      "text": "Always with $(thing)Field$() markings:$(br2)$(li)Black + White Field$()$(li)Brown + White Field$()$(li)Gray + White Field$()$(li)Dark Brown + White Field$()"
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_shire.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_shire.ability.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Where They Live",
-      "text": "Old-world forests:$(br2)$(li)Forest$()$(li)Birch Forest$()$(li)Old Growth Birch Forest$()$(li)Windswept Forest$()$(li)Dark Forest$()"
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_shire.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_shire.spawns.text"
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "entity": "icys-better-horses:shire_horse"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
-  "name": "Bloodlines",
-  "description": "Every horse has a gender, a breed, and a coat — and they all get passed down. Learn the science of stable husbandry.",
+  "name": "book.icys-better-horses.stable_handbook.genetics.name",
+  "description": "book.icys-better-horses.stable_handbook.genetics.description",
   "icon": "minecraft:wheat",
-  "sortnum": 2
+  "sortnum": 3
 }

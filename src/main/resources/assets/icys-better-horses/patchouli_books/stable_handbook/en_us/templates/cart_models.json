@@ -1,0 +1,17 @@
+{
+  "components": [
+    {
+      "type": "patchouli:header",
+      "text": "book.icys-better-horses.carts.title",
+      "x": 58,
+      "y": 0,
+      "centered": true
+    },
+    {
+      "type": "patchouli:custom",
+      "class": "icy.betterhorses.net.client.book.BhCartModelsComponent",
+      "x": 6,
+      "y": 14
+    }
+  ]
+}

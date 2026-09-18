@@ -1,26 +1,27 @@
 {
-  "name": "Quarter Horse",
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_quarter.name",
   "category": "icys-better-horses:breeds",
-  "icon": "minecraft:saddle",
-  "sortnum": 2,
+  "icon": "icys-better-horses:quarter_horse_spawn_egg",
+  "sortnum": 3,
   "pages": [
     {
-      "type": "patchouli:entity",
-      "entity": "minecraft:horse{Variant:2}",
-      "name": "Quarter Horse",
-      "text": "Stocky, broad-chested, and famously fast over a short distance. The all-purpose ranch horse \u2014 a reliable everyday mount.",
-      "scale": 0.6,
-      "offset": 0.25
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_quarter.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_quarter.about.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Coat",
-      "text": "$(li)Chestnut$()$(li)Chestnut + White$()$(li)Brown$()$(li)Brown + White$()$(li)Black + White$()$(li)Creamy + White$()"
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_quarter.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_quarter.ability.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Where They Live",
-      "text": "Wide North-American-style grasslands:$(br2)$(li)Plains$()$(li)Sunflower Plains$()$(li)Savanna$()$(li)Savanna Plateau$()$(li)Windswept Savanna$()"
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_quarter.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_quarter.spawns.text"
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "entity": "icys-better-horses:quarter_horse"
     }
   ]
 }

@@ -1,0 +1,23 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.basics.goals.name",
+  "category": "icys-better-horses:basics",
+  "icon": "minecraft:experience_bottle",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.goals.intro.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.goals.intro.text"
+    },
+    {
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.goals.early.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.goals.early.text"
+    },
+    {
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.goals.late.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.goals.late.text"
+    }
+  ]
+}

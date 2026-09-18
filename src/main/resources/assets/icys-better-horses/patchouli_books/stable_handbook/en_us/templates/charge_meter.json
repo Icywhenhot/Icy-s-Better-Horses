@@ -1,0 +1,29 @@
+{
+  "components": [
+    {
+      "type": "patchouli:header",
+      "text": "#title",
+      "x": 58,
+      "y": 0,
+      "centered": true
+    },
+    {
+      "type": "patchouli:separator",
+      "x": 6,
+      "y": 12
+    },
+    {
+      "type": "patchouli:text",
+      "text": "#text",
+      "x": 6,
+      "y": 22,
+      "max_width": 104
+    },
+    {
+      "type": "patchouli:custom",
+      "class": "icy.betterhorses.net.client.book.BhChargeMeterComponent",
+      "x": 0,
+      "y": 124
+    }
+  ]
+}

@@ -1,26 +1,27 @@
 {
-  "name": "Belgian",
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_belgian.name",
   "category": "icys-better-horses:breeds",
-  "icon": "minecraft:saddle",
-  "sortnum": 8,
+  "icon": "icys-better-horses:belgian_horse_spawn_egg",
+  "sortnum": 12,
   "pages": [
     {
-      "type": "patchouli:entity",
-      "entity": "minecraft:horse{Variant:2}",
-      "name": "Belgian",
-      "text": "Belgium's powerful draft breed \u2014 most famous for the creamy chestnut color with a flaxen mane. The strongest horse pound-for-pound in this guide.",
-      "scale": 0.6,
-      "offset": 0.25
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_belgian.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_belgian.about.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Coat",
-      "text": "$(li)Chestnut$()$(li)Chestnut + White$()$(li)Creamy$()$(li)Creamy + White$()"
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_belgian.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_belgian.ability.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Where They Live",
-      "text": "Cool northern forests:$(br2)$(li)Taiga$()$(li)Old Growth Spruce Taiga$()$(li)Old Growth Pine Taiga$()$(li)Forest$()"
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_belgian.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_belgian.spawns.text"
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "entity": "icys-better-horses:belgian_horse"
     }
   ]
 }

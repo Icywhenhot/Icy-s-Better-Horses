@@ -1,6 +1,6 @@
 {
-  "name": "Tack Room",
-  "description": "Every craft in the mod, laid out nice and plain, with a stablemaster's note on when each piece earns its keep.",
+  "name": "book.icys-better-horses.stable_handbook.equipment.name",
+  "description": "book.icys-better-horses.stable_handbook.equipment.description",
   "icon": "icys-better-horses:upgraded_saddle",
   "sortnum": 2
 }

@@ -1,0 +1,18 @@
+{
+  "components": [
+    {
+      "type": "patchouli:header",
+      "text": "book.icys-better-horses.coats.title",
+      "x": 58,
+      "y": 0,
+      "centered": true
+    },
+    {
+      "type": "patchouli:custom",
+      "class": "icy.betterhorses.net.client.book.BhCoatsComponent",
+      "entity": "#entity",
+      "x": 6,
+      "y": 14
+    }
+  ]
+}

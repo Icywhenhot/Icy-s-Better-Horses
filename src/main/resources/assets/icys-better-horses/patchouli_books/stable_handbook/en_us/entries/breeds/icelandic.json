@@ -1,26 +1,27 @@
 {
-  "name": "Icelandic",
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_icelandic.name",
   "category": "icys-better-horses:breeds",
-  "icon": "minecraft:saddle",
-  "sortnum": 9,
+  "icon": "icys-better-horses:icelandic_horse_spawn_egg",
+  "sortnum": 17,
   "pages": [
     {
-      "type": "patchouli:entity",
-      "entity": "minecraft:horse{Variant:514}",
-      "name": "Icelandic",
-      "text": "A short, shaggy, cold-hardy pony from \u2014 yes \u2014 Iceland. Known for an unusually smooth fifth gait called the $(thing)t\u00f6lt$().",
-      "scale": 0.6,
-      "offset": 0.25
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_icelandic.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_icelandic.about.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Coat",
-      "text": "$(li)Chestnut + White Field$()$(li)Brown + White Field$()$(li)Black + White$()$(li)Gray + White Field$()$(li)Creamy + White Field$()$(li)Dark Brown + White$()"
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_icelandic.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_icelandic.ability.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Where They Live",
-      "text": "Snow and ice biomes:$(br2)$(li)Snowy Plains$()$(li)Snowy Taiga$()$(li)Ice Spikes$()$(li)Frozen Peaks$()$(li)Jagged Peaks$()$(li)Snowy Slopes$()$(li)Grove$()"
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_icelandic.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_icelandic.spawns.text"
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "entity": "icys-better-horses:icelandic_horse"
     }
   ]
 }

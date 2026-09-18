@@ -1,22 +1,28 @@
 {
-  "name": "Trail Tricks",
+  "name": "book.icys-better-horses.stable_handbook.travel.riding_improvements.name",
   "category": "icys-better-horses:travel",
   "icon": "minecraft:saddle",
   "sortnum": 0,
   "pages": [
     {
-      "type": "patchouli:text",
-      "text": "Better Horses smooths out the rough edges of mounted travel.$(br2)$(li)Two players can ride the same horse for co-op trips.$(li)The first rider keeps the reins, $(li)The second rider gets a steady back seat."
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.travel.riding_improvements.multiride.title",
+      "text": "book.icys-better-horses.stable_handbook.travel.riding_improvements.multiride.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Let the Horse Cruise",
-      "text": "Double tap $(item)W$() while riding to enable auto-ride. Once it kicks in, the horse keeps moving forward and you just handle the steering.$(br2)Tap a movement key again when you want the full reins back in your hands."
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.travel.riding_improvements.cruise.title",
+      "text": "book.icys-better-horses.stable_handbook.travel.riding_improvements.cruise.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Mud, Water, and Leaves",
-      "text": "Horses no longer behave like they are made of stone in bad terrain.$(br2)$(li)They float instead of sinking in water.$(li)They move faster while crossing water.$(li)Leaf blocks lose collision while you are riding, so forests feel more like a path and less like an argument."
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.travel.riding_improvements.terrain.title",
+      "text": "book.icys-better-horses.stable_handbook.travel.riding_improvements.terrain.text"
+    },
+    {
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.travel.riding_improvements.rear.title",
+      "text": "book.icys-better-horses.stable_handbook.travel.riding_improvements.rear.text"
     }
   ]
 }

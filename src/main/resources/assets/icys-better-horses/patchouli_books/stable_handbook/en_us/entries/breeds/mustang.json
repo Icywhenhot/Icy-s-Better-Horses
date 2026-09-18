@@ -1,26 +1,27 @@
 {
-  "name": "Mustang",
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_mustang.name",
   "category": "icys-better-horses:breeds",
-  "icon": "minecraft:saddle",
-  "sortnum": 10,
+  "icon": "icys-better-horses:mustang_horse_spawn_egg",
+  "sortnum": 8,
   "pages": [
     {
-      "type": "patchouli:entity",
-      "entity": "minecraft:horse{Variant:6}",
-      "name": "Mustang",
-      "text": "Free-roaming North American horse \u2014 the iconic feral breed of the western frontier. Tough, weatherproof, and never quite the same coat twice.",
-      "scale": 0.6,
-      "offset": 0.25
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_mustang.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_mustang.about.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Coat",
-      "text": "$(li)Dark Brown$()$(li)Brown$()$(li)Chestnut$()$(li)Black$()$(li)Dark Brown + White$()$(li)Chestnut + White Field$()"
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_mustang.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_mustang.ability.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Where They Live",
-      "text": "Open frontier country:$(br2)$(li)Plains$()$(li)Savanna$()$(li)Windswept Hills$()$(li)Badlands$()$(li)Wooded Badlands$()$(li)Sparse Jungle$()"
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_mustang.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_mustang.spawns.text"
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "entity": "icys-better-horses:mustang_horse"
     }
   ]
 }

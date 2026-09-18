@@ -1,0 +1,25 @@
+{
+  "components": [
+    {
+      "type": "patchouli:header",
+      "text": "#title",
+      "x": 58,
+      "y": 0,
+      "centered": true
+    },
+    {
+      "type": "patchouli:item",
+      "item": "#item",
+      "x": 50,
+      "y": 16,
+      "framed": true
+    },
+    {
+      "type": "patchouli:text",
+      "text": "#text",
+      "x": 6,
+      "y": 44,
+      "max_width": 104
+    }
+  ]
+}

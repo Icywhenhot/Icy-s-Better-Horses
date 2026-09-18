@@ -1,0 +1,11 @@
+{
+  "components": [
+    {
+      "type": "patchouli:text",
+      "text": "#text",
+      "x": 6,
+      "y": 2,
+      "max_width": 104
+    }
+  ]
+}

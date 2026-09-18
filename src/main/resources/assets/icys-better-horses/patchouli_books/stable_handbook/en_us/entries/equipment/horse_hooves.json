@@ -1,34 +1,33 @@
 {
-  "name": "Horse Hooves",
+  "name": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.name",
   "category": "icys-better-horses:equipment",
   "icon": "icys-better-horses:horse_hooves_gear",
   "sortnum": 3,
-  "extra_recipe_mappings": {
-    "icys-better-horses:horse_hooves_gear": 0
-  },
   "pages": [
     {
       "type": "patchouli:crafting",
       "recipe": "icys-better-horses:horse_hooves_gear",
-      "title": "Shoe the Horse",
-      "text": "A few copper ingots and a leather strap are enough to give your mount a steadier step in nasty country."
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.recipe.title1"
     },
     {
-      "type": "patchouli:spotlight",
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.recipe.text"
+    },
+    {
+      "type": "icys-better-horses:padded_spotlight",
       "item": "icys-better-horses:horse_hooves_gear",
-      "title": "Sure-Footed Travel",
-      "link_recipe": true,
-      "text": "Horse Hooves let a mount walk on powdered snow instead of plunging through it. They also soften fall damage, which makes them good everyday tack for mountain trails and cold biomes."
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.info.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.info.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Frost Walker Enchant",
-      "text": "Horse Hooves can be enchanted with $(item)Frost Walker$() at the $(thing)Anvil$() from an enchanted book.$(br2)With Frost Walker shoes on, a horse running across water leaves a trail of $(thing)frosted ice$() behind it — the same effect a player gets with frost-walker boots, but tuned for horse-scale movement."
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.frost_walker.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.frost_walker.text"
     },
     {
-      "type": "patchouli:text",
-      "title": "Built for Speed",
-      "text": "The ice trail is optimized for high movement: when a bonded horse hits $(thing)15+ blocks per second$(), the freeze radius keeps pace, so you can sprint across lakes and oceans without leaving gaps.$(br2)Lava is still lava. Frost Walker won't save you there."
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.speed.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.speed.text"
     }
   ]
 }
