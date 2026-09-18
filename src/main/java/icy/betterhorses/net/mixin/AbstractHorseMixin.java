@@ -1,6 +1,7 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhHorseSteering;
 import icy.betterhorses.net.BhGears;
 import icy.betterhorses.net.BhHorseStorage;
 import icy.betterhorses.net.BhSurge;
@@ -17,7 +18,10 @@ import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.feature.breed.BreedAbility;
 import icy.betterhorses.net.ModAttachments;
 import icy.betterhorses.net.ModItems;
+import icy.betterhorses.net.BhVanillaHorseSwap;
+import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.feature.BreedAbilities;
+import icy.betterhorses.net.feature.CartRig;
 import icy.betterhorses.net.feature.FrostHooves;
 import icy.betterhorses.net.feature.HorseCombat;
 import icy.betterhorses.net.feature.HorseFeature;
@@ -128,6 +132,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         }
     };
     @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(27);
+    @Unique private CartRig bh_cartRig;
     @Unique private HorseCombat bh_combat;
     @Unique private BreedAbilities bh_abilities;
     @Unique private HorseFeature[] bh_features;
@@ -147,6 +152,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique
     private HorseFeature[] bh_features() {
         if (this.bh_features == null) {
+            this.bh_cartRig = new CartRig();
             this.bh_combat = new HorseCombat();
             this.bh_abilities = new BreedAbilities();
             this.bh_features = new HorseFeature[]{
@@ -156,6 +162,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
                     new Stabilizer(),
                     new SwimBoost(),
                     new FrostHooves(),
+                    this.bh_cartRig,
                     this.bh_combat,
                     this.bh_abilities,
             };
@@ -175,9 +182,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private static final double BH_STABILIZER_MAX_DESCENT_SPEED = -0.125D;
     @Unique private static final double BH_STABILIZER_SMOOTHING = 0.35D;
     @Unique private static final double BH_STABILIZER_HALF_OPEN_SMOOTHING = 0.2D;
-    @Unique private static final double BH_FRONT_PASSENGER_Z_OFFSET = 0.35D;
-    @Unique private static final double BH_REAR_PASSENGER_Z_OFFSET = -0.35D;
-    @Unique private static final float BH_FREE_CAMERA_ANGLE_THRESHOLD = 90.0F;
     @Unique private static final float BH_WATER_SPEED_MULTIPLIER = 1.5F;
     @Unique private static final double BH_WATER_RISE_SPEED = 0.006D;
     @Unique private static final double BH_WATER_SURFACE_SPEED = 0.001D;
@@ -630,6 +634,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_tickFeatures(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
+        if (BhVanillaHorseSwap.trySwap(self)) {
+            return;
+        }
         for (HorseFeature feature : this.bh_features()) {
             feature.tick(self, this);
         }
@@ -793,7 +800,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (!self.isVehicle()
                 || self.isBaby()
                 || self.hasPassenger(player)
-                || self.getPassengers().size() >= 2) {
+                || self.getPassengers().size() >= BhHorseSteering.bh_seatCount(this)) {
             return;
         }
 
@@ -932,71 +939,34 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             net.minecraft.world.entity.Entity.MoveFunction moveFunction,
             Entity passenger, double x, double y, double z) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (BhConfig.multiRidingEnabled() && self.getPassengers().size() > 1) {
-            int passengerIndex = self.getPassengers().indexOf(passenger);
-            if (passengerIndex >= 0) {
-                double zOffset = passengerIndex == 0 ? BH_FRONT_PASSENGER_Z_OFFSET : BH_REAR_PASSENGER_Z_OFFSET;
-                Vec3 offset = new Vec3(0.0D, 0.0D, zOffset).yRot(-self.getYRot() * ((float) Math.PI / 180.0F));
-                x += offset.x;
-                z += offset.z;
-            }
+        if (this.bh_hasCartGear()) {
+            Vec3 bench = HorseCartEntity.benchSeatOffset(
+                    self, BhHorseSteering.benchSeatIndex(self, passenger), self.yBodyRot);
+            moveFunction.accept(passenger, self.getX() + bench.x, self.getY() + bench.y, self.getZ() + bench.z);
+            return;
+        }
+        Vec3 offset = BhHorseSteering.multiRiderOffset(self, passenger);
+        if (offset != null) {
+            x += offset.x;
+            z += offset.z;
         }
         moveFunction.accept(passenger, x, y, z);
     }
 
     @Inject(method = "getRiddenRotation", at = @At("HEAD"), cancellable = true)
     private void bh_allowMountedFreeCamera(LivingEntity rider, CallbackInfoReturnable<Vec2> cir) {
-        if (!(rider instanceof net.minecraft.world.entity.player.Player player)
-                || player.xxa != 0.0F
-                || player.zza != 0.0F) {
+        if (!(rider instanceof net.minecraft.world.entity.player.Player player)) {
             return;
         }
-
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        float playerYRot = Mth.wrapDegrees(player.getYRot());
-        float rotationDifference = Mth.wrapDegrees(playerYRot - self.getYRot());
-
-        if (Math.abs(rotationDifference) > BH_FREE_CAMERA_ANGLE_THRESHOLD) {
-            float horseYRot = Mth.wrapDegrees(
-                    playerYRot - Math.signum(rotationDifference) * BH_FREE_CAMERA_ANGLE_THRESHOLD);
-            cir.setReturnValue(new Vec2(player.getXRot() * 0.5F, horseYRot));
-            return;
+        Vec2 rotation = BhHorseSteering.riddenRotation((AbstractHorse) (Object) this, this, player);
+        if (rotation != null) {
+            cir.setReturnValue(rotation);
         }
-
-        cir.setReturnValue(new Vec2(player.getXRot() * 0.5F, self.getYRot()));
     }
 
     @Override
     protected boolean canAddPassenger(Entity passenger) {
-        java.util.List<Entity> passengers = this.getPassengers();
-        boolean multiRidingEnabled = BhConfig.multiRidingEnabled();
-        boolean horseExclusivityEnabled = BhConfig.horseExclusivityEnabled();
-        if (passengers.size() >= (multiRidingEnabled ? 2 : 1)) {
-            return false;
-        }
-
-        UUID owner = this.bh_getOwner();
-        if (owner == null || !horseExclusivityEnabled) {
-            if (passengers.isEmpty()) {
-                return true;
-            }
-            return multiRidingEnabled && passenger instanceof net.minecraft.world.entity.player.Player;
-        }
-
-        if (!(passenger instanceof net.minecraft.world.entity.player.Player player)) {
-            return false;
-        }
-        boolean isOwner = owner.equals(player.getUUID());
-        if (passengers.isEmpty()) {
-            return isOwner;
-        }
-        if (!multiRidingEnabled) {
-            return false;
-        }
-        if (isOwner) {
-            return true;
-        }
-        return passengers.get(0).getUUID().equals(owner);
+        return BhHorseSteering.canAddPassenger((AbstractHorse) (Object) this, this, passenger);
     }
 
     @Unique
@@ -1081,6 +1051,13 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
         this.bh_syncState().gearFlags = flags;
         this.bh_syncHorseData();
+        boolean hadCart = this.entityData.get(BH_CART);
+        boolean hasCart = this.bh_gearContainer.getItem(GearSlot.STABILIZER.ordinal())
+                .is(ModItems.HORSE_CART.get());
+        bh_push(BH_CART, hasCart);
+        if (hasCart && !hadCart) {
+            bh_setLargeCart(this.bh_mayUseLargeCart());
+        }
         bh_push(BH_ENDER_CHEST, this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal()).is(Items.ENDER_CHEST));
         bh_push(BH_UPGRADED_SADDLE, this.inventory != null
                 && this.inventory.getItem(0).is(ModItems.UPGRADED_SADDLE.get()));
@@ -1263,6 +1240,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public void bh_setFreeLook(boolean freeLook) {
         bh_push(BH_FREE_LOOK, freeLook);
+    }
+
+    @Override
+    public @Nullable HorseCartEntity bh_getCartEntity() {
+        bh_features();
+        return this.bh_cartRig.cart();
     }
 
     @Override

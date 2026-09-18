@@ -7,6 +7,8 @@ import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import icy.betterhorses.net.entity.CartSize;
+import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.inventory.GearSlot;
 
 import java.util.UUID;
@@ -129,6 +131,12 @@ public interface IHorseData {
     default boolean bh_hasStabilizerItem() {
         return this instanceof Horse
                 && bh_hasGear(GearSlot.STABILIZER) && !bh_hasCartGear();
+    }
+
+    @Nullable HorseCartEntity bh_getCartEntity();
+
+    default boolean bh_mayUseLargeCart() {
+        return CartSize.forArchetype(bh_getBreed().archetype()).isLarge();
     }
 
     boolean bh_hasLargeCart();

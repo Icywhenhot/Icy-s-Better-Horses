@@ -2,7 +2,12 @@ package icy.betterhorses.net;
 
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.Horse;
+import icy.betterhorses.net.entity.BhBreedEntity;
+
+import java.util.List;
 
 public final class BhHorseTraits {
 
@@ -25,6 +30,24 @@ public final class BhHorseTraits {
             data.bh_setBondRemainder(halves % 2);
         }
         data.bh_setBond(data.bh_getBond() + gain);
+    }
+
+    public static HorseBreed pickBreed(AbstractHorse horse, RandomSource random) {
+        if (horse instanceof BhBreedEntity breedEntity) {
+            return breedEntity.bhFixedBreed();
+        }
+        HorseBreed species = HorseBreed.speciesFor(horse);
+        if (species != null) {
+            return species;
+        }
+        if (horse instanceof Horse plainHorse) {
+            List<HorseBreed> matches =
+                    HorseBreed.breedsMatchingCoat(plainHorse.getVariant(), plainHorse.getMarkings());
+            if (!matches.isEmpty()) {
+                return matches.get(random.nextInt(matches.size()));
+            }
+        }
+        return HorseBreed.MUSTANG;
     }
 
     public static void applyBondAttributes(AbstractHorse horse, int bond) {

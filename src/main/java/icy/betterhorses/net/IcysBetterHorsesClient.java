@@ -2,6 +2,8 @@ package icy.betterhorses.net;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import icy.betterhorses.net.client.RadialMenuScreen;
+import icy.betterhorses.net.network.BreedDataPayload;
+import icy.betterhorses.net.network.ConfigSyncPayload;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -20,6 +22,8 @@ import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = IcysBetterHorses.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class IcysBetterHorsesClient {
+
+    private static boolean tookServerBreeds = false;
 
     private static final String KEY_CATEGORY = "key.categories.icys-better-horses";
     private static final double RADIAL_REACH = 12.0D;
@@ -70,5 +74,25 @@ public final class IcysBetterHorsesClient {
                 entity -> entity instanceof AbstractHorse && entity.isPickable(),
                 RADIAL_REACH * RADIAL_REACH);
         return hit != null && hit.getEntity() instanceof AbstractHorse horse ? horse : null;
+    }
+
+    public static void receiveConfig(ConfigSyncPayload payload) {
+        if (Minecraft.getInstance().hasSingleplayerServer()) return;
+        BhConfig.adoptServer(payload.disabledFeatures(), payload.classAbilities(),
+                payload.breedAbilities(), payload.disabledAbilities(), payload.tuning());
+    }
+
+    public static void receiveBreeds(BreedDataPayload payload) {
+        if (Minecraft.getInstance().hasSingleplayerServer()) return;
+        BhBreedData.replaceAll(payload.toMap());
+        tookServerBreeds = true;
+    }
+
+    public static void onDisconnect() {
+        BhConfig.dropServer();
+        if (tookServerBreeds) {
+            BhBreedData.resetToBuiltIn();
+            tookServerBreeds = false;
+        }
     }
 }
