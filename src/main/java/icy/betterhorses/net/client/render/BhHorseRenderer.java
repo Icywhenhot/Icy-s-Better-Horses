@@ -51,9 +51,10 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
             return stack.isEmpty() ? null : textures.armor(stack);
         }, entity -> {
             ItemStack stack = barding(entity);
-            return stack.getItem() instanceof DyeableLeatherItem dyed
-                    ? 0xFF000000 | dyed.getColor(stack)
-                    : -1;
+            if (!(stack.getItem() instanceof DyeableLeatherItem dyed)) {
+                return -1;
+            }
+            return 0xFF000000 | (dyed.hasCustomColor(stack) ? dyed.getColor(stack) : UNDYED_BARDING);
         }));
         addLayer(new BhTackLayer<>(this, models.apply(chest), models.apply(chestBaby), entity -> {
             IHorseData data = IHorseData.of(entity);
@@ -76,6 +77,8 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
     public ResourceLocation getTextureLocation(T entity) {
         return entity.bhCoats().texture(entity.bhCoat(), entity.isBaby());
     }
+
+    private static final int UNDYED_BARDING = 0xBB744F;
 
     private static ItemStack barding(AbstractHorse horse) {
         return ((AbstractHorseAccessor) horse).bh_inventory().getItem(AbstractHorse.INV_SLOT_ARMOR);

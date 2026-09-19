@@ -1,6 +1,7 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.entity.CartSize;
+import icy.betterhorses.net.feature.breed.Ironclad;
 import icy.betterhorses.net.network.BreedDataPayload;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.entity.HorseCartEntity;
@@ -32,7 +33,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraftforge.event.AddReloadListenerEvent;
+import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.OnDatapackSyncEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
@@ -65,6 +70,7 @@ public final class IcysBetterHorses {
     private static final float COMMAND_ANSWER_CHANCE = 0.35F;
     private static final int DISENGAGE_TICKS = 60;
     private static final double CART_SIZE_REACH = 6.0D;
+    private static final double DEFLECT_BOUNCE = 0.5D;
 
     private final List<AbstractHorse> staleHorses = new ArrayList<>();
     private final List<AbstractHorse> pendingReleases = new ArrayList<>();
@@ -188,6 +194,31 @@ public final class IcysBetterHorses {
         if (event.getEntity() instanceof AbstractHorse horse) {
             HorseTracker.unregister(horse);
         }
+    }
+
+    @SubscribeEvent
+    public void onProjectileImpact(ProjectileImpactEvent event) {
+        if (!(event.getRayTraceResult() instanceof EntityHitResult hit)) {
+            return;
+        }
+        Entity struck = hit.getEntity();
+        AbstractHorse mount = null;
+        if (struck instanceof AbstractHorse horse) {
+            mount = horse;
+        } else if (struck instanceof Player && struck.getVehicle() instanceof AbstractHorse ridden) {
+            mount = ridden;
+        }
+        if (mount == null || !Ironclad.deflectsProjectiles(IHorseData.of(mount))) {
+            return;
+        }
+
+        Projectile projectile = event.getProjectile();
+        projectile.setDeltaMovement(projectile.getDeltaMovement().scale(-DEFLECT_BOUNCE));
+        projectile.hurtMarked = true;
+        if (!mount.level().isClientSide()) {
+            BhSurge.pulse(IHorseData.of(mount), 0, 1);
+        }
+        event.setCanceled(true);
     }
 
     @SubscribeEvent

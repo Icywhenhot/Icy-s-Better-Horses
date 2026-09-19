@@ -1,9 +1,13 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.HorseCommand;
+import icy.betterhorses.net.entity.HorseCartEntity;
+import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -20,6 +24,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
+
+    @Inject(method = "isInvulnerableTo", at = @At("HEAD"), cancellable = true)
+    private void bh_shrugOffSlowBlocks(DamageSource source, CallbackInfoReturnable<Boolean> cir) {
+        if ((Entity) (Object) this instanceof LivingEntity living
+                && SlowBlockImmunity.shrugsOffSlowBlockDamage(living, source)) {
+            cir.setReturnValue(true);
+        }
+    }
+
+    @Inject(method = "canCollideWith", at = @At("HEAD"), cancellable = true)
+    private void bh_ignoreOwnCart(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+        if (entity instanceof HorseCartEntity cart && !cart.bh_collidesWith((Entity) (Object) this)) {
+            cir.setReturnValue(false);
+        }
+    }
 
     @Inject(method = "setRemoved", at = @At("HEAD"))
     private void bh_removeEffects(Entity.RemovalReason reason, CallbackInfo ci) {

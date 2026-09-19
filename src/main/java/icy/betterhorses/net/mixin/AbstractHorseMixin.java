@@ -20,6 +20,7 @@ import icy.betterhorses.net.feature.breed.BreedAbility;
 import icy.betterhorses.net.ModAttachments;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.BhVanillaHorseSwap;
+import icy.betterhorses.net.entity.BhBreedHorse;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.feature.BreedAbilities;
 import icy.betterhorses.net.feature.CartRig;
@@ -955,6 +956,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             BhRiderSeat.publish(self.getId(), new Vec3(0.0D, lift, 0.0D));
         }
         y += lift;
+
+        if (self instanceof BhBreedHorse) {
+            y -= passenger.getMyRidingOffset();
+        }
 
         Vec3 offset = BhHorseSteering.multiRiderOffset(self, passenger);
         if (offset != null) {

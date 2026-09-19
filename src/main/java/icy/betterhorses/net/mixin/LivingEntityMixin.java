@@ -1,8 +1,10 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
+import icy.betterhorses.net.feature.breed.HardyNorthern;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.SimpleContainer;
@@ -21,6 +23,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity {
@@ -102,5 +105,21 @@ public abstract class LivingEntityMixin extends Entity {
         self.addEffect(new MobEffectInstance(MobEffects.HEAL, 1, 0));
         self.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, BH_MEDKIT_EFFECT_DURATION, 0));
         self.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, BH_MEDKIT_EFFECT_DURATION, 0));
+    }
+
+    @Inject(method = "canBeAffected", at = @At("HEAD"), cancellable = true)
+    private void bh_refuseBadEffects(MobEffectInstance effect, CallbackInfoReturnable<Boolean> cir) {
+        if (effect.getEffect().isBeneficial()) {
+            return;
+        }
+        LivingEntity self = (LivingEntity) (Object) this;
+        AbstractHorse warden = HardyNorthern.warden(self);
+        if (warden == null) {
+            return;
+        }
+        if (!warden.level().isClientSide()) {
+            BhSurge.pulse(IHorseData.of(warden), 0, 0);
+        }
+        cir.setReturnValue(false);
     }
 }

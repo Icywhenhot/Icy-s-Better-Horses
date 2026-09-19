@@ -1,10 +1,13 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhCriteria;
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhHorseSpawnRules;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.HorseGender;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -20,7 +23,9 @@ import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -44,7 +49,8 @@ public abstract class AnimalMixin {
     @Inject(method = "canMate", at = @At("HEAD"), cancellable = true)
     private void bh_blockSameGenderBreeding(Animal other, CallbackInfoReturnable<Boolean> cir) {
         Animal self = (Animal) (Object) this;
-        if (!(self instanceof AbstractHorse selfHorse) || !(other instanceof AbstractHorse otherHorse)) {
+        if (!BhConfig.genderBreedingEnabled()
+                || !(self instanceof AbstractHorse selfHorse) || !(other instanceof AbstractHorse otherHorse)) {
             return;
         }
         HorseGender selfGender = ((IHorseData) selfHorse).bh_getGender();
@@ -54,9 +60,20 @@ public abstract class AnimalMixin {
         }
     }
 
+    @Unique private @Nullable ServerPlayer bh_breeder = null;
+
+    @Inject(method = "finalizeSpawnChildFromBreeding", at = @At("HEAD"))
+    private void bh_captureBreeder(ServerLevel level, Animal partner, AgeableMob child, CallbackInfo ci) {
+        Animal self = (Animal) (Object) this;
+        ServerPlayer breeder = self.getLoveCause();
+        this.bh_breeder = breeder != null ? breeder : partner.getLoveCause();
+    }
+
     @Inject(method = "finalizeSpawnChildFromBreeding", at = @At("TAIL"))
     private void bh_finalizeHorseChild(ServerLevel level, Animal partner, AgeableMob child, CallbackInfo ci) {
         Animal self = (Animal) (Object) this;
+        ServerPlayer breeder = this.bh_breeder;
+        this.bh_breeder = null;
         if (!(self instanceof AbstractHorse selfHorse)
                 || !(partner instanceof AbstractHorse partnerHorse)
                 || !(child instanceof AbstractHorse childHorse)) {
