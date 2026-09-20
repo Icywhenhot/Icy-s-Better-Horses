@@ -3,34 +3,30 @@ package icy.betterhorses.net.mixin;
 import icy.betterhorses.net.BhAttributes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 /**
- * Applies swim speed by scaling horizontal movement after {@code travel()} runs.
- * Simpler than hooking mid-method like Forge, and the same for steady swimming.
+ * Applies swim speed to the water acceleration in {@code travel()}, where Forge applied it.
+ * Scaling the final velocity instead compounds every tick and the horse speeds up without limit.
  */
 @Mixin(LivingEntity.class)
 public abstract class LivingEntitySwimSpeedMixin {
 
-    @Inject(method = "travel", at = @At("RETURN"))
-    private void bh_applySwimSpeed(Vec3 input, CallbackInfo ci) {
+    @ModifyArg(
+            method = "travel",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/entity/LivingEntity;moveRelative(FLnet/minecraft/world/phys/Vec3;)V",
+                    ordinal = 0),
+            index = 0)
+    private float bh_scaleSwimAccel(float amount) {
         LivingEntity self = (LivingEntity) (Object) this;
-        if (!self.isInWater() || self.isFallFlying()) {
-            return;
-        }
         AttributeInstance instance = self.getAttribute(BhAttributes.SWIM_SPEED);
         if (instance == null) {
-            return;
+            return amount;
         }
-        double factor = instance.getValue();
-        if (factor == 1.0D) {
-            return;
-        }
-        Vec3 motion = self.getDeltaMovement();
-        self.setDeltaMovement(motion.x * factor, motion.y, motion.z * factor);
+        return (float) (amount * instance.getValue());
     }
 }
