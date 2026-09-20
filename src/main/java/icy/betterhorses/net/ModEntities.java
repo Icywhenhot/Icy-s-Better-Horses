@@ -149,21 +149,31 @@ public final class ModEntities {
     public static void register() {}
 
     public static void registerAttributes() {
-        FabricDefaultAttributeRegistry.register(ICELANDIC_HORSE, IcelandicHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(FRIESIAN_HORSE, FriesianHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(HAFLINGER_HORSE, HaflingerHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(PERCHERON_HORSE, PercheronHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(SHIRE_HORSE, ShireHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(BELGIAN_HORSE, BelgianHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(CLYDESDALE_HORSE, ClydesdaleHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(APPALOOSA_HORSE, AppaloosaHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(THOROUGHBRED_HORSE, ThoroughbredHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(AMERICAN_PAINT_HORSE, AmericanPaintHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(ANDALUSIAN_HORSE, AndalusianHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(MUSTANG_HORSE, MustangHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(QUARTER_HORSE, QuarterHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(ARABIAN_HORSE, ArabianHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(MORGAN_HORSE, MorganHorse.createAttributes());
+        registerBreed(ICELANDIC_HORSE, IcelandicHorse.createAttributes());
+        registerBreed(FRIESIAN_HORSE, FriesianHorse.createAttributes());
+        registerBreed(HAFLINGER_HORSE, HaflingerHorse.createAttributes());
+        registerBreed(PERCHERON_HORSE, PercheronHorse.createAttributes());
+        registerBreed(SHIRE_HORSE, ShireHorse.createAttributes());
+        registerBreed(BELGIAN_HORSE, BelgianHorse.createAttributes());
+        registerBreed(CLYDESDALE_HORSE, ClydesdaleHorse.createAttributes());
+        registerBreed(APPALOOSA_HORSE, AppaloosaHorse.createAttributes());
+        registerBreed(THOROUGHBRED_HORSE, ThoroughbredHorse.createAttributes());
+        registerBreed(AMERICAN_PAINT_HORSE, AmericanPaintHorse.createAttributes());
+        registerBreed(ANDALUSIAN_HORSE, AndalusianHorse.createAttributes());
+        registerBreed(MUSTANG_HORSE, MustangHorse.createAttributes());
+        registerBreed(QUARTER_HORSE, QuarterHorse.createAttributes());
+        registerBreed(ARABIAN_HORSE, ArabianHorse.createAttributes());
+        registerBreed(MORGAN_HORSE, MorganHorse.createAttributes());
+    }
+
+    // Step height and swim speed already come from AbstractHorseMixin.
+    // Listed again here so each breed's attributes are in one place.
+    private static void registerBreed(
+            EntityType<? extends net.minecraft.world.entity.LivingEntity> type,
+            net.minecraft.world.entity.ai.attributes.AttributeSupplier.Builder builder) {
+        FabricDefaultAttributeRegistry.register(type, builder
+                .add(BhAttributes.STEP_HEIGHT_ADDITION)
+                .add(BhAttributes.SWIM_SPEED));
     }
 
     private static <T extends net.minecraft.world.entity.Entity> EntityType<T> register(

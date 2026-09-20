@@ -1,10 +1,10 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.BhAttributes;
 import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
@@ -22,23 +22,15 @@ public final class EasyKeeper implements BreedAbility {
             return;
         }
         applied = want;
-        // TODO: step height bonus disabled until the attribute is ported.
-        Attribute stepHeight = null;
-        if (stepHeight != null) {
-            BhHorseAttributes.apply(horse, stepHeight,
-                    BhHorseAttributes.Source.ABILITY, KEY,
-                    want ? STEP_BONUS : 0.0D, AttributeModifier.Operation.ADDITION);
-        }
+        BhHorseAttributes.apply(horse, BhAttributes.STEP_HEIGHT_ADDITION,
+                BhHorseAttributes.Source.ABILITY, KEY,
+                want ? STEP_BONUS : 0.0D, AttributeModifier.Operation.ADDITION);
     }
 
     @Override
     public void onDetach(AbstractHorse horse, IHorseData data) {
         applied = false;
-        // TODO: step height bonus disabled until the attribute is ported.
-        Attribute stepHeight = null;
-        if (stepHeight != null) {
-            BhHorseAttributes.clear(horse, stepHeight,
-                    BhHorseAttributes.Source.ABILITY, KEY);
-        }
+        BhHorseAttributes.clear(horse, BhAttributes.STEP_HEIGHT_ADDITION,
+                BhHorseAttributes.Source.ABILITY, KEY);
     }
 }

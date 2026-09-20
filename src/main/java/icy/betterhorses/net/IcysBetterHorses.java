@@ -61,6 +61,7 @@ public final class IcysBetterHorses implements ModInitializer {
         ModMenus.register();
         ModSounds.register();
         ModAttachments.register();
+        BhAttributes.register();
         ModEntities.registerAttributes();
         BhCriteria.register();
         BhHorseSpawnRules.installSpawnPlacementOverride();

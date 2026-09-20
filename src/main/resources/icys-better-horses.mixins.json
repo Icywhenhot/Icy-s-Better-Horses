@@ -11,6 +11,7 @@
 		"EntityAccessor",
 		"EntityMixin",
 		"EntitySlowBlockMixin",
+		"EntityStepHeightMixin",
 		"EquineBreedingMixin",
 		"HorseAccessor",
 		"HorseCreativeTamingMixin",
