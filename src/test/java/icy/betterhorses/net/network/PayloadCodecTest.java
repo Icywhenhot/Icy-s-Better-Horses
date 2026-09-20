@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -199,8 +200,8 @@ class PayloadCodecTest {
     }
 
     // ---- HorseRosterSyncPayload(List<HorseRosterEntry> entries) ----
-    // Ordinal fields include -1, the unset value. UUIDs are non-palindromic, as above.
-
+    // Three entries so every boolean column is unique and swapped fields get caught.
+    // Ordinal fields include -1, the unset value.
     @Test
     void horseRosterSyncPayloadRoundTripsWithEntries() {
         HorseRosterEntry populated = new HorseRosterEntry(
@@ -229,7 +230,7 @@ class PayloadCodecTest {
                 0,
                 false,
                 true,
-                false,
+                true,
                 "minecraft:the_nether",
                 new BlockPos(-50, 10, 300),
                 "minecraft:donkey",
@@ -237,8 +238,25 @@ class PayloadCodecTest {
                 -1,
                 true,
                 -1);
+        HorseRosterEntry mixed = new HorseRosterEntry(
+                UUID.fromString("33333333-0000-1111-2222-101112131415"),
+                "Bucephalus",
+                "mustang",
+                2,
+                true,
+                999,
+                false,
+                true,
+                false,
+                "minecraft:the_end",
+                new BlockPos(7, 200, -77),
+                "minecraft:mule",
+                8,
+                6,
+                false,
+                12);
 
-        HorseRosterSyncPayload original = new HorseRosterSyncPayload(List.of(populated, sentinel));
+        HorseRosterSyncPayload original = new HorseRosterSyncPayload(List.of(populated, sentinel, mixed));
         FriendlyByteBuf buf = buf();
         HorseRosterSyncPayload.encode(original, buf);
         assertEquals(original, HorseRosterSyncPayload.decode(buf));
@@ -299,6 +317,29 @@ class PayloadCodecTest {
         assertEquals(0, buf.readableBytes());
     }
 
+    @Test
+    void configSyncPayloadTruncatesDisabledFeaturesOverMaxKeysCap() {
+        // encode caps the list at MAX_KEYS. Over-long strings throw rather than truncate, so no test for that.
+        List<String> tooManyFeatures = new ArrayList<>();
+        for (int i = 0; i < 300; i++) {
+            tooManyFeatures.add("feature-" + i);
+        }
+        ConfigSyncPayload original = new ConfigSyncPayload(
+                tooManyFeatures,
+                true,
+                false,
+                List.of("ability-a", "ability-b"),
+                new BhTuning(11, 22, 33, 4, 8, 0.125D));
+        FriendlyByteBuf buf = buf();
+        ConfigSyncPayload.encode(original, buf);
+        ConfigSyncPayload decoded = ConfigSyncPayload.decode(buf);
+
+        assertEquals(256, decoded.disabledFeatures().size(), "encode must cap at MAX_KEYS = 256");
+        assertEquals(tooManyFeatures.subList(0, 256), decoded.disabledFeatures());
+        assertEquals(List.of("ability-a", "ability-b"), decoded.disabledAbilities());
+        assertEquals(0, buf.readableBytes());
+    }
+
     // ---- BreedDataPayload(List<Entry> entries) ----
 
     @Test
@@ -318,6 +359,23 @@ class PayloadCodecTest {
         FriendlyByteBuf buf = buf();
         BreedDataPayload.encode(original, buf);
         assertEquals(original, BreedDataPayload.decode(buf));
+        assertEquals(0, buf.readableBytes());
+    }
+
+    @Test
+    void breedDataPayloadTruncatesEntriesOverMaxEntriesCap() {
+        // encode caps the list at MAX_ENTRIES. Over-long names throw rather than truncate.
+        List<BreedDataPayload.Entry> tooManyEntries = new ArrayList<>();
+        for (int i = 0; i < 150; i++) {
+            tooManyEntries.add(new BreedDataPayload.Entry("breed-" + i, "archetype-" + i, i, i + 1, i + 2));
+        }
+        BreedDataPayload original = new BreedDataPayload(tooManyEntries);
+        FriendlyByteBuf buf = buf();
+        BreedDataPayload.encode(original, buf);
+        BreedDataPayload decoded = BreedDataPayload.decode(buf);
+
+        assertEquals(128, decoded.entries().size(), "encode must cap at MAX_ENTRIES = 128");
+        assertEquals(tooManyEntries.subList(0, 128), decoded.entries());
         assertEquals(0, buf.readableBytes());
     }
 }
