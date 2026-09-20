@@ -5,7 +5,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.ForgeMod;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -27,7 +26,8 @@ public final class SwimBoost implements HorseFeature {
             return;
         }
 
-        @Nullable AttributeInstance swimSpeed = horse.getAttribute(ForgeMod.SWIM_SPEED.get());
+        // TODO: swim speed bonus disabled until the attribute is ported.
+        @Nullable AttributeInstance swimSpeed = null;
         if (swimSpeed != null && swimSpeed.getModifier(SWIM_SPEED_ID) == null) {
             swimSpeed.addTransientModifier(new AttributeModifier(
                     SWIM_SPEED_ID, "bh_swim_speed", SWIM_BONUS, AttributeModifier.Operation.ADDITION));
@@ -45,7 +45,8 @@ public final class SwimBoost implements HorseFeature {
             return;
         }
 
-        double depth = horse.getFluidTypeHeight(ForgeMod.WATER_TYPE.get());
+        // TODO: fluid-depth lift disabled until the attribute is ported.
+        double depth = 0.0D;
         if (depth <= WATERLINE) {
             return;
         }

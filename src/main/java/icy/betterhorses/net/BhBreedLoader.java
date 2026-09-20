@@ -7,8 +7,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
-import net.minecraftforge.event.AddReloadListenerEvent;
 
 import java.io.Reader;
 import java.util.EnumMap;
@@ -21,8 +19,9 @@ public final class BhBreedLoader {
 
     private BhBreedLoader() {}
 
-    public static void register(AddReloadListenerEvent event) {
-        event.addListener((ResourceManagerReloadListener) BhBreedLoader::load);
+    // TODO: register once server events are ported.
+    public static void register() {
+        // Not called until the reload listener is ported.
     }
 
     private static void load(ResourceManager manager) {

@@ -6,7 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -36,7 +36,7 @@ public final class BhConfig {
     private static final String KEY_GROUP_MAX = "spawn_group_max";
     private static final String KEY_SPAWN_FLOOR = "spawn_probability_floor";
 
-    private static final Path CONFIG_PATH = FMLPaths.CONFIGDIR.get()
+    private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir()
             .resolve(IcysBetterHorses.RESOURCE_NAMESPACE + ".json");
     private static final Gson GSON = new GsonBuilder()
             .disableHtmlEscaping()
