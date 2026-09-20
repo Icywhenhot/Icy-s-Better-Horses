@@ -47,6 +47,10 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
         return null;
     }
 
+    public static void remove(AbstractHorse horse) {
+        INSTANCES.remove(horse);
+    }
+
     public void syncFromHorse(AbstractHorse horse, HorseStabilizerState state, double tick) {
         this.horse = horse;
         this.tick = tick;

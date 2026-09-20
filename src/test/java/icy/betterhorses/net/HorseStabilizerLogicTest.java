@@ -81,6 +81,24 @@ class HorseStabilizerLogicTest {
     }
 
     @Test
+    void slowDescentDoesNotDeployClosedStabilizer() {
+        assertEquals(HorseStabilizerState.CLOSED, HorseStabilizerLogic.computeState(
+                true, false, false, false, false, -0.05D, 8.0F, HorseStabilizerState.CLOSED));
+    }
+
+    @Test
+    void halfOpenClosesWhenDescentStops() {
+        assertEquals(HorseStabilizerState.CLOSED, HorseStabilizerLogic.computeState(
+                true, false, false, false, false, 0.1D, 8.0F, HorseStabilizerState.HALF_OPEN));
+    }
+
+    @Test
+    void halfOpenRemainsDeployedDuringSlowDescent() {
+        assertEquals(HorseStabilizerState.HALF_OPEN, HorseStabilizerLogic.computeState(
+                true, false, false, false, false, -0.05D, 5.0F, HorseStabilizerState.HALF_OPEN));
+    }
+
+    @Test
     void soundOnlyPlaysForFullyOpenState() {
         assertFalse(HorseStabilizerLogic.shouldPlaySteam(HorseStabilizerState.CLOSED));
         assertFalse(HorseStabilizerLogic.shouldPlaySteam(HorseStabilizerState.HALF_OPEN));

@@ -1,15 +1,16 @@
 package icy.betterhorses.net.mixin;
 
-import icy.betterhorses.net.BhCriteria;
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhCriteria;
 import icy.betterhorses.net.BhHorseSpawnRules;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.HorseGender;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.entity.BhBreedHorse;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.BlockTags;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.MobSpawnType;
@@ -21,8 +22,6 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -53,8 +52,8 @@ public abstract class AnimalMixin {
                 || !(self instanceof AbstractHorse selfHorse) || !(other instanceof AbstractHorse otherHorse)) {
             return;
         }
-        HorseGender selfGender = ((IHorseData) selfHorse).bh_getGender();
-        HorseGender otherGender = ((IHorseData) otherHorse).bh_getGender();
+        HorseGender selfGender = IHorseData.of(selfHorse).bh_getGender();
+        HorseGender otherGender = IHorseData.of(otherHorse).bh_getGender();
         if (selfGender == otherGender) {
             cir.setReturnValue(false);
         }
@@ -80,16 +79,20 @@ public abstract class AnimalMixin {
             return;
         }
 
-        IHorseData selfData = (IHorseData) selfHorse;
-        IHorseData partnerData = (IHorseData) partnerHorse;
-        IHorseData childData = (IHorseData) childHorse;
+        IHorseData selfData = IHorseData.of(selfHorse);
+        IHorseData partnerData = IHorseData.of(partnerHorse);
+        IHorseData childData = IHorseData.of(childHorse);
 
         childData.bh_setGender(self.getRandom().nextBoolean() ? HorseGender.MALE : HorseGender.FEMALE);
 
-        HorseBreed selfBreed = bh_resolveBreed(selfHorse, selfData);
-        HorseBreed partnerBreed = bh_resolveBreed(partnerHorse, partnerData);
+        if (childHorse instanceof BhBreedHorse) {
+            bh_awardFoal(breeder, childData);
+            return;
+        }
 
-        if (childHorse instanceof Horse && selfBreed.isRealBreed() && partnerBreed.isRealBreed()) {
+        HorseBreed selfBreed = selfData.bh_getBreed();
+        HorseBreed partnerBreed = partnerData.bh_getBreed();
+        if (selfBreed.isRealBreed() && partnerBreed.isRealBreed()) {
             if (selfBreed == partnerBreed) {
                 childData.bh_setBreed(selfBreed);
                 childData.bh_setMixedBreed(false);
@@ -117,6 +120,15 @@ public abstract class AnimalMixin {
                 ((HorseAccessor) childHorseEntity).bh_setVariantAndMarkings(coat.color(), coat.markings());
             }
         }
+
+        bh_awardFoal(breeder, childData);
+    }
+
+    private static void bh_awardFoal(@Nullable ServerPlayer breeder, IHorseData childData) {
+        BhCriteria.fire(breeder, BhCriteria.FOAL);
+        if (childData.bh_isMixedBreed()) {
+            BhCriteria.fire(breeder, BhCriteria.MIXED_FOAL);
+        }
     }
 
     private static final double VANILLA_MAX_HEALTH = 30.0D;
@@ -129,20 +141,6 @@ public abstract class AnimalMixin {
 
     private static final double VARIANCE_DISPLAY_MIN = -0.5D;
     private static final double VARIANCE_DISPLAY_MAX = 1.0D;
-
-    private static HorseBreed bh_resolveBreed(AbstractHorse parent, IHorseData parentData) {
-        HorseBreed stored = parentData.bh_getBreed();
-        if (stored.isRealBreed() || !(parent instanceof Horse horseParent)) {
-            return stored;
-        }
-        java.util.List<HorseBreed> matches = HorseBreed.breedsMatchingCoat(
-                horseParent.getVariant(), horseParent.getMarkings());
-        HorseBreed picked = matches.isEmpty()
-                ? HorseBreed.MUSTANG
-                : matches.get(parent.getRandom().nextInt(matches.size()));
-        parentData.bh_setBreed(picked);
-        return picked;
-    }
 
     private static void bh_inheritBetterStat(AbstractHorse p1, AbstractHorse p2, AbstractHorse child,
                                              Attribute attr, double cap, double displayPerRaw) {

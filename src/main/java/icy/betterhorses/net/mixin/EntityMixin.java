@@ -1,6 +1,7 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.HorseCommand;
+import icy.betterhorses.net.HorseTracker;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
 import icy.betterhorses.net.IHorseData;
@@ -50,8 +51,6 @@ public abstract class EntityMixin {
     private static final UUID BH_MOUNTED_STEP_HEIGHT_ID =
             UUID.fromString("4d2b1f3a-7c9e-4a51-8b6f-1c2d3e4f5a6b");
     @Unique private static final double BH_MOUNTED_STEP_HEIGHT_BONUS = 0.1D;
-    @Unique private @Nullable AbstractHorse bh_dismountHorse = null;
-    @Unique private boolean bh_shouldSetHorseToWanderOnDismount = false;
 
     @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;Z)Z", at = @At("TAIL"))
     private void bh_applyMountedHorseBonuses(
@@ -61,6 +60,10 @@ public abstract class EntityMixin {
         Entity self = (Entity) (Object) this;
         if (!cir.getReturnValueZ() || !(self instanceof ServerPlayer player) || !(vehicle instanceof AbstractHorse horse)) {
             return;
+        }
+
+        if (player.getUUID().equals(IHorseData.of(horse).bh_getOwner())) {
+            HorseTracker.setLastRidden(player.getUUID(), horse);
         }
 
         @Nullable AttributeInstance stepHeight = horse.getAttribute(ForgeMod.STEP_HEIGHT_ADDITION.get());
@@ -75,43 +78,23 @@ public abstract class EntityMixin {
 
     @Inject(method = "removeVehicle", at = @At("HEAD"))
     private void bh_removeMountedHorseBonuses(CallbackInfo ci) {
-        Entity self = (Entity) (Object) this;
-        if (!(self instanceof ServerPlayer player)) {
-            return;
+        if (!((Object) this instanceof ServerPlayer player)
+                || !(player.getVehicle() instanceof AbstractHorse horse)) return;
+        if (horse.getPassengers().size() == 1) {
+            AttributeInstance stepHeight = horse.getAttribute(ForgeMod.STEP_HEIGHT_ADDITION.get());
+            if (stepHeight != null) stepHeight.removeModifier(BH_MOUNTED_STEP_HEIGHT_ID);
         }
-
-        this.bh_dismountHorse = null;
-        this.bh_shouldSetHorseToWanderOnDismount = false;
-        Entity vehicle = player.getVehicle();
-        if (vehicle instanceof AbstractHorse horse) {
-            if (horse.getPassengers().size() == 1) {
-                @Nullable AttributeInstance stepHeight = horse.getAttribute(ForgeMod.STEP_HEIGHT_ADDITION.get());
-                if (stepHeight != null) {
-                    stepHeight.removeModifier(BH_MOUNTED_STEP_HEIGHT_ID);
-                }
-            }
-            this.bh_dismountHorse = horse;
-            this.bh_shouldSetHorseToWanderOnDismount = player.getUUID().equals(((IHorseData) horse).bh_getOwner());
-        }
+        IHorseData data = IHorseData.of(horse);
+        if (!player.getUUID().equals(data.bh_getOwner())) return;
+        HorseTracker.setLastRidden(player.getUUID(), horse);
+        data.bh_setWanderCenter(horse.blockPosition());
+        data.bh_setCommand(HorseCommand.WANDER);
     }
 
-    @Inject(method = "removeVehicle", at = @At("TAIL"))
-    private void bh_setHorseToWanderAfterOwnerDismount(CallbackInfo ci) {
-        Entity self = (Entity) (Object) this;
-        if (!(self instanceof ServerPlayer player)) {
-            return;
+    @Inject(method = "isInWall", at = @At("HEAD"), cancellable = true)
+    private void bh_cartRidersDoNotSuffocate(CallbackInfoReturnable<Boolean> cir) {
+        if (((Entity) (Object) this).getVehicle() instanceof HorseCartEntity) {
+            cir.setReturnValue(false);
         }
-
-        AbstractHorse horse = this.bh_dismountHorse;
-        boolean shouldSetWander = this.bh_shouldSetHorseToWanderOnDismount;
-        this.bh_dismountHorse = null;
-        this.bh_shouldSetHorseToWanderOnDismount = false;
-        if (!shouldSetWander || horse == null || horse.level().isClientSide()) {
-            return;
-        }
-
-        IHorseData data = (IHorseData) horse;
-        data.bh_setWanderCenter(player.blockPosition());
-        data.bh_setCommand(HorseCommand.WANDER);
     }
 }

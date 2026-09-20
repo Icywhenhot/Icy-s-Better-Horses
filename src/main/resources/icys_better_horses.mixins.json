@@ -1,5 +1,6 @@
 {
 	"required": true,
+	"minVersion": "0.8.5",
 	"package": "icy.betterhorses.net.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"refmap": "icys_better_horses.refmap.json",
@@ -16,7 +17,6 @@
 		"HorseCreativeTamingMixin",
 		"HorseFinalizeSpawnMixin",
 		"HorseInventoryMenuMixin",
-		"HorseSaddleSlotMixin",
 		"LeafPassthroughMixin",
 		"LivingEntityMixin",
 		"MapItemMixin",
@@ -27,13 +27,13 @@
 		"PlayerHurtMixin",
 		"PowderSnowBlockMixin",
 		"SlotAccessor",
-		"SpawnPlacementsAccessor"
+		"SpawnPlacementsAccessor",
+		"AbstractMountInventoryMenuMixin"
 	],
 	"client": [
 		"AbstractContainerScreenAccessor",
 		"AbstractContainerScreenMixin",
 		"AbstractHorseRendererMixin",
-		"AbstractMountInventoryMenuMixin",
 		"CameraMixin",
 		"GuiMixin",
 		"HorseInventoryScreenMixin",

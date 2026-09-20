@@ -22,6 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.Nullable;
@@ -32,7 +33,7 @@ import java.util.UUID;
 public final class IcysBetterHorsesClientForgeEvents {
 
     private static final double REACH = 12.0D;
-    private static final double ROUSE_SCAN = 48.0D;
+    private static final double ROUSE_SCAN = 32.0D;
 
     private static boolean callKeyWasDown = false;
 
@@ -89,6 +90,21 @@ public final class IcysBetterHorsesClientForgeEvents {
     @SubscribeEvent
     public static void onDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
         IcysBetterHorsesClient.onDisconnect();
+    }
+
+    @SubscribeEvent
+    public static void onEntityLeave(EntityLeaveLevelEvent event) {
+        if (!event.getLevel().isClientSide()) return;
+        Entity entity = event.getEntity();
+        int previewId = icy.betterhorses.net.client.render.BhHorseRenderState.previewId(entity.getId());
+        icy.betterhorses.net.client.render.BhEquineGait.remove(entity.getId());
+        icy.betterhorses.net.client.render.BhEquineGait.remove(previewId);
+        icy.betterhorses.net.client.render.BhRiderMotion.remove(entity.getId());
+        icy.betterhorses.net.client.render.BhRiderMotion.remove(previewId);
+        icy.betterhorses.net.client.render.BhHorseRenderState.remove(entity.getId());
+        if (entity instanceof AbstractHorse horse) {
+            icy.betterhorses.net.client.render.HorseStabilizerAnimatable.remove(horse);
+        }
     }
 
     private static void shiftGear(Minecraft client) {

@@ -15,7 +15,8 @@
     },
     "R": {
       "item": "minecraft:potion",
-      "nbt": "{Potion:\"minecraft:regeneration\"}"
+      "nbt": "{Potion:\"minecraft:regeneration\"}",
+      "type": "forge:partial_nbt"
     },
     "A": {
       "item": "minecraft:golden_apple"

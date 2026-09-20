@@ -18,7 +18,7 @@ public enum GearSlot {
             case CHEST -> stack.is(Items.CHEST) || stack.is(Items.ENDER_CHEST);
             case HOOVES -> stack.is(ModItems.HORSE_HOOVES.get());
             case MEDKIT -> stack.is(ModItems.HORSE_MEDKIT.get());
-            case STABILIZER -> stack.is(ModItems.HORSE_STABILIZER.get());
+            case STABILIZER -> stack.is(ModItems.HORSE_STABILIZER.get()) || stack.is(ModItems.HORSE_CART.get());
         };
     }
 

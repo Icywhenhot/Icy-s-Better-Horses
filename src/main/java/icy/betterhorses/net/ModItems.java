@@ -9,6 +9,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -27,7 +30,12 @@ public final class ModItems {
             () -> new UpgradedSaddleItem(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> HORSE_HOOVES = ITEMS.register(
             "horse_hooves_gear",
-            () -> new Item(new Item.Properties().stacksTo(1)));
+            () -> new Item(new Item.Properties().stacksTo(1)) {
+                @Override
+                public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
+                    return enchantment == Enchantments.FROST_WALKER;
+                }
+            });
     public static final RegistryObject<Item> HORSE_MEDKIT = ITEMS.register(
             "horse_medkit_gear",
             () -> new Item(new Item.Properties().stacksTo(1)));

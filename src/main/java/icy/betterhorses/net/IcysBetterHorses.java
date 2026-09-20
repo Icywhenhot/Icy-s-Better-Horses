@@ -67,9 +67,9 @@ public final class IcysBetterHorses {
     public static final String RESOURCE_NAMESPACE = "icys-better-horses";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    private static final float COMMAND_ANSWER_CHANCE = 0.35F;
+    private static final float COMMAND_ANSWER_CHANCE = 0.5F;
     private static final int DISENGAGE_TICKS = 60;
-    private static final double CART_SIZE_REACH = 6.0D;
+    private static final double CART_SIZE_REACH = 12.0D;
     private static final double DEFLECT_BOUNCE = 0.5D;
 
     private final List<AbstractHorse> staleHorses = new ArrayList<>();
@@ -83,7 +83,6 @@ public final class IcysBetterHorses {
         ModItems.register(modEventBus);
         ModMenus.register(modEventBus);
         ModSounds.register(modEventBus);
-        ModAttachments.register(modEventBus);
         BhNetworking.register();
         BhBiomeSpawns.register(modEventBus);
         modEventBus.addListener(this::registerSpawnPlacements);
@@ -191,7 +190,7 @@ public final class IcysBetterHorses {
 
     @SubscribeEvent
     public void onEntityLeaveLevel(EntityLeaveLevelEvent event) {
-        if (event.getEntity() instanceof AbstractHorse horse) {
+        if (!event.getLevel().isClientSide() && event.getEntity() instanceof AbstractHorse horse) {
             HorseTracker.unregister(horse);
         }
     }
@@ -214,11 +213,13 @@ public final class IcysBetterHorses {
 
         Projectile projectile = event.getProjectile();
         projectile.setDeltaMovement(projectile.getDeltaMovement().scale(-DEFLECT_BOUNCE));
+        projectile.setYRot(projectile.getYRot() + 180.0F);
+        projectile.yRotO += 180.0F;
         projectile.hurtMarked = true;
         if (!mount.level().isClientSide()) {
             BhSurge.pulse(IHorseData.of(mount), 0, 1);
         }
-        event.setCanceled(true);
+        event.setImpactResult(ProjectileImpactEvent.ImpactResult.SKIP_ENTITY);
     }
 
     @SubscribeEvent
@@ -445,65 +446,10 @@ public final class IcysBetterHorses {
 
     public static void handleCallHorse(ServerPlayer player) {
         if (!(player.getVehicle() instanceof AbstractHorse)) {
-            player.level().playSound(
-                    null,
-                    player.getX(),
-                    player.getY(),
-                    player.getZ(),
-                    ModSounds.CALL_WHISTLE.get(),
-                    SoundSource.PLAYERS,
-                    1.0F,
-                    1.0F);
+            playWhistle(player);
         }
 
-        UUID playerId = player.getUUID();
-        AbstractHorse horse = findCallableHorse(player, playerId);
-        if (horse == null) {
-            return;
-        }
-
-        IHorseData data = (IHorseData) horse;
-        if (data.bh_getBond() <= 0) {
-            return;
-        }
-
-        BlockPos target = player.blockPosition();
-        if (horse.distanceToSqr(player) > 400.0) {
-            horse.teleportTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
-            data.bh_setWanderCenter(target);
-            data.bh_setCommand(HorseCommand.WANDER);
-            return;
-        }
-
-        data.bh_setCommand(HorseCommand.FOLLOW);
-    }
-
-    private static AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {
-        AbstractHorse lastRidden = HorseTracker.getLastRidden(playerId);
-        if (lastRidden != null
-                && playerId.equals(((IHorseData) lastRidden).bh_getOwner())
-                && lastRidden.level() == player.level()
-                && lastRidden.isAlive()) {
-            return lastRidden;
-        }
-
-        AbstractHorse nearest = null;
-        double nearestDistSq = Double.MAX_VALUE;
-        for (AbstractHorse candidate : HorseTracker.getAll()) {
-            if (!candidate.isAlive() || candidate.level() != player.level()) {
-                continue;
-            }
-            UUID owner = ((IHorseData) candidate).bh_getOwner();
-            if (!playerId.equals(owner)) {
-                continue;
-            }
-            double distSq = candidate.distanceToSqr(player);
-            if (distSq < nearestDistSq) {
-                nearestDistSq = distSq;
-                nearest = candidate;
-            }
-        }
-        return nearest;
+        HorseManagement.callNearestHorse(player);
     }
 
     private static void growHorseBond(MinecraftServer server, int amount) {
@@ -536,8 +482,7 @@ public final class IcysBetterHorses {
             return null;
         }
 
-        UUID owner = ((IHorseData) horse).bh_getOwner();
-        if (owner != null && !owner.equals(player.getUUID())) {
+        if (!IHorseData.of(horse).bh_mayHandle(player.getUUID())) {
             return null;
         }
         return horse;

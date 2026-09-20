@@ -2,6 +2,7 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhSurge;
+import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.feature.breed.HardyNorthern;
@@ -76,6 +77,7 @@ public abstract class LivingEntityMixin extends Entity {
         }
 
         this.bh_consumeMedkitAndApplyEffects(self, data);
+        BhSurge.pulsePerk(data, ArchetypePerks.MEDKIT_BADGE);
     }
 
     @Unique
@@ -101,10 +103,11 @@ public abstract class LivingEntityMixin extends Entity {
         gear.setItem(GearSlot.MEDKIT.ordinal(), ItemStack.EMPTY);
         gear.setChanged();
 
-        self.addEffect(new MobEffectInstance(MobEffects.REGENERATION, BH_MEDKIT_EFFECT_DURATION, 0));
+        int dur = BH_MEDKIT_EFFECT_DURATION * data.bh_getBreed().archetype().medkitMultiplier();
+        self.addEffect(new MobEffectInstance(MobEffects.REGENERATION, dur, 0));
         self.addEffect(new MobEffectInstance(MobEffects.HEAL, 1, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, BH_MEDKIT_EFFECT_DURATION, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, BH_MEDKIT_EFFECT_DURATION, 0));
+        self.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, dur, 0));
+        self.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, dur, 0));
     }
 
     @Inject(method = "canBeAffected", at = @At("HEAD"), cancellable = true)

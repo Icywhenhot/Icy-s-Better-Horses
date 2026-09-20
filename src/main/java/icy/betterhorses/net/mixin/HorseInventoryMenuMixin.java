@@ -60,6 +60,25 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             Container horseContainer,
             AbstractHorse horse,
             CallbackInfo ci) {
+        Slot saddle = new Slot(horseContainer, 0, 8, 18) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return (stack.is(Items.SADDLE) || stack.is(ModItems.UPGRADED_SADDLE.get()))
+                        && !hasItem() && horse.isSaddleable();
+            }
+
+            @Override
+            public boolean mayPickup(Player player) {
+                return !IHorseData.of(horse).bh_hasCartGear() && super.mayPickup(player);
+            }
+
+            @Override
+            public boolean isActive() {
+                return horse.isSaddleable();
+            }
+        };
+        saddle.index = 0;
+        this.slots.set(0, saddle);
         final IHorseData data = IHorseData.of(horse);
         this.bh_horse = horse;
         final SimpleContainer gear = data.bh_getGearContainer();
@@ -145,7 +164,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                 this.bh_active().clearContent();
             }
         };
-        this.bh_playerInventoryStartIndex = horseContainer.getContainerSize() + 1;
+        this.bh_playerInventoryStartIndex = horseContainer.getContainerSize();
         this.bh_playerInventoryEndIndex = Math.min(this.bh_playerInventoryStartIndex + 36, this.slots.size());
 
         this.bh_gearStartIndex = this.slots.size();
