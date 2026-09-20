@@ -113,6 +113,7 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        BhNetworking.registerClient();
         registerKeyMappings();
         registerRenderers();
         BhModelLayers.register();
