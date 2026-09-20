@@ -19,178 +19,157 @@ import icy.betterhorses.net.entity.MustangHorse;
 import icy.betterhorses.net.entity.QuarterHorse;
 import icy.betterhorses.net.entity.ArabianHorse;
 import icy.betterhorses.net.entity.MorganHorse;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 
 public final class ModEntities {
 
-    private static final DeferredRegister<EntityType<?>> TYPES =
-            DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, IcysBetterHorses.RESOURCE_NAMESPACE);
-
-    public static final RegistryObject<EntityType<HorseCartEntity>> HORSE_CART = TYPES.register(
+    public static final EntityType<HorseCartEntity> HORSE_CART = register(
             "horse_cart",
-            () -> EntityType.Builder.<HorseCartEntity>of(HorseCartEntity::new, MobCategory.MISC)
+            EntityType.Builder.<HorseCartEntity>of(HorseCartEntity::new, MobCategory.MISC)
                     .sized(HorseCartEntity.WIDTH, HorseCartEntity.HEIGHT)
                     .clientTrackingRange(11)
-                    .updateInterval(1)
-                    .build(key("horse_cart")));
+                    .updateInterval(1));
 
-    public static final RegistryObject<EntityType<IcelandicHorse>> ICELANDIC_HORSE = TYPES.register(
+    public static final EntityType<IcelandicHorse> ICELANDIC_HORSE = register(
             "icelandic_horse",
-            () -> EntityType.Builder.<IcelandicHorse>of(IcelandicHorse::new, MobCategory.CREATURE)
+            EntityType.Builder.<IcelandicHorse>of(IcelandicHorse::new, MobCategory.CREATURE)
                     .sized(IcelandicHorse.WIDTH, IcelandicHorse.HEIGHT)
-                    .clientTrackingRange(10)
-                    .build(key("icelandic_horse")));
+                    .clientTrackingRange(10));
 
-    public static final RegistryObject<EntityType<FriesianHorse>> FRIESIAN_HORSE = TYPES.register(
+    public static final EntityType<FriesianHorse> FRIESIAN_HORSE = register(
             "friesian_horse",
-            () -> EntityType.Builder.<FriesianHorse>of(FriesianHorse::new, MobCategory.CREATURE)
+            EntityType.Builder.<FriesianHorse>of(FriesianHorse::new, MobCategory.CREATURE)
                     .sized(FriesianHorse.WIDTH, FriesianHorse.HEIGHT)
-                    .clientTrackingRange(10)
-                    .build(key("friesian_horse")));
+                    .clientTrackingRange(10));
 
-    public static final RegistryObject<EntityType<HaflingerHorse>> HAFLINGER_HORSE = TYPES.register(
+    public static final EntityType<HaflingerHorse> HAFLINGER_HORSE = register(
             "haflinger_horse",
-            () -> EntityType.Builder.<HaflingerHorse>of(HaflingerHorse::new, MobCategory.CREATURE)
+            EntityType.Builder.<HaflingerHorse>of(HaflingerHorse::new, MobCategory.CREATURE)
                     .sized(HaflingerHorse.WIDTH, HaflingerHorse.HEIGHT)
-                    .clientTrackingRange(10)
-                    .build(key("haflinger_horse")));
+                    .clientTrackingRange(10));
 
-    public static final RegistryObject<EntityType<PercheronHorse>> PERCHERON_HORSE = TYPES.register(
+    public static final EntityType<PercheronHorse> PERCHERON_HORSE = register(
             "percheron_horse",
-            () -> EntityType.Builder.<PercheronHorse>of(PercheronHorse::new, MobCategory.CREATURE)
+            EntityType.Builder.<PercheronHorse>of(PercheronHorse::new, MobCategory.CREATURE)
                     .sized(PercheronHorse.WIDTH, PercheronHorse.HEIGHT)
-                    .clientTrackingRange(10)
-                    .build(key("percheron_horse")));
+                    .clientTrackingRange(10));
 
-    public static final RegistryObject<EntityType<ShireHorse>> SHIRE_HORSE = TYPES.register(
+    public static final EntityType<ShireHorse> SHIRE_HORSE = register(
             "shire_horse",
-            () -> EntityType.Builder.<ShireHorse>of(ShireHorse::new, MobCategory.CREATURE)
+            EntityType.Builder.<ShireHorse>of(ShireHorse::new, MobCategory.CREATURE)
                     .sized(ShireHorse.WIDTH, ShireHorse.HEIGHT)
-                    .clientTrackingRange(10)
-                    .build(key("shire_horse")));
+                    .clientTrackingRange(10));
 
-    public static final RegistryObject<EntityType<BelgianHorse>> BELGIAN_HORSE = TYPES.register(
+    public static final EntityType<BelgianHorse> BELGIAN_HORSE = register(
             "belgian_horse",
-            () -> EntityType.Builder.<BelgianHorse>of(BelgianHorse::new, MobCategory.CREATURE)
+            EntityType.Builder.<BelgianHorse>of(BelgianHorse::new, MobCategory.CREATURE)
                     .sized(BelgianHorse.WIDTH, BelgianHorse.HEIGHT)
-                    .clientTrackingRange(10)
-                    .build(key("belgian_horse")));
+                    .clientTrackingRange(10));
 
-    public static final RegistryObject<EntityType<ClydesdaleHorse>> CLYDESDALE_HORSE = TYPES.register(
+    public static final EntityType<ClydesdaleHorse> CLYDESDALE_HORSE = register(
             "clydesdale_horse",
-            () -> EntityType.Builder.<ClydesdaleHorse>of(ClydesdaleHorse::new, MobCategory.CREATURE)
+            EntityType.Builder.<ClydesdaleHorse>of(ClydesdaleHorse::new, MobCategory.CREATURE)
                     .sized(ClydesdaleHorse.WIDTH, ClydesdaleHorse.HEIGHT)
-                    .clientTrackingRange(10)
-                    .build(key("clydesdale_horse")));
+                    .clientTrackingRange(10));
 
-    public static final RegistryObject<EntityType<AppaloosaHorse>> APPALOOSA_HORSE = TYPES.register(
+    public static final EntityType<AppaloosaHorse> APPALOOSA_HORSE = register(
             "appaloosa_horse",
-            () -> EntityType.Builder.<AppaloosaHorse>of(AppaloosaHorse::new, MobCategory.CREATURE)
+            EntityType.Builder.<AppaloosaHorse>of(AppaloosaHorse::new, MobCategory.CREATURE)
                     .sized(MediumHorse.WIDTH, MediumHorse.HEIGHT)
-                    .clientTrackingRange(10)
-                    .build(key("appaloosa_horse")));
+                    .clientTrackingRange(10));
 
-    public static final RegistryObject<EntityType<ThoroughbredHorse>> THOROUGHBRED_HORSE = TYPES.register(
+    public static final EntityType<ThoroughbredHorse> THOROUGHBRED_HORSE = register(
             "thoroughbred_horse",
-            () -> EntityType.Builder.<ThoroughbredHorse>of(ThoroughbredHorse::new, MobCategory.CREATURE)
+            EntityType.Builder.<ThoroughbredHorse>of(ThoroughbredHorse::new, MobCategory.CREATURE)
                     .sized(MediumHorse.WIDTH, MediumHorse.HEIGHT)
-                    .clientTrackingRange(10)
-                    .build(key("thoroughbred_horse")));
+                    .clientTrackingRange(10));
 
-    public static final RegistryObject<EntityType<AmericanPaintHorse>> AMERICAN_PAINT_HORSE = TYPES.register(
+    public static final EntityType<AmericanPaintHorse> AMERICAN_PAINT_HORSE = register(
             "american_paint_horse",
-            () -> EntityType.Builder.<AmericanPaintHorse>of(AmericanPaintHorse::new, MobCategory.CREATURE)
+            EntityType.Builder.<AmericanPaintHorse>of(AmericanPaintHorse::new, MobCategory.CREATURE)
                     .sized(MediumHorse.WIDTH, MediumHorse.HEIGHT)
-                    .clientTrackingRange(10)
-                    .build(key("american_paint_horse")));
+                    .clientTrackingRange(10));
 
-    public static final RegistryObject<EntityType<AndalusianHorse>> ANDALUSIAN_HORSE = TYPES.register(
+    public static final EntityType<AndalusianHorse> ANDALUSIAN_HORSE = register(
             "andalusian_horse",
-            () -> EntityType.Builder.<AndalusianHorse>of(AndalusianHorse::new, MobCategory.CREATURE)
+            EntityType.Builder.<AndalusianHorse>of(AndalusianHorse::new, MobCategory.CREATURE)
                     .sized(MediumHorse.WIDTH, MediumHorse.HEIGHT)
-                    .clientTrackingRange(10)
-                    .build(key("andalusian_horse")));
+                    .clientTrackingRange(10));
 
-    public static final RegistryObject<EntityType<MustangHorse>> MUSTANG_HORSE = TYPES.register(
+    public static final EntityType<MustangHorse> MUSTANG_HORSE = register(
             "mustang_horse",
-            () -> EntityType.Builder.<MustangHorse>of(MustangHorse::new, MobCategory.CREATURE)
+            EntityType.Builder.<MustangHorse>of(MustangHorse::new, MobCategory.CREATURE)
                     .sized(MediumHorse.WIDTH, MediumHorse.HEIGHT)
-                    .clientTrackingRange(10)
-                    .build(key("mustang_horse")));
+                    .clientTrackingRange(10));
 
-    public static final RegistryObject<EntityType<QuarterHorse>> QUARTER_HORSE = TYPES.register(
+    public static final EntityType<QuarterHorse> QUARTER_HORSE = register(
             "quarter_horse",
-            () -> EntityType.Builder.<QuarterHorse>of(QuarterHorse::new, MobCategory.CREATURE)
+            EntityType.Builder.<QuarterHorse>of(QuarterHorse::new, MobCategory.CREATURE)
                     .sized(MediumHorse.WIDTH, MediumHorse.HEIGHT)
-                    .clientTrackingRange(10)
-                    .build(key("quarter_horse")));
+                    .clientTrackingRange(10));
 
-    public static final RegistryObject<EntityType<ArabianHorse>> ARABIAN_HORSE = TYPES.register(
+    public static final EntityType<ArabianHorse> ARABIAN_HORSE = register(
             "arabian_horse",
-            () -> EntityType.Builder.<ArabianHorse>of(ArabianHorse::new, MobCategory.CREATURE)
+            EntityType.Builder.<ArabianHorse>of(ArabianHorse::new, MobCategory.CREATURE)
                     .sized(SmallHorse.WIDTH, SmallHorse.HEIGHT)
-                    .clientTrackingRange(10)
-                    .build(key("arabian_horse")));
+                    .clientTrackingRange(10));
 
-    public static final RegistryObject<EntityType<MorganHorse>> MORGAN_HORSE = TYPES.register(
+    public static final EntityType<MorganHorse> MORGAN_HORSE = register(
             "morgan_horse",
-            () -> EntityType.Builder.<MorganHorse>of(MorganHorse::new, MobCategory.CREATURE)
+            EntityType.Builder.<MorganHorse>of(MorganHorse::new, MobCategory.CREATURE)
                     .sized(SmallHorse.WIDTH, SmallHorse.HEIGHT)
-                    .clientTrackingRange(10)
-                    .build(key("morgan_horse")));
+                    .clientTrackingRange(10));
 
     public static EntityType<? extends BhBreedHorse> forBreed(HorseBreed breed) {
         return switch (breed) {
-            case THOROUGHBRED -> THOROUGHBRED_HORSE.get();
-            case ARABIAN -> ARABIAN_HORSE.get();
-            case QUARTER -> QUARTER_HORSE.get();
-            case FRIESIAN -> FRIESIAN_HORSE.get();
-            case ANDALUSIAN -> ANDALUSIAN_HORSE.get();
-            case PERCHERON -> PERCHERON_HORSE.get();
-            case CLYDESDALE -> CLYDESDALE_HORSE.get();
-            case SHIRE -> SHIRE_HORSE.get();
-            case BELGIAN -> BELGIAN_HORSE.get();
-            case ICELANDIC -> ICELANDIC_HORSE.get();
-            case MUSTANG -> MUSTANG_HORSE.get();
-            case HAFLINGER -> HAFLINGER_HORSE.get();
-            case MORGAN -> MORGAN_HORSE.get();
-            case AMERICAN_PAINT -> AMERICAN_PAINT_HORSE.get();
-            case APPALOOSA -> APPALOOSA_HORSE.get();
-            default -> MUSTANG_HORSE.get();
+            case THOROUGHBRED -> THOROUGHBRED_HORSE;
+            case ARABIAN -> ARABIAN_HORSE;
+            case QUARTER -> QUARTER_HORSE;
+            case FRIESIAN -> FRIESIAN_HORSE;
+            case ANDALUSIAN -> ANDALUSIAN_HORSE;
+            case PERCHERON -> PERCHERON_HORSE;
+            case CLYDESDALE -> CLYDESDALE_HORSE;
+            case SHIRE -> SHIRE_HORSE;
+            case BELGIAN -> BELGIAN_HORSE;
+            case ICELANDIC -> ICELANDIC_HORSE;
+            case MUSTANG -> MUSTANG_HORSE;
+            case HAFLINGER -> HAFLINGER_HORSE;
+            case MORGAN -> MORGAN_HORSE;
+            case AMERICAN_PAINT -> AMERICAN_PAINT_HORSE;
+            case APPALOOSA -> APPALOOSA_HORSE;
+            default -> MUSTANG_HORSE;
         };
     }
 
-    public static void register(IEventBus modEventBus) {
-        TYPES.register(modEventBus);
+    public static void register() {}
+
+    public static void registerAttributes() {
+        FabricDefaultAttributeRegistry.register(ICELANDIC_HORSE, IcelandicHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(FRIESIAN_HORSE, FriesianHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(HAFLINGER_HORSE, HaflingerHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(PERCHERON_HORSE, PercheronHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(SHIRE_HORSE, ShireHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(BELGIAN_HORSE, BelgianHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(CLYDESDALE_HORSE, ClydesdaleHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(APPALOOSA_HORSE, AppaloosaHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(THOROUGHBRED_HORSE, ThoroughbredHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(AMERICAN_PAINT_HORSE, AmericanPaintHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(ANDALUSIAN_HORSE, AndalusianHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(MUSTANG_HORSE, MustangHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(QUARTER_HORSE, QuarterHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(ARABIAN_HORSE, ArabianHorse.createAttributes());
+        FabricDefaultAttributeRegistry.register(MORGAN_HORSE, MorganHorse.createAttributes());
     }
 
-    public static void registerAttributes(EntityAttributeCreationEvent event) {
-        event.put(ICELANDIC_HORSE.get(), IcelandicHorse.createAttributes().build());
-        event.put(FRIESIAN_HORSE.get(), FriesianHorse.createAttributes().build());
-        event.put(HAFLINGER_HORSE.get(), HaflingerHorse.createAttributes().build());
-        event.put(PERCHERON_HORSE.get(), PercheronHorse.createAttributes().build());
-        event.put(SHIRE_HORSE.get(), ShireHorse.createAttributes().build());
-        event.put(BELGIAN_HORSE.get(), BelgianHorse.createAttributes().build());
-        event.put(CLYDESDALE_HORSE.get(), ClydesdaleHorse.createAttributes().build());
-        event.put(APPALOOSA_HORSE.get(), AppaloosaHorse.createAttributes().build());
-        event.put(THOROUGHBRED_HORSE.get(), ThoroughbredHorse.createAttributes().build());
-        event.put(AMERICAN_PAINT_HORSE.get(), AmericanPaintHorse.createAttributes().build());
-        event.put(ANDALUSIAN_HORSE.get(), AndalusianHorse.createAttributes().build());
-        event.put(MUSTANG_HORSE.get(), MustangHorse.createAttributes().build());
-        event.put(QUARTER_HORSE.get(), QuarterHorse.createAttributes().build());
-        event.put(ARABIAN_HORSE.get(), ArabianHorse.createAttributes().build());
-        event.put(MORGAN_HORSE.get(), MorganHorse.createAttributes().build());
-    }
-
-    private static String key(String path) {
-        return new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, path).toString();
+    private static <T extends net.minecraft.world.entity.Entity> EntityType<T> register(
+            String path, EntityType.Builder<T> builder) {
+        ResourceLocation id = new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, path);
+        return Registry.register(BuiltInRegistries.ENTITY_TYPE, id, builder.build(id.toString()));
     }
 
     private ModEntities() {}
