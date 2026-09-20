@@ -108,15 +108,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Shadow
     protected int standCounter;
 
-    // Every horse, vanilla or custom, builds its attributes through here, so this covers them all.
-    // Fabric can't register attributes on vanilla entities any other way.
-    @Inject(method = "createBaseHorseAttributes", at = @At("RETURN"), cancellable = true)
-    private static void bh_addCustomAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
-        cir.setReturnValue(cir.getReturnValue()
-                .add(BhAttributes.STEP_HEIGHT_ADDITION)
-                .add(BhAttributes.SWIM_SPEED));
-    }
-
     @Unique private static final int BH_CART_CHEST_SIZE = 54;
 
     @Unique private @Nullable UUID bh_owner = null;
@@ -149,6 +140,15 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private HorseCombat bh_combat;
     @Unique private BreedAbilities bh_abilities;
     @Unique private HorseFeature[] bh_features;
+
+    // Every horse, vanilla or custom, builds its attributes through here, so this covers them all.
+    // Fabric can't register attributes on vanilla entities any other way.
+    @Inject(method = "createBaseHorseAttributes", at = @At("RETURN"))
+    private static void bh_addCustomAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
+        cir.getReturnValue()
+                .add(BhAttributes.STEP_HEIGHT_ADDITION)
+                .add(BhAttributes.SWIM_SPEED);
+    }
 
     @Unique
     private HorseCombat bh_combatFeature() {

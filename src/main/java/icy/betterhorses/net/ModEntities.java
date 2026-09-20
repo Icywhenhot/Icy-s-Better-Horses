@@ -166,14 +166,12 @@ public final class ModEntities {
         registerBreed(MORGAN_HORSE, MorganHorse.createAttributes());
     }
 
-    // Step height and swim speed already come from AbstractHorseMixin.
-    // Listed again here so each breed's attributes are in one place.
+    // Step height and swim speed already come from AbstractHorseMixin. Don't add them again here:
+    // re-adding an attribute resets any custom base value a breed set.
     private static void registerBreed(
             EntityType<? extends net.minecraft.world.entity.LivingEntity> type,
             net.minecraft.world.entity.ai.attributes.AttributeSupplier.Builder builder) {
-        FabricDefaultAttributeRegistry.register(type, builder
-                .add(BhAttributes.STEP_HEIGHT_ADDITION)
-                .add(BhAttributes.SWIM_SPEED));
+        FabricDefaultAttributeRegistry.register(type, builder);
     }
 
     private static <T extends net.minecraft.world.entity.Entity> EntityType<T> register(

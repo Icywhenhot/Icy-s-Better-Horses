@@ -826,5 +826,7 @@
   "book.icys-better-horses.stable_handbook.classes.tab.name": "Horse Classes",
   "book.icys-better-horses.stable_handbook.classes.tab.description": "Fifteen breeds, five classes. A horse's class sets its stat range and the perks it brings to the trail.",
   "book.icys-better-horses.stable_handbook.basics.welcome.horse.name": "A Good Horse",
-  "book.icys-better-horses.stable_handbook.basics.welcome.horse.text": "Once a horse is fully tamed, this mod marks it as yours right away. From there you can turn an ordinary mount into a proper road companion."
+  "book.icys-better-horses.stable_handbook.basics.welcome.horse.text": "Once a horse is fully tamed, this mod marks it as yours right away. From there you can turn an ordinary mount into a proper road companion.",
+  "attribute.name.icys-better-horses.step_height_addition": "Step Height",
+  "attribute.name.icys-better-horses.swim_speed": "Swim Speed"
 }
