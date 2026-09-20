@@ -297,7 +297,7 @@ public final class HorseManagement {
         CompoundTag tag = HorseTracker.getSnapshot(id);
         if (tag == null) return false;
         return BhHorseStorage.contains(tag, "BH_Gear",
-                new net.minecraft.world.item.ItemStack(ModItems.HORSE_CART.get()));
+                new net.minecraft.world.item.ItemStack(ModItems.HORSE_CART));
     }
 
     private static @Nullable AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {

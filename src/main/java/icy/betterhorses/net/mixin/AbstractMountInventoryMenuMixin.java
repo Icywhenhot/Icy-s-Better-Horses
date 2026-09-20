@@ -144,7 +144,7 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
 
     @Unique
     private boolean bh_hasUpgradedSaddleInMenu() {
-        return this.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE.get());
+        return this.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE);
     }
 
     @Unique

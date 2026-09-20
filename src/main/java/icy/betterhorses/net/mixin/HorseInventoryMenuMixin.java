@@ -158,7 +158,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                         return false;
                     }
                     if (type == GearSlot.STABILIZER
-                            && stack.is(ModItems.HORSE_STABILIZER.get())
+                            && stack.is(ModItems.HORSE_STABILIZER)
                             && !(horse instanceof Horse)) {
                         return false;
                     }
@@ -318,7 +318,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
     @Unique
     private boolean bh_hasUpgradedSaddleInMenu() {
-        return this.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE.get());
+        return this.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE);
     }
 
     @Unique

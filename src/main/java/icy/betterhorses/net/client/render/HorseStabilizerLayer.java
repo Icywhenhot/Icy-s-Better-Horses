@@ -41,21 +41,21 @@ public final class HorseStabilizerLayer<T extends AbstractHorse, M extends Entit
             new HorseStabilizerGeoRenderer(new BelgianStabilizerGeoModel()), BREED_FEET_Y, 0.0D);
 
     private static final Map<EntityType<?>, Variant> BY_TYPE = Map.ofEntries(
-            Map.entry(ModEntities.ICELANDIC_HORSE.get(), ICELANDIC),
-            Map.entry(ModEntities.FRIESIAN_HORSE.get(), FRIESIAN),
-            Map.entry(ModEntities.APPALOOSA_HORSE.get(), MEDIUM),
-            Map.entry(ModEntities.THOROUGHBRED_HORSE.get(), MEDIUM),
-            Map.entry(ModEntities.AMERICAN_PAINT_HORSE.get(), MEDIUM),
-            Map.entry(ModEntities.ANDALUSIAN_HORSE.get(), MEDIUM),
-            Map.entry(ModEntities.MUSTANG_HORSE.get(), MEDIUM),
-            Map.entry(ModEntities.QUARTER_HORSE.get(), MEDIUM),
-            Map.entry(ModEntities.ARABIAN_HORSE.get(), SMALL),
-            Map.entry(ModEntities.MORGAN_HORSE.get(), SMALL),
-            Map.entry(ModEntities.HAFLINGER_HORSE.get(), HAFLINGER),
-            Map.entry(ModEntities.PERCHERON_HORSE.get(), PERCHERON),
-            Map.entry(ModEntities.SHIRE_HORSE.get(), SHIRE),
-            Map.entry(ModEntities.BELGIAN_HORSE.get(), BELGIAN),
-            Map.entry(ModEntities.CLYDESDALE_HORSE.get(), PERCHERON));
+            Map.entry(ModEntities.ICELANDIC_HORSE, ICELANDIC),
+            Map.entry(ModEntities.FRIESIAN_HORSE, FRIESIAN),
+            Map.entry(ModEntities.APPALOOSA_HORSE, MEDIUM),
+            Map.entry(ModEntities.THOROUGHBRED_HORSE, MEDIUM),
+            Map.entry(ModEntities.AMERICAN_PAINT_HORSE, MEDIUM),
+            Map.entry(ModEntities.ANDALUSIAN_HORSE, MEDIUM),
+            Map.entry(ModEntities.MUSTANG_HORSE, MEDIUM),
+            Map.entry(ModEntities.QUARTER_HORSE, MEDIUM),
+            Map.entry(ModEntities.ARABIAN_HORSE, SMALL),
+            Map.entry(ModEntities.MORGAN_HORSE, SMALL),
+            Map.entry(ModEntities.HAFLINGER_HORSE, HAFLINGER),
+            Map.entry(ModEntities.PERCHERON_HORSE, PERCHERON),
+            Map.entry(ModEntities.SHIRE_HORSE, SHIRE),
+            Map.entry(ModEntities.BELGIAN_HORSE, BELGIAN),
+            Map.entry(ModEntities.CLYDESDALE_HORSE, PERCHERON));
 
     private static final float MODEL_ROLL_DEGREES = 180.0F;
 

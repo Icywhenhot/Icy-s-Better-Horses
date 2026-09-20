@@ -22,8 +22,8 @@ public final class BhHorseInteraction {
     public static @Nullable InteractionResult equipGearFromHand(
             AbstractHorse horse, IHorseData data, Player player, InteractionHand hand) {
         ItemStack held = player.getItemInHand(hand);
-        boolean cart = held.is(ModItems.HORSE_CART.get());
-        boolean stabilizer = held.is(ModItems.HORSE_STABILIZER.get());
+        boolean cart = held.is(ModItems.HORSE_CART);
+        boolean stabilizer = held.is(ModItems.HORSE_STABILIZER);
         if ((!cart && !stabilizer) || player.isSecondaryUseActive()) {
             return null;
         }

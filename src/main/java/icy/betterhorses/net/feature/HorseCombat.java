@@ -134,12 +134,12 @@ public final class HorseCombat implements HorseFeature {
             shove(target, dir, arch.bashKnockback());
             killed |= target.isDeadOrDying();
         }
-        horse.playSound(ModSounds.HORSE_CHARGE_THUD.get(), 0.5F, 1.0F);
+        horse.playSound(ModSounds.HORSE_CHARGE_THUD, 0.5F, 1.0F);
         if (rider instanceof ServerPlayer serverRider) {
             BhNetworking.sendToPlayer(serverRider, new HorseChargeShakePayload());
         }
         if (neighing == 0) {
-            horse.playSound(ModSounds.HORSE_NEIGH.get(), 1.0F, 1.0F);
+            horse.playSound(ModSounds.HORSE_NEIGH, 1.0F, 1.0F);
             neighing = NEIGH_TICKS;
         }
         if (killed && chains(breed, data)) {

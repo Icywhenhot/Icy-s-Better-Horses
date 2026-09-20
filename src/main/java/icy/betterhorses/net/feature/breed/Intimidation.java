@@ -112,7 +112,7 @@ public final class Intimidation implements BreedAbility {
         BhSurge.pulse(data, 0);
         horse.getLookControl().setLookAt(at, 45.0F, 45.0F);
         horse.level().playSound(null, horse.getX(), horse.getY(), horse.getZ(),
-                ModSounds.HORSE_ANGRY_SNORT.get(), horse.getSoundSource(), 0.8F, 0.8F);
+                ModSounds.HORSE_ANGRY_SNORT, horse.getSoundSource(), 0.8F, 0.8F);
         if (mayStomp(horse)) {
             data.bh_setStompTicks(STOMP_TICKS);
         }

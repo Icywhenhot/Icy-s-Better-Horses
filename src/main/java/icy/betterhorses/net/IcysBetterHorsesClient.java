@@ -175,34 +175,34 @@ public final class IcysBetterHorsesClient {
 
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(ModEntities.HORSE_CART.get(), HorseCartRenderer::new);
-        event.registerEntityRenderer(ModEntities.ICELANDIC_HORSE.get(), context ->
+        event.registerEntityRenderer(ModEntities.HORSE_CART, HorseCartRenderer::new);
+        event.registerEntityRenderer(ModEntities.ICELANDIC_HORSE, context ->
                 new IcelandicHorseRenderer(context,
                         BhModelLayers.ICELANDIC_HORSE, BhModelLayers.ICELANDIC_HORSE_BABY));
-        event.registerEntityRenderer(ModEntities.FRIESIAN_HORSE.get(), context ->
+        event.registerEntityRenderer(ModEntities.FRIESIAN_HORSE, context ->
                 new FriesianHorseRenderer(context,
                         BhModelLayers.FRIESIAN_HORSE, BhModelLayers.FRIESIAN_HORSE_BABY));
-        event.registerEntityRenderer(ModEntities.HAFLINGER_HORSE.get(), HaflingerHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.HAFLINGER_HORSE, HaflingerHorseRenderer::new);
 
-        event.registerEntityRenderer(ModEntities.APPALOOSA_HORSE.get(), MediumHorseRenderer::new);
-        event.registerEntityRenderer(ModEntities.THOROUGHBRED_HORSE.get(), MediumHorseRenderer::new);
-        event.registerEntityRenderer(ModEntities.AMERICAN_PAINT_HORSE.get(), MediumHorseRenderer::new);
-        event.registerEntityRenderer(ModEntities.ANDALUSIAN_HORSE.get(), MediumHorseRenderer::new);
-        event.registerEntityRenderer(ModEntities.MUSTANG_HORSE.get(), MediumHorseRenderer::new);
-        event.registerEntityRenderer(ModEntities.QUARTER_HORSE.get(), MediumHorseRenderer::new);
-        event.registerEntityRenderer(ModEntities.ARABIAN_HORSE.get(), SmallHorseRenderer::new);
-        event.registerEntityRenderer(ModEntities.MORGAN_HORSE.get(), SmallHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.APPALOOSA_HORSE, MediumHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.THOROUGHBRED_HORSE, MediumHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.AMERICAN_PAINT_HORSE, MediumHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.ANDALUSIAN_HORSE, MediumHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.MUSTANG_HORSE, MediumHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.QUARTER_HORSE, MediumHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.ARABIAN_HORSE, SmallHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.MORGAN_HORSE, SmallHorseRenderer::new);
 
-        event.registerEntityRenderer(ModEntities.PERCHERON_HORSE.get(), context ->
+        event.registerEntityRenderer(ModEntities.PERCHERON_HORSE, context ->
                 new PercheronHorseRenderer(context,
                         BhModelLayers.PERCHERON_HORSE, BhModelLayers.PERCHERON_HORSE_BABY));
-        event.registerEntityRenderer(ModEntities.SHIRE_HORSE.get(), context ->
+        event.registerEntityRenderer(ModEntities.SHIRE_HORSE, context ->
                 new ShireHorseRenderer(context,
                         BhModelLayers.SHIRE_HORSE, BhModelLayers.SHIRE_HORSE_BABY));
-        event.registerEntityRenderer(ModEntities.BELGIAN_HORSE.get(), context ->
+        event.registerEntityRenderer(ModEntities.BELGIAN_HORSE, context ->
                 new BelgianHorseRenderer(context,
                         BhModelLayers.BELGIAN_HORSE, BhModelLayers.BELGIAN_HORSE_BABY));
-        event.registerEntityRenderer(ModEntities.CLYDESDALE_HORSE.get(), context ->
+        event.registerEntityRenderer(ModEntities.CLYDESDALE_HORSE, context ->
                 new ClydesdaleHorseRenderer(context,
                         BhModelLayers.CLYDESDALE_HORSE, BhModelLayers.CLYDESDALE_HORSE_BABY));
     }
@@ -215,7 +215,7 @@ public final class IcysBetterHorsesClient {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
-            MenuScreens.register(ModMenus.CART_CHEST.get(), CartChestScreen::new);
+            MenuScreens.register(ModMenus.CART_CHEST, CartChestScreen::new);
             if (ModList.get().isLoaded("cloth_config")) {
                 ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
                         () -> new ConfigScreenHandler.ConfigScreenFactory(

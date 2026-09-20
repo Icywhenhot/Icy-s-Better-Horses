@@ -47,7 +47,7 @@ public final class Hearthlight implements BreedAbility {
             return;
         }
         if (!want.equals(lit)) clear(level, horse);
-        ModBlocks.HEARTHLIGHT.get().hold(level, want, horse.getUUID());
+        ModBlocks.HEARTHLIGHT.hold(level, want, horse.getUUID());
         lit = want;
     }
 
@@ -55,7 +55,7 @@ public final class Hearthlight implements BreedAbility {
         BlockPos head = BlockPos.containing(horse.getEyePosition());
         for (BlockPos pos : new BlockPos[]{head, head.above(), head.below(), horse.blockPosition()}) {
             BlockState at = level.getBlockState(pos);
-            if (at.isAir() || at.is(ModBlocks.HEARTHLIGHT.get())) {
+            if (at.isAir() || at.is(ModBlocks.HEARTHLIGHT)) {
                 return pos;
             }
         }
@@ -79,7 +79,7 @@ public final class Hearthlight implements BreedAbility {
 
     private void clear(ServerLevel level, AbstractHorse horse) {
         if (lit == null) return;
-        ModBlocks.HEARTHLIGHT.get().release(level, lit, horse.getUUID());
+        ModBlocks.HEARTHLIGHT.release(level, lit, horse.getUUID());
         lit = null;
     }
 }

@@ -73,7 +73,7 @@ public final class BhAbilityBadges {
             Map.entry("clydesdale", new ItemStack(Items.IRON_HORSE_ARMOR)),
             Map.entry("clydesdale_1", new ItemStack(Items.ARROW)),
             Map.entry("american_paint", new ItemStack(Items.COMPASS)),
-            Map.entry("haflinger_1", new ItemStack(ModItems.HORSE_CART.get())),
+            Map.entry("haflinger_1", new ItemStack(ModItems.HORSE_CART)),
             Map.entry("perk_1", new ItemStack(Items.GOLDEN_APPLE)),
             Map.entry("perk_2", new ItemStack(Items.POWDER_SNOW_BUCKET)),
             Map.entry("perk_3", new ItemStack(Items.FEATHER)));

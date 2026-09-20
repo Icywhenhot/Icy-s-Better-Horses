@@ -285,8 +285,8 @@ public final class IcysBetterHorses {
             return;
         }
         SoundEvent sound = horse.getRandom().nextBoolean()
-                ? ModSounds.HORSE_NEIGH.get()
-                : ModSounds.HORSE_SNORT.get();
+                ? ModSounds.HORSE_NEIGH
+                : ModSounds.HORSE_SNORT;
         horse.level().playSound(
                 null, horse.getX(), horse.getY(), horse.getZ(),
                 sound, horse.getSoundSource(), 1.0F, 1.0F);
@@ -311,7 +311,7 @@ public final class IcysBetterHorses {
         }
         if (any) {
             player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                    ModSounds.CALL_WHISTLE.get(), player.getSoundSource(), 1.0F, 1.0F);
+                    ModSounds.CALL_WHISTLE, player.getSoundSource(), 1.0F, 1.0F);
         }
     }
 
@@ -440,7 +440,7 @@ public final class IcysBetterHorses {
     private static void playWhistle(ServerPlayer player) {
         player.level().playSound(
                 null, player.getX(), player.getY(), player.getZ(),
-                ModSounds.CALL_WHISTLE.get(), SoundSource.PLAYERS, 0.5F, 1.0F);
+                ModSounds.CALL_WHISTLE, SoundSource.PLAYERS, 0.5F, 1.0F);
     }
 
     public static void handleCallHorse(ServerPlayer player) {
@@ -450,7 +450,7 @@ public final class IcysBetterHorses {
                     player.getX(),
                     player.getY(),
                     player.getZ(),
-                    ModSounds.CALL_WHISTLE.get(),
+                    ModSounds.CALL_WHISTLE,
                     SoundSource.PLAYERS,
                     1.0F,
                     1.0F);

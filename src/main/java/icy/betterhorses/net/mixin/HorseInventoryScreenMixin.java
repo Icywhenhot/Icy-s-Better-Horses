@@ -237,11 +237,11 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
             return;
         }
         this.bh_drawGearHint(gfx, x, y, GearSlot.CHEST, Items.CHEST);
-        this.bh_drawGearHint(gfx, x, y, GearSlot.HOOVES, ModItems.HORSE_HOOVES.get());
-        this.bh_drawGearHint(gfx, x, y, GearSlot.MEDKIT, ModItems.HORSE_MEDKIT.get());
+        this.bh_drawGearHint(gfx, x, y, GearSlot.HOOVES, ModItems.HORSE_HOOVES);
+        this.bh_drawGearHint(gfx, x, y, GearSlot.MEDKIT, ModItems.HORSE_MEDKIT);
         Item stabilizerSlotHint = this.bh_mountTakesStabilizer() && (System.currentTimeMillis() / 1000L) % 2L == 0L
-                ? ModItems.HORSE_STABILIZER.get()
-                : ModItems.HORSE_CART.get();
+                ? ModItems.HORSE_STABILIZER
+                : ModItems.HORSE_CART;
         this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, stabilizerSlotHint);
         this.bh_drawLockedSlotFlash(gfx);
     }
@@ -320,7 +320,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
     @Unique
     private boolean bh_hasUpgradedSaddleInMenu() {
-        return this.menu.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE.get());
+        return this.menu.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE);
     }
 
     @Unique

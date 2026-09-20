@@ -28,7 +28,7 @@ public class CartChestMenu extends AbstractContainerMenu {
     }
 
     public CartChestMenu(int containerId, Inventory playerInventory, Container container) {
-        super(ModMenus.CART_CHEST.get(), containerId);
+        super(ModMenus.CART_CHEST, containerId);
         checkContainerSize(container, SLOTS);
         this.container = container;
         container.startOpen(playerInventory.player);

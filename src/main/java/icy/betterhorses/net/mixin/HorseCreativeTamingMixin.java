@@ -28,7 +28,7 @@ public abstract class HorseCreativeTamingMixin extends AbstractHorse {
             InteractionHand hand,
             CallbackInfoReturnable<InteractionResult> cir) {
         ItemStack held = player.getItemInHand(hand);
-        boolean isSaddle = held.is(Items.SADDLE) || held.is(ModItems.UPGRADED_SADDLE.get());
+        boolean isSaddle = held.is(Items.SADDLE) || held.is(ModItems.UPGRADED_SADDLE);
         if (!player.isCreative() || isBaby() || !isAlive() || isTamed() || isSaddled() || !isSaddle) {
             return;
         }

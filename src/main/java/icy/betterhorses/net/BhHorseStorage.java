@@ -48,7 +48,7 @@ public final class BhHorseStorage {
         ItemStack saddle = tag.contains("SaddleItem", Tag.TAG_COMPOUND)
                 ? ItemStack.of(tag.getCompound("SaddleItem"))
                 : ItemStack.EMPTY;
-        if (saddle.is(ModItems.UPGRADED_SADDLE.get())) {
+        if (saddle.is(ModItems.UPGRADED_SADDLE)) {
             inventory.setItem(0, saddle);
         }
     }
