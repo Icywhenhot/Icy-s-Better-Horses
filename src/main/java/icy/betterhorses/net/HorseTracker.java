@@ -15,6 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class HorseTracker {
 
+    private static final int STALE_SWEEP_TICKS = 20;
+
     private static final Map<UUID, AbstractHorse> ownedHorses = new ConcurrentHashMap<>();
     private static @Nullable HorseTrackerState cachedState;
 
@@ -38,6 +40,22 @@ public final class HorseTracker {
         HorseTrackerState state = state();
         return state != null
                 && IHorseData.of(horse).bh_getGeneration() < state.getGeneration(horse.getUUID());
+    }
+
+    public static boolean discardIfStale(AbstractHorse horse) {
+        if (horse.level().isClientSide()
+                || horse.tickCount % STALE_SWEEP_TICKS != 0
+                || !IHorseData.of(horse).bh_isOwned()
+                || !isStale(horse)) {
+            return false;
+        }
+        IcysBetterHorses.LOGGER.debug("[whistle] discarding stale horse copy {} in {} (generation {} < {})",
+                horse.getUUID(), horse.level().dimension().location(),
+                IHorseData.of(horse).bh_getGeneration(), getGeneration(horse.getUUID()));
+        ownedHorses.remove(horse.getUUID(), horse);
+        horse.ejectPassengers();
+        horse.discard();
+        return true;
     }
 
     public static void register(AbstractHorse horse) {

@@ -374,6 +374,18 @@ public final class HorseManagement {
         return horse;
     }
 
+    private static void discardOldBody(MinecraftServer server, AbstractHorse fresh) {
+        for (ServerLevel level : server.getAllLevels()) {
+            if (!(level.getEntity(fresh.getUUID()) instanceof AbstractHorse old) || old == fresh) {
+                continue;
+            }
+            IcysBetterHorses.LOGGER.debug("[whistle] discarding old body of horse {} in {}",
+                    fresh.getUUID(), level.dimension().location());
+            old.ejectPassengers();
+            old.discard();
+        }
+    }
+
     private static void release(AbstractHorse scratch) {
         for (Entity rider : scratch.getIndirectPassengers()) {
             rider.discard();
@@ -421,6 +433,7 @@ public final class HorseManagement {
             return null;
         }
         HorseTracker.setGeneration(horseId, newGeneration);
+        discardOldBody(server, horse);
         if (IHorseData.of(horse).bh_isOwned()) HorseTracker.register(horse);
         IcysBetterHorses.LOGGER.debug("[whistle] respawned horse {} at {} {} {} in {} (generation {})",
                 horseId, x, y, z, level.dimension().location(), newGeneration);

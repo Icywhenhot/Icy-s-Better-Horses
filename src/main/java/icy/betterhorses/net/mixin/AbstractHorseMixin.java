@@ -993,7 +993,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_tick(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (BhVanillaHorseSwap.trySwap(self)) {
+        if (BhVanillaHorseSwap.trySwap(self) || HorseTracker.discardIfStale(self)) {
             return;
         }
         Vec3 now = self.position();
