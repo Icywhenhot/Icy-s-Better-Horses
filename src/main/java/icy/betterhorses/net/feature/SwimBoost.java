@@ -1,6 +1,8 @@
 package icy.betterhorses.net.feature;
 
+import icy.betterhorses.net.BhAttributes;
 import icy.betterhorses.net.IHorseData;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -26,8 +28,7 @@ public final class SwimBoost implements HorseFeature {
             return;
         }
 
-        // TODO: swim speed bonus disabled until the attribute is ported.
-        @Nullable AttributeInstance swimSpeed = null;
+        @Nullable AttributeInstance swimSpeed = horse.getAttribute(BhAttributes.SWIM_SPEED);
         if (swimSpeed != null && swimSpeed.getModifier(SWIM_SPEED_ID) == null) {
             swimSpeed.addTransientModifier(new AttributeModifier(
                     SWIM_SPEED_ID, "bh_swim_speed", SWIM_BONUS, AttributeModifier.Operation.ADDITION));
@@ -45,8 +46,7 @@ public final class SwimBoost implements HorseFeature {
             return;
         }
 
-        // TODO: fluid-depth lift disabled until the attribute is ported.
-        double depth = 0.0D;
+        double depth = horse.getFluidHeight(FluidTags.WATER);
         if (depth <= WATERLINE) {
             return;
         }
