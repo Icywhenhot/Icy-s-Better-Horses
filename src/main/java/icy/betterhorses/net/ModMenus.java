@@ -1,24 +1,19 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.inventory.CartChestMenu;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.world.flag.FeatureFlags;
+import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
 
 public final class ModMenus {
 
-    private static final DeferredRegister<MenuType<?>> MENUS =
-            DeferredRegister.create(Registries.MENU, IcysBetterHorses.RESOURCE_NAMESPACE);
+    // MenuType's constructor is private on Fabric, so register through Fabric API's registerSimple().
+    // It's deprecated, but avoids needing an access widener.
+    public static final MenuType<CartChestMenu> CART_CHEST = ScreenHandlerRegistry.registerSimple(
+            new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "cart_chest"),
+            CartChestMenu::new);
 
-    public static final RegistryObject<MenuType<CartChestMenu>> CART_CHEST = MENUS.register("cart_chest",
-            () -> new MenuType<>(CartChestMenu::new, FeatureFlags.VANILLA_SET));
-
-    public static void register(IEventBus modEventBus) {
-        MENUS.register(modEventBus);
-    }
+    public static void register() {}
 
     private ModMenus() {}
 }
