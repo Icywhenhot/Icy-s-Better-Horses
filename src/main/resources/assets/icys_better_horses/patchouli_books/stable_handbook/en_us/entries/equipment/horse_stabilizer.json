@@ -1,0 +1,27 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.equipment.horse_stabilizer.name",
+  "category": "icys_better_horses:equipment",
+  "icon": "icys-better-horses:horse_stabilizer_gear",
+  "sortnum": 6,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "icys-better-horses:horse_stabilizer_gear",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_stabilizer.recipe.title1"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_stabilizer.recipe.text"
+    },
+    {
+      "type": "icys_better_horses:padded_spotlight",
+      "item": "icys-better-horses:horse_stabilizer_gear",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_stabilizer.info.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_stabilizer.info.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_stabilizer.info.text2"
+    }
+  ]
+}

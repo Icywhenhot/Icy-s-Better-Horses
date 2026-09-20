@@ -147,6 +147,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private boolean bh_abilityPaused = false;
     @Unique private int bh_spookTicks = 0;
 
+    @Unique private @Nullable Vec3 bh_lastPos = null;
+    @Unique private Vec3 bh_moved = Vec3.ZERO;
+
     @Unique private final SaddleWatch bh_saddle = new SaddleWatch();
     @Unique private final CartRig bh_cartRig = new CartRig();
     @Unique private final HorseCombat bh_combat = new HorseCombat();
@@ -831,6 +834,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     }
 
     @Override
+    public Vec3 bh_getKnownMovement() {
+        return this.bh_moved;
+    }
+
+    @Override
     public int bh_getStompTicks() {
         return this.entityData.get(BH_STOMP);
     }
@@ -988,6 +996,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (BhVanillaHorseSwap.trySwap(self)) {
             return;
         }
+        Vec3 now = self.position();
+        this.bh_moved = this.bh_lastPos == null ? Vec3.ZERO : now.subtract(this.bh_lastPos);
+        this.bh_lastPos = now;
         for (HorseFeature feature : this.bh_features()) {
             feature.tick(self, this);
         }
@@ -1224,7 +1235,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             BhRiderSeat.publish(self.getId(), Vec3.ZERO);
             Vec3 seat = HorseCartEntity.benchSeatOffset(
                     self, BhHorseSteering.benchSeatIndex(self, passenger), self.yBodyRot);
-            move.accept(passenger, self.getX() + seat.x, self.getY() + seat.y, self.getZ() + seat.z);
+            move.accept(passenger, self.getX() + seat.x,
+                    self.getY() + seat.y - BhRiderSeat.seatDrop(passenger),
+                    self.getZ() + seat.z);
             return;
         }
         float yaw = self.yBodyRot * Mth.DEG_TO_RAD;
@@ -1234,7 +1247,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
                 -rear * Mth.cos(yaw));
         BhRiderSeat.publish(self.getId(), shift);
         double height = self.getPassengersRidingOffset();
-        if (!(self instanceof BhBreedHorse)) height += passenger.getMyRidingOffset();
+        height += self instanceof BhBreedHorse
+                ? -BhRiderSeat.seatDrop(passenger)
+                : passenger.getMyRidingOffset();
         Vec3 seat = self.position().add(shift).add(0.0D, height, 0.0D);
         Vec3 offset = BhHorseSteering.multiRiderOffset(self, passenger);
         if (offset != null) seat = seat.add(offset);

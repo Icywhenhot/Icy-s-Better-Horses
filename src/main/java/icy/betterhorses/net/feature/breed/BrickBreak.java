@@ -78,7 +78,7 @@ public final class BrickBreak implements BreedAbility {
             return;
         }
 
-        Vec3 motion = horse.getDeltaMovement();
+        Vec3 motion = data.bh_getKnownMovement();
         Vec3 flat = new Vec3(motion.x, 0.0D, motion.z);
         if (flat.length() >= MIN_SPEED) {
             heading = flat.normalize();

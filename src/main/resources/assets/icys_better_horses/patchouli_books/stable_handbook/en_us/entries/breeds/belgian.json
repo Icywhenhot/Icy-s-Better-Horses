@@ -1,0 +1,31 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_belgian.name",
+  "category": "icys_better_horses:breeds",
+  "icon": "icys-better-horses:belgian_horse_spawn_egg",
+  "sortnum": 12,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_belgian.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_belgian.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_belgian.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_belgian.ability.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_belgian.ability.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_belgian.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_belgian.spawns.text"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:belgian_horse"
+    }
+  ]
+}

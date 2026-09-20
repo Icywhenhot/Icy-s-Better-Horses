@@ -1,0 +1,31 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_shire.name",
+  "category": "icys_better_horses:breeds",
+  "icon": "icys-better-horses:shire_horse_spawn_egg",
+  "sortnum": 13,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_shire.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_shire.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_shire.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_shire.ability.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_shire.ability.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_shire.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_shire.spawns.text"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:shire_horse"
+    }
+  ]
+}

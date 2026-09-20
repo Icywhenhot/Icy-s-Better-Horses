@@ -1,0 +1,28 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.basics.welcome.name",
+  "category": "icys_better_horses:basics",
+  "icon": "minecraft:book",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.welcome.intro.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.welcome.intro.text"
+    },
+    {
+      "type": "patchouli:entity",
+      "entity": "icys-better-horses:mustang_horse",
+      "name": "book.icys-better-horses.stable_handbook.basics.welcome.horse.name",
+      "text": "book.icys-better-horses.stable_handbook.basics.welcome.horse.text",
+      "scale": 0.55,
+      "offset": 0.25
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.welcome.owned.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.welcome.owned.text"
+    }
+  ],
+  "priority": true,
+  "read_by_default": true
+}

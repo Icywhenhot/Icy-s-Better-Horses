@@ -99,7 +99,7 @@ public final class HorseCombat implements HorseFeature {
                         BhHorseAttributes.Source.ABILITY, SLOW_KEY);
             }
         }
-        Vec3 motion = horse.getDeltaMovement();
+        Vec3 motion = data.bh_getKnownMovement();
         Vec3 flat = new Vec3(motion.x, 0.0D, motion.z);
         publishCharge(horse, data, flat.length());
 
@@ -189,7 +189,7 @@ public final class HorseCombat implements HorseFeature {
         float yaw = horse.getYRot();
         boolean rolling = !Float.isNaN(lastYaw)
                 && Math.abs(Mth.degreesDifference(lastYaw, yaw)) < TURN_TOLERANCE
-                && horse.getDeltaMovement().horizontalDistanceSqr() > 0.001D;
+                && IHorseData.of(horse).bh_getKnownMovement().horizontalDistanceSqr() > 0.001D;
         lastYaw = yaw;
         straight = rolling ? Math.min(FULL_WIND, straight + 1) : 0;
     }

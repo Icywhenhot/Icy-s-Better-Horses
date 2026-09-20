@@ -1,0 +1,31 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_icelandic.name",
+  "category": "icys_better_horses:breeds",
+  "icon": "icys-better-horses:icelandic_horse_spawn_egg",
+  "sortnum": 17,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_icelandic.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_icelandic.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_icelandic.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_icelandic.ability.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_icelandic.ability.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_icelandic.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_icelandic.spawns.text"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:icelandic_horse"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.pony.name",
+  "category": "icys_better_horses:classes",
+  "icon": "minecraft:powder_snow_bucket",
+  "sortnum": 15,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.pony.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.pony.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.pony.perks.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.pony.perks.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.pony.perks.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.pony.stats.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.pony.stats.text"
+    }
+  ]
+}

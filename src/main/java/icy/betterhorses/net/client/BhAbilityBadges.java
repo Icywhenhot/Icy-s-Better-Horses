@@ -277,8 +277,11 @@ public final class BhAbilityBadges {
         int y = screenH - HOTBAR_HEIGHT + (HOTBAR_HEIGHT - BASH_SIZE) / 2;
         int frame = Mth.clamp(Math.round(charge * BASH_FRAMES / 100.0F), 0, BASH_FRAMES);
 
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
         gfx.blit(BASH[frame], x, y,
                 0.0F, 0.0F, BASH_SIZE, BASH_SIZE, BASH_SIZE, BASH_SIZE);
+        RenderSystem.disableBlend();
     }
 
     private static void tint(GuiGraphics gfx, int color) {

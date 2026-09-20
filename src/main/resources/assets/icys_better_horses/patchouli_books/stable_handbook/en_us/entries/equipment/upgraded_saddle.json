@@ -1,0 +1,43 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.name",
+  "category": "icys_better_horses:equipment",
+  "icon": "icys-better-horses:upgraded_saddle",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "icys-better-horses:upgraded_saddle",
+      "title": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.recipe.title1"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.recipe.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.unlocks.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.unlocks.text"
+    },
+    {
+      "type": "icys_better_horses:padded_spotlight",
+      "item": "minecraft:chest",
+      "title": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.chest.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.chest.text"
+    },
+    {
+      "type": "icys_better_horses:padded_spotlight",
+      "item": "minecraft:ender_chest",
+      "title": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.ender_chest.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.ender_chest.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.stats.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.stats.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.stats.text2"
+    }
+  ]
+}

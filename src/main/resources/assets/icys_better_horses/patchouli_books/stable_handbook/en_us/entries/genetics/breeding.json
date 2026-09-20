@@ -1,0 +1,36 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.genetics.breeding.name",
+  "category": "icys_better_horses:genetics",
+  "icon": "minecraft:golden_apple",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.genetics.breeding.gender.title",
+      "text": "book.icys-better-horses.stable_handbook.genetics.breeding.gender.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.genetics.breeding.inherit.title",
+      "text": "book.icys-better-horses.stable_handbook.genetics.breeding.inherit.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.genetics.breeding.inherit.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.genetics.breeding.stats.title",
+      "text": "book.icys-better-horses.stable_handbook.genetics.breeding.stats.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.genetics.breeding.coat.title",
+      "text": "book.icys-better-horses.stable_handbook.genetics.breeding.coat.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.genetics.breeding.coat.text2"
+    }
+  ]
+}

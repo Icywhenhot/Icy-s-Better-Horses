@@ -1,0 +1,27 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.western.name",
+  "category": "icys_better_horses:classes",
+  "icon": "minecraft:map",
+  "sortnum": 18,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.western.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.western.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.western.about.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.western.perks.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.western.perks.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.western.stats.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.western.stats.text"
+    }
+  ]
+}

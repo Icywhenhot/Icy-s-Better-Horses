@@ -7,7 +7,7 @@
             "items": [
               "patchouli:guide_book"
             ],
-            "nbt": "{\"patchouli:book\":\"icys-better-horses:stable_handbook\"}"
+            "nbt": "{\"patchouli:book\":\"icys_better_horses:stable_handbook\"}"
           }
         ]
       },
@@ -20,7 +20,7 @@
       "translate": "advancements.icys-better-horses.stable_reading.description"
     },
     "icon": {
-      "nbt": "{\"patchouli:book\":\"icys-better-horses:stable_handbook\"}",
+      "nbt": "{\"patchouli:book\":\"icys_better_horses:stable_handbook\"}",
       "item": "patchouli:guide_book"
     },
     "show_toast": true,

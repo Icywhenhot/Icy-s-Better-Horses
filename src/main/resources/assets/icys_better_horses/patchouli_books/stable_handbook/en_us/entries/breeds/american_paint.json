@@ -1,0 +1,31 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.name",
+  "category": "icys_better_horses:breeds",
+  "icon": "icys-better-horses:american_paint_horse_spawn_egg",
+  "sortnum": 19,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.ability.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.ability.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.spawns.text"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:american_paint_horse"
+    }
+  ]
+}

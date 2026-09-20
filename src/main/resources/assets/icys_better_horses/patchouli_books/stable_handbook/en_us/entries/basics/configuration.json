@@ -1,0 +1,27 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.basics.configuration.name",
+  "category": "icys_better_horses:basics",
+  "icon": "minecraft:redstone",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.configuration.file.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.configuration.file.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.configuration.toggles.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.configuration.toggles.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.configuration.toggles.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.configuration.dummy.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.configuration.dummy.text"
+    }
+  ]
+}

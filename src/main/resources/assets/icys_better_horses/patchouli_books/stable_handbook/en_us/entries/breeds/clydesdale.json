@@ -1,0 +1,31 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_clydesdale.name",
+  "category": "icys_better_horses:breeds",
+  "icon": "icys-better-horses:clydesdale_horse_spawn_egg",
+  "sortnum": 14,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_clydesdale.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_clydesdale.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_clydesdale.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_clydesdale.ability.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_clydesdale.ability.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_clydesdale.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_clydesdale.spawns.text"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:clydesdale_horse"
+    }
+  ]
+}

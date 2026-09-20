@@ -1,0 +1,27 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.travel.gaits.name",
+  "category": "icys_better_horses:travel",
+  "icon": "minecraft:saddle",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.travel.gaits.cycle.title",
+      "text": "book.icys-better-horses.stable_handbook.travel.gaits.cycle.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.travel.gaits.speeds.title",
+      "text": "book.icys-better-horses.stable_handbook.travel.gaits.speeds.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.travel.gaits.speeds.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.travel.gaits.reins.title",
+      "text": "book.icys-better-horses.stable_handbook.travel.gaits.reins.text"
+    }
+  ]
+}

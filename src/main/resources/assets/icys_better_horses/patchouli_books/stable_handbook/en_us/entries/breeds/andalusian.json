@@ -1,0 +1,31 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_andalusian.name",
+  "category": "icys_better_horses:breeds",
+  "icon": "icys-better-horses:andalusian_horse_spawn_egg",
+  "sortnum": 7,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_andalusian.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_andalusian.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_andalusian.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_andalusian.ability.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_andalusian.ability.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_andalusian.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_andalusian.spawns.text"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:andalusian_horse"
+    }
+  ]
+}

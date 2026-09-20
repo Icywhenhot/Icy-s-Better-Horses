@@ -1,0 +1,23 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.equipment.wheel.name",
+  "category": "icys_better_horses:equipment",
+  "icon": "icys-better-horses:wheel",
+  "sortnum": 8,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "icys-better-horses:wheel",
+      "title": "book.icys-better-horses.stable_handbook.equipment.wheel.recipe.title1"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.equipment.wheel.recipe.text"
+    },
+    {
+      "type": "icys_better_horses:padded_spotlight",
+      "item": "icys-better-horses:wheel",
+      "title": "book.icys-better-horses.stable_handbook.equipment.wheel.info.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.wheel.info.text"
+    }
+  ]
+}

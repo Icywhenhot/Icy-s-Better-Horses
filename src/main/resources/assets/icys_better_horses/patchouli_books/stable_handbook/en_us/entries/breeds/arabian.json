@@ -1,0 +1,31 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_arabian.name",
+  "category": "icys_better_horses:breeds",
+  "icon": "icys-better-horses:arabian_horse_spawn_egg",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_arabian.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_arabian.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_arabian.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_arabian.ability.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_arabian.ability.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_arabian.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_arabian.spawns.text"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:arabian_horse"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.draft.name",
+  "category": "icys_better_horses:classes",
+  "icon": "minecraft:chest",
+  "sortnum": 10,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.draft.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.draft.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.draft.perks.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.draft.perks.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.draft.perks.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.draft.stats.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.draft.stats.text"
+    }
+  ]
+}

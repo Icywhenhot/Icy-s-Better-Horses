@@ -1,0 +1,17 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.root.name",
+  "category": "icys_better_horses:classes",
+  "icon": "minecraft:saddle",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.root.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.root.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.root.about.text2"
+    }
+  ]
+}

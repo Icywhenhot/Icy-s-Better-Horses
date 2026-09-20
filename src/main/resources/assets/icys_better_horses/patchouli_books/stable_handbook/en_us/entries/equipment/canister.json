@@ -1,0 +1,23 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.equipment.canister.name",
+  "category": "icys_better_horses:equipment",
+  "icon": "icys-better-horses:canister",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "icys-better-horses:canister",
+      "title": "book.icys-better-horses.stable_handbook.equipment.canister.recipe.title1"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.equipment.canister.recipe.text"
+    },
+    {
+      "type": "icys_better_horses:padded_spotlight",
+      "item": "icys-better-horses:canister",
+      "title": "book.icys-better-horses.stable_handbook.equipment.canister.info.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.canister.info.text"
+    }
+  ]
+}

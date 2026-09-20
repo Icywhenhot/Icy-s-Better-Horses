@@ -1,0 +1,22 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.genetics.traits.name",
+  "category": "icys_better_horses:genetics",
+  "icon": "minecraft:paper",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.genetics.traits.four.title",
+      "text": "book.icys-better-horses.stable_handbook.genetics.traits.four.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.genetics.traits.four.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.genetics.traits.see.title",
+      "text": "book.icys-better-horses.stable_handbook.genetics.traits.see.text"
+    }
+  ]
+}

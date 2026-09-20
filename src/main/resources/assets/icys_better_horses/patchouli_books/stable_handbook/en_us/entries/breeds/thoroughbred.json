@@ -1,0 +1,31 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_thoroughbred.name",
+  "category": "icys_better_horses:breeds",
+  "icon": "icys-better-horses:thoroughbred_horse_spawn_egg",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_thoroughbred.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_thoroughbred.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_thoroughbred.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_thoroughbred.ability.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_thoroughbred.ability.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_thoroughbred.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_thoroughbred.spawns.text"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:thoroughbred_horse"
+    }
+  ]
+}

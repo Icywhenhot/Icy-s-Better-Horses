@@ -1,0 +1,33 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.name",
+  "category": "icys_better_horses:equipment",
+  "icon": "icys-better-horses:horse_hooves_gear",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "icys-better-horses:horse_hooves_gear",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.recipe.title1"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.recipe.text"
+    },
+    {
+      "type": "icys_better_horses:padded_spotlight",
+      "item": "icys-better-horses:horse_hooves_gear",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.info.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.info.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.frost_walker.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.frost_walker.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.speed.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.speed.text"
+    }
+  ]
+}

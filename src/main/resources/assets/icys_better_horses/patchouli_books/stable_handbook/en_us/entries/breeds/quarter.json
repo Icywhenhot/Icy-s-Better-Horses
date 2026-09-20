@@ -1,0 +1,31 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_quarter.name",
+  "category": "icys_better_horses:breeds",
+  "icon": "icys-better-horses:quarter_horse_spawn_egg",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_quarter.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_quarter.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_quarter.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_quarter.ability.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_quarter.ability.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_quarter.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_quarter.spawns.text"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:quarter_horse"
+    }
+  ]
+}

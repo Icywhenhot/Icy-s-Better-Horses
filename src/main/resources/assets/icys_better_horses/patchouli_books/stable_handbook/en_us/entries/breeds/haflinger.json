@@ -1,0 +1,31 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_haflinger.name",
+  "category": "icys_better_horses:breeds",
+  "icon": "icys-better-horses:haflinger_horse_spawn_egg",
+  "sortnum": 16,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_haflinger.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_haflinger.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_haflinger.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_haflinger.ability.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_haflinger.ability.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_haflinger.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_haflinger.spawns.text"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:haflinger_horse"
+    }
+  ]
+}

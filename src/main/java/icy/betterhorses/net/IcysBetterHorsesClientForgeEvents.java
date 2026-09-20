@@ -1,5 +1,6 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.client.BhHorseHud;
 import icy.betterhorses.net.client.HorseGearController;
 import icy.betterhorses.net.client.HorseInfoScreen;
 import icy.betterhorses.net.client.HorseRosterScreen;
@@ -21,6 +22,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -85,6 +87,11 @@ public final class IcysBetterHorsesClientForgeEvents {
         while (IcysBetterHorsesClient.CART_SIZE_KEY.consumeClick()) {
             trySwapCartSize(client);
         }
+    }
+
+    @SubscribeEvent
+    public static void onRenderGui(RenderGuiEvent.Post event) {
+        BhHorseHud.render(event.getGuiGraphics());
     }
 
     @SubscribeEvent

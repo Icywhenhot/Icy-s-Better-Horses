@@ -1,0 +1,31 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.name",
+  "category": "icys_better_horses:basics",
+  "icon": "minecraft:name_tag",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.owned.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.owned.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.command_wheel.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.command_wheel.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.command_wheel.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.whistle_bond.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.whistle_bond.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.whistle_bond.text2"
+    }
+  ]
+}

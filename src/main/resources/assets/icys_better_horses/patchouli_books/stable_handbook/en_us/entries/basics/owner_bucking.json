@@ -1,0 +1,23 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.basics.owner_bucking.name",
+  "category": "icys_better_horses:basics",
+  "icon": "minecraft:iron_sword",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.owner_bucking.yours.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.owner_bucking.yours.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.owner_bucking.trust.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.owner_bucking.trust.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.owner_bucking.toggle.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.owner_bucking.toggle.text"
+    }
+  ]
+}

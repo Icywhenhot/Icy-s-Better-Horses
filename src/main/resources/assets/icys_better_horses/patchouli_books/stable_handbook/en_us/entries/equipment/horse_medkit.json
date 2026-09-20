@@ -1,0 +1,23 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.equipment.horse_medkit.name",
+  "category": "icys_better_horses:equipment",
+  "icon": "icys-better-horses:horse_medkit_gear",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "icys-better-horses:horse_medkit_gear",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_medkit.recipe.title1"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_medkit.recipe.text"
+    },
+    {
+      "type": "icys_better_horses:padded_spotlight",
+      "item": "icys-better-horses:horse_medkit_gear",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_medkit.info.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_medkit.info.text"
+    }
+  ]
+}

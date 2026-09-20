@@ -1,0 +1,27 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.basics.horse_info_screen.name",
+  "category": "icys_better_horses:basics",
+  "icon": "minecraft:writable_book",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.horse_info_screen.open.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_info_screen.open.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.horse_info_screen.shown.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_info_screen.shown.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.horse_info_screen.bars.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_info_screen.bars.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_info_screen.bars.text2"
+    }
+  ]
+}

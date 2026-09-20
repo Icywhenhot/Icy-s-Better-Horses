@@ -1,0 +1,40 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.basics.your_horses.name",
+  "category": "icys_better_horses:basics",
+  "icon": "minecraft:compass",
+  "sortnum": 7,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.your_horses.open.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.your_horses.open.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.your_horses.preview.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.your_horses.preview.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.your_horses.preview.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.your_horses.coords.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.your_horses.coords.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.your_horses.coords.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.your_horses.actions.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.your_horses.actions.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.your_horses.actions.text2"
+    }
+  ]
+}

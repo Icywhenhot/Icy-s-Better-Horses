@@ -51,12 +51,7 @@ public final class BhHorseSpawnRules {
     public static boolean checkHorseGroundRules(LevelAccessor level,
                                                 MobSpawnType reason,
                                                 BlockPos pos) {
-        boolean ignoresLight = reason == MobSpawnType.SPAWNER
-                || reason == MobSpawnType.SPAWN_EGG
-                || reason == MobSpawnType.COMMAND
-                || reason == MobSpawnType.DISPENSER
-                || reason == MobSpawnType.BUCKET;
-        if (!ignoresLight && level.getRawBrightness(pos, 0) <= 8) {
+        if (level.getRawBrightness(pos, 0) <= 8) {
             return false;
         }
 

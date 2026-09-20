@@ -3,7 +3,9 @@ package icy.betterhorses.net;
 import icy.betterhorses.net.client.BhClientCaches;
 
 import icy.betterhorses.net.entity.PercheronHorse;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Map;
@@ -14,6 +16,7 @@ public final class BhRiderSeat {
     public static final double REAR_CAMERA_FOLLOW = 0.64D;
 
     private static final double LARGE_SEAT_LIFT = 0.25D;
+    private static final double PLAYER_SEAT_DROP = 0.6D;
 
     private static final Map<Integer, Vec3> APPLIED = new ConcurrentHashMap<>();
 
@@ -21,6 +24,10 @@ public final class BhRiderSeat {
 
     public static double seatLift(AbstractHorse horse) {
         return horse instanceof PercheronHorse ? LARGE_SEAT_LIFT : 0.0D;
+    }
+
+    public static double seatDrop(Entity passenger) {
+        return passenger instanceof Player ? PLAYER_SEAT_DROP : 0.0D;
     }
 
     public static void publish(int horseId, Vec3 shift) {

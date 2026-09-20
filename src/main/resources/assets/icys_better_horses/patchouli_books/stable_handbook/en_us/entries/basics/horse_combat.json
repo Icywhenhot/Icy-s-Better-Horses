@@ -1,0 +1,80 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.combat.horse_combat.name",
+  "category": "icys_better_horses:basics",
+  "icon": "minecraft:diamond_horse_armor",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.charge.title",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.charge.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.charge.text2"
+    },
+    {
+      "type": "icys_better_horses:charge_meter",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.meter.title",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.meter.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.meter.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.damage.title",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.damage.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.damage.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.spared.title",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.spared.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.spared.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.kick.title",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.kick.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.kick.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.defend.title",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.defend.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.defend.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.recall.title",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.recall.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.recall.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.spook.title",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.spook.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.spook.text2"
+    }
+  ]
+}

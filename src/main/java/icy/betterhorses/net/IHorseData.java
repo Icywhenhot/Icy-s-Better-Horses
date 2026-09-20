@@ -6,6 +6,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import icy.betterhorses.net.entity.CartSize;
 import icy.betterhorses.net.entity.HorseCartEntity;
@@ -67,6 +68,8 @@ public interface IHorseData {
 
     int bh_getGear();
     void bh_setGear(int gear);
+
+    Vec3 bh_getKnownMovement();
 
     @Nullable UUID bh_getCombatTarget();
     void bh_setCombatTarget(@Nullable UUID target);
