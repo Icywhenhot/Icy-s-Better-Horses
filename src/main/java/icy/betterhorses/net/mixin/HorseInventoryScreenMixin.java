@@ -82,7 +82,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
             HorseInventoryMenu menu,
             Inventory inventory,
             AbstractHorse horse,
-            int inventoryColumns,
             CallbackInfo ci) {
         HorseInventoryLayoutAccess layoutAccess = (HorseInventoryLayoutAccess) menu;
         ((AbstractContainerScreenAccessor) (Object) this).bh_setImageHeight(
