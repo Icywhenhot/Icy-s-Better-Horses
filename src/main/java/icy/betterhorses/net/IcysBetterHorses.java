@@ -32,7 +32,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,11 +158,7 @@ public final class IcysBetterHorses implements ModInitializer {
         }
     }
 
-    // TODO: register once server events are ported.
-    public boolean onProjectileImpact(Projectile projectile, HitResult hitResult) {
-        if (!(hitResult instanceof EntityHitResult hit)) {
-            return false;
-        }
+    public static boolean bh_deflectProjectile(Projectile projectile, EntityHitResult hit) {
         Entity struck = hit.getEntity();
         AbstractHorse mount = null;
         if (struck instanceof AbstractHorse horse) {

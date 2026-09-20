@@ -26,6 +26,7 @@
 		"PanicGoalMixin",
 		"PlayerHurtMixin",
 		"PowderSnowBlockMixin",
+		"ProjectileImpactMixin",
 		"SlotAccessor",
 		"SpawnPlacementsAccessor"
 	],
