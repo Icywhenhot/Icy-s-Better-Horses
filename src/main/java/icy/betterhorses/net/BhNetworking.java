@@ -112,28 +112,49 @@ public final class BhNetworking {
 
     private static <T> void toServer(Class<T> type, Function<FriendlyByteBuf, T> decoder,
                                      BiConsumer<T, ServerPlayer> handler) {
-        ServerPlayNetworking.registerGlobalReceiver(CHANNELS.get(type),
+        ResourceLocation channel = CHANNELS.get(type);
+        boolean registered = ServerPlayNetworking.registerGlobalReceiver(channel,
                 (server, player, listener, buf, sender) -> {
                     T payload = decoder.apply(buf);
                     server.execute(() -> handler.accept(payload, player));
                 });
+        if (!registered) {
+            throw new IllegalStateException(
+                    "Better Horses channel already has a server receiver: " + channel);
+        }
     }
 
     private static <T> void toClient(Class<T> type, Function<FriendlyByteBuf, T> decoder,
                                      Consumer<T> handler) {
-        ClientPlayNetworking.registerGlobalReceiver(CHANNELS.get(type),
+        ResourceLocation channel = CHANNELS.get(type);
+        boolean registered = ClientPlayNetworking.registerGlobalReceiver(channel,
                 (client, listener, buf, sender) -> {
                     T payload = decoder.apply(buf);
                     client.execute(() -> handler.accept(payload));
                 });
+        if (!registered) {
+            throw new IllegalStateException(
+                    "Better Horses channel already has a client receiver: " + channel);
+        }
     }
 
     public static void sendToServer(Object payload) {
         ClientPlayNetworking.send(channelOf(payload), write(payload));
     }
 
+    /**
+     * Sends a payload, skipping clients without the mod's channel (e.g. vanilla clients).
+     * Fabric has no login version check like Forge's, so mismatched clients aren't kicked.
+     */
     public static void sendToPlayer(ServerPlayer player, Object payload) {
-        ServerPlayNetworking.send(player, channelOf(payload), write(payload));
+        ResourceLocation channel = channelOf(payload);
+        if (!ServerPlayNetworking.canSend(player, channel)) {
+            IcysBetterHorses.LOGGER.debug(
+                    "Skipping {} for {}: client has not registered channel {}",
+                    payload.getClass().getSimpleName(), player.getGameProfile().getName(), channel);
+            return;
+        }
+        ServerPlayNetworking.send(player, channel, write(payload));
     }
 
     private static ResourceLocation channelOf(Object payload) {
@@ -146,8 +167,13 @@ public final class BhNetworking {
     }
 
     private static FriendlyByteBuf write(Object payload) {
+        BiConsumer<Object, FriendlyByteBuf> encoder = ENCODERS.get(payload.getClass());
+        if (encoder == null) {
+            throw new IllegalArgumentException(
+                    "No Better Horses encoder registered for " + payload.getClass().getName());
+        }
         FriendlyByteBuf buf = PacketByteBufs.create();
-        ENCODERS.get(payload.getClass()).accept(payload, buf);
+        encoder.accept(payload, buf);
         return buf;
     }
 }
