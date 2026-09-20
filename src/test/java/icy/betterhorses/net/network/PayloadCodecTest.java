@@ -96,11 +96,12 @@ class PayloadCodecTest {
     }
 
     // ---- HorseManagePayload(UUID horseId, int actionOrdinal) ----
+    // UUID halves differ so a swapped msb/lsb write is caught.
 
     @Test
     void horseManagePayloadRoundTrips() {
         HorseManagePayload original =
-                new HorseManagePayload(UUID.fromString("deadbeef-dead-beef-dead-beefdeadbeef"), 7);
+                new HorseManagePayload(UUID.fromString("deadbeef-0000-1111-2222-333344445555"), 7);
         FriendlyByteBuf buf = buf();
         HorseManagePayload.encode(original, buf);
         assertEquals(original, HorseManagePayload.decode(buf));
@@ -147,11 +148,12 @@ class PayloadCodecTest {
     }
 
     // ---- HorseManageResultPayload(UUID horseId, int actionOrdinal, boolean success, String messageKey) ----
+    // Non-palindromic UUIDs, as above.
 
     @Test
     void horseManageResultPayloadRoundTripsOnSuccess() {
         HorseManageResultPayload original = new HorseManageResultPayload(
-                UUID.fromString("cafebabe-cafe-babe-cafe-babecafebabe"),
+                UUID.fromString("cafebabe-0000-1111-2222-666677778888"),
                 3,
                 true,
                 "bh.manage.success.stable");
@@ -164,7 +166,7 @@ class PayloadCodecTest {
     @Test
     void horseManageResultPayloadRoundTripsOnFailure() {
         HorseManageResultPayload original = new HorseManageResultPayload(
-                UUID.fromString("facefeed-face-feed-face-feedfacefeed"),
+                UUID.fromString("facefeed-0000-1111-2222-999900001111"),
                 9,
                 false,
                 "bh.manage.error.notrusted");
@@ -197,12 +199,12 @@ class PayloadCodecTest {
     }
 
     // ---- HorseRosterSyncPayload(List<HorseRosterEntry> entries) ----
-    // Ordinal fields include -1, the unset value.
+    // Ordinal fields include -1, the unset value. UUIDs are non-palindromic, as above.
 
     @Test
     void horseRosterSyncPayloadRoundTripsWithEntries() {
         HorseRosterEntry populated = new HorseRosterEntry(
-                UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                UUID.fromString("11111111-0000-1111-2222-444455556666"),
                 "Shadowfax",
                 "arabian",
                 1,
@@ -219,7 +221,7 @@ class PayloadCodecTest {
                 false,
                 5);
         HorseRosterEntry sentinel = new HorseRosterEntry(
-                UUID.fromString("22222222-2222-2222-2222-222222222222"),
+                UUID.fromString("22222222-0000-1111-2222-777788889999"),
                 "",
                 "clydesdale",
                 0,
