@@ -24,6 +24,7 @@
 		"MobNameTagBondMixin",
 		"MoveControlStepMixin",
 		"PanicGoalMixin",
+		"PlayerBreakSpeedMixin",
 		"PlayerHurtMixin",
 		"PowderSnowBlockMixin",
 		"ProjectileImpactMixin",

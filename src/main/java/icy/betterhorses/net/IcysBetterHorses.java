@@ -194,12 +194,11 @@ public final class IcysBetterHorses implements ModInitializer {
         applyPendingReleases();
     }
 
-    // TODO: register once server events are ported.
-    public float onMountedBreakSpeed(Player player, float speed) {
+    public static float bh_mountedBreakSpeed(Player player, float original) {
         if (player.getVehicle() instanceof AbstractHorse) {
-            return speed * 6.0F;
+            return original * 6.0F;
         }
-        return speed;
+        return original;
     }
 
     public static void handleRadialCommand(ServerPlayer player, int horseId, HorseCommand command) {
