@@ -27,11 +27,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.EntityHitResult;
@@ -67,7 +64,7 @@ public final class IcysBetterHorses implements ModInitializer {
         ModAttachments.register();
         ModEntities.registerAttributes();
         BhCriteria.register();
-        registerSpawnPlacements();
+        BhHorseSpawnRules.installSpawnPlacementOverride();
         LOGGER.info("Icy's Better Horses initialized.");
     }
 
@@ -86,14 +83,6 @@ public final class IcysBetterHorses implements ModInitializer {
         staleHorses.clear();
         pendingReleases.clear();
         HorseTracker.detach();
-    }
-
-    private static void registerSpawnPlacements() {
-        SpawnPlacements.register(
-                EntityType.HORSE,
-                SpawnPlacements.Type.ON_GROUND,
-                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                BhHorseSpawnRules::checkHorseSpawnRules);
     }
 
     // TODO: register once server events are ported.
