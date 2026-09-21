@@ -36,8 +36,6 @@ public final class BhConfig {
     private static final String KEY_GROUP_MAX = "spawn_group_max";
     private static final String KEY_SPAWN_FLOOR = "spawn_probability_floor";
 
-    private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir()
-            .resolve(IcysBetterHorses.RESOURCE_NAMESPACE + ".json");
     private static final Gson GSON = new GsonBuilder()
             .disableHtmlEscaping()
             .setPrettyPrinting()
@@ -207,15 +205,16 @@ public final class BhConfig {
     }
 
     public static synchronized void load() {
-        if (!Files.exists(CONFIG_PATH)) {
+        Path path = configPath();
+        if (!Files.exists(path)) {
             reset();
             save();
-            IcysBetterHorses.LOGGER.info("Created default config at {}", CONFIG_PATH);
+            IcysBetterHorses.LOGGER.info("Created default config at {}", path);
             return;
         }
 
         boolean needsRewrite = false;
-        try (Reader reader = Files.newBufferedReader(CONFIG_PATH, StandardCharsets.UTF_8)) {
+        try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             JsonElement parsed = JsonParser.parseReader(reader);
             if (!(parsed instanceof JsonObject root)) {
                 throw new JsonParseException("Expected a top-level JSON object");
@@ -257,7 +256,7 @@ public final class BhConfig {
         } catch (Exception exception) {
             reset();
             IcysBetterHorses.LOGGER.warn("Failed to load config from {}. Using defaults for this run; "
-                    + "the file is left as it is so nothing you set is lost.", CONFIG_PATH, exception);
+                    + "the file is left as it is so nothing you set is lost.", path, exception);
             return;
         }
 
@@ -265,7 +264,7 @@ public final class BhConfig {
             save();
         }
 
-        IcysBetterHorses.LOGGER.info("Loaded config from {}", CONFIG_PATH);
+        IcysBetterHorses.LOGGER.info("Loaded config from {}", path);
         reportAbilities();
     }
 
@@ -401,18 +400,23 @@ public final class BhConfig {
         numbers.addProperty(KEY_SPAWN_FLOOR, mineTuning.spawnFloor());
         root.add(KEY_TUNING, numbers);
 
+        Path path = configPath();
         try {
-            Files.createDirectories(CONFIG_PATH.getParent());
-            try (Writer writer = Files.newBufferedWriter(CONFIG_PATH, StandardCharsets.UTF_8)) {
+            Files.createDirectories(path.getParent());
+            try (Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
                 GSON.toJson(root, writer);
             }
         } catch (IOException exception) {
-            IcysBetterHorses.LOGGER.warn("Failed to save config to {}", CONFIG_PATH, exception);
+            IcysBetterHorses.LOGGER.warn("Failed to save config to {}", path, exception);
         }
     }
 
     private static String yesNo(boolean enabled) {
         return enabled ? "yes" : "no";
+    }
+
+    private static Path configPath() {
+        return FabricLoader.getInstance().getConfigDir().resolve(IcysBetterHorses.RESOURCE_NAMESPACE + ".json");
     }
 
     private BhConfig() {}
