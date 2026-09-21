@@ -31,7 +31,6 @@ public final class BhCommands {
 
     private BhCommands() {}
 
-    // TODO: register once server events are ported.
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher,
                                  CommandBuildContext context,
                                  Commands.CommandSelection selection) {

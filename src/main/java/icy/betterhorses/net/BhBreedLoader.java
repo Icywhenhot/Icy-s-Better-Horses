@@ -3,7 +3,10 @@ package icy.betterhorses.net;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.util.Mth;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -19,9 +22,20 @@ public final class BhBreedLoader {
 
     private BhBreedLoader() {}
 
-    // TODO: register once server events are ported.
     public static void register() {
-        // Not called until the reload listener is ported.
+        ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(
+                new SimpleSynchronousResourceReloadListener() {
+                    @Override
+                    public ResourceLocation getFabricId() {
+                        return new ResourceLocation(
+                                IcysBetterHorses.RESOURCE_NAMESPACE, "breed_data");
+                    }
+
+                    @Override
+                    public void onResourceManagerReload(ResourceManager manager) {
+                        load(manager);
+                    }
+                });
     }
 
     private static void load(ResourceManager manager) {

@@ -10,9 +10,11 @@ import icy.betterhorses.net.network.HorseRosterEntry;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.CommandSourceStack;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -20,19 +22,16 @@ import net.minecraft.world.entity.Entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.PlayerList;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.EntityHitResult;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,27 +65,35 @@ public final class IcysBetterHorses implements ModInitializer {
         BhCriteria.register();
         BhHorseSpawnRules.installSpawnPlacementOverride();
         BhNetworking.registerServer();
+
+        ServerLifecycleEvents.SERVER_STARTED.register(this::onServerStarted);
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> onServerStopping());
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> onServerStopped());
+        ServerTickEvents.END_SERVER_TICK.register(this::onServerTick);
+        ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> onEntityJoinLevel(entity, world));
+        ServerEntityEvents.ENTITY_UNLOAD.register((entity, world) -> onEntityLeaveLevel(entity));
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> onPlayerJoin(handler.getPlayer()));
+        ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register(this::onDatapackSync);
+        CommandRegistrationCallback.EVENT.register(BhCommands::register);
+        BhBreedLoader.register();
+
         LOGGER.info("Icy's Better Horses initialized.");
     }
 
-    // TODO: register once server events are ported.
     public void onServerStarted(MinecraftServer server) {
         HorseTracker.attach(server);
     }
 
-    // TODO: register once server events are ported.
     public void onServerStopping() {
         HorseTracker.recordLoadedPositions();
     }
 
-    // TODO: register once server events are ported.
     public void onServerStopped() {
         staleHorses.clear();
         pendingReleases.clear();
         HorseTracker.detach();
     }
 
-    // TODO: register once server events are ported.
     public void onEntityJoinLevel(Entity entity, Level level) {
         if (level.isClientSide()) {
             return;
@@ -102,14 +109,6 @@ public final class IcysBetterHorses implements ModInitializer {
         }
     }
 
-    // TODO: register once server events are ported.
-    public void onRegisterCommands(CommandDispatcher<CommandSourceStack> dispatcher,
-                                    CommandBuildContext context,
-                                    Commands.CommandSelection selection) {
-        BhCommands.register(dispatcher, context, selection);
-    }
-
-    // TODO: register once server events are ported.
     public void onPlayerJoin(ServerPlayer player) {
         sendTrustList(player);
         BhNetworking.sendToPlayer(player, new ConfigSyncPayload(
@@ -121,11 +120,9 @@ public final class IcysBetterHorses implements ModInitializer {
         BhNetworking.sendToPlayer(player, BreedDataPayload.current());
     }
 
-    // TODO: register once server events are ported.
-    public void onDatapackSync(@Nullable ServerPlayer player, PlayerList playerList) {
-        if (player != null) return;
-        BreedDataPayload breeds = BreedDataPayload.current();
-        playerList.getPlayers().forEach(target -> BhNetworking.sendToPlayer(target, breeds));
+    public void onDatapackSync(ServerPlayer player, boolean joined) {
+        if (joined) return;
+        BhNetworking.sendToPlayer(player, BreedDataPayload.current());
     }
 
     private void applyPendingReleases() {
@@ -153,7 +150,6 @@ public final class IcysBetterHorses implements ModInitializer {
         staleHorses.clear();
     }
 
-    // TODO: register once server events are ported.
     public void onEntityLeaveLevel(Entity entity) {
         if (entity instanceof AbstractHorse horse) {
             HorseTracker.unregister(horse);
@@ -180,12 +176,6 @@ public final class IcysBetterHorses implements ModInitializer {
         return true;
     }
 
-    // TODO: register once server events are ported.
-    public void onAddReloadListener() {
-        BhBreedLoader.register();
-    }
-
-    // TODO: register once server events are ported.
     public void onServerTick(MinecraftServer server) {
         BhTuning tuning = BhConfig.tuning();
         if (tuning.bondAmount() > 0 && server.getTickCount() % tuning.bondIntervalTicks() == 0) {
