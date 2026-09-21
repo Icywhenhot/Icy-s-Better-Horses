@@ -64,7 +64,17 @@ Equipping a chest gives the horse additional inventory storage slots.
 Setup
 For IDE setup instructions see the Fabric Documentation.
 
-Patchouli is an optional dependency for this 1.20.1 build (declared as `suggests` in fabric.mod.json); without it the in-game guide book, its recipe, and its advancement simply don't load.
+Dependencies (Minecraft 1.20.1, Fabric):
+
+Required
+Fabric Loader >=0.15.0
+Fabric API (built against 0.92.12+1.20.1)
+GeckoLib >=4.7.2
+
+Optional
+Patchouli (built against 1.20.1-85-fabric): without it the in-game guide book, its recipe, and its advancement simply don't load
+Mod Menu (built against 7.2.2)
+Cloth Config (built against 11.1.136)
 
 License
 This mod is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
