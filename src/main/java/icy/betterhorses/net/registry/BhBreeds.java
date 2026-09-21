@@ -1,7 +1,6 @@
 package icy.betterhorses.net.registry;
 
 import icy.betterhorses.net.HorseBreed;
-import icy.betterhorses.net.HorseSpecies;
 import icy.betterhorses.net.IcysBetterHorses;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -19,13 +18,13 @@ public final class BhBreeds {
         return ResourceKey.create(BhRegistries.BREED_TYPES, new ResourceLocation(IcysBetterHorses.MOD_ID, breed.id()));
     }
 
-    public static HorseSpecies speciesOf(HorseBreed breed) {
+    public static ResourceKey<SpeciesType> speciesOf(HorseBreed breed) {
         return switch (breed) {
-            case DONKEY_SPECIES -> HorseSpecies.DONKEY;
-            case MULE_SPECIES -> HorseSpecies.MULE;
-            case SKELETON_SPECIES -> HorseSpecies.SKELETON;
-            case ZOMBIE_SPECIES -> HorseSpecies.ZOMBIE;
-            default -> HorseSpecies.NONE;
+            case DONKEY_SPECIES -> BhContent.SPECIES_DONKEY.getKey();
+            case MULE_SPECIES -> BhContent.SPECIES_MULE.getKey();
+            case SKELETON_SPECIES -> BhContent.SPECIES_SKELETON.getKey();
+            case ZOMBIE_SPECIES -> BhContent.SPECIES_ZOMBIE.getKey();
+            default -> BhContent.SPECIES_NONE.getKey();
         };
     }
 }

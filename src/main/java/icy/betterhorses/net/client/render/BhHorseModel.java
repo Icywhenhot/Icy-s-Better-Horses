@@ -2,7 +2,6 @@ package icy.betterhorses.net.client.render;
 
 import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.BhGears;
-import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedHorse;
 import icy.betterhorses.net.registry.BhContent;
@@ -302,14 +301,14 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
                 : 1.0F;
         state.phaseOffset = (entity.getId() * 0.6180339887F % 1.0F) * Mth.TWO_PI;
         state.riddenHeadDrop = bhHeadDrop(entity);
-        state.commandedToStay = IHorseData.of(entity).bh_getCommand() == HorseCommand.STAY;
+        state.commandedToStay = IHorseData.of(entity).bh_getCommand().equals(BhContent.COMMAND_STAY.getKey());
         state.entityId = BhHorseRenderState.renderId(entity.getId());
         if (entity instanceof IcelandicHorse) {
             state.gaitedBlend = 1.0F;
             IHorseData data = IHorseData.of(entity);
             state.toltRequest = state.isRidden
                     ? (data.bh_getGaitGear() == BhGears.TOLT_GEAR ? 1.0F : 0.0F)
-                    : (data.bh_isOwned() && data.bh_getCommand() == HorseCommand.FOLLOW ? 1.0F : 0.0F);
+                    : (data.bh_isOwned() && data.bh_getCommand().equals(BhContent.COMMAND_FOLLOW.getKey()) ? 1.0F : 0.0F);
         }
         BhEquineGait.advanceFor(entity, state);
         setupState(state);

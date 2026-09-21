@@ -4,11 +4,13 @@ import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhCriteria;
 import icy.betterhorses.net.BhHorseSpawnRules;
 import icy.betterhorses.net.HorseBreed;
-import icy.betterhorses.net.HorseGender;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedHorse;
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.GenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
@@ -52,9 +54,9 @@ public abstract class AnimalMixin {
                 || !(self instanceof AbstractHorse selfHorse) || !(other instanceof AbstractHorse otherHorse)) {
             return;
         }
-        HorseGender selfGender = IHorseData.of(selfHorse).bh_getGender();
-        HorseGender otherGender = IHorseData.of(otherHorse).bh_getGender();
-        if (selfGender == otherGender) {
+        ResourceKey<GenderType> selfGender = IHorseData.of(selfHorse).bh_getGender();
+        ResourceKey<GenderType> otherGender = IHorseData.of(otherHorse).bh_getGender();
+        if (selfGender.equals(otherGender)) {
             cir.setReturnValue(false);
         }
     }
@@ -83,7 +85,7 @@ public abstract class AnimalMixin {
         IHorseData partnerData = IHorseData.of(partnerHorse);
         IHorseData childData = IHorseData.of(childHorse);
 
-        childData.bh_setGender(self.getRandom().nextBoolean() ? HorseGender.MALE : HorseGender.FEMALE);
+        childData.bh_setGender(self.getRandom().nextBoolean() ? BhContent.MALE.getKey() : BhContent.FEMALE.getKey());
 
         if (childHorse instanceof BhBreedHorse) {
             bh_awardFoal(breeder, childData);

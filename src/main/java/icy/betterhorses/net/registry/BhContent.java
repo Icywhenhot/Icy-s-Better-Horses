@@ -222,6 +222,31 @@ BhContent {
                     .ability(STOCK_HORSE.getKey())
                     .build());
 
+    public static final DeferredRegister<GenderType> GENDERS =
+            DeferredRegister.create(BhRegistries.GENDER_TYPES, IcysBetterHorses.MOD_ID);
+
+    public static final RegistryObject<GenderType> MALE = GENDERS.register("male", GenderType::new);
+    public static final RegistryObject<GenderType> FEMALE = GENDERS.register("female", GenderType::new);
+
+    public static final DeferredRegister<SpeciesType> SPECIES =
+            DeferredRegister.create(BhRegistries.SPECIES_TYPES, IcysBetterHorses.MOD_ID);
+
+    public static final RegistryObject<SpeciesType> SPECIES_NONE = SPECIES.register("none", SpeciesType::new);
+    public static final RegistryObject<SpeciesType> SPECIES_DONKEY = SPECIES.register("donkey", SpeciesType::new);
+    public static final RegistryObject<SpeciesType> SPECIES_MULE = SPECIES.register("mule", SpeciesType::new);
+    public static final RegistryObject<SpeciesType> SPECIES_SKELETON = SPECIES.register("skeleton", SpeciesType::new);
+    public static final RegistryObject<SpeciesType> SPECIES_ZOMBIE = SPECIES.register("zombie", SpeciesType::new);
+
+    public static final DeferredRegister<CommandType> COMMANDS =
+            DeferredRegister.create(BhRegistries.COMMAND_TYPES, IcysBetterHorses.MOD_ID);
+
+    public static final RegistryObject<CommandType> COMMAND_FOLLOW = COMMANDS.register("follow", CommandType::new);
+    public static final RegistryObject<CommandType> COMMAND_STAY = COMMANDS.register("stay", CommandType::new);
+    public static final RegistryObject<CommandType> COMMAND_RETURN_HOME = COMMANDS.register("return_home", CommandType::new);
+    public static final RegistryObject<CommandType> COMMAND_SET_HOME = COMMANDS.register("set_home", CommandType::new);
+    public static final RegistryObject<CommandType> COMMAND_WANDER = COMMANDS.register("wander", CommandType::new);
+    public static final RegistryObject<CommandType> COMMAND_ABILITY = COMMANDS.register("ability", CommandType::new);
+
     private BhContent() {
     }
 
@@ -229,6 +254,9 @@ BhContent {
         ARCHETYPES.register(modEventBus);
         ABILITIES.register(modEventBus);
         BREEDS.register(modEventBus);
+        GENDERS.register(modEventBus);
+        SPECIES.register(modEventBus);
+        COMMANDS.register(modEventBus);
     }
 
     public static void logSummary() {

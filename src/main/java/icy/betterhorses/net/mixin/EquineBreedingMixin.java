@@ -28,7 +28,7 @@ public abstract class EquineBreedingMixin {
             return;
         }
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (IHorseData.of(self).bh_getGender() != IHorseData.of(mate).bh_getGender()) {
+        if (!IHorseData.of(self).bh_getGender().equals(IHorseData.of(mate).bh_getGender())) {
             return;
         }
         cir.setReturnValue(false);

@@ -11,6 +11,7 @@ import icy.betterhorses.net.network.HorseRosterEntry;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
 import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.CommandType;
 import icy.betterhorses.net.registry.BhRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
@@ -257,15 +258,15 @@ public final class IcysBetterHorses {
         }
     }
 
-    public static void handleRadialCommand(ServerPlayer player, int horseId, HorseCommand command) {
+    public static void handleRadialCommand(ServerPlayer player, int horseId, ResourceKey<CommandType> command) {
         AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
         if (horse == null) {
             return;
         }
 
         IHorseData data = (IHorseData) horse;
-        if (command == HorseCommand.ABILITY) {
-            if (HorseCommand.toggleable(data.bh_getBreedKey())) {
+        if (command.equals(BhContent.COMMAND_ABILITY.getKey())) {
+            if (CommandType.toggleable(data.bh_getBreedKey())) {
                 boolean paused = !data.bh_isAbilityPaused();
                 data.bh_setAbilityPaused(paused);
                 player.sendSystemMessage(Component.translatable(paused
@@ -280,13 +281,13 @@ public final class IcysBetterHorses {
             playCommandAnswer(horse);
             return;
         }
-        if (command == HorseCommand.SET_HOME) {
+        if (command.equals(BhContent.COMMAND_SET_HOME.getKey())) {
             data.bh_setHome(horse.blockPosition());
-            data.bh_setCommand(HorseCommand.STAY);
+            data.bh_setCommand(BhContent.COMMAND_STAY.getKey());
             player.sendSystemMessage(Component.translatable("message.icys-better-horses.home_set"));
             BhCriteria.fire(player, BhCriteria.SET_HOME);
         } else {
-            if (command == HorseCommand.WANDER) {
+            if (command.equals(BhContent.COMMAND_WANDER.getKey())) {
                 data.bh_setWanderCenter(horse.blockPosition());
             }
             data.bh_setCommand(command);

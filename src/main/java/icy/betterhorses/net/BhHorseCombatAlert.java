@@ -1,6 +1,7 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
+import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -53,7 +54,7 @@ public final class BhHorseCombatAlert {
     private static void defend(IHorseData data, LivingEntity threat) {
         if (!icy.betterhorses.net.feature.HorseCombat.mayTarget(threat)
                 || BhHorseTraits.bondTier(data.bh_getBond()) < 1
-                || data.bh_getCommand() == HorseCommand.STAY
+                || data.bh_getCommand().equals(BhContent.COMMAND_STAY.getKey())
                 || data.bh_getCombatTarget() != null) {
             return;
         }

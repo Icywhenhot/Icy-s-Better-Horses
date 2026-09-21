@@ -12,6 +12,9 @@ import icy.betterhorses.net.entity.CartSize;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.inventory.GearSlot;
 import icy.betterhorses.net.registry.BreedType;
+import icy.betterhorses.net.registry.CommandType;
+import icy.betterhorses.net.registry.GenderType;
+import icy.betterhorses.net.registry.SpeciesType;
 
 import java.util.UUID;
 import net.minecraft.world.entity.animal.horse.Horse;
@@ -21,8 +24,8 @@ public interface IHorseData {
     @Nullable UUID bh_getOwner();
     void bh_setOwner(@Nullable UUID owner);
 
-    HorseCommand bh_getCommand();
-    void bh_setCommand(HorseCommand command);
+    ResourceKey<CommandType> bh_getCommand();
+    void bh_setCommand(ResourceKey<CommandType> command);
 
     @Nullable BlockPos bh_getHome();
     void bh_setHome(@Nullable BlockPos pos);
@@ -40,16 +43,16 @@ public interface IHorseData {
     boolean bh_hasReceivedNameTagBond();
     void bh_setReceivedNameTagBond(boolean received);
 
-    HorseGender bh_getGender();
-    void bh_setGender(HorseGender gender);
+    ResourceKey<GenderType> bh_getGender();
+    void bh_setGender(ResourceKey<GenderType> gender);
 
     HorseBreed bh_getBreed();
     void bh_setBreed(HorseBreed breed);
 
     @Nullable ResourceKey<BreedType> bh_getBreedKey();
     void bh_setBreedKey(@Nullable ResourceKey<BreedType> breed);
-    HorseSpecies bh_getSpecies();
-    void bh_setSpecies(HorseSpecies species);
+    ResourceKey<SpeciesType> bh_getSpecies();
+    void bh_setSpecies(ResourceKey<SpeciesType> species);
 
     boolean bh_isMixedBreed();
     void bh_setMixedBreed(boolean mixed);

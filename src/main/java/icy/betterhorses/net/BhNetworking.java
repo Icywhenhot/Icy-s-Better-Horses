@@ -15,6 +15,10 @@ import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.CommandType;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
@@ -48,7 +52,7 @@ public final class BhNetworking {
     public static void register() {
         toServer(RadialCommandPayload.class, RadialCommandPayload::encode, RadialCommandPayload::decode,
                 (payload, player) -> IcysBetterHorses.handleRadialCommand(
-                        player, payload.horseId(), HorseCommand.fromId(payload.commandOrdinal())));
+                        player, payload.horseId(), bh_parseCommand(payload.commandId())));
         toServer(CallHorsePayload.class, CallHorsePayload::encode, CallHorsePayload::decode,
                 (payload, player) -> IcysBetterHorses.handleCallHorse(player));
         toServer(HorseRecallPayload.class, HorseRecallPayload::encode, HorseRecallPayload::decode,
@@ -81,6 +85,13 @@ public final class BhNetworking {
                 payload -> () -> IcysBetterHorsesClient.receiveConfig(payload));
         toClient(BreedDataPayload.class, BreedDataPayload::encode, BreedDataPayload::decode,
                 payload -> () -> IcysBetterHorsesClient.receiveBreeds(payload));
+    }
+
+    private static ResourceKey<CommandType> bh_parseCommand(String raw) {
+        ResourceLocation loc = ResourceLocation.tryParse(raw);
+        return loc != null
+                ? ResourceKey.create(BhRegistries.COMMAND_TYPES, loc)
+                : BhContent.COMMAND_FOLLOW.getKey();
     }
 
     public static void sendToServer(Object payload) {

@@ -3,6 +3,7 @@ package icy.betterhorses.net.client;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.registry.BreedType;
+import icy.betterhorses.net.registry.GenderType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -55,7 +56,7 @@ public final class BhHorseHud {
                 : data.bh_getBreed().displayName(data.bh_isMixedBreed());
         Component title = Component.translatable("hud.icys-better-horses.horse_stats");
         Component[] lines = {
-                Component.translatable("hud.icys-better-horses.gender", data.bh_getGender().displayName()),
+                Component.translatable("hud.icys-better-horses.gender", GenderType.displayName(data.bh_getGender())),
                 Component.translatable("hud.icys-better-horses.breed", breedName),
                 Component.translatable("hud.icys-better-horses.speed", speedValue),
                 Component.translatable("hud.icys-better-horses.jump", jumpValue),

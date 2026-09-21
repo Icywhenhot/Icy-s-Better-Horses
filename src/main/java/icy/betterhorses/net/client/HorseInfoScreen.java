@@ -6,6 +6,7 @@ import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.BhNetworking;
 import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BreedType;
+import icy.betterhorses.net.registry.GenderType;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -156,7 +157,7 @@ public class HorseInfoScreen extends Screen {
 
         drawLabel(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.gender"),
-                data.bh_getGender().displayName());
+                GenderType.displayName(data.bh_getGender()));
         y += ROW_HEIGHT;
 
         ResourceKey<BreedType> breedKey = data.bh_getBreedKey();

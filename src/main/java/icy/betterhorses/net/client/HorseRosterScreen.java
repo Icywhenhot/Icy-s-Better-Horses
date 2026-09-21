@@ -1,7 +1,6 @@
 package icy.betterhorses.net.client;
 
 import icy.betterhorses.net.HorseBreed;
-import icy.betterhorses.net.HorseGender;
 import icy.betterhorses.net.HorseManageAction;
 import icy.betterhorses.net.HorseManagement;
 import icy.betterhorses.net.IcysBetterHorsesClient;
@@ -9,8 +8,10 @@ import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.network.HorseRosterEntry;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import icy.betterhorses.net.BhNetworking;
+import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedType;
+import icy.betterhorses.net.registry.GenderType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -618,9 +619,14 @@ public class HorseRosterScreen extends Screen {
                 ? Component.literal(BhScreenDraw.prettifyDimension(entry.dimensionId()))
                 : Component.translatable("screen.icys-better-horses.manage.resting");
         return Component.empty()
-                .append(HorseGender.fromId(entry.genderOrdinal()).displayName())
+                .append(GenderType.displayName(bh_genderKey(entry.genderId())))
                 .append(" · ")
                 .append(where);
+    }
+
+    private static ResourceKey<GenderType> bh_genderKey(String genderId) {
+        ResourceLocation loc = ResourceLocation.tryParse(genderId);
+        return loc != null ? ResourceKey.create(BhRegistries.GENDER_TYPES, loc) : BhContent.MALE.getKey();
     }
 
     @Override

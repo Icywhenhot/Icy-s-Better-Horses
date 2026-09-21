@@ -1,6 +1,6 @@
 package icy.betterhorses.net.mixin;
 
-import icy.betterhorses.net.HorseCommand;
+import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.HorseTracker;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
@@ -88,7 +88,7 @@ public abstract class EntityMixin {
         if (!player.getUUID().equals(data.bh_getOwner())) return;
         HorseTracker.setLastRidden(player.getUUID(), horse);
         data.bh_setWanderCenter(horse.blockPosition());
-        data.bh_setCommand(HorseCommand.WANDER);
+        data.bh_setCommand(BhContent.COMMAND_WANDER.getKey());
     }
 
     @Inject(method = "isInWall", at = @At("HEAD"), cancellable = true)

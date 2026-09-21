@@ -1,27 +1,30 @@
 package icy.betterhorses.net.client;
 
-import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.IHorseAbilityHost;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.feature.breed.BreedAbility;
 import icy.betterhorses.net.network.RadialCommandPayload;
 import icy.betterhorses.net.BhNetworking;
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.CommandType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 import java.util.Arrays;
 
 public class RadialMenuScreen extends Screen {
 
-    private static final HorseCommand[] COMMANDS = {
-            HorseCommand.FOLLOW,
-            HorseCommand.WANDER,
-            HorseCommand.STAY,
-            HorseCommand.RETURN_HOME,
-            HorseCommand.SET_HOME,
+    @SuppressWarnings("unchecked")
+    private static final ResourceKey<CommandType>[] COMMANDS = new ResourceKey[] {
+            BhContent.COMMAND_FOLLOW.getKey(),
+            BhContent.COMMAND_WANDER.getKey(),
+            BhContent.COMMAND_STAY.getKey(),
+            BhContent.COMMAND_RETURN_HOME.getKey(),
+            BhContent.COMMAND_SET_HOME.getKey(),
     };
     private static final int RING_INNER = 44;
     private static final int RING_OUTER = 110;
@@ -55,7 +58,7 @@ public class RadialMenuScreen extends Screen {
     private final BhAnim.Lift hover = new BhAnim.Lift();
     private long bhOpenMs;
 
-    private final HorseCommand[] commands;
+    private final ResourceKey<CommandType>[] commands;
     private final int segmentCount;
 
     public RadialMenuScreen(int horseId) {
@@ -65,19 +68,19 @@ public class RadialMenuScreen extends Screen {
         this.segmentCount = this.commands.length;
     }
 
-    private static HorseCommand[] wheelFor(int horseId) {
+    private static ResourceKey<CommandType>[] wheelFor(int horseId) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || !(mc.level.getEntity(horseId) instanceof AbstractHorse horse)) {
             return COMMANDS;
         }
         IHorseData data = IHorseData.of(horse);
         BreedAbility ability = ((IHorseAbilityHost) horse).bh_currentAbility();
-        if (!HorseCommand.toggleable(data.bh_getBreedKey())
+        if (!CommandType.toggleable(data.bh_getBreedKey())
                 && (ability == null || !ability.hasActiveSkill())) {
             return COMMANDS;
         }
-        HorseCommand[] wide = Arrays.copyOf(COMMANDS, COMMANDS.length + 1);
-        wide[COMMANDS.length] = HorseCommand.ABILITY;
+        ResourceKey<CommandType>[] wide = Arrays.copyOf(COMMANDS, COMMANDS.length + 1);
+        wide[COMMANDS.length] = BhContent.COMMAND_ABILITY.getKey();
         return wide;
     }
 
@@ -147,7 +150,7 @@ public class RadialMenuScreen extends Screen {
             float labelRadius = LABEL_RADIUS + HOVER_PUSH * 0.5F * hoverAmount[i];
             int lx = cx + Math.round((float) Math.cos(labelAngle) * labelRadius);
             int ly = cy + Math.round((float) Math.sin(labelAngle) * labelRadius);
-            String text = Component.translatable(commandKey(this.commands[i])).getString();
+            String text = CommandType.displayName(this.commands[i]).getString();
             int textColor = bh_mixColor(LABEL_COLOR, LABEL_HOVER_COLOR, hoverAmount[i]);
             gfx.drawCenteredString(font, text, lx, ly - font.lineHeight / 2, textColor);
         }
@@ -189,18 +192,7 @@ public class RadialMenuScreen extends Screen {
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
-    private void sendCommand(HorseCommand command) {
-        BhNetworking.sendToServer(new RadialCommandPayload(this.horseId, command.ordinal()));
-    }
-
-    private String commandKey(HorseCommand command) {
-        return switch (command) {
-            case FOLLOW -> "command.icys-better-horses.follow";
-            case WANDER -> "command.icys-better-horses.wander";
-            case STAY -> "command.icys-better-horses.stay";
-            case RETURN_HOME -> "command.icys-better-horses.return_home";
-            case SET_HOME -> "command.icys-better-horses.set_home";
-            case ABILITY -> "command.icys-better-horses.ability";
-        };
+    private void sendCommand(ResourceKey<CommandType> command) {
+        BhNetworking.sendToServer(new RadialCommandPayload(this.horseId, command.location().toString()));
     }
 }
