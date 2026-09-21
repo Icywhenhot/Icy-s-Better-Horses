@@ -64,6 +64,7 @@ public final class IcysBetterHorses implements ModInitializer {
         ModEntities.registerAttributes();
         BhCriteria.register();
         BhHorseSpawnRules.installSpawnPlacementOverride();
+        BhBiomeSpawns.register();
         BhNetworking.registerServer();
 
         ServerLifecycleEvents.SERVER_STARTED.register(this::onServerStarted);

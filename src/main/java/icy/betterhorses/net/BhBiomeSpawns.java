@@ -1,10 +1,49 @@
 package icy.betterhorses.net;
 
-/** TODO: port biome spawns to Fabric. Stubbed out so the mod compiles; adds no spawns yet. */
+import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
+import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
+import net.fabricmc.fabric.api.biome.v1.ModificationPhase;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.MobSpawnSettings;
+
+/**
+ * Adds horse spawns to biomes tagged {@code spawns_horses}, replacing the Forge biome modifier.
+ * Biomes that already spawn horses are skipped, and spawn chance is only ever raised.
+ */
 public final class BhBiomeSpawns {
+
+    private static final TagKey<Biome> SPAWNS = TagKey.create(Registries.BIOME,
+            new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "spawns_horses"));
 
     private BhBiomeSpawns() {}
 
-    // TODO: add spawns via Fabric's biome modification API.
-    public static void register() {}
+    public static void register() {
+        BiomeModifications
+                .create(new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "horse_biome_spawns"))
+                .add(ModificationPhase.ADDITIONS, BiomeSelectors.tag(SPAWNS), (selection, modification) -> {
+                    BhTuning tuning = BhConfig.tuning();
+                    if (tuning.spawnWeight() <= 0) {
+                        return;
+                    }
+
+                    MobSpawnSettings mobSettings = selection.getBiome().getMobSettings();
+                    boolean alreadyHasHorse = mobSettings.getMobs(MobCategory.CREATURE).unwrap().stream()
+                            .anyMatch(spawn -> spawn.type == EntityType.HORSE);
+                    float floor = (float) tuning.spawnFloor();
+
+                    if (!alreadyHasHorse) {
+                        modification.getSpawnSettings().addSpawn(MobCategory.CREATURE,
+                                new MobSpawnSettings.SpawnerData(EntityType.HORSE,
+                                        tuning.spawnWeight(), tuning.groupMin(), tuning.groupMax()));
+                    }
+                    if (!alreadyHasHorse && mobSettings.getCreatureProbability() < floor) {
+                        modification.getSpawnSettings().setCreatureSpawnProbability(floor);
+                    }
+                });
+    }
 }
