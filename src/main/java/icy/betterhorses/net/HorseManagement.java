@@ -93,7 +93,7 @@ public final class HorseManagement {
             roster.add(new HorseRosterEntry(
                     horseId,
                     horse.hasCustomName() ? horse.getCustomName().getString() : "",
-                    data.bh_getBreed().id(),
+                    data.bh_getBreedKey() != null ? data.bh_getBreedKey().location().toString() : data.bh_getBreed().id(),
                     data.bh_getGender().ordinal(),
                     data.bh_isMixedBreed(),
                     data.bh_getBond(),

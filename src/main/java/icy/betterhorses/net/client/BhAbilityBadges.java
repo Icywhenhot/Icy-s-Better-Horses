@@ -1,14 +1,17 @@
 package icy.betterhorses.net.client;
 
 import icy.betterhorses.net.BhSurge;
-import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.IcysBetterHorses;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.BreedType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -22,7 +25,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -59,21 +61,21 @@ public final class BhAbilityBadges {
     private static final Map<String, Boolean> found = new HashMap<>();
 
     private static final Map<String, ItemStack> STOCK_ICONS = Map.ofEntries(
-            Map.entry("belgian", new ItemStack(Items.BRICK)),
-            Map.entry("percheron", new ItemStack(Items.COBWEB)),
-            Map.entry("icelandic_2", new ItemStack(Items.COBWEB)),
-            Map.entry("shire", new ItemStack(Items.SHIELD)),
-            Map.entry("shire_1", new ItemStack(Items.BRICK)),
-            Map.entry("appaloosa", new ItemStack(Items.WHEAT)),
-            Map.entry("appaloosa_1", new ItemStack(Items.CARROT)),
-            Map.entry("appaloosa_2", new ItemStack(Items.GOLDEN_CARROT)),
-            Map.entry("friesian_1", new ItemStack(Items.POPPY)),
-            Map.entry("andalusian_1", new ItemStack(Items.IRON_CHESTPLATE)),
-            Map.entry("mustang_1", new ItemStack(Items.GLISTERING_MELON_SLICE)),
-            Map.entry("clydesdale", new ItemStack(Items.IRON_HORSE_ARMOR)),
-            Map.entry("clydesdale_1", new ItemStack(Items.ARROW)),
+            Map.entry("brick_break", new ItemStack(Items.BRICK)),
+            Map.entry("slow_block_immunity", new ItemStack(Items.COBWEB)),
+            Map.entry("hardy_northern_2", new ItemStack(Items.COBWEB)),
+            Map.entry("intimidation", new ItemStack(Items.SHIELD)),
+            Map.entry("intimidation_1", new ItemStack(Items.BRICK)),
+            Map.entry("stock_horse", new ItemStack(Items.WHEAT)),
+            Map.entry("stock_horse_1", new ItemStack(Items.CARROT)),
+            Map.entry("stock_horse_2", new ItemStack(Items.GOLDEN_CARROT)),
+            Map.entry("friesian_presence_1", new ItemStack(Items.POPPY)),
+            Map.entry("second_chance_1", new ItemStack(Items.IRON_CHESTPLATE)),
+            Map.entry("wild_instincts_1", new ItemStack(Items.GLISTERING_MELON_SLICE)),
+            Map.entry("ironclad", new ItemStack(Items.IRON_HORSE_ARMOR)),
+            Map.entry("ironclad_1", new ItemStack(Items.ARROW)),
             Map.entry("american_paint", new ItemStack(Items.COMPASS)),
-            Map.entry("haflinger_1", new ItemStack(ModItems.HORSE_CART.get())),
+            Map.entry("hearthlight_1", new ItemStack(ModItems.HORSE_CART.get())),
             Map.entry("perk_1", new ItemStack(Items.GOLDEN_APPLE)),
             Map.entry("perk_2", new ItemStack(Items.POWDER_SNOW_BUCKET)),
             Map.entry("perk_3", new ItemStack(Items.FEATHER)));
@@ -111,16 +113,20 @@ public final class BhAbilityBadges {
     public static void render(GuiGraphics gfx, Font font, int screenW, int screenH,
                               AbstractHorse horse) {
         IHorseData data = IHorseData.of(horse);
-        HorseBreed breed = data.bh_getBreed();
-        if (!breed.isRealBreed()) {
+        ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
+        if (breedKey == null) {
+            return;
+        }
+        ResourceLocation basis = badgeBasis(breedKey);
+        if (basis == null) {
             return;
         }
 
         Set<String> live = new HashSet<>();
         for (Badge badge : new Badge[]{
-                read(breed, data.bh_getSurge(), false),
-                read(breed, data.bh_getPulse(), false),
-                read(breed, data.bh_getPerkSurge(), true)}) {
+                read(basis, data.bh_getSurge(), false),
+                read(basis, data.bh_getPulse(), false),
+                read(basis, data.bh_getPerkSurge(), true)}) {
             if (badge != null) {
                 shown.put(badge.key, badge);
                 live.add(badge.key);
@@ -155,16 +161,34 @@ public final class BhAbilityBadges {
         shield(gfx, screenW, screenH, data.bh_getCharge());
     }
 
-    private static @Nullable Badge read(HorseBreed breed, int packed, boolean road) {
+    private static @Nullable ResourceLocation badgeBasis(ResourceKey<BreedType> breedKey) {
+        BreedType type = BhRegistries.breedTypeRegistry().getValue(breedKey.location());
+        if (type == null) {
+            return null;
+        }
+        return type.abilities().isEmpty() ? breedKey.location() : type.abilities().get(0).location();
+    }
+
+    private static @Nullable Badge read(ResourceLocation basis, int packed, boolean road) {
         int phase = BhSurge.phase(packed);
         if (phase == BhSurge.IDLE) {
             return null;
         }
         int variant = BhSurge.variant(packed);
-        String key = road
-                ? (variant == 0 ? ROAD_SLOT : "perk_" + variant)
-                : breed.name().toLowerCase(Locale.ROOT) + (variant == 0 ? "" : "_" + variant);
-        Component label = Component.translatable("hud.icys-better-horses.ability." + key);
+        String namespace;
+        String path;
+        if (road) {
+            namespace = IcysBetterHorses.RESOURCE_NAMESPACE;
+            path = variant == 0 ? ROAD_SLOT : "perk_" + variant;
+        } else {
+            namespace = basis.getNamespace().equals(IcysBetterHorses.MOD_ID)
+                    ? IcysBetterHorses.RESOURCE_NAMESPACE
+                    : basis.getNamespace();
+            path = basis.getPath() + (variant == 0 ? "" : "_" + variant);
+        }
+        String key = namespace.equals(IcysBetterHorses.RESOURCE_NAMESPACE) ? path : namespace + "_" + path;
+        ResourceLocation icon = new ResourceLocation(namespace, "textures/gui/hud/icon_" + path + ".png");
+        Component label = Component.translatable("hud." + namespace + ".ability." + path);
         int percent = BhSurge.percent(packed);
         Component value = switch (phase) {
             case BhSurge.COOLING -> Component.translatable("hud.icys-better-horses.ability.cooling");
@@ -175,7 +199,7 @@ public final class BhAbilityBadges {
         };
         boolean metered = (phase == BhSurge.ACTIVE || phase == BhSurge.COOLING)
                 && BhSurge.span(packed) > 0;
-        return new Badge(key, label, value, metered ? BhSurge.fill(packed) : -1.0F,
+        return new Badge(key, icon, label, value, metered ? BhSurge.fill(packed) : -1.0F,
                 phase == BhSurge.COOLING);
     }
 
@@ -194,7 +218,7 @@ public final class BhAbilityBadges {
         tint(gfx, tint);
         gfx.blit(plate.tex(), left, y, 0.0F, 0.0F, plate.width(), HEIGHT, plate.width(), HEIGHT);
 
-        ResourceLocation own = iconId(badge.key);
+        ResourceLocation own = badge.icon();
         if (present(own)) {
             gfx.blit(own, left + plate.iconX(), y + ICON_Y, 0.0F, 0.0F, ICON, ICON, ICON, ICON);
         } else {
@@ -258,11 +282,6 @@ public final class BhAbilityBadges {
         return BASH[Mth.clamp(Math.round(percent * BASH_FRAMES / 100.0F), 0, BASH_FRAMES)];
     }
 
-    private static ResourceLocation iconId(String key) {
-        return new ResourceLocation(
-                "icys-better-horses", "textures/gui/hud/icon_" + key + ".png");
-    }
-
     private static boolean present(ResourceLocation id) {
         return found.computeIfAbsent(id.toString(), k -> Minecraft.getInstance()
                 .getResourceManager().getResource(id).isPresent());
@@ -292,7 +311,7 @@ public final class BhAbilityBadges {
                 ((color >>> 24) & 255) / 255f);
     }
 
-    private record Badge(String key, Component label, Component value, float fill, boolean cooling) {}
+    private record Badge(String key, ResourceLocation icon, Component label, Component value, float fill, boolean cooling) {}
 
     private record Plate(ResourceLocation tex, int width, int iconX, int textX, int textW) {}
 

@@ -1,7 +1,9 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.world.SimpleContainer;
@@ -23,7 +25,7 @@ public abstract class PowderSnowBlockMixin {
             return;
         }
 
-        if (data.bh_getBreed().archetype().walksOnPowderSnow()) {
+        if (ArchetypePerks.walksOnPowderSnow(BhBreedData.of(data.bh_getBreedKey()).archetype())) {
             cir.setReturnValue(true);
             return;
         }

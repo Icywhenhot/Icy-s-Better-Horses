@@ -1,6 +1,7 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.entity.CartSize;
+import icy.betterhorses.net.feature.breed.BreedAbility;
 import icy.betterhorses.net.feature.breed.Ironclad;
 import icy.betterhorses.net.network.BreedDataPayload;
 import icy.betterhorses.net.network.ConfigSyncPayload;
@@ -9,6 +10,8 @@ import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRosterEntry;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.BhRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -86,6 +89,8 @@ public final class IcysBetterHorses {
         BhNetworking.register();
         BhBiomeSpawns.register(modEventBus);
         modEventBus.addListener(this::registerSpawnPlacements);
+        modEventBus.addListener(BhRegistries::onNewRegistry);
+        BhContent.register(modEventBus);
         modEventBus.addListener(this::onCommonSetup);
         modEventBus.addListener(ModEntities::registerAttributes);
         MinecraftForge.EVENT_BUS.register(this);
@@ -94,6 +99,8 @@ public final class IcysBetterHorses {
 
     private void onCommonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(BhCriteria::register);
+        event.enqueueWork(BhContent::logSummary);
+        event.enqueueWork(BhBreedData::initializeBuiltIns);
     }
 
     @SubscribeEvent
@@ -258,11 +265,18 @@ public final class IcysBetterHorses {
 
         IHorseData data = (IHorseData) horse;
         if (command == HorseCommand.ABILITY) {
-            boolean paused = !data.bh_isAbilityPaused();
-            data.bh_setAbilityPaused(paused);
-            player.sendSystemMessage(Component.translatable(paused
-                    ? "message.icys-better-horses.ability_off"
-                    : "message.icys-better-horses.ability_on"));
+            if (HorseCommand.toggleable(data.bh_getBreedKey())) {
+                boolean paused = !data.bh_isAbilityPaused();
+                data.bh_setAbilityPaused(paused);
+                player.sendSystemMessage(Component.translatable(paused
+                        ? "message.icys-better-horses.ability_off"
+                        : "message.icys-better-horses.ability_on"));
+            } else {
+                BreedAbility ability = ((IHorseAbilityHost) horse).bh_currentAbility();
+                if (ability != null && ability.hasActiveSkill()) {
+                    ability.onActivate(horse, data);
+                }
+            }
             playCommandAnswer(horse);
             return;
         }

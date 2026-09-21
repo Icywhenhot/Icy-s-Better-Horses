@@ -1,23 +1,32 @@
 package icy.betterhorses.net.feature;
 
+import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.BhSurge;
-import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.feature.breed.BhAbilityState;
 import icy.betterhorses.net.feature.breed.BreedAbility;
+import icy.betterhorses.net.registry.AbilityType;
+import icy.betterhorses.net.registry.ArchetypeType;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.BreedType;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 public final class BreedAbilities implements HorseFeature {
 
     private final BhAbilityState state = new BhAbilityState();
     private final ArchetypePerks perks = new ArchetypePerks();
-    private @Nullable HorseBreed active;
+    private @Nullable ResourceKey<BreedType> activeBreedKey;
+    private boolean breedInitialized;
+    private @Nullable AbilityType activeAbilityType;
     private @Nullable BreedAbility ability;
     private boolean offered;
     private int lastRows = -1;
@@ -34,15 +43,18 @@ public final class BreedAbilities implements HorseFeature {
             data.bh_setStompTicks(stomping - 1);
         }
 
-        HorseBreed breed = data.bh_getBreed();
-        if (breed != active) {
+        ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
+        ArchetypeType archetype = BhBreedData.of(breedKey).archetype();
+        if (!breedInitialized || !Objects.equals(breedKey, activeBreedKey)) {
+            breedInitialized = true;
             if (ability != null) {
                 ability.onDetach(horse, data);
             }
             perks.clear(horse);
-            active = breed;
-            ability = breed.newAbility();
-            perks.onBreedChanged(horse, breed.archetype());
+            activeBreedKey = breedKey;
+            activeAbilityType = resolveAbilityType(breedKey);
+            ability = activeAbilityType == null ? null : activeAbilityType.create();
+            perks.onBreedChanged(horse, archetype);
         }
 
         int rows = data.bh_getChestRows();
@@ -52,11 +64,14 @@ public final class BreedAbilities implements HorseFeature {
         lastRows = rows;
 
         state.tick(horse);
-        perks.tick(horse, data, breed.archetype());
+        perks.tick(horse, data, archetype);
         if (ability == null) {
             return;
         }
-        if (!BhConfig.anyAbilityEnabled(breed)) {
+        boolean enabled = data.bh_getBreed().isRealBreed()
+                ? BhConfig.anyAbilityEnabled(data.bh_getBreed())
+                : activeAbilityType.defaultEnabled();
+        if (!enabled) {
             if (offered) {
                 ability.onDetach(horse, data);
                 offered = false;
@@ -74,6 +89,18 @@ public final class BreedAbilities implements HorseFeature {
     @Override
     public void onRemoved(AbstractHorse horse, IHorseData data) {
         if (ability != null) ability.onDetach(horse, data);
+    }
+
+    private static @Nullable AbilityType resolveAbilityType(@Nullable ResourceKey<BreedType> breedKey) {
+        if (breedKey == null) {
+            return null;
+        }
+        BreedType type = BhRegistries.breedTypeRegistry().getValue(breedKey.location());
+        if (type == null || type.abilities().isEmpty()) {
+            return null;
+        }
+        ResourceKey<AbilityType> abilityKey = type.abilities().get(0);
+        return BhRegistries.abilityTypeRegistry().getValue(abilityKey.location());
     }
 
     private static void spillOverflow(AbstractHorse horse, IHorseData data,

@@ -1,5 +1,6 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -22,7 +23,7 @@ public final class BhHorseCombatAlert {
                 continue;
             }
             IHorseData data = IHorseData.of(horse);
-            if (!ownerId.equals(data.bh_getOwner()) || !data.bh_getBreed().isRealBreed()) {
+            if (!ownerId.equals(data.bh_getOwner()) || data.bh_getBreedKey() == null) {
                 continue;
             }
             if (horse.getControllingPassenger() == owner) {
@@ -37,8 +38,8 @@ public final class BhHorseCombatAlert {
         if (data.bh_getSpookTicks() > 0) {
             return;
         }
-        double chance = data.bh_getBreed().archetype()
-                .spookChance(BhHorseTraits.bondTier(data.bh_getBond()));
+        double chance = ArchetypePerks.spookChance(BhBreedData.of(data.bh_getBreedKey()).archetype(),
+                BhHorseTraits.bondTier(data.bh_getBond()));
         if (chance <= 0.0D || horse.getRandom().nextDouble() >= chance) {
             return;
         }

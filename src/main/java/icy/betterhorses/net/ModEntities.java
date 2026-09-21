@@ -19,9 +19,13 @@ import icy.betterhorses.net.entity.MustangHorse;
 import icy.betterhorses.net.entity.QuarterHorse;
 import icy.betterhorses.net.entity.ArabianHorse;
 import icy.betterhorses.net.entity.MorganHorse;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.BreedType;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import org.jetbrains.annotations.Nullable;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -146,25 +150,16 @@ public final class ModEntities {
                     .clientTrackingRange(10)
                     .build(key("morgan_horse")));
 
-    public static EntityType<? extends BhBreedHorse> forBreed(HorseBreed breed) {
-        return switch (breed) {
-            case THOROUGHBRED -> THOROUGHBRED_HORSE.get();
-            case ARABIAN -> ARABIAN_HORSE.get();
-            case QUARTER -> QUARTER_HORSE.get();
-            case FRIESIAN -> FRIESIAN_HORSE.get();
-            case ANDALUSIAN -> ANDALUSIAN_HORSE.get();
-            case PERCHERON -> PERCHERON_HORSE.get();
-            case CLYDESDALE -> CLYDESDALE_HORSE.get();
-            case SHIRE -> SHIRE_HORSE.get();
-            case BELGIAN -> BELGIAN_HORSE.get();
-            case ICELANDIC -> ICELANDIC_HORSE.get();
-            case MUSTANG -> MUSTANG_HORSE.get();
-            case HAFLINGER -> HAFLINGER_HORSE.get();
-            case MORGAN -> MORGAN_HORSE.get();
-            case AMERICAN_PAINT -> AMERICAN_PAINT_HORSE.get();
-            case APPALOOSA -> APPALOOSA_HORSE.get();
-            default -> MUSTANG_HORSE.get();
-        };
+    //No more jankyness!!!!! YIPPYYPYPYPYPPPYPY
+    public static @Nullable EntityType<? extends BhBreedHorse> forBreed(ResourceKey<BreedType> breedKey) {
+        BreedType type = BhRegistries.breedTypeRegistry().getValue(breedKey.location());
+        if (type == null) {
+            return null;
+        }
+        EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(type.entityType().location());
+        @SuppressWarnings("unchecked")
+        EntityType<? extends BhBreedHorse> result = (EntityType<? extends BhBreedHorse>) entityType;
+        return result;
     }
 
     public static void register(IEventBus modEventBus) {

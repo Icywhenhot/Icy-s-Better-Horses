@@ -9,12 +9,15 @@ import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.network.HorseRosterEntry;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import icy.betterhorses.net.BhNetworking;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -598,7 +601,16 @@ public class HorseRosterScreen extends Screen {
         if (!entry.customName().isEmpty()) {
             return Component.literal(entry.customName());
         }
-        return HorseBreed.byId(entry.breedId()).displayName(entry.mixedBreed());
+        return breedDisplayName(entry.breedId(), entry.mixedBreed());
+    }
+
+    private static Component breedDisplayName(String breedId, boolean mixed) {
+        ResourceLocation location = breedId.indexOf(':') >= 0 ? ResourceLocation.tryParse(breedId) : null;
+        if (location != null && BhRegistries.breedTypeRegistry().containsKey(location)) {
+            ResourceKey<BreedType> key = ResourceKey.create(BhRegistries.BREED_TYPES, location);
+            return BreedType.displayName(key, mixed);
+        }
+        return HorseBreed.byId(breedId).displayName(mixed);
     }
 
     private Component subtitle(HorseRosterEntry entry) {

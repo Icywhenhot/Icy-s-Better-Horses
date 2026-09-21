@@ -96,13 +96,13 @@ public class BhCoatsComponent implements ICustomComponent {
         PageEntity.renderEntity(gfx, this.horse,
                 this.x + BOX_WIDTH / 2.0F, this.y + MODEL_Y, rotation(), scale, 0.0F);
 
-        int total = this.horse.bhCoats().count();
+        int total = this.horse.bhCoatSet().count();
         if (total > 1) {
             arrow(gfx, font, "<", this.x, mouseX, mouseY);
             arrow(gfx, font, ">", this.x + BOX_WIDTH - ARROW_W, mouseX, mouseY);
         }
 
-        Component name = this.horse.bhCoats().displayName(this.coat);
+        Component name = this.horse.bhCoatSet().displayName(this.coat);
         gfx.drawString(font, name,
                 this.x + (BOX_WIDTH - font.width(name)) / 2, this.y + NAME_Y, INK, false);
 
@@ -133,7 +133,7 @@ public class BhCoatsComponent implements ICustomComponent {
         if (this.horse == null) {
             return false;
         }
-        int total = this.horse.bhCoats().count();
+        int total = this.horse.bhCoatSet().count();
         if (total <= 1) {
             return false;
         }

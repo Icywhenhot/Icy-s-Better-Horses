@@ -8,4 +8,10 @@ public interface BreedAbility {
     void tick(AbstractHorse horse, IHorseData data, BhAbilityState state);
 
     default void onDetach(AbstractHorse horse, IHorseData data) {}
+
+    default boolean hasActiveSkill() {
+        return false;
+    }
+
+    default void onActivate(AbstractHorse horse, IHorseData data) {}
 }

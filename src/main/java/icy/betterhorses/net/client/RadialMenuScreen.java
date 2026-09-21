@@ -1,7 +1,9 @@
 package icy.betterhorses.net.client;
 
 import icy.betterhorses.net.HorseCommand;
+import icy.betterhorses.net.IHorseAbilityHost;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.feature.breed.BreedAbility;
 import icy.betterhorses.net.network.RadialCommandPayload;
 import icy.betterhorses.net.BhNetworking;
 import net.minecraft.client.Minecraft;
@@ -65,8 +67,13 @@ public class RadialMenuScreen extends Screen {
 
     private static HorseCommand[] wheelFor(int horseId) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || !(mc.level.getEntity(horseId) instanceof AbstractHorse horse)
-                || !HorseCommand.toggleable(IHorseData.of(horse).bh_getBreed())) {
+        if (mc.level == null || !(mc.level.getEntity(horseId) instanceof AbstractHorse horse)) {
+            return COMMANDS;
+        }
+        IHorseData data = IHorseData.of(horse);
+        BreedAbility ability = ((IHorseAbilityHost) horse).bh_currentAbility();
+        if (!HorseCommand.toggleable(data.bh_getBreedKey())
+                && (ability == null || !ability.hasActiveSkill())) {
             return COMMANDS;
         }
         HorseCommand[] wide = Arrays.copyOf(COMMANDS, COMMANDS.length + 1);

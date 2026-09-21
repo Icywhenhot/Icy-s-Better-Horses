@@ -1,5 +1,11 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.BreedType;
+import net.minecraft.resources.ResourceKey;
+
+import java.util.Objects;
+
 public enum HorseCommand {
     FOLLOW,
     STAY,
@@ -8,11 +14,8 @@ public enum HorseCommand {
     WANDER,
     ABILITY;
 
-    public static boolean toggleable(HorseBreed breed) {
-        return switch (breed) {
-            case APPALOOSA -> true;
-            default -> false;
-        };
+    public static boolean toggleable(ResourceKey<BreedType> breedKey) {
+        return Objects.equals(breedKey, BhContent.APPALOOSA.getKey());
     }
 
     public static HorseCommand fromId(int id) {

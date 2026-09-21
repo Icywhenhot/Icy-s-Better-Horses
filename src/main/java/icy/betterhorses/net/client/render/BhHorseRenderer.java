@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import icy.betterhorses.net.entity.BhBreedHorse;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.inventory.GearSlot;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -11,7 +13,6 @@ import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import icy.betterhorses.net.mixin.AbstractHorseAccessor;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.item.DyeableLeatherItem;
 
@@ -75,12 +76,13 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
 
     @Override
     public ResourceLocation getTextureLocation(T entity) {
-        return entity.bhCoats().texture(entity.bhCoat(), entity.isBaby());
+        BreedType type = BhRegistries.breedTypeRegistry().getValue(entity.bhFixedBreed().location());
+        return type.coats().texture(entity.bhCoat(), entity.isBaby());
     }
 
     private static final int UNDYED_BARDING = 0xBB744F;
 
     private static ItemStack barding(AbstractHorse horse) {
-        return ((AbstractHorseAccessor) horse).bh_inventory().getItem(AbstractHorse.INV_SLOT_ARMOR);
+        return IHorseData.of(horse).bh_getBarding();
     }
 }

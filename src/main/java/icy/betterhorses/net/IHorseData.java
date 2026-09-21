@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import icy.betterhorses.net.entity.CartSize;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.inventory.GearSlot;
+import icy.betterhorses.net.registry.BreedType;
 
 import java.util.UUID;
 import net.minecraft.world.entity.animal.horse.Horse;
@@ -44,6 +45,11 @@ public interface IHorseData {
 
     HorseBreed bh_getBreed();
     void bh_setBreed(HorseBreed breed);
+
+    @Nullable ResourceKey<BreedType> bh_getBreedKey();
+    void bh_setBreedKey(@Nullable ResourceKey<BreedType> breed);
+    HorseSpecies bh_getSpecies();
+    void bh_setSpecies(HorseSpecies species);
 
     boolean bh_isMixedBreed();
     void bh_setMixedBreed(boolean mixed);
@@ -86,7 +92,7 @@ public interface IHorseData {
         if (bh_hasEnderChestGear()) {
             return 3;
         }
-        return bh_getBreed().chestRows(BhHorseTraits.bondTier(bh_getBond()));
+        return BhBreedData.of(bh_getBreedKey()).rowsAt(BhHorseTraits.bondTier(bh_getBond()));
     }
 
     int bh_getGaitGear();
@@ -139,7 +145,8 @@ public interface IHorseData {
     @Nullable HorseCartEntity bh_getCartEntity();
 
     default boolean bh_mayUseLargeCart() {
-        return CartSize.forArchetype(bh_getBreed().archetype()).isLarge();
+        ResourceKey<BreedType> breedKey = bh_getBreedKey();
+        return breedKey != null && BhBreedData.of(breedKey).archetype().allowsLargeCart();
     }
 
     boolean bh_hasLargeCart();
@@ -169,6 +176,8 @@ public interface IHorseData {
     boolean bh_hasUpgradedSaddle();
 
     void bh_equipUpgradedSaddle(ItemStack saddle);
+
+    ItemStack bh_getBarding();
 
     SimpleContainer bh_getGearContainer();
 

@@ -15,6 +15,11 @@ import icy.betterhorses.net.BhHorseStorage;
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhVanillaHorseSwap;
 import icy.betterhorses.net.BhHorseSteering;
+import icy.betterhorses.net.BhBreedData;
+import icy.betterhorses.net.HorseSpecies;
+import icy.betterhorses.net.registry.BhBreeds;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -186,7 +191,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
     @Unique private static final EntityDataAccessor<Integer> BH_GENDER_ID =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
-    @Unique private static final EntityDataAccessor<Integer> BH_BREED_ID =
+    @Unique private static final EntityDataAccessor<String> BH_BREED_ID =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.STRING);
+    @Unique private static final EntityDataAccessor<Integer> BH_SPECIES_ID =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
     @Unique private static final EntityDataAccessor<Boolean> BH_BREED_MIXED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
@@ -207,6 +214,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private static final EntityDataAccessor<Boolean> BH_CART_LARGE = bh_boolKey();
     @Unique private static final EntityDataAccessor<Boolean> BH_ENDER_CHEST = bh_boolKey();
     @Unique private static final EntityDataAccessor<Boolean> BH_UPGRADED_SADDLE = bh_boolKey();
+    @Unique private static final EntityDataAccessor<ItemStack> BH_BARDING =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.ITEM_STACK);
     @Unique private static final EntityDataAccessor<String> BH_OWNER_ID =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.STRING);
 
@@ -230,7 +239,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         this.entityData.define(BH_STABILIZER_STATE, 0);
         this.entityData.define(BH_GEAR_FLAGS, 0);
         this.entityData.define(BH_GENDER_ID, 0);
-        this.entityData.define(BH_BREED_ID, HorseBreed.UNKNOWN_SPECIES.ordinal());
+        this.entityData.define(BH_BREED_ID, "");
+        this.entityData.define(BH_SPECIES_ID, HorseSpecies.NONE.ordinal());
         this.entityData.define(BH_BREED_MIXED, false);
         this.entityData.define(BH_GEAR, 0);
         this.entityData.define(BH_GAIT_GEAR, 0);
@@ -249,6 +259,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         this.entityData.define(BH_CART_LARGE, false);
         this.entityData.define(BH_ENDER_CHEST, false);
         this.entityData.define(BH_UPGRADED_SADDLE, false);
+        this.entityData.define(BH_BARDING, ItemStack.EMPTY);
         this.entityData.define(BH_OWNER_ID, "");
     }
 
@@ -393,15 +404,65 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Override
     public HorseBreed bh_getBreed() {
-        if ((Object) this instanceof BhBreedEntity breedEntity) {
-            return breedEntity.bhFixedBreed();
+        ResourceKey<BreedType> key = bh_getBreedKey();
+        if (key != null) {
+            HorseBreed mapped = HorseBreed.byId(key.location().getPath());
+            return mapped.isRealBreed() ? mapped : HorseBreed.UNKNOWN_SPECIES;
         }
-        return HorseBreed.fromId(this.entityData.get(BH_BREED_ID));
+        return switch (bh_getSpecies()) {
+            case DONKEY -> HorseBreed.DONKEY_SPECIES;
+            case MULE -> HorseBreed.MULE_SPECIES;
+            case SKELETON -> HorseBreed.SKELETON_SPECIES;
+            case ZOMBIE -> HorseBreed.ZOMBIE_SPECIES;
+            case NONE -> HorseBreed.UNKNOWN_SPECIES;
+        };
     }
 
     @Override
     public void bh_setBreed(HorseBreed breed) {
-        bh_push(BH_BREED_ID, breed.ordinal());
+        ResourceKey<BreedType> key = BhBreeds.keyOf(breed);
+        if (key != null) {
+            bh_setBreedKey(key);
+        } else {
+            bh_setSpecies(BhBreeds.speciesOf(breed));
+        }
+    }
+
+    @Override
+    public @Nullable ResourceKey<BreedType> bh_getBreedKey() {
+        if ((Object) this instanceof BhBreedEntity breedEntity) {
+            return breedEntity.bhFixedBreed();
+        }
+        String raw = this.entityData.get(BH_BREED_ID);
+        if (raw.isEmpty()) {
+            return null;
+        }
+        ResourceLocation loc = ResourceLocation.tryParse(raw);
+        return loc == null ? null : ResourceKey.create(BhRegistries.BREED_TYPES, loc);
+    }
+
+    @Override
+    public void bh_setBreedKey(@Nullable ResourceKey<BreedType> breed) {
+        bh_push(BH_BREED_ID, breed == null ? "" : breed.location().toString());
+        if (breed != null) {
+            bh_push(BH_SPECIES_ID, HorseSpecies.NONE.ordinal());
+        }
+    }
+
+    @Override
+    public HorseSpecies bh_getSpecies() {
+        if ((Object) this instanceof BhBreedEntity) {
+            return HorseSpecies.NONE;
+        }
+        return HorseSpecies.fromId(this.entityData.get(BH_SPECIES_ID));
+    }
+
+    @Override
+    public void bh_setSpecies(HorseSpecies species) {
+        bh_push(BH_SPECIES_ID, species.ordinal());
+        if (species != HorseSpecies.NONE) {
+            bh_push(BH_BREED_ID, "");
+        }
     }
 
     @Override
@@ -440,6 +501,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public void bh_equipUpgradedSaddle(ItemStack saddle) {
         if (inventory != null) inventory.setItem(0, saddle);
+    }
+
+    @Override
+    public ItemStack bh_getBarding() {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        return self.level().isClientSide()
+                ? this.entityData.get(BH_BARDING)
+                : (inventory != null ? inventory.getItem(AbstractHorse.INV_SLOT_ARMOR) : ItemStack.EMPTY);
     }
 
     @Override
@@ -638,7 +707,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             output.put("BH_CartPlow", bh_cartPlow.save(new CompoundTag()));
         }
         output.putInt("BH_Gender", this.entityData.get(BH_GENDER_ID));
-        output.putString("BH_BreedId", this.bh_getBreed().id());
+        String breedRaw = this.entityData.get(BH_BREED_ID);
+        if (!breedRaw.isEmpty()) {
+            output.putString("BH_BreedId", breedRaw);
+        }
+        output.putInt("BH_Species", this.entityData.get(BH_SPECIES_ID));
         output.putBoolean("BH_BreedMixed", this.entityData.get(BH_BREED_MIXED));
     }
 
@@ -689,12 +762,17 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         } else {
             bh_push(BH_GENDER_ID, this.random.nextBoolean() ? 0 : 1);
         }
-        HorseBreed savedBreed = bh_readSavedBreed(input);
-        if (savedBreed != null) {
-            bh_push(BH_BREED_ID, savedBreed.ordinal());
+        if (input.contains("BH_BreedId", Tag.TAG_STRING)) {
+            bh_readBreedId(input.getString("BH_BreedId"));
+            bh_push(BH_BREED_MIXED, input.getBoolean("BH_BreedMixed"));
+        } else if (input.contains("BH_Breed", Tag.TAG_INT)) {
+            bh_applyLegacyBreed(HorseBreed.fromId(input.getInt("BH_Breed")));
             bh_push(BH_BREED_MIXED, input.getBoolean("BH_BreedMixed"));
         } else {
             bh_assignBreedPreservingCoat();
+        }
+        if (input.contains("BH_Species", Tag.TAG_INT)) {
+            bh_push(BH_SPECIES_ID, input.getInt("BH_Species"));
         }
 
         bh_setLargeCart(input.contains("BH_CartLarge") ? input.getBoolean("BH_CartLarge") : this.bh_mayUseLargeCart());
@@ -710,29 +788,50 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         bh_push(BH_GENDER_ID, this.random.nextBoolean() ? 0 : 1);
 
         if ((Object) this instanceof BhBreedEntity breedEntity) {
-            bh_push(BH_BREED_ID, breedEntity.bhFixedBreed().ordinal());
+            bh_push(BH_BREED_ID, breedEntity.bhFixedBreed().location().toString());
+            bh_push(BH_SPECIES_ID, HorseSpecies.NONE.ordinal());
             bh_push(BH_BREED_MIXED, false);
             return;
         }
 
-        if (this.bh_getBreed() != HorseBreed.UNKNOWN_SPECIES) {
+        if (bh_getBreedKey() != null || bh_getSpecies() != HorseSpecies.NONE) {
             return;
         }
 
         AbstractHorse self = (AbstractHorse) (Object) this;
         HorseBreed species = HorseBreed.speciesFor(self);
         if (species != null) {
-            bh_push(BH_BREED_ID, species.ordinal());
+            bh_push(BH_SPECIES_ID, BhBreeds.speciesOf(species).ordinal());
             bh_push(BH_BREED_MIXED, false);
         }
     }
 
     @Unique
-    private static @Nullable HorseBreed bh_readSavedBreed(CompoundTag input) {
-        if (input.contains("BH_BreedId", Tag.TAG_STRING)) {
-            return HorseBreed.byId(input.getString("BH_BreedId"));
+    private void bh_readBreedId(String raw) {
+        if (raw.indexOf(':') < 0) {
+            bh_applyLegacyBreed(HorseBreed.byId(raw));
+            return;
         }
-        return input.contains("BH_Breed", Tag.TAG_INT) ? HorseBreed.fromId(input.getInt("BH_Breed")) : null;
+        ResourceLocation loc = ResourceLocation.tryParse(raw);
+        if (loc != null && BhRegistries.breedTypeRegistry().containsKey(loc)) {
+            bh_push(BH_BREED_ID, loc.toString());
+            bh_push(BH_SPECIES_ID, HorseSpecies.NONE.ordinal());
+            return;
+        }
+        bh_push(BH_BREED_ID, "");
+        bh_push(BH_SPECIES_ID, HorseSpecies.NONE.ordinal());
+    }
+
+    @Unique
+    private void bh_applyLegacyBreed(HorseBreed legacy) {
+        ResourceKey<BreedType> key = BhBreeds.keyOf(legacy);
+        if (key != null) {
+            bh_push(BH_BREED_ID, key.location().toString());
+            bh_push(BH_SPECIES_ID, HorseSpecies.NONE.ordinal());
+        } else {
+            bh_push(BH_BREED_ID, "");
+            bh_push(BH_SPECIES_ID, BhBreeds.speciesOf(legacy).ordinal());
+        }
     }
 
     @Unique
@@ -745,7 +844,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique
     private void bh_assignBreedPreservingCoat() {
         HorseBreed picked = BhHorseTraits.pickBreed((AbstractHorse) (Object) this, this.random);
-        bh_push(BH_BREED_ID, picked.ordinal());
+        bh_applyLegacyBreed(picked);
         bh_push(BH_BREED_MIXED, false);
     }
 
@@ -1162,7 +1261,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             return;
         }
 
-        double waiver = this.bh_getBreed().archetype().fallDamageWaiver();
+        double waiver = ArchetypePerks.fallDamageWaiver(BhBreedData.of(this.bh_getBreedKey()).archetype());
         if (waiver > 0.0D && distance < waiver) {
             if (distance > 1.0D) {
                 self.playSound(SoundEvents.HORSE_LAND, 0.4F, 1.0F);
@@ -1334,6 +1433,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
                 this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal()).is(Items.ENDER_CHEST));
         bh_push(BH_UPGRADED_SADDLE,
                 this.inventory != null && this.inventory.getItem(0).is(ModItems.UPGRADED_SADDLE.get()));
+        this.entityData.set(BH_BARDING,
+                this.inventory != null
+                        ? this.inventory.getItem(AbstractHorse.INV_SLOT_ARMOR)
+                        : ItemStack.EMPTY);
     }
 
     @Override
@@ -1370,7 +1473,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private void bh_noRearInMidair(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!self.onGround()
-                || (self.hurtTime > 0 && this.bh_getBreed().archetype().suppressRear())) {
+                || (self.hurtTime > 0
+                    && ArchetypePerks.suppressesRear(BhBreedData.of(this.bh_getBreedKey()).archetype()))) {
             ci.cancel();
         }
     }

@@ -1,10 +1,13 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+
+import java.util.Objects;
 
 public final class BhSecondChance {
 
@@ -19,7 +22,7 @@ public final class BhSecondChance {
             return false;
         }
         IHorseData data = IHorseData.of(horse);
-        if (data.bh_getBreed() != HorseBreed.ANDALUSIAN
+        if (!Objects.equals(data.bh_getBreedKey(), BhContent.ANDALUSIAN.getKey())
                 || !BhAbility.ANDALUSIAN_SAVE.on()
                 || BhHorseTraits.bondTier(data.bh_getBond()) < 2) {
             return false;

@@ -2,9 +2,11 @@ package icy.betterhorses.net.client;
 
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
+import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
@@ -47,11 +49,14 @@ public final class BhHorseHud {
                 Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * JUMP_DISPLAY - 1.0D));
 
         IHorseData data = IHorseData.of(horse);
+        ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
+        Component breedName = breedKey != null
+                ? BreedType.displayName(breedKey, data.bh_isMixedBreed())
+                : data.bh_getBreed().displayName(data.bh_isMixedBreed());
         Component title = Component.translatable("hud.icys-better-horses.horse_stats");
         Component[] lines = {
                 Component.translatable("hud.icys-better-horses.gender", data.bh_getGender().displayName()),
-                Component.translatable("hud.icys-better-horses.breed",
-                        data.bh_getBreed().displayName(data.bh_isMixedBreed())),
+                Component.translatable("hud.icys-better-horses.breed", breedName),
                 Component.translatable("hud.icys-better-horses.speed", speedValue),
                 Component.translatable("hud.icys-better-horses.jump", jumpValue),
         };

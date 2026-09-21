@@ -1,14 +1,17 @@
 package icy.betterhorses.net.network;
 
 import icy.betterhorses.net.BhBreedData;
-import icy.betterhorses.net.BreedArchetype;
-import icy.betterhorses.net.HorseBreed;
+import icy.betterhorses.net.IcysBetterHorses;
+import icy.betterhorses.net.registry.ArchetypeType;
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.BhRegistries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.registries.IForgeRegistry;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 public record BreedDataPayload(List<Entry> entries) {
@@ -21,27 +24,30 @@ public record BreedDataPayload(List<Entry> entries) {
 
     public static BreedDataPayload current() {
         List<Entry> out = new ArrayList<>();
-        for (Map.Entry<HorseBreed, BhBreedData> entry : BhBreedData.all().entrySet()) {
+        IForgeRegistry<ArchetypeType> archetypes = BhRegistries.archetypeTypeRegistry();
+        for (Map.Entry<ResourceLocation, BhBreedData> entry : BhBreedData.all().entrySet()) {
             BhBreedData data = entry.getValue();
-            out.add(new Entry(entry.getKey().id(),
-                    data.archetype().name().toLowerCase(Locale.ROOT),
+            ResourceLocation archetypeId = archetypes.getKey(data.archetype());
+            out.add(new Entry(entry.getKey().getPath(),
+                    archetypeId != null ? archetypeId.toString() : "",
                     data.chestRows(), data.bondedChestRows(), data.spawnWeight()));
         }
         return new BreedDataPayload(out);
     }
 
-    public Map<HorseBreed, BhBreedData> toMap() {
-        EnumMap<HorseBreed, BhBreedData> map = new EnumMap<>(HorseBreed.class);
+    public Map<ResourceLocation, BhBreedData> toMap() {
+        Map<ResourceLocation, BhBreedData> map = new HashMap<>();
         for (Entry entry : entries) {
-            HorseBreed breed = HorseBreed.byId(entry.breed());
-            BhBreedData fallback = BhBreedData.builtIn(breed);
-            BreedArchetype arch;
-            try {
-                arch = BreedArchetype.valueOf(entry.archetype().toUpperCase(Locale.ROOT));
-            } catch (IllegalArgumentException ignored) {
-                arch = fallback.archetype();
+            ResourceLocation breedId = new ResourceLocation(IcysBetterHorses.MOD_ID, entry.breed());
+            BhBreedData fallback = BhBreedData.builtIn(breedId);
+            ResourceLocation archetypeId = ResourceLocation.tryParse(entry.archetype());
+            ArchetypeType arch = archetypeId != null
+                    ? BhRegistries.archetypeTypeRegistry().getValue(archetypeId)
+                    : null;
+            if (arch == null) {
+                arch = fallback != null ? fallback.archetype() : BhContent.NONE.get();
             }
-            map.put(breed, new BhBreedData(arch, entry.chestRows(), entry.bondedChestRows(), entry.spawnWeight()));
+            map.put(breedId, new BhBreedData(arch, entry.chestRows(), entry.bondedChestRows(), entry.spawnWeight()));
         }
         return map;
     }

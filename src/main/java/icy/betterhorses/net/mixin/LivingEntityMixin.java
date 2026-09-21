@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
@@ -103,7 +104,7 @@ public abstract class LivingEntityMixin extends Entity {
         gear.setItem(GearSlot.MEDKIT.ordinal(), ItemStack.EMPTY);
         gear.setChanged();
 
-        int dur = BH_MEDKIT_EFFECT_DURATION * data.bh_getBreed().archetype().medkitMultiplier();
+        int dur = BH_MEDKIT_EFFECT_DURATION * ArchetypePerks.medkitMultiplier(BhBreedData.of(data.bh_getBreedKey()).archetype());
         self.addEffect(new MobEffectInstance(MobEffects.REGENERATION, dur, 0));
         self.addEffect(new MobEffectInstance(MobEffects.HEAL, 1, 0));
         self.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, dur, 0));

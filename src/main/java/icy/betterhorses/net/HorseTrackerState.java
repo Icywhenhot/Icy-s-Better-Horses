@@ -7,6 +7,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -126,7 +127,8 @@ public class HorseTrackerState extends SavedData {
         IHorseData data = IHorseData.of(horse);
         CompoundTag summary = new CompoundTag();
         summary.putString("name", horse.hasCustomName() ? horse.getCustomName().getString() : "");
-        summary.putString("breedId", data.bh_getBreed().id());
+        ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
+        summary.putString("breedId", breedKey != null ? breedKey.location().toString() : data.bh_getBreed().id());
         summary.putInt("gender", data.bh_getGender().ordinal());
         summary.putBoolean("mixed", data.bh_isMixedBreed());
         summary.putInt("bond", data.bh_getBond());
