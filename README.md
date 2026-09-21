@@ -1,7 +1,7 @@
 Icy's Better Horses
 
 
-A Fabric mod for Minecraft 1.21 that overhauls horse gameplay with a bonding system, new gear, smarter AI, and quality-of-life riding improvements.
+A Fabric mod for Minecraft 1.20.1 that overhauls horse gameplay with a bonding system, new gear, smarter AI, and quality-of-life riding improvements.
 
 Features
 Patchouli Guide Book
@@ -64,7 +64,7 @@ Equipping a chest gives the horse additional inventory storage slots.
 Setup
 For IDE setup instructions see the Fabric Documentation.
 
-Patchouli is a required dependency for this 1.21 build.
+Patchouli is an optional dependency for this 1.20.1 build (declared as `suggests` in fabric.mod.json); without it the in-game guide book, its recipe, and its advancement simply don't load.
 
 License
 This mod is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
