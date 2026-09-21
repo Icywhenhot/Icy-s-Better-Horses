@@ -23,8 +23,11 @@ import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRe
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 
 public final class ModEntities {
 
@@ -169,12 +172,11 @@ public final class ModEntities {
     // Step height and swim speed already come from AbstractHorseMixin. Don't add them again here:
     // re-adding an attribute resets any custom base value a breed set.
     private static void registerBreed(
-            EntityType<? extends net.minecraft.world.entity.LivingEntity> type,
-            net.minecraft.world.entity.ai.attributes.AttributeSupplier.Builder builder) {
+            EntityType<? extends LivingEntity> type, AttributeSupplier.Builder builder) {
         FabricDefaultAttributeRegistry.register(type, builder);
     }
 
-    private static <T extends net.minecraft.world.entity.Entity> EntityType<T> register(
+    private static <T extends Entity> EntityType<T> register(
             String path, EntityType.Builder<T> builder) {
         ResourceLocation id = new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, path);
         return Registry.register(BuiltInRegistries.ENTITY_TYPE, id, builder.build(id.toString()));
