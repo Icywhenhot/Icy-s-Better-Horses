@@ -70,7 +70,7 @@ public final class IcysBetterHorses implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> onServerStopping());
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> onServerStopped());
         ServerTickEvents.END_SERVER_TICK.register(this::onServerTick);
-        ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> onEntityJoinLevel(entity, world));
+        ServerEntityEvents.ENTITY_LOAD.register(this::onEntityJoinLevel);
         ServerEntityEvents.ENTITY_UNLOAD.register((entity, world) -> onEntityLeaveLevel(entity));
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> onPlayerJoin(handler.getPlayer()));
         ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register(this::onDatapackSync);
@@ -80,21 +80,21 @@ public final class IcysBetterHorses implements ModInitializer {
         LOGGER.info("Icy's Better Horses initialized.");
     }
 
-    public void onServerStarted(MinecraftServer server) {
+    private void onServerStarted(MinecraftServer server) {
         HorseTracker.attach(server);
     }
 
-    public void onServerStopping() {
+    private void onServerStopping() {
         HorseTracker.recordLoadedPositions();
     }
 
-    public void onServerStopped() {
+    private void onServerStopped() {
         staleHorses.clear();
         pendingReleases.clear();
         HorseTracker.detach();
     }
 
-    public void onEntityJoinLevel(Entity entity, Level level) {
+    private void onEntityJoinLevel(Entity entity, Level level) {
         if (level.isClientSide()) {
             return;
         }
@@ -109,7 +109,7 @@ public final class IcysBetterHorses implements ModInitializer {
         }
     }
 
-    public void onPlayerJoin(ServerPlayer player) {
+    private void onPlayerJoin(ServerPlayer player) {
         sendTrustList(player);
         BhNetworking.sendToPlayer(player, new ConfigSyncPayload(
                 BhConfig.disabledFeatures(),
@@ -120,7 +120,7 @@ public final class IcysBetterHorses implements ModInitializer {
         BhNetworking.sendToPlayer(player, BreedDataPayload.current());
     }
 
-    public void onDatapackSync(ServerPlayer player, boolean joined) {
+    private void onDatapackSync(ServerPlayer player, boolean joined) {
         if (joined) return;
         BhNetworking.sendToPlayer(player, BreedDataPayload.current());
     }
@@ -150,7 +150,7 @@ public final class IcysBetterHorses implements ModInitializer {
         staleHorses.clear();
     }
 
-    public void onEntityLeaveLevel(Entity entity) {
+    private void onEntityLeaveLevel(Entity entity) {
         if (entity instanceof AbstractHorse horse) {
             HorseTracker.unregister(horse);
         }
@@ -176,7 +176,7 @@ public final class IcysBetterHorses implements ModInitializer {
         return true;
     }
 
-    public void onServerTick(MinecraftServer server) {
+    private void onServerTick(MinecraftServer server) {
         BhTuning tuning = BhConfig.tuning();
         if (tuning.bondAmount() > 0 && server.getTickCount() % tuning.bondIntervalTicks() == 0) {
             growHorseBond(server, tuning.bondAmount());
