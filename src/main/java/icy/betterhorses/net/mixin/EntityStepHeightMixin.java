@@ -23,9 +23,10 @@ public abstract class EntityStepHeightMixin {
             return;
         }
         AttributeInstance instance = living.getAttribute(BhAttributes.STEP_HEIGHT_ADDITION);
-        if (instance != null && instance.getValue() != 0.0D) {
-            // Same formula as Forge: max(0, vanilla + attribute).
-            cir.setReturnValue(Math.max(0.0F, cir.getReturnValueF() + (float) instance.getValue()));
+        if (instance == null) {
+            return;
         }
+        // Same formula as Forge: max(0, vanilla + attribute).
+        cir.setReturnValue(Math.max(0.0F, cir.getReturnValueF() + (float) instance.getValue()));
     }
 }
