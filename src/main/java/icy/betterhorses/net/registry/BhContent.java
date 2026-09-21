@@ -109,6 +109,7 @@ BhContent {
                     .entityType(ModEntities.THOROUGHBRED_HORSE.getKey())
                     .chestRows(3).bondedChestRows(3)
                     .ability(TOP_END.getKey())
+                    .stabilizerBody(StabilizerBody.MEDIUM)
                     .build());
     
     public static final RegistryObject<BreedType> ARABIAN = BREEDS.register("arabian", () ->
@@ -117,6 +118,7 @@ BhContent {
                     .entityType(ModEntities.ARABIAN_HORSE.getKey())
                     .chestRows(3).bondedChestRows(3)
                     .ability(ENDURANCE.getKey())
+                    .stabilizerBody(StabilizerBody.SMALL)
                     .build());
 
     public static final RegistryObject<BreedType> QUARTER = BREEDS.register("quarter", () ->
@@ -125,6 +127,7 @@ BhContent {
                     .entityType(ModEntities.QUARTER_HORSE.getKey())
                     .chestRows(3).bondedChestRows(3)
                     .ability(STANDSTILL_BURST.getKey())
+                    .stabilizerBody(StabilizerBody.MEDIUM)
                     .build());
 
     public static final RegistryObject<BreedType> FRIESIAN = BREEDS.register("friesian", () ->
@@ -133,6 +136,7 @@ BhContent {
                     .entityType(ModEntities.FRIESIAN_HORSE.getKey())
                     .chestRows(3).bondedChestRows(3)
                     .ability(FRIESIAN_PRESENCE.getKey())
+                    .stabilizerBody(StabilizerBody.FRIESIAN)
                     .build());
 
     public static final RegistryObject<BreedType> ANDALUSIAN = BREEDS.register("andalusian", () ->
@@ -141,6 +145,7 @@ BhContent {
                     .entityType(ModEntities.ANDALUSIAN_HORSE.getKey())
                     .chestRows(3).bondedChestRows(3)
                     .ability(SECOND_CHANCE.getKey())
+                    .stabilizerBody(StabilizerBody.MEDIUM)
                     .build());
 
     public static final RegistryObject<BreedType> PERCHERON = BREEDS.register("percheron", () ->
@@ -149,6 +154,7 @@ BhContent {
                     .entityType(ModEntities.PERCHERON_HORSE.getKey())
                     .chestRows(4).bondedChestRows(4)
                     .ability(SLOW_BLOCK_IMMUNITY.getKey())
+                    .stabilizerBody(StabilizerBody.PERCHERON)
                     .build());
 
     public static final RegistryObject<BreedType> CLYDESDALE = BREEDS.register("clydesdale", () ->
@@ -157,6 +163,7 @@ BhContent {
                     .entityType(ModEntities.CLYDESDALE_HORSE.getKey())
                     .chestRows(4).bondedChestRows(4)
                     .ability(IRONCLAD.getKey())
+                    .stabilizerBody(StabilizerBody.PERCHERON)
                     .build());
 
     public static final RegistryObject<BreedType> SHIRE = BREEDS.register("shire", () ->
@@ -165,6 +172,7 @@ BhContent {
                     .entityType(ModEntities.SHIRE_HORSE.getKey())
                     .chestRows(4).bondedChestRows(4)
                     .ability(INTIMIDATION.getKey())
+                    .stabilizerBody(StabilizerBody.SHIRE)
                     .build());
 
     public static final RegistryObject<BreedType> BELGIAN = BREEDS.register("belgian", () ->
@@ -173,6 +181,7 @@ BhContent {
                     .entityType(ModEntities.BELGIAN_HORSE.getKey())
                     .chestRows(6).bondedChestRows(6)
                     .ability(BRICK_BREAK.getKey())
+                    .stabilizerBody(StabilizerBody.BELGIAN)
                     .build());
 
     public static final RegistryObject<BreedType> ICELANDIC = BREEDS.register("icelandic", () ->
@@ -181,6 +190,7 @@ BhContent {
                     .entityType(ModEntities.ICELANDIC_HORSE.getKey())
                     .chestRows(3).bondedChestRows(3)
                     .ability(HARDY_NORTHERN.getKey())
+                    .stabilizerBody(StabilizerBody.ICELANDIC)
                     .build());
 
     public static final RegistryObject<BreedType> MUSTANG = BREEDS.register("mustang", () ->
@@ -189,6 +199,7 @@ BhContent {
                     .entityType(ModEntities.MUSTANG_HORSE.getKey())
                     .chestRows(3).bondedChestRows(3)
                     .ability(WILD_INSTINCTS.getKey())
+                    .stabilizerBody(StabilizerBody.MEDIUM)
                     .build());
 
     public static final RegistryObject<BreedType> HAFLINGER = BREEDS.register("haflinger", () ->
@@ -197,6 +208,7 @@ BhContent {
                     .entityType(ModEntities.HAFLINGER_HORSE.getKey())
                     .chestRows(4).bondedChestRows(6)
                     .ability(HEARTHLIGHT.getKey())
+                    .stabilizerBody(StabilizerBody.HAFLINGER)
                     .build());
 
     public static final RegistryObject<BreedType> MORGAN = BREEDS.register("morgan", () ->
@@ -205,6 +217,7 @@ BhContent {
                     .entityType(ModEntities.MORGAN_HORSE.getKey())
                     .chestRows(3).bondedChestRows(4)
                     .ability(EASY_KEEPER.getKey())
+                    .stabilizerBody(StabilizerBody.SMALL)
                     .build());
 
     public static final RegistryObject<BreedType> AMERICAN_PAINT = BREEDS.register("american_paint", () ->
@@ -212,6 +225,7 @@ BhContent {
                     .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.AMERICAN_PAINT.folder(), BhBreedCoats.AMERICAN_PAINT.coatIds(), BhBreedCoats.AMERICAN_PAINT.hasFoalVariant())
                     .entityType(ModEntities.AMERICAN_PAINT_HORSE.getKey())
                     .chestRows(3).bondedChestRows(3)
+                    .stabilizerBody(StabilizerBody.MEDIUM)
                     .build());
 
     public static final RegistryObject<BreedType> APPALOOSA = BREEDS.register("appaloosa", () ->
@@ -220,6 +234,7 @@ BhContent {
                     .entityType(ModEntities.APPALOOSA_HORSE.getKey())
                     .chestRows(3).bondedChestRows(3)
                     .ability(STOCK_HORSE.getKey())
+                    .stabilizerBody(StabilizerBody.MEDIUM)
                     .build());
 
     public static final DeferredRegister<GenderType> GENDERS =

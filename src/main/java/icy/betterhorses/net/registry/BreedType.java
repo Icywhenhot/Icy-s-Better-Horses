@@ -16,6 +16,7 @@ public final class BreedType {
     private final Integer chestRowsOverride;
     private final Integer bondedChestRowsOverride;
     private final List<ResourceKey<AbilityType>> abilities;
+    private final StabilizerBody stabilizerBody;
 
     private BreedType(Builder builder) {
         this.archetype = builder.archetype;
@@ -24,6 +25,7 @@ public final class BreedType {
         this.chestRowsOverride = builder.chestRowsOverride;
         this.bondedChestRowsOverride = builder.bondedChestRowsOverride;
         this.abilities = List.copyOf(builder.abilities);
+        this.stabilizerBody = builder.stabilizerBody;
     }
 
     public ResourceKey<ArchetypeType> archetype() {
@@ -50,6 +52,10 @@ public final class BreedType {
         return abilities;
     }
 
+    public StabilizerBody stabilizerBody() {
+        return stabilizerBody;
+    }
+
     public static Builder builder(ResourceKey<ArchetypeType> archetype) {
         return new Builder(archetype);
     }
@@ -72,6 +78,7 @@ public final class BreedType {
         private Integer chestRowsOverride;
         private Integer bondedChestRowsOverride;
         private final List<ResourceKey<AbilityType>> abilities = new ArrayList<>();
+        private StabilizerBody stabilizerBody = StabilizerBody.GENERIC;
 
         private Builder(ResourceKey<ArchetypeType> archetype) {
             this.archetype = archetype;
@@ -99,6 +106,11 @@ public final class BreedType {
 
         public Builder ability(ResourceKey<AbilityType> key) {
             this.abilities.add(key);
+            return this;
+        }
+
+        public Builder stabilizerBody(StabilizerBody body) {
+            this.stabilizerBody = body;
             return this;
         }
 
