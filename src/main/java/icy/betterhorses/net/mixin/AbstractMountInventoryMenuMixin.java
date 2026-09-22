@@ -68,7 +68,7 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
         ItemStack sourceStack = sourceSlot.getItem();
         ItemStack copiedStack = sourceStack.copy();
 
-        int mountSlotEnd = this.horseContainer.getContainerSize() + 1;
+        int mountSlotEnd = this.horseContainer.getContainerSize();
         int playerInventoryStart = mountSlotEnd;
         int playerInventoryEnd = playerInventoryStart + 27;
         int hotbarStart = playerInventoryEnd;
