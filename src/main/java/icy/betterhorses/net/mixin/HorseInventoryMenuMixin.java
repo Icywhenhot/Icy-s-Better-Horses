@@ -271,6 +271,9 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         if (this.bh_gearContainer != null
                 && this.bh_isEnderChestGear(this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal()))) {
             rows = Math.min(rows, BH_ENDER_SLOT_COUNT / 9);
+        } else {
+            // Showing more rows than the container holds would silently delete items.
+            rows = Math.min(rows, IHorseData.of(this.bh_horse).bh_getChestContainer().getContainerSize() / 9);
         }
         return rows;
     }
