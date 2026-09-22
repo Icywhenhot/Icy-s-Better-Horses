@@ -145,7 +145,8 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                 this.bh_active().clearContent();
             }
         };
-        this.bh_playerInventoryStartIndex = horseContainer.getContainerSize() + 1;
+        // Player slots start right after the horse's own (2, or 17 with a chest).
+        this.bh_playerInventoryStartIndex = horseContainer.getContainerSize();
         this.bh_playerInventoryEndIndex = Math.min(this.bh_playerInventoryStartIndex + 36, this.slots.size());
 
         this.bh_gearStartIndex = this.slots.size();
