@@ -41,6 +41,15 @@ repositories {
 	mavenCentral()
 }
 
+loom {
+	runs {
+		client {
+			// Fixed username so the offline UUID, and horse ownership with it, survives relaunches.
+			programArgs '--username', 'Dev'
+		}
+	}
+}
+
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings loom.officialMojangMappings()
