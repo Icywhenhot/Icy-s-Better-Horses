@@ -88,8 +88,8 @@ def extractPatchouliFiber = tasks.register('extractPatchouliFiber', Copy) {
 }
 
 dependencies {
-	// builtBy makes the run tasks extract Fiber first.
-	modLocalRuntime fileTree(patchouliFiberDir.get().asFile) {
+	// Not modLocalRuntime: that's resolved before extraction runs, so a clean first launch crashes.
+	localRuntime fileTree(patchouliFiberDir.get().asFile) {
 		include '*.jar'
 	}.builtBy(extractPatchouliFiber)
 }
