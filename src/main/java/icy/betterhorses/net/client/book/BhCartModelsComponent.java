@@ -74,8 +74,8 @@ public class BhCartModelsComponent implements ICustomComponent {
                 this.x + BOX_WIDTH / 2.0F, this.y + MODEL_Y, rotation(),
                 size.isLarge() ? LARGE_SCALE : SMALL_SCALE, 0.0F);
 
-        arrow(gfx, font, "<", this.x, mouseX, mouseY);
-        arrow(gfx, font, ">", this.x + BOX_WIDTH - ARROW_W, mouseX, mouseY);
+        arrow(gfx, context, font, "<", this.x, mouseX, mouseY);
+        arrow(gfx, context, font, ">", this.x + BOX_WIDTH - ARROW_W, mouseX, mouseY);
 
         Component name = Component.translatable(
                 "book.icys-better-horses.carts." + (size.isLarge() ? "large" : "small"));
@@ -91,17 +91,17 @@ public class BhCartModelsComponent implements ICustomComponent {
         return (Minecraft.getInstance().level.getGameTime() % 360L) * 0.5F;
     }
 
-    private void arrow(GuiGraphics gfx, net.minecraft.client.gui.Font font,
+    private void arrow(GuiGraphics gfx, IComponentRenderContext context, net.minecraft.client.gui.Font font,
                        String glyph, int left, int mouseX, int mouseY) {
-        boolean lit = hovered(left, mouseX, mouseY);
+        boolean lit = hovered(context, left, mouseX, mouseY);
         gfx.drawString(font, glyph,
                 left + (ARROW_W - font.width(glyph)) / 2, this.y + ARROW_Y,
                 lit ? 0xFF8A6A3A : INK, false);
     }
 
-    private boolean hovered(int left, int mouseX, int mouseY) {
-        return mouseX >= left && mouseX < left + ARROW_W
-                && mouseY >= this.y + ARROW_Y && mouseY < this.y + ARROW_Y + ARROW_H;
+    // Patchouli draws the book translated, so raw mouse coords need its own hit test.
+    private boolean hovered(IComponentRenderContext context, int left, int mouseX, int mouseY) {
+        return context.isAreaHovered(mouseX, mouseY, left, this.y + ARROW_Y, ARROW_W, ARROW_H);
     }
 
     @Override
@@ -109,11 +109,11 @@ public class BhCartModelsComponent implements ICustomComponent {
         int total = CartSize.values().length;
         int mx = (int) mouseX;
         int my = (int) mouseY;
-        if (hovered(this.x, mx, my)) {
+        if (hovered(context, this.x, mx, my)) {
             this.index = Math.floorMod(this.index - 1, total);
             return true;
         }
-        if (hovered(this.x + BOX_WIDTH - ARROW_W, mx, my)) {
+        if (hovered(context, this.x + BOX_WIDTH - ARROW_W, mx, my)) {
             this.index = Math.floorMod(this.index + 1, total);
             return true;
         }

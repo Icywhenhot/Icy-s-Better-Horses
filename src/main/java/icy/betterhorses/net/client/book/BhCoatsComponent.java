@@ -98,8 +98,8 @@ public class BhCoatsComponent implements ICustomComponent {
 
         int total = this.horse.bhCoats().count();
         if (total > 1) {
-            arrow(gfx, font, "<", this.x, mouseX, mouseY);
-            arrow(gfx, font, ">", this.x + BOX_WIDTH - ARROW_W, mouseX, mouseY);
+            arrow(gfx, context, font, "<", this.x, mouseX, mouseY);
+            arrow(gfx, context, font, ">", this.x + BOX_WIDTH - ARROW_W, mouseX, mouseY);
         }
 
         Component name = this.horse.bhCoats().displayName(this.coat);
@@ -115,17 +115,17 @@ public class BhCoatsComponent implements ICustomComponent {
         return (Minecraft.getInstance().level.getGameTime() % 360L) * 0.5F;
     }
 
-    private void arrow(GuiGraphics gfx, net.minecraft.client.gui.Font font,
+    private void arrow(GuiGraphics gfx, IComponentRenderContext context, net.minecraft.client.gui.Font font,
                        String glyph, int left, int mouseX, int mouseY) {
-        boolean lit = hovered(left, mouseX, mouseY);
+        boolean lit = hovered(context, left, mouseX, mouseY);
         gfx.drawString(font, glyph,
                 left + (ARROW_W - font.width(glyph)) / 2, this.y + ARROW_Y,
                 lit ? 0xFF8A6A3A : INK, false);
     }
 
-    private boolean hovered(int left, int mouseX, int mouseY) {
-        return mouseX >= left && mouseX < left + ARROW_W
-                && mouseY >= this.y + ARROW_Y && mouseY < this.y + ARROW_Y + ARROW_H;
+    // Patchouli draws the book translated, so raw mouse coords need its own hit test.
+    private boolean hovered(IComponentRenderContext context, int left, int mouseX, int mouseY) {
+        return context.isAreaHovered(mouseX, mouseY, left, this.y + ARROW_Y, ARROW_W, ARROW_H);
     }
 
     @Override
@@ -139,11 +139,11 @@ public class BhCoatsComponent implements ICustomComponent {
         }
         int mx = (int) mouseX;
         int my = (int) mouseY;
-        if (hovered(this.x, mx, my)) {
+        if (hovered(context, this.x, mx, my)) {
             this.coat = Math.floorMod(this.coat - 1, total);
             return true;
         }
-        if (hovered(this.x + BOX_WIDTH - ARROW_W, mx, my)) {
+        if (hovered(context, this.x + BOX_WIDTH - ARROW_W, mx, my)) {
             this.coat = Math.floorMod(this.coat + 1, total);
             return true;
         }
