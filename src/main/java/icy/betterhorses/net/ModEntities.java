@@ -19,12 +19,17 @@ import icy.betterhorses.net.entity.BelgianHorse;
 import icy.betterhorses.net.entity.ClydesdaleHorse;
 import icy.betterhorses.net.entity.ShireHorse;
 import icy.betterhorses.net.entity.ThoroughbredHorse;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.BreedType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import org.jetbrains.annotations.Nullable;
 import net.neoforged.neoforge.registries.RegisterEvent;
 
 import java.util.LinkedHashMap;
@@ -119,25 +124,16 @@ public final class ModEntities {
                     .clientTrackingRange(10)
                     .build(key("clydesdale_horse")));
 
-    public static EntityType<? extends BhBreedHorse> forBreed(HorseBreed breed) {
-        return switch (breed) {
-            case THOROUGHBRED -> THOROUGHBRED_HORSE;
-            case ARABIAN -> ARABIAN_HORSE;
-            case QUARTER -> QUARTER_HORSE;
-            case FRIESIAN -> FRIESIAN_HORSE;
-            case ANDALUSIAN -> ANDALUSIAN_HORSE;
-            case PERCHERON -> PERCHERON_HORSE;
-            case CLYDESDALE -> CLYDESDALE_HORSE;
-            case SHIRE -> SHIRE_HORSE;
-            case BELGIAN -> BELGIAN_HORSE;
-            case ICELANDIC -> ICELANDIC_HORSE;
-            case MUSTANG -> MUSTANG_HORSE;
-            case HAFLINGER -> HAFLINGER_HORSE;
-            case MORGAN -> MORGAN_HORSE;
-            case AMERICAN_PAINT -> AMERICAN_PAINT_HORSE;
-            case APPALOOSA -> APPALOOSA_HORSE;
-            default -> MUSTANG_HORSE;
-        };
+    //No more jankyness!!!!! YIPPYYPYPYPYPPPYPY
+    public static @Nullable EntityType<? extends BhBreedHorse> forBreed(ResourceKey<BreedType> breedKey) {
+        BreedType type = BhRegistries.breedTypeRegistry().get(breedKey.location());
+        if (type == null) {
+            return null;
+        }
+        EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.getOptional(type.entityType().location()).orElse(null);
+        @SuppressWarnings("unchecked")
+        EntityType<? extends BhBreedHorse> result = (EntityType<? extends BhBreedHorse>) entityType;
+        return result;
     }
 
     private static <T extends SmallHorse> EntityType<T> registerSmall(

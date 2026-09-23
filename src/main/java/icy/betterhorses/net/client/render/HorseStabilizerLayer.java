@@ -4,13 +4,15 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.IHorseData;
-import icy.betterhorses.net.ModEntities;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.BreedType;
+import icy.betterhorses.net.registry.StabilizerBody;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 import java.util.Map;
@@ -40,22 +42,16 @@ public final class HorseStabilizerLayer<T extends AbstractHorse, M extends Entit
     private static final Variant BELGIAN = new Variant(
             new HorseStabilizerGeoRenderer(new BelgianStabilizerGeoModel()), BREED_FEET_Y, 0.0D);
 
-    private static final Map<EntityType<?>, Variant> BY_TYPE = Map.ofEntries(
-            Map.entry(ModEntities.ICELANDIC_HORSE, ICELANDIC),
-            Map.entry(ModEntities.FRIESIAN_HORSE, FRIESIAN),
-            Map.entry(ModEntities.APPALOOSA_HORSE, MEDIUM),
-            Map.entry(ModEntities.THOROUGHBRED_HORSE, MEDIUM),
-            Map.entry(ModEntities.AMERICAN_PAINT_HORSE, MEDIUM),
-            Map.entry(ModEntities.ANDALUSIAN_HORSE, MEDIUM),
-            Map.entry(ModEntities.MUSTANG_HORSE, MEDIUM),
-            Map.entry(ModEntities.QUARTER_HORSE, MEDIUM),
-            Map.entry(ModEntities.ARABIAN_HORSE, SMALL),
-            Map.entry(ModEntities.MORGAN_HORSE, SMALL),
-            Map.entry(ModEntities.HAFLINGER_HORSE, HAFLINGER),
-            Map.entry(ModEntities.PERCHERON_HORSE, PERCHERON),
-            Map.entry(ModEntities.SHIRE_HORSE, SHIRE),
-            Map.entry(ModEntities.BELGIAN_HORSE, BELGIAN),
-            Map.entry(ModEntities.CLYDESDALE_HORSE, PERCHERON));
+
+    private static final Map<StabilizerBody, Variant> BY_BODY = Map.of(
+            StabilizerBody.ICELANDIC, ICELANDIC,
+            StabilizerBody.FRIESIAN, FRIESIAN,
+            StabilizerBody.MEDIUM, MEDIUM,
+            StabilizerBody.SMALL, SMALL,
+            StabilizerBody.HAFLINGER, HAFLINGER,
+            StabilizerBody.PERCHERON, PERCHERON,
+            StabilizerBody.SHIRE, SHIRE,
+            StabilizerBody.BELGIAN, BELGIAN);
 
     private static final float MODEL_ROLL_DEGREES = 180.0F;
 
@@ -87,7 +83,7 @@ public final class HorseStabilizerLayer<T extends AbstractHorse, M extends Entit
         HorseStabilizerAnimatable animatable = HorseStabilizerAnimatable.get(entity);
         animatable.syncFromHorse(entity, state, ageInTicks);
 
-        Variant variant = BY_TYPE.getOrDefault(entity.getType(), GENERIC);
+        Variant variant = BY_BODY.getOrDefault(stabilizerBodyOf(data), GENERIC);
         double anchorY = model instanceof BhHorseModel<?> breed
                 ? variant.feetY() - breed.bhBodyRestY() / 16.0D
                 : variant.feetY() - body.y / 16.0D;
@@ -106,5 +102,14 @@ public final class HorseStabilizerLayer<T extends AbstractHorse, M extends Entit
         variant.renderer().renderAt(poseStack, animatable, bufferSource, partialTicks, packedLight);
 
         poseStack.popPose();
+    }
+
+    private static StabilizerBody stabilizerBodyOf(IHorseData data) {
+        ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
+        if (breedKey == null) {
+            return StabilizerBody.GENERIC;
+        }
+        BreedType breed = BhRegistries.breedTypeRegistry().get(breedKey.location());
+        return breed != null ? breed.stabilizerBody() : StabilizerBody.GENERIC;
     }
 }

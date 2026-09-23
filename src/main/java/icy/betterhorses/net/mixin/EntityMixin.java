@@ -1,7 +1,8 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhSurge;
-import icy.betterhorses.net.HorseCommand;
+import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.HorseTracker;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.HorseCartEntity;
@@ -80,7 +81,8 @@ public abstract class EntityMixin {
             boolean force,
             CallbackInfoReturnable<Boolean> cir) {
         Entity self = (Entity) (Object) this;
-        if (!cir.getReturnValueZ() || !(self instanceof ServerPlayer player) || !(vehicle instanceof AbstractHorse horse)) {
+        if (!cir.getReturnValueZ() || !(self instanceof ServerPlayer player)
+                || !(vehicle instanceof AbstractHorse horse) || !BhHorseKind.managed(horse)) {
             return;
         }
 
@@ -108,13 +110,10 @@ public abstract class EntityMixin {
 
     @Inject(method = "removeVehicle", at = @At("HEAD"))
     private void bh_removeMountedHorseBonuses(CallbackInfo ci) {
-        Entity self = (Entity) (Object) this;
-        if (!(self instanceof ServerPlayer player)) {
-            return;
-        }
-
-        Entity vehicle = player.getVehicle();
-        if (vehicle instanceof AbstractHorse horse && horse.getPassengers().size() == 1) {
+        if (!((Object) this instanceof ServerPlayer player)
+                || !(player.getVehicle() instanceof AbstractHorse horse)
+                || !BhHorseKind.managed(horse)) return;
+        if (horse.getPassengers().size() == 1) {
             @Nullable AttributeInstance stepHeight = horse.getAttribute(Attributes.STEP_HEIGHT);
             if (stepHeight != null) {
                 stepHeight.removeModifier(BH_MOUNTED_STEP_HEIGHT_ID);
@@ -141,7 +140,7 @@ public abstract class EntityMixin {
 
         HorseTracker.setLastRidden(player.getUUID(), horse);
         data.bh_setWanderCenter(horse.blockPosition());
-        data.bh_setCommand(HorseCommand.WANDER);
+        data.bh_setCommand(BhContent.COMMAND_WANDER.getKey());
     }
 
 }

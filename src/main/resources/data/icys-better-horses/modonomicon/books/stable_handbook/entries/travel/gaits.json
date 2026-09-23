@@ -4,7 +4,7 @@
   "category": "icys-better-horses:basics",
   "name": "book.icys-better-horses.stable_handbook.travel.gaits.name",
   "icon": {
-    "texture": "icys-better-horses:textures/gui/hud/icon_quarter.png",
+    "texture": "icys-better-horses:textures/gui/hud/icon_standstill_burst.png",
     "width": 16,
     "height": 16
   },

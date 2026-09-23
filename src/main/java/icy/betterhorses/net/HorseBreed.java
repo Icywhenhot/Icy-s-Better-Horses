@@ -15,6 +15,7 @@ import icy.betterhorses.net.feature.breed.WildInstincts;
 import icy.betterhorses.net.feature.breed.Endurance;
 import icy.betterhorses.net.feature.breed.StandstillBurst;
 import icy.betterhorses.net.feature.breed.TopEnd;
+import icy.betterhorses.net.registry.ArchetypeType;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -83,7 +84,7 @@ public enum HorseBreed {
         this.ability = ability;
     }
 
-    public BreedArchetype archetype() {
+    public ArchetypeType archetype() {
         return BhBreedData.of(this).archetype();
     }
 

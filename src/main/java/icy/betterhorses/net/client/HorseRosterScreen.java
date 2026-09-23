@@ -1,13 +1,16 @@
 package icy.betterhorses.net.client;
 
 import icy.betterhorses.net.HorseBreed;
-import icy.betterhorses.net.HorseGender;
 import icy.betterhorses.net.HorseManageAction;
 import icy.betterhorses.net.HorseManagement;
 import icy.betterhorses.net.IcysBetterHorsesClient;
 import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.network.HorseRosterEntry;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.BreedType;
+import icy.betterhorses.net.registry.GenderType;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -15,6 +18,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -596,7 +600,16 @@ public class HorseRosterScreen extends Screen {
         if (!entry.customName().isEmpty()) {
             return Component.literal(entry.customName());
         }
-        return HorseBreed.byId(entry.breedId()).displayName(entry.mixedBreed());
+        return breedDisplayName(entry.breedId(), entry.mixedBreed());
+    }
+
+    private static Component breedDisplayName(String breedId, boolean mixed) {
+        ResourceLocation location = breedId.indexOf(':') >= 0 ? ResourceLocation.tryParse(breedId) : null;
+        if (location != null && BhRegistries.breedTypeRegistry().containsKey(location)) {
+            ResourceKey<BreedType> key = ResourceKey.create(BhRegistries.BREED_TYPES, location);
+            return BreedType.displayName(key, mixed);
+        }
+        return HorseBreed.byId(breedId).displayName(mixed);
     }
 
     private Component subtitle(HorseRosterEntry entry) {
@@ -604,9 +617,14 @@ public class HorseRosterScreen extends Screen {
                 ? Component.literal(BhScreenDraw.prettifyDimension(entry.dimensionId()))
                 : Component.translatable("screen.icys-better-horses.manage.resting");
         return Component.empty()
-                .append(HorseGender.fromId(entry.genderOrdinal()).displayName())
+                .append(GenderType.displayName(bh_genderKey(entry.genderId())))
                 .append(" · ")
                 .append(where);
+    }
+
+    private static ResourceKey<GenderType> bh_genderKey(String genderId) {
+        ResourceLocation loc = ResourceLocation.tryParse(genderId);
+        return loc != null ? ResourceKey.create(BhRegistries.GENDER_TYPES, loc) : BhContent.MALE.getKey();
     }
 
     @Override

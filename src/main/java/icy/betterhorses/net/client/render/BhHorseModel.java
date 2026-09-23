@@ -1,10 +1,10 @@
 package icy.betterhorses.net.client.render;
 
+import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.BhGears;
-import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedHorse;
-import icy.betterhorses.net.BreedArchetype;
+import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.entity.FriesianHorse;
 import icy.betterhorses.net.entity.IcelandicHorse;
 import net.minecraft.client.model.EntityModel;
@@ -112,7 +112,7 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
         if (horse instanceof IcelandicHorse || horse instanceof FriesianHorse) {
             return 0.0F;
         }
-        return horse.bhFixedBreed().archetype() == BreedArchetype.DRAFT
+        return BhBreedData.of(horse.bhFixedBreed()).archetype() == BhContent.DRAFT.get()
                 ? 20.0F * Mth.DEG_TO_RAD
                 : 25.0F * Mth.DEG_TO_RAD;
     }
@@ -300,14 +300,14 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
                 : 1.0F;
         state.phaseOffset = (entity.getId() * 0.6180339887F % 1.0F) * Mth.TWO_PI;
         state.riddenHeadDrop = bhHeadDrop(entity);
-        state.commandedToStay = IHorseData.of(entity).bh_getCommand() == HorseCommand.STAY;
+        state.commandedToStay = IHorseData.of(entity).bh_getCommand().equals(BhContent.COMMAND_STAY.getKey());
         state.entityId = BhHorseRenderState.renderId(entity.getId());
         if (entity instanceof IcelandicHorse) {
             state.gaitedBlend = 1.0F;
             IHorseData data = IHorseData.of(entity);
             state.toltRequest = state.isRidden
                     ? (data.bh_getGaitGear() == BhGears.TOLT_GEAR ? 1.0F : 0.0F)
-                    : (data.bh_isOwned() && data.bh_getCommand() == HorseCommand.FOLLOW ? 1.0F : 0.0F);
+                    : (data.bh_isOwned() && data.bh_getCommand().equals(BhContent.COMMAND_FOLLOW.getKey()) ? 1.0F : 0.0F);
         }
         BhEquineGait.advanceFor(entity, state);
         setupState(state);

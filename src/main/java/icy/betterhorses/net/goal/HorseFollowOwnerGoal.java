@@ -1,7 +1,7 @@
 package icy.betterhorses.net.goal;
 
-import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
@@ -26,7 +26,7 @@ public class HorseFollowOwnerGoal extends Goal {
     public boolean canUse() {
         if (horse.isVehicle()) return false;
         IHorseData data = IHorseData.of(horse);
-        if (!data.bh_isOwned() || data.bh_getCommand() != HorseCommand.FOLLOW) return false;
+        if (!data.bh_isOwned() || !data.bh_getCommand().equals(BhContent.COMMAND_FOLLOW.getKey())) return false;
         UUID ownerId = data.bh_getOwner();
         owner = horse.level().getPlayerByUUID(ownerId);
         return owner != null && horse.distanceToSqr(owner) > STOP_DIST_SQ;
@@ -36,7 +36,7 @@ public class HorseFollowOwnerGoal extends Goal {
     public boolean canContinueToUse() {
         if (owner == null || !owner.isAlive()) return false;
         IHorseData data = IHorseData.of(horse);
-        return data.bh_getCommand() == HorseCommand.FOLLOW
+        return data.bh_getCommand().equals(BhContent.COMMAND_FOLLOW.getKey())
                 && horse.distanceToSqr(owner) > STOP_DIST_SQ;
     }
 

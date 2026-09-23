@@ -8,9 +8,11 @@ import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhDamageTypes;
 import icy.betterhorses.net.ModSounds;
 import icy.betterhorses.net.BhHorseAttributes;
-import icy.betterhorses.net.BreedArchetype;
-import icy.betterhorses.net.HorseBreed;
+import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.registry.ArchetypeType;
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.BreedType;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.resources.ResourceKey;
@@ -30,6 +32,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public final class HorseCombat implements HorseFeature {
@@ -83,7 +86,7 @@ public final class HorseCombat implements HorseFeature {
             data.bh_setCombatTarget(null);
             return;
         }
-        HorseBreed breed = data.bh_getBreed();
+        ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
         trackStraightLine(horse);
         int kicking = data.bh_getKickTicks();
         if (kicking > 0) {
@@ -107,7 +110,7 @@ public final class HorseCombat implements HorseFeature {
             cooldown--;
             return;
         }
-        if (!breed.isRealBreed() || !horse.onGround()) {
+        if (breedKey == null || !horse.onGround()) {
             return;
         }
         if (!(horse.getControllingPassenger() instanceof Player rider)) {
@@ -122,9 +125,9 @@ public final class HorseCombat implements HorseFeature {
             return;
         }
 
-        BreedArchetype arch = breed.archetype();
+        ArchetypeType arch = BhBreedData.of(breedKey).archetype();
         float dmg = damage(horse, arch.bashDamage(),
-                charge(flat.length()) * wind() * momentum(breed, data));
+                charge(flat.length()) * wind() * momentum(breedKey, data));
         DamageSource src = level.damageSources().source(BhDamageTypes.HORSE_BASH, horse, rider);
         Vec3 dir = flat.normalize();
 
@@ -142,7 +145,7 @@ public final class HorseCombat implements HorseFeature {
         if (rider instanceof ServerPlayer serverRider) {
             PacketDistributor.sendToPlayer(serverRider, new HorseChargeShakePayload());
         }
-        if (killed && chains(breed, data)) {
+        if (killed && chains(breedKey, data)) {
             BhSurge.pulse(data, 0, CHAIN_VARIANT);
             return;
         }
@@ -170,7 +173,7 @@ public final class HorseCombat implements HorseFeature {
     }
 
     private static double barding(AbstractHorse horse) {
-        double cap = IHorseData.of(horse).bh_getBreed() == HorseBreed.CLYDESDALE
+        double cap = Objects.equals(IHorseData.of(horse).bh_getBreedKey(), BhContent.CLYDESDALE.getKey())
                 ? IRONCLAD_CAP : ARMOR_CAP;
         return Math.min(cap, horse.getAttributeValue(Attributes.ARMOR) * PER_ARMOR);
     }
@@ -194,15 +197,16 @@ public final class HorseCombat implements HorseFeature {
         straight = rolling ? Math.min(FULL_WIND, straight + 1) : 0;
     }
 
-    private double momentum(HorseBreed breed, IHorseData data) {
-        if (breed != HorseBreed.PERCHERON || !BhAbility.PERCHERON_MOMENTUM.on() || BhHorseTraits.bondTier(data.bh_getBond()) < 1) {
+    private double momentum(ResourceKey<BreedType> breedKey, IHorseData data) {
+        if (!Objects.equals(breedKey, BhContent.PERCHERON.getKey())
+                || !BhAbility.PERCHERON_MOMENTUM.on() || BhHorseTraits.bondTier(data.bh_getBond()) < 1) {
             return 1.0D;
         }
         return 1.0D + 0.5D * (double) straight / FULL_WIND;
     }
 
-    private static boolean chains(HorseBreed breed, IHorseData data) {
-        return breed == HorseBreed.PERCHERON
+    private static boolean chains(ResourceKey<BreedType> breedKey, IHorseData data) {
+        return Objects.equals(breedKey, BhContent.PERCHERON.getKey())
                 && BhHorseTraits.bondTier(data.bh_getBond()) >= 2
                 && BhAbility.PERCHERON_CHAIN.on();
     }
@@ -253,8 +257,7 @@ public final class HorseCombat implements HorseFeature {
         if (!(horse.level() instanceof ServerLevel level)) {
             return;
         }
-        HorseBreed breed = data.bh_getBreed();
-        if (!breed.isRealBreed() || !(source.getEntity() instanceof LivingEntity attacker)) {
+        if (data.bh_getBreedKey() == null || !(source.getEntity() instanceof LivingEntity attacker)) {
             return;
         }
         if (horse.hasIndirectPassenger(attacker)
@@ -280,7 +283,7 @@ public final class HorseCombat implements HorseFeature {
 
     public static void strike(ServerLevel level, AbstractHorse horse, IHorseData data,
                               LivingEntity target) {
-        BreedArchetype arch = data.bh_getBreed().archetype();
+        ArchetypeType arch = BhBreedData.of(data.bh_getBreedKey()).archetype();
         data.bh_setKickTicks(KICK_TICKS);
         hit(level, horse, target, BhDamageTypes.HORSE_KICK,
                 damage(horse, arch.kickDamage(), 1.0D), arch.bashKnockback() * 0.5D);
@@ -288,7 +291,7 @@ public final class HorseCombat implements HorseFeature {
 
     public static void chargeStrike(ServerLevel level, AbstractHorse horse, IHorseData data,
                                     LivingEntity target) {
-        BreedArchetype arch = data.bh_getBreed().archetype();
+        ArchetypeType arch = BhBreedData.of(data.bh_getBreedKey()).archetype();
         hit(level, horse, target, BhDamageTypes.HORSE_BASH,
                 damage(horse, arch.bashDamage(), LOOSE_CHARGE), arch.bashKnockback());
     }

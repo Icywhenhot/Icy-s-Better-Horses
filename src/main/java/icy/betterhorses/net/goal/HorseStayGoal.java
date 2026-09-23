@@ -1,7 +1,7 @@
 package icy.betterhorses.net.goal;
 
-import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
@@ -20,7 +20,7 @@ public class HorseStayGoal extends Goal {
     public boolean canUse() {
         if (horse.isVehicle()) return false;
         IHorseData data = IHorseData.of(horse);
-        return data.bh_isOwned() && data.bh_getCommand() == HorseCommand.STAY;
+        return data.bh_isOwned() && data.bh_getCommand().equals(BhContent.COMMAND_STAY.getKey());
     }
 
     @Override

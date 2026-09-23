@@ -304,7 +304,8 @@ public class IcysBetterHorsesClient {
         if (callKeyDown && !callKeyWasDown) {
             if (bh_anyHorseRoused(client)) {
                 PacketDistributor.sendToServer(new HorseRecallPayload());
-            } else if (client.player.getVehicle() instanceof AbstractHorse mount) {
+            } else if (BhHorseKind.managed(client.player.getVehicle())
+                    && client.player.getVehicle() instanceof AbstractHorse mount) {
                 client.setScreen(new HorseInfoScreen(mount));
             } else {
                 PacketDistributor.sendToServer(new CallHorsePayload());
@@ -341,7 +342,8 @@ public class IcysBetterHorsesClient {
         if (player == null || client.screen != null) {
             return;
         }
-        if (!(player.getControlledVehicle() instanceof AbstractHorse horse)
+        if (!BhHorseKind.managed(player.getControlledVehicle())
+                || !(player.getControlledVehicle() instanceof AbstractHorse horse)
                 || horse.getControllingPassenger() != player) {
             return;
         }
@@ -363,7 +365,8 @@ public class IcysBetterHorsesClient {
             return;
         }
 
-        AbstractHorse horse = (player.getControlledVehicle() instanceof AbstractHorse mount)
+        AbstractHorse horse = BhHorseKind.managed(player.getControlledVehicle())
+                && player.getControlledVehicle() instanceof AbstractHorse mount
                 ? mount
                 : bh_lookedAtHorse(player);
         if (horse == null) {
@@ -394,7 +397,7 @@ public class IcysBetterHorsesClient {
         AABB searchBox = player.getBoundingBox().expandTowards(look.scale(RADIAL_REACH)).inflate(1.0D);
         EntityHitResult hit = ProjectileUtil.getEntityHitResult(
                 player, eye, end, searchBox,
-                entity -> (entity instanceof HorseCartEntity || entity instanceof AbstractHorse)
+                entity -> (entity instanceof HorseCartEntity || BhHorseKind.managed(entity))
                         && entity.isPickable(),
                 RADIAL_REACH * RADIAL_REACH);
         return hit == null ? null : hit.getEntity();
@@ -437,7 +440,7 @@ public class IcysBetterHorsesClient {
         AABB searchBox = player.getBoundingBox().expandTowards(look.scale(RADIAL_REACH)).inflate(1.0D);
         EntityHitResult hit = ProjectileUtil.getEntityHitResult(
                 player, eye, end, searchBox,
-                entity -> entity instanceof AbstractHorse && entity.isPickable(),
+                entity -> BhHorseKind.managed(entity) && entity.isPickable(),
                 RADIAL_REACH * RADIAL_REACH);
         return hit != null && hit.getEntity() instanceof AbstractHorse horse ? horse : null;
     }

@@ -85,7 +85,7 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
 
         renderHorse(guiGraphics, mouseX, mouseY);
 
-        centeredFitted(guiGraphics, horse.bhCoats().displayName(coatIndex).getString(),
+        centeredFitted(guiGraphics, horse.bhCoatSet().displayName(coatIndex).getString(),
                 NAME_Y, NAME_MAX_WIDTH);
         centeredFitted(guiGraphics, (coatIndex + 1) + " / " + coatCount(),
                 COUNT_Y, BookEntryScreen.PAGE_WIDTH);
@@ -151,7 +151,7 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
     }
 
     private int coatCount() {
-        return horse == null ? 0 : horse.bhCoats().count();
+        return horse == null ? 0 : horse.bhCoatSet().count();
     }
 
     private void loadHorse() {

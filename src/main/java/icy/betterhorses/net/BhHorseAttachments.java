@@ -1,5 +1,6 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.attachment.AttachmentSyncHandler;
@@ -23,11 +24,12 @@ public final class BhHorseAttachments {
     public static final AttachmentType<Boolean> CART_PLOW = bool(false);
     public static final AttachmentType<Boolean> ENDER_CHEST = bool(false);
     public static final AttachmentType<Boolean> UPGRADED_SADDLE = bool(false);
-    public static final AttachmentType<Integer> GENDER = integer(0);
-    public static final AttachmentType<Integer> BREED = integer(HorseBreed.UNKNOWN_SPECIES.ordinal());
+    public static final AttachmentType<String> GENDER = string("");
+    public static final AttachmentType<String> BREED = string("");
+    public static final AttachmentType<String> SPECIES = string("");
     public static final AttachmentType<Boolean> BREED_MIXED = bool(false);
     public static final AttachmentType<String> OWNER = string("");
-    public static final AttachmentType<Integer> COMMAND = integer(HorseCommand.FOLLOW.ordinal());
+    public static final AttachmentType<String> COMMAND = string(BhContent.COMMAND_FOLLOW.getKey().location().toString());
     public static final AttachmentType<Integer> GEAR = integer(0);
     public static final AttachmentType<Integer> GAIT_GEAR = integer(0);
     public static final AttachmentType<Integer> COMBAT = integer(0);
@@ -36,6 +38,9 @@ public final class BhHorseAttachments {
     public static final AttachmentType<Boolean> CART_LARGE = bool(false);
     public static final AttachmentType<Integer> STOMP = integer(0);
     public static final AttachmentType<Integer> SURGE = integer(0);
+    public static final AttachmentType<Integer> SURGE_1 = integer(0);
+    public static final AttachmentType<Integer> SURGE_2 = integer(0);
+    public static final AttachmentType<Integer> SURGE_3 = integer(0);
     public static final AttachmentType<Integer> PULSE = integer(0);
     public static final AttachmentType<Integer> PERK = integer(0);
     public static final AttachmentType<Integer> CHARGE = integer(BhSurge.HIDDEN);
@@ -53,6 +58,7 @@ public final class BhHorseAttachments {
         register(event, "upgraded_saddle", UPGRADED_SADDLE);
         register(event, "gender", GENDER);
         register(event, "breed", BREED);
+        register(event, "species", SPECIES);
         register(event, "breed_mixed", BREED_MIXED);
         register(event, "owner", OWNER);
         register(event, "command", COMMAND);
@@ -64,6 +70,9 @@ public final class BhHorseAttachments {
         register(event, "cart_large", CART_LARGE);
         register(event, "stomp", STOMP);
         register(event, "surge", SURGE);
+        register(event, "surge_1", SURGE_1);
+        register(event, "surge_2", SURGE_2);
+        register(event, "surge_3", SURGE_3);
         register(event, "pulse", PULSE);
         register(event, "perk", PERK);
         register(event, "charge", CHARGE);

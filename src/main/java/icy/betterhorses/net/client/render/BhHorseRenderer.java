@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import icy.betterhorses.net.entity.BhBreedHorse;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.inventory.GearSlot;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -72,6 +74,7 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
 
     @Override
     public ResourceLocation getTextureLocation(T entity) {
-        return entity.bhCoats().texture(entity.bhCoat(), entity.isBaby());
+        BreedType type = BhRegistries.breedTypeRegistry().get(entity.bhFixedBreed().location());
+        return type.coats().texture(entity.bhCoat(), entity.isBaby());
     }
 }

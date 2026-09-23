@@ -1,6 +1,5 @@
 package icy.betterhorses.net.entity;
 
-import icy.betterhorses.net.BreedArchetype;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.inventory.CartChestMenu;
 import net.minecraft.resources.ResourceLocation;
@@ -65,10 +64,6 @@ public enum CartSize {
 
     private static ResourceLocation id(String path) {
         return ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, path);
-    }
-
-    public static CartSize forArchetype(BreedArchetype archetype) {
-        return archetype == BreedArchetype.DRAFT ? LARGE : NORMAL;
     }
 
     public static CartSize byLarge(boolean large) {

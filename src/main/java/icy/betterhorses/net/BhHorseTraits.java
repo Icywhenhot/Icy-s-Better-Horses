@@ -9,8 +9,11 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.player.Player;
+import icy.betterhorses.net.entity.BhBreedEntity;
+import icy.betterhorses.net.registry.BhContent;
 
 import java.util.List;
+import java.util.Objects;
 
 public final class BhHorseTraits {
 
@@ -27,7 +30,7 @@ public final class BhHorseTraits {
 
     public static void grantBond(IHorseData data, int amount) {
         int gain = amount;
-        if (data.bh_getBreed() == HorseBreed.MORGAN && BhAbility.MORGAN_BOND.on()) {
+        if (Objects.equals(data.bh_getBreedKey(), BhContent.MORGAN.getKey()) && BhAbility.MORGAN_BOND.on()) {
             int halves = amount * (bondTier(data.bh_getBond()) >= 1 ? 4 : 3) + data.bh_getBondRemainder();
             gain = halves / 2;
             data.bh_setBondRemainder(halves % 2);
@@ -47,7 +50,7 @@ public final class BhHorseTraits {
 
     public static HorseBreed pickBreed(AbstractHorse horse, RandomSource random) {
         if (horse instanceof BhBreedEntity breedEntity) {
-            return breedEntity.bhFixedBreed();
+            return HorseBreed.byId(breedEntity.bhFixedBreed().location().getPath());
         }
         HorseBreed species = HorseBreed.speciesFor(horse);
         if (species != null) {

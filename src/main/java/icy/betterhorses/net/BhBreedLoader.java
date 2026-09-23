@@ -3,14 +3,18 @@ package icy.betterhorses.net;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import icy.betterhorses.net.registry.ArchetypeType;
+import icy.betterhorses.net.registry.BhRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 
 import java.io.Reader;
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -25,16 +29,16 @@ public final class BhBreedLoader {
     }
 
     private static void load(ResourceManager manager) {
-        EnumMap<HorseBreed, BhBreedData> loaded = new EnumMap<>(HorseBreed.class);
+        Map<ResourceLocation, BhBreedData> loaded = new HashMap<>();
         Map<ResourceLocation, Resource> found = manager.listResources(DIR, id -> id.getPath().endsWith(".json"));
 
         for (Map.Entry<ResourceLocation, Resource> entry : found.entrySet()) {
             ResourceLocation file = entry.getKey();
             String name = file.getPath();
             name = name.substring(name.lastIndexOf('/') + 1, name.length() - ".json".length());
-            HorseBreed breed = HorseBreed.byId(name);
-            if (breed == HorseBreed.UNKNOWN_SPECIES && !"unknown_species".equals(name)) {
-                IcysBetterHorses.LOGGER.warn("[breeds] {} does not name a breed, skipping", file);
+            ResourceLocation breedId = ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, name);
+            if (!BhRegistries.breedTypeRegistry().containsKey(breedId)) {
+                IcysBetterHorses.LOGGER.warn("[breeds] {} does not name a registered breed, skipping", file);
                 continue;
             }
 
@@ -44,7 +48,7 @@ public final class BhBreedLoader {
                     IcysBetterHorses.LOGGER.warn("[breeds] {} is not a json object, skipping", file);
                     continue;
                 }
-                loaded.put(breed, read(breed, root));
+                loaded.put(breedId, read(breedId, root));
             } catch (Exception exception) {
                 IcysBetterHorses.LOGGER.warn("[breeds] could not read {}", file, exception);
             }
@@ -54,16 +58,17 @@ public final class BhBreedLoader {
         IcysBetterHorses.LOGGER.info("[breeds] loaded {} breed definitions", loaded.size());
     }
 
-    private static BhBreedData read(HorseBreed breed, JsonObject root) {
-        BhBreedData fallback = BhBreedData.builtIn(breed);
-        BreedArchetype arch = fallback.archetype();
+    private static BhBreedData read(ResourceLocation breedId, JsonObject root) {
+        BhBreedData fallback = BhBreedData.builtIn(breedId);
+        ArchetypeType arch = fallback.archetype();
         if (root.has("class")) {
-            String wanted = root.get("class").getAsString().toUpperCase(Locale.ROOT);
-            try {
-                arch = BreedArchetype.valueOf(wanted);
-            } catch (IllegalArgumentException ignored) {
+            String wanted = root.get("class").getAsString();
+            ArchetypeType resolved = resolveArchetype(wanted);
+            if (resolved != null) {
+                arch = resolved;
+            } else {
                 IcysBetterHorses.LOGGER.warn("[breeds] {} has unknown class '{}', keeping {}",
-                        breed.id(), root.get("class").getAsString(), arch);
+                        breedId, wanted, arch);
             }
         }
         int rows = clampRows(root, "chest_rows", fallback.chestRows());
@@ -72,6 +77,13 @@ public final class BhBreedLoader {
                 ? Math.max(0, root.get("spawn_weight").getAsInt())
                 : fallback.spawnWeight();
         return new BhBreedData(arch, rows, Math.max(bonded, rows), weight);
+    }
+
+    private static @Nullable ArchetypeType resolveArchetype(String wanted) {
+        ResourceLocation location = wanted.indexOf(':') >= 0
+                ? ResourceLocation.tryParse(wanted)
+                : ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, wanted.toLowerCase(Locale.ROOT));
+        return location == null ? null : BhRegistries.archetypeTypeRegistry().get(location);
     }
 
     private static int clampRows(JsonObject root, String key, int fallback) {

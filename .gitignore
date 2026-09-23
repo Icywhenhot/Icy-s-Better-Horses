@@ -12,3 +12,4 @@ blockbench/
 tools/
 *.bbmodel
 *.md
+!guide/*.md

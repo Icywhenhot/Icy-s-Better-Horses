@@ -1,7 +1,8 @@
 package icy.betterhorses.net.entity;
 
-import icy.betterhorses.net.BreedArchetype;
-import icy.betterhorses.net.HorseBreed;
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.BreedType;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.animal.horse.Horse;
@@ -17,17 +18,12 @@ public class IcelandicHorse extends BhBreedHorse {
     }
 
     @Override
-    public HorseBreed bhFixedBreed() {
-        return HorseBreed.ICELANDIC;
-    }
-
-    @Override
-    public BhBreedCoats bhCoats() {
-        return BhBreedCoats.ICELANDIC;
+    public ResourceKey<BreedType> bhFixedBreed() {
+        return BhContent.ICELANDIC.getKey();
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        return bhAttributes(BreedArchetype.PONY);
+        return bhAttributes(BhContent.PONY.get());
     }
 
 }

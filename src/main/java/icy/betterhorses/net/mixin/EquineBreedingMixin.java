@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.network.chat.Component;
@@ -24,11 +25,12 @@ public abstract class EquineBreedingMixin {
 
     @Inject(method = "canMate", at = @At("HEAD"), cancellable = true)
     private void bh_checkGender(Animal other, CallbackInfoReturnable<Boolean> cir) {
-        if (!BhConfig.genderBreedingEnabled() || !(other instanceof AbstractHorse mate)) {
+        if (!BhConfig.genderBreedingEnabled() || !(other instanceof AbstractHorse mate)
+                || !BhHorseKind.managed(mate)) {
             return;
         }
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (IHorseData.of(self).bh_getGender() != IHorseData.of(mate).bh_getGender()) {
+        if (!IHorseData.of(self).bh_getGender().equals(IHorseData.of(mate).bh_getGender())) {
             return;
         }
         cir.setReturnValue(false);
