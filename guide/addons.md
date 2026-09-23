@@ -1,41 +1,6 @@
-# Making addons for Icy's Better Horses
+# Addon guide
 
-This guide targets the updated **Minecraft 1.20.1 / Forge 47.x** branch, using Java 17 bytecode. It does not describe the Fabric or NeoForge branches. Use the updated build containing these extension points on both the client and server; older 2.0.0 jars do not necessarily contain them. The mod's network protocol is now `3`.
-
-The [existing gameplay overview](README.md) was moved here unchanged. Its platform and gameplay descriptions may reflect an older release; use this guide and the current source for addon development.
-
-## Set up the dependency
-
-Build this checkout with `gradlew build`. It produces the mod jar and a sources jar in `build/libs`. The existing `maven-publish` configuration can also publish to the checkout's `repo` directory with `gradlew publish`.
-
-For a local ForgeGradle addon project, point a Maven repository at that `repo` directory. The publication uses the project name, which has underscores:
-
-```groovy
-repositories {
-    maven { url = uri('../icys-better-horses-1.21/repo') }
-}
-
-dependencies {
-    implementation(fg.deobf('icy.betterhorses.net:icys_better_horses:2.0.0')) {
-        transitive = false
-    }
-}
-```
-
-Adjust the relative path and version to your checkout. This is a local publication, not a public Maven endpoint. Disable transitive resolution here because this branch's generated publication includes development-mapped dependency coordinates. Declare the mod's required dependencies explicitly: this branch uses GeckoLib, Patchouli, and Cloth Config; copy their versions and repositories from `build.gradle` and `gradle.properties`. Do not package Better Horses classes inside your addon jar.
-
-Declare the dependency in your addon's `META-INF/mods.toml`, replacing `trailaddon` with your mod ID:
-
-```toml
-[[dependencies.trailaddon]]
-modId="icys_better_horses"
-mandatory=true
-versionRange="[2.0.0,2.1.0)"
-ordering="AFTER"
-side="BOTH"
-```
-
-The version range is an example to narrow to the release you test, not a promise that every 2.0.x build has this API. Distribute the exact required build information with your addon.
+If you want to make addons for the mod, here's a little guide.
 
 ## IDs and registration
 
@@ -49,7 +14,7 @@ There are two historical namespaces in this branch. Prefer the supplied constant
 | Asset and equipment tag namespace | `icys-better-horses` |
 | Your addon entries and assets | Your own mod ID, such as `trailaddon` |
 
-`BhRegistries` exposes Forge registries for breeds, archetypes, abilities, commands, genders, and species. Use a `DeferredRegister` with the corresponding registry key. Register it on your mod event bus in your mod constructor. Do not replace built-in registry entries or register under another mod's namespace.
+`BhRegistries` exposes Forge registries for breeds, archetypes, abilities, commands, genders, and species. you should prolly use a `DeferredRegister` with the corresponding registry key. Do not replace built-in registry entries or register under another mod's namespace, obviously.
 
 ## A working ability and command addon
 
@@ -267,44 +232,9 @@ Registered breed entity types are recognized by `BhHorseKind.managed`. For other
 
 You can also register an `ArchetypeType` through `BhRegistries.ARCHETYPE_TYPES` to choose stat ranges and supported archetype properties. Attach executable custom abilities through `BreedType` rather than relying on `ArchetypeType.Builder.ability`; the existing archetype class-perk list is not dispatched by the breed-ability controller.
 
-### Loot tables
-
-Each built-in breed has its own entity loot table, such as `icys-better-horses:entities/shire_horse`. These delegate to `minecraft:entities/horse`, so replacing the vanilla table changes their drops too. A datapack can instead replace one breed's table without changing the others.
-
-New addon entities need their own loot table. To use vanilla horse drops for the example entity, create `data/trailaddon/loot_tables/entities/trail_horse.json`:
-
-```json
-{
-  "type": "minecraft:entity",
-  "pools": [
-    {
-      "rolls": 1,
-      "entries": [
-        {
-          "type": "minecraft:loot_table",
-          "name": "minecraft:entities/horse"
-        }
-      ]
-    }
-  ]
-}
-```
-
 ## Compatibility and testing
 
 Reuse `IHorseData`, `IHorseAbilityHost`, the registries, and the attachment event before adding mixins. Keep gameplay mutations on the server. Do not replace global entity movement, camera setup, or horse tick methods to implement an addon skill.
 
-The cart camera lift is scoped to the local player's small-cart seats on managed draft horses. It changes the camera height only. Charge shake is also scoped to managed horse riders and skips zero offsets. Neither feature is an addon registration mechanism.
 
-Before releasing an addon, test:
 
-1. A dedicated server starts with the addon and its required dependencies, without loading client classes.
-2. Two horses have separate ability state, and selecting a second active skill does not activate the first.
-3. Cooldowns survive a world reload and chunk unload; missing fields in older saves load with valid defaults.
-4. Untamed horses, untrusted players, distant players, unavailable commands, and forged ability IDs cannot execute player actions.
-5. Tagged equipment enters the intended slot while unrelated items are rejected; built-in gear continues to work.
-6. Your client sees translated commands and abilities, including after changing breed or reconnecting.
-7. Removing transient effects, dismounting, and disabling your addon skill do not leave modifiers behind.
-8. Other riding, movement, and camera mods behave normally when your addon is inactive.
-
-The base checkout uses `gradlew test` for its JUnit suite and `gradlew build` for compilation, packaging, and reobfuscation. Server GameTests can exercise addon registration, persistence, permissions, and tags; client UI and camera compatibility also need client testing.
