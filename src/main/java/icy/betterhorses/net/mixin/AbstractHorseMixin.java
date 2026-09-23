@@ -92,6 +92,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import icy.betterhorses.net.BhRiderSeat;
@@ -213,6 +214,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private static final EntityDataAccessor<Integer> BH_PULSE = bh_intKey();
     @Unique private static final EntityDataAccessor<Integer> BH_PERK = bh_intKey();
     @Unique private static final EntityDataAccessor<Integer> BH_CHARGE = bh_intKey();
+    @Unique private static final EntityDataAccessor<Integer> BH_SURGE_1 = bh_intKey();
+    @Unique private static final EntityDataAccessor<Integer> BH_SURGE_2 = bh_intKey();
+    @Unique private static final EntityDataAccessor<Integer> BH_SURGE_3 = bh_intKey();
     @Unique private static final EntityDataAccessor<String> BH_COMMAND_ID =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.STRING);
     @Unique private static final EntityDataAccessor<Boolean> BH_FREE_LOOK = bh_boolKey();
@@ -259,6 +263,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         this.entityData.define(BH_PULSE, 0);
         this.entityData.define(BH_PERK, 0);
         this.entityData.define(BH_CHARGE, BhSurge.HIDDEN);
+        this.entityData.define(BH_SURGE_1, 0);
+        this.entityData.define(BH_SURGE_2, 0);
+        this.entityData.define(BH_SURGE_3, 0);
         this.entityData.define(BH_COMMAND_ID, BhContent.COMMAND_FOLLOW.getKey().location().toString());
         this.entityData.define(BH_FREE_LOOK, false);
         this.entityData.define(BH_CART, false);
@@ -935,6 +942,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     }
 
     @Override
+    public List<BreedAbility> bh_allAbilities() {
+        return this.bh_abilities.all();
+    }
+
+    @Override
     public boolean bh_isAbilityPaused() {
         return this.bh_abilityPaused;
     }
@@ -1004,6 +1016,30 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     public void bh_setSurge(int packed) {
         if (this.entityData.get(BH_SURGE) != packed) {
             bh_push(BH_SURGE, packed);
+        }
+    }
+
+    @Unique
+    private static EntityDataAccessor<Integer> bh_surgeKey(int slot) {
+        return switch (slot) {
+            case 0 -> BH_SURGE;
+            case 1 -> BH_SURGE_1;
+            case 2 -> BH_SURGE_2;
+            case 3 -> BH_SURGE_3;
+            default -> throw new IllegalArgumentException("Ability surge slot out of range: " + slot);
+        };
+    }
+
+    @Override
+    public int bh_getAbilitySurge(int slot) {
+        return this.entityData.get(bh_surgeKey(slot));
+    }
+
+    @Override
+    public void bh_setAbilitySurge(int slot, int packed) {
+        EntityDataAccessor<Integer> key = bh_surgeKey(slot);
+        if (this.entityData.get(key) != packed) {
+            bh_push(key, packed);
         }
     }
 
@@ -1164,7 +1200,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
                 bh_setGaitGear(0);
             }
             bh_setFreeLook(false);
-            bh_setSurge(0);
+            for (int slot = 0; slot < BhSurge.ABILITY_SLOTS; slot++) {
+                bh_setAbilitySurge(slot, 0);
+            }
             bh_setPerkSurge(0);
             bh_setPulse(0);
             bh_setCharge(BhSurge.HIDDEN);
