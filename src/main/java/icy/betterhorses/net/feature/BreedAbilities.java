@@ -18,6 +18,8 @@ import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public final class BreedAbilities implements HorseFeature {
@@ -26,9 +28,7 @@ public final class BreedAbilities implements HorseFeature {
     private final ArchetypePerks perks = new ArchetypePerks();
     private @Nullable ResourceKey<BreedType> activeBreedKey;
     private boolean breedInitialized;
-    private @Nullable AbilityType activeAbilityType;
-    private @Nullable BreedAbility ability;
-    private boolean offered;
+    private final List<Slot> slots = new ArrayList<>();
     private int lastRows = -1;
 
     @Override
@@ -47,13 +47,13 @@ public final class BreedAbilities implements HorseFeature {
         ArchetypeType archetype = BhBreedData.of(breedKey).archetype();
         if (!breedInitialized || !Objects.equals(breedKey, activeBreedKey)) {
             breedInitialized = true;
-            if (ability != null) {
-                ability.onDetach(horse, data);
-            }
+            detachAll(horse, data);
             perks.clear(horse);
             activeBreedKey = breedKey;
-            activeAbilityType = resolveAbilityType(breedKey);
-            ability = activeAbilityType == null ? null : activeAbilityType.create();
+            slots.clear();
+            for (AbilityType type : resolveAbilityTypes(breedKey)) {
+                slots.add(new Slot(type, type.create()));
+            }
             perks.onBreedChanged(horse, archetype);
         }
 
@@ -65,42 +65,73 @@ public final class BreedAbilities implements HorseFeature {
 
         state.tick(horse);
         perks.tick(horse, data, archetype);
-        if (ability == null) {
-            return;
-        }
-        boolean enabled = data.bh_getBreed().isRealBreed()
-                ? BhConfig.anyAbilityEnabled(data.bh_getBreed())
-                : activeAbilityType.defaultEnabled();
-        if (!enabled) {
-            if (offered) {
-                ability.onDetach(horse, data);
-                offered = false;
+        BhSurge.decayAbilities(data);
+        boolean realBreed = data.bh_getBreed().isRealBreed();
+        boolean breedEnabled = realBreed && BhConfig.anyAbilityEnabled(data.bh_getBreed());
+        for (Slot slot : slots) {
+            boolean enabled = realBreed ? breedEnabled : slot.type.defaultEnabled();
+            if (!enabled) {
+                if (slot.offered) {
+                    slot.ability.onDetach(horse, data);
+                    slot.offered = false;
+                }
+                continue;
             }
-            return;
+            slot.offered = true;
+            slot.ability.tick(horse, data, state);
         }
-        offered = true;
-        ability.tick(horse, data, state);
     }
 
     public @Nullable BreedAbility current() {
-        return ability;
+        return slots.isEmpty() ? null : slots.get(0).ability;
+    }
+
+    public List<BreedAbility> all() {
+        List<BreedAbility> out = new ArrayList<>(slots.size());
+        for (Slot slot : slots) {
+            out.add(slot.ability);
+        }
+        return out;
     }
 
     @Override
     public void onRemoved(AbstractHorse horse, IHorseData data) {
-        if (ability != null) ability.onDetach(horse, data);
+        detachAll(horse, data);
     }
 
-    private static @Nullable AbilityType resolveAbilityType(@Nullable ResourceKey<BreedType> breedKey) {
+    private void detachAll(AbstractHorse horse, IHorseData data) {
+        for (Slot slot : slots) {
+            slot.ability.onDetach(horse, data);
+        }
+    }
+
+    private static List<AbilityType> resolveAbilityTypes(@Nullable ResourceKey<BreedType> breedKey) {
         if (breedKey == null) {
-            return null;
+            return List.of();
         }
         BreedType type = BhRegistries.breedTypeRegistry().getValue(breedKey.location());
-        if (type == null || type.abilities().isEmpty()) {
-            return null;
+        if (type == null) {
+            return List.of();
         }
-        ResourceKey<AbilityType> abilityKey = type.abilities().get(0);
-        return BhRegistries.abilityTypeRegistry().getValue(abilityKey.location());
+        List<AbilityType> out = new ArrayList<>();
+        for (ResourceKey<AbilityType> abilityKey : type.abilities()) {
+            AbilityType abilityType = BhRegistries.abilityTypeRegistry().getValue(abilityKey.location());
+            if (abilityType != null) {
+                out.add(abilityType);
+            }
+        }
+        return out;
+    }
+
+    private static final class Slot {
+        private final AbilityType type;
+        private final BreedAbility ability;
+        private boolean offered;
+
+        private Slot(AbilityType type, BreedAbility ability) {
+            this.type = type;
+            this.ability = ability;
+        }
     }
 
     private static void spillOverflow(AbstractHorse horse, IHorseData data,

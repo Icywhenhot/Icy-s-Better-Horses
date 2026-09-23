@@ -21,7 +21,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Iterator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -117,16 +119,22 @@ public final class BhAbilityBadges {
         if (breedKey == null) {
             return;
         }
-        ResourceLocation basis = badgeBasis(breedKey);
-        if (basis == null) {
+        BreedType type = BhRegistries.breedTypeRegistry().getValue(breedKey.location());
+        if (type == null) {
             return;
         }
+        ResourceLocation basis = type.abilities().isEmpty() ? breedKey.location() : type.abilities().get(0).location();
+
+        List<Badge> badges = new ArrayList<>();
+        badges.add(read(basis, data.bh_getSurge(), false));
+        for (int slot = 1; slot < Math.min(type.abilities().size(), BhSurge.ABILITY_SLOTS); slot++) {
+            badges.add(read(type.abilities().get(slot).location(), data.bh_getAbilitySurge(slot), false));
+        }
+        badges.add(read(basis, data.bh_getPulse(), false));
+        badges.add(read(basis, data.bh_getPerkSurge(), true));
 
         Set<String> live = new HashSet<>();
-        for (Badge badge : new Badge[]{
-                read(basis, data.bh_getSurge(), false),
-                read(basis, data.bh_getPulse(), false),
-                read(basis, data.bh_getPerkSurge(), true)}) {
+        for (Badge badge : badges) {
             if (badge != null) {
                 shown.put(badge.key, badge);
                 live.add(badge.key);
@@ -159,14 +167,6 @@ public final class BhAbilityBadges {
         }
 
         shield(gfx, screenW, screenH, data.bh_getCharge());
-    }
-
-    private static @Nullable ResourceLocation badgeBasis(ResourceKey<BreedType> breedKey) {
-        BreedType type = BhRegistries.breedTypeRegistry().getValue(breedKey.location());
-        if (type == null) {
-            return null;
-        }
-        return type.abilities().isEmpty() ? breedKey.location() : type.abilities().get(0).location();
     }
 
     private static @Nullable Badge read(ResourceLocation basis, int packed, boolean road) {
