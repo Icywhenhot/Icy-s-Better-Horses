@@ -57,7 +57,8 @@ public final class IcysBetterHorsesClientForgeEvents {
         if (callDown && !callKeyWasDown) {
             if (anyHorseRoused(client)) {
                 BhNetworking.sendToServer(new HorseRecallPayload());
-            } else if (client.player.getVehicle() instanceof AbstractHorse mount) {
+            } else if (BhHorseKind.managed(client.player.getVehicle())
+                    && client.player.getVehicle() instanceof AbstractHorse mount) {
                 client.setScreen(new HorseInfoScreen(mount));
             } else {
                 BhNetworking.sendToServer(new CallHorsePayload());
@@ -119,7 +120,8 @@ public final class IcysBetterHorsesClientForgeEvents {
         if (player == null || client.screen != null) {
             return;
         }
-        if (!(player.getVehicle() instanceof AbstractHorse horse)
+        if (!BhHorseKind.managed(player.getVehicle())
+                || !(player.getVehicle() instanceof AbstractHorse horse)
                 || horse.getControllingPassenger() != player) {
             return;
         }
@@ -139,7 +141,8 @@ public final class IcysBetterHorsesClientForgeEvents {
         if (player == null || client.screen != null) {
             return;
         }
-        AbstractHorse horse = player.getVehicle() instanceof AbstractHorse mount
+        AbstractHorse horse = BhHorseKind.managed(player.getVehicle())
+                && player.getVehicle() instanceof AbstractHorse mount
                 ? mount
                 : lookedAtHorse(player);
         if (horse == null) {
@@ -161,13 +164,13 @@ public final class IcysBetterHorsesClientForgeEvents {
     }
 
     private static @Nullable AbstractHorse lookedAtHorse(LocalPlayer player) {
-        Entity hit = lookedAt(player, entity -> entity instanceof AbstractHorse && entity.isPickable());
+        Entity hit = lookedAt(player, entity -> BhHorseKind.managed(entity) && entity.isPickable());
         return hit instanceof AbstractHorse horse ? horse : null;
     }
 
     private static @Nullable Entity lookedAtCartTarget(LocalPlayer player) {
         return lookedAt(player, entity ->
-                (entity instanceof HorseCartEntity || entity instanceof AbstractHorse) && entity.isPickable());
+                (entity instanceof HorseCartEntity || BhHorseKind.managed(entity)) && entity.isPickable());
     }
 
     private static @Nullable Entity lookedAt(LocalPlayer player, java.util.function.Predicate<Entity> filter) {

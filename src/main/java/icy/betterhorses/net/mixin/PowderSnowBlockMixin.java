@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IHorseData;
@@ -21,7 +22,8 @@ public abstract class PowderSnowBlockMixin {
 
     @Inject(method = "canEntityWalkOnPowderSnow", at = @At("HEAD"), cancellable = true)
     private static void bh_allowHorseOnPowderSnow(Entity entity, CallbackInfoReturnable<Boolean> cir) {
-        if (!(entity instanceof AbstractHorse horse) || !(horse instanceof IHorseData data)) {
+        if (!(entity instanceof AbstractHorse horse) || !BhHorseKind.managed(horse)
+                || !(horse instanceof IHorseData data)) {
             return;
         }
 

@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class HorseTracker {
 
-    private static final int STALE_SWEEP_TICKS = 20;
+    private static final int STALE_SWEEP_TICKS = 100;
 
     private static final Map<UUID, AbstractHorse> ownedHorses = new ConcurrentHashMap<>();
     private static @Nullable HorseTrackerState cachedState;
@@ -49,7 +49,7 @@ public final class HorseTracker {
                 || !isStale(horse)) {
             return false;
         }
-        IcysBetterHorses.LOGGER.debug("[whistle] discarding stale horse copy {} in {} (generation {} < {})",
+        IcysBetterHorses.LOGGER.info("[whistle] discarding stale horse copy {} in {} (generation {} < {})",
                 horse.getUUID(), horse.level().dimension().location(),
                 IHorseData.of(horse).bh_getGeneration(), getGeneration(horse.getUUID()));
         ownedHorses.remove(horse.getUUID(), horse);
@@ -59,7 +59,7 @@ public final class HorseTracker {
     }
 
     public static void register(AbstractHorse horse) {
-        if (isStale(horse)) return;
+        if (isStale(horse) || !BhHorseKind.managed(horse)) return;
         ownedHorses.put(horse.getUUID(), horse);
         HorseTrackerState state = state();
         if (state != null && IHorseData.of(horse).bh_isOwned()) {
@@ -110,6 +110,7 @@ public final class HorseTracker {
     }
 
     public static void setLastRidden(UUID playerId, AbstractHorse horse) {
+        if (!BhHorseKind.managed(horse)) return;
         HorseTrackerState state = state();
         if (state != null) {
             state.setLastRidden(playerId, horse.getUUID());

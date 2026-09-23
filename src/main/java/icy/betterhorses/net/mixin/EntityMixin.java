@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.HorseTracker;
 import icy.betterhorses.net.entity.HorseCartEntity;
@@ -58,7 +59,8 @@ public abstract class EntityMixin {
             boolean force,
             CallbackInfoReturnable<Boolean> cir) {
         Entity self = (Entity) (Object) this;
-        if (!cir.getReturnValueZ() || !(self instanceof ServerPlayer player) || !(vehicle instanceof AbstractHorse horse)) {
+        if (!cir.getReturnValueZ() || !(self instanceof ServerPlayer player)
+                || !(vehicle instanceof AbstractHorse horse) || !BhHorseKind.managed(horse)) {
             return;
         }
 
@@ -79,7 +81,8 @@ public abstract class EntityMixin {
     @Inject(method = "removeVehicle", at = @At("HEAD"))
     private void bh_removeMountedHorseBonuses(CallbackInfo ci) {
         if (!((Object) this instanceof ServerPlayer player)
-                || !(player.getVehicle() instanceof AbstractHorse horse)) return;
+                || !(player.getVehicle() instanceof AbstractHorse horse)
+                || !BhHorseKind.managed(horse)) return;
         if (horse.getPassengers().size() == 1) {
             AttributeInstance stepHeight = horse.getAttribute(ForgeMod.STEP_HEIGHT_ADDITION.get());
             if (stepHeight != null) stepHeight.removeModifier(BH_MOUNTED_STEP_HEIGHT_ID);

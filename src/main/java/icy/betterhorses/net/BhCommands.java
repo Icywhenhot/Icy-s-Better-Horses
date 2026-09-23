@@ -11,13 +11,17 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.RegisterCommandsEvent;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -56,7 +60,10 @@ public final class BhCommands {
                                 })
                                 .executes(context -> untrust(context, targets(context)))))
                 .then(Commands.literal("trusted")
-                        .executes(BhCommands::listTrusted)));
+                        .executes(BhCommands::listTrusted))
+                .then(Commands.literal("debug")
+                        .requires(source -> source.hasPermission(2))
+                        .executes(BhCommands::dumpHorses)));
     }
 
     private static int setBond(CommandContext<CommandSourceStack> context, int level)
@@ -173,6 +180,33 @@ public final class BhCommands {
         String joined = String.join(", ", names);
         source.sendSuccess(() -> Component.translatable(MSG + "list", trusted.size(), joined), false);
         return trusted.size();
+    }
+
+    private static int dumpHorses(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        List<AbstractHorse> found = new ArrayList<>();
+        for (ServerLevel level : source.getServer().getAllLevels()) {
+            found.addAll(level.getEntities(EntityTypeTest.forClass(AbstractHorse.class),
+                    horse -> IHorseData.of(horse).bh_isOwned()));
+        }
+        if (found.isEmpty()) {
+            source.sendSuccess(() -> Component.literal("no owned horses loaded"), false);
+            return 0;
+        }
+
+        Map<String, Integer> bodies = new HashMap<>();
+        for (AbstractHorse horse : found) {
+            bodies.merge(BhTwinWatch.fingerprint(horse), 1, Integer::sum);
+        }
+
+        for (AbstractHorse horse : found) {
+            String line = BhTwinWatch.describe(horse)
+                    + (bodies.get(BhTwinWatch.fingerprint(horse)) > 1 ? " TWIN" : "");
+            source.sendSuccess(() -> Component.literal(line), false);
+            IcysBetterHorses.LOGGER.info("[twin] {} owner {} type {}",
+                    line, IHorseData.of(horse).bh_getOwner(), EntityType.getKey(horse.getType()));
+        }
+        return found.size();
     }
 
     private static void notify(CommandSourceStack source, UUID targetId, String key, String ownerName) {

@@ -1,5 +1,6 @@
 package icy.betterhorses.net.client;
 
+import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.registry.BreedType;
@@ -32,13 +33,15 @@ public final class BhHorseHud {
         if (client.player == null || client.level == null || client.screen != null) {
             return;
         }
-        if (client.player.getVehicle() instanceof AbstractHorse mount) {
+        if (BhHorseKind.managed(client.player.getVehicle())
+                && client.player.getVehicle() instanceof AbstractHorse mount) {
             BhAbilityBadges.render(gfx, client.font,
                     client.getWindow().getGuiScaledWidth(),
                     client.getWindow().getGuiScaledHeight(),
                     mount);
         }
-        if (holdingUpgradedSaddle(client) && client.crosshairPickEntity instanceof AbstractHorse horse) {
+        if (holdingUpgradedSaddle(client) && BhHorseKind.managed(client.crosshairPickEntity)
+                && client.crosshairPickEntity instanceof AbstractHorse horse) {
             stats(gfx, client, horse);
         }
     }

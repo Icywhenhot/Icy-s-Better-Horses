@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhSurge;
@@ -49,7 +50,7 @@ public abstract class LivingEntityMixin extends Entity {
         this.bh_triggerHorseMedkitAfterDamage = false;
 
         LivingEntity self = (LivingEntity) (Object) this;
-        if (!(self instanceof AbstractHorse) || !(self instanceof IHorseData data)) {
+        if (!BhHorseKind.managed(self) || !(self instanceof IHorseData data)) {
             return;
         }
 
@@ -73,7 +74,7 @@ public abstract class LivingEntityMixin extends Entity {
         this.bh_triggerHorseMedkitAfterDamage = false;
 
         LivingEntity self = (LivingEntity) (Object) this;
-        if (!(self instanceof AbstractHorse) || !(self instanceof IHorseData data)) {
+        if (!BhHorseKind.managed(self) || !(self instanceof IHorseData data)) {
             return;
         }
 

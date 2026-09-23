@@ -118,6 +118,7 @@ public final class IcysBetterHorses {
     public void onServerStopped(ServerStoppedEvent event) {
         staleHorses.clear();
         pendingReleases.clear();
+        BhTwinWatch.reset();
         HorseTracker.detach();
     }
 
@@ -186,7 +187,7 @@ public final class IcysBetterHorses {
         if (staleHorses.isEmpty()) return;
         for (AbstractHorse stale : staleHorses) {
             if (!stale.isRemoved()) {
-                LOGGER.debug("Discarding stale horse copy {} (generation {} < {})",
+                LOGGER.info("[whistle] discarding stale horse copy {} on load (generation {} < {})",
                         stale.getUUID(),
                         IHorseData.of(stale).bh_getGeneration(),
                         HorseTracker.getGeneration(stale.getUUID()));
@@ -247,6 +248,7 @@ public final class IcysBetterHorses {
             growHorseBond(server, tuning.bondAmount());
         }
         HorseTracker.tick(server.getTickCount());
+        BhTwinWatch.tick(server, server.getTickCount());
         discardStaleHorses();
         applyPendingReleases();
     }
@@ -490,7 +492,8 @@ public final class IcysBetterHorses {
 
     private static AbstractHorse findCommandHorse(ServerPlayer player, int horseId, double radius) {
         ServerLevel serverLevel = (ServerLevel) player.level();
-        if (!(serverLevel.getEntity(horseId) instanceof AbstractHorse horse) || !horse.isTamed()) {
+        if (!(serverLevel.getEntity(horseId) instanceof AbstractHorse horse)
+                || !BhHorseKind.managed(horse) || !horse.isTamed()) {
             return null;
         }
         if (horse.distanceToSqr(player) > radius * radius) {

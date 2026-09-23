@@ -1,6 +1,7 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhGears;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.ModSounds;
@@ -162,6 +163,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private final BreedAbilities bh_abilities = new BreedAbilities();
 
     @Unique private HorseFeature[] bh_features;
+
+    @Unique
+    private boolean bh_ours() {
+        return BhHorseKind.managed((AbstractHorse) (Object) this);
+    }
 
     @Unique
     private HorseFeature[] bh_features() {
@@ -1063,6 +1069,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private void bh_applyGearSpeed(
             Player rider,
             CallbackInfoReturnable<Float> cir) {
+        if (!bh_ours()) return;
         cir.setReturnValue(BhGears.riddenSpeed(bh_gear, cir.getReturnValueF()));
     }
 
@@ -1084,7 +1091,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @ModifyConstant(method = "aiStep", constant = @Constant(intValue = 300))
     private int bh_grazeLessOften(int vanillaInterval) {
-        return BH_GRAZE_ROLL_INTERVAL;
+        return bh_ours() ? BH_GRAZE_ROLL_INTERVAL : vanillaInterval;
     }
 
     @Redirect(
@@ -1096,6 +1103,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private boolean bh_gateGrazing(AbstractHorse horse) {
         if (!horse.canEatGrass()) {
             return false;
+        }
+        if (!bh_ours()) {
+            return true;
         }
         if (this.bh_mayGraze(horse)) {
             return true;
@@ -1133,6 +1143,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_tick(CallbackInfo ci) {
+        if (!bh_ours()) return;
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (BhVanillaHorseSwap.trySwap(self) || HorseTracker.discardIfStale(self)) {
             return;
@@ -1162,11 +1173,13 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Inject(method = "fedFood", at = @At("HEAD"))
     private void bh_markGoldenAppleFeed(Player player, ItemStack stack, CallbackInfoReturnable<InteractionResult> cir) {
+        if (!bh_ours()) return;
         this.bh_fedGoldenAppleThisTick = stack.is(Items.GOLDEN_APPLE);
     }
 
     @Inject(method = "fedFood", at = @At("RETURN"))
     private void bh_rewardGoldenAppleBond(Player player, ItemStack stack, CallbackInfoReturnable<InteractionResult> cir) {
+        if (!bh_ours()) return;
         try {
             AbstractHorse self = (AbstractHorse) (Object) this;
             if (!this.bh_fedGoldenAppleThisTick || self.level().isClientSide() || !cir.getReturnValue().consumesAction()) {
@@ -1181,6 +1194,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Inject(method = "doPlayerRide", at = @At("HEAD"), cancellable = true)
     private void bh_gateOwnerOnlyMount(Player player, CallbackInfo ci) {
+        if (!bh_ours()) return;
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (self.level().isClientSide() || !BhConfig.horseExclusivityEnabled()) return;
         if (this.bh_maySaddleUp(player.getUUID())) return;
@@ -1210,6 +1224,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Inject(method = "tameWithName", at = @At("RETURN"))
     private void bh_claimHorseOnTame(Player player, CallbackInfoReturnable<Boolean> cir) {
+        if (!bh_ours()) return;
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!cir.getReturnValueZ() || self.level().isClientSide() || player.getUUID().equals(this.bh_getOwner())) {
             return;
@@ -1226,6 +1241,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Inject(method = "openCustomInventoryScreen", at = @At("HEAD"), cancellable = true)
     private void bh_blockNonOwnerInventoryAccess(Player player, CallbackInfo ci) {
+        if (!bh_ours()) return;
         if (BhHorseInteraction.blockNonOwnerInventoryAccess((AbstractHorse) (Object) this, this, player)) {
             ci.cancel();
         }
@@ -1236,6 +1252,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             Player player,
             InteractionHand hand,
             CallbackInfoReturnable<InteractionResult> cir) {
+        if (!bh_ours()) return;
         InteractionResult result = BhHorseInteraction.equipGearFromHand(
                 (AbstractHorse) (Object) this, this, player, hand);
         if (result != null) {
@@ -1248,6 +1265,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             Player player,
             InteractionHand hand,
             CallbackInfoReturnable<InteractionResult> cir) {
+        if (!bh_ours()) return;
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!self.isVehicle()
                 || self.isBaby()
@@ -1295,6 +1313,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Inject(method = "causeFallDamage", at = @At("HEAD"), cancellable = true)
     private void bh_adjustFallDamage(float distance, float damageMultiplier, DamageSource source, CallbackInfoReturnable<Boolean> cir) {
+        if (!bh_ours()) return;
         AbstractHorse self = (AbstractHorse) (Object) this;
         BhHorseInteraction.StabilizerLanding landing =
                 BhHorseInteraction.stabilizerLanding(self, this, distance);
@@ -1370,6 +1389,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Inject(method = "positionRider(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/Entity$MoveFunction;)V", at = @At("TAIL"))
     private void bh_offsetSecondPassenger(Entity passenger, Entity.MoveFunction move, CallbackInfo ci) {
+        if (!bh_ours()) return;
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!self.hasPassenger(passenger)) return;
         if (this.bh_hasCartGear()) {
@@ -1399,6 +1419,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Inject(method = "getRiddenRotation", at = @At("HEAD"), cancellable = true)
     private void bh_allowMountedFreeCamera(LivingEntity rider, CallbackInfoReturnable<Vec2> cir) {
+        if (!bh_ours()) return;
         if (!(rider instanceof Player player)) {
             return;
         }
@@ -1509,10 +1530,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
                     target = "Lnet/minecraft/world/entity/animal/horse/AbstractHorse;"
                             + "standIfPossible()V"))
     private void bh_noRearOnStartJump(AbstractHorse horse) {
+        if (!bh_ours()) horse.standIfPossible();
     }
 
     @Inject(method = "standIfPossible", at = @At("HEAD"), cancellable = true)
     private void bh_noRearInMidair(CallbackInfo ci) {
+        if (!bh_ours()) return;
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!self.onGround()
                 || (self.hurtTime > 0
@@ -1528,6 +1551,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
                     target = "Lnet/minecraft/world/entity/animal/horse/AbstractHorse;"
                             + "standIfPossible()V"))
     private void bh_noRearOnPlayerJump(AbstractHorse horse) {
+        if (!bh_ours()) horse.standIfPossible();
     }
 
     @Unique

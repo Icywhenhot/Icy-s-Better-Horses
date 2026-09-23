@@ -62,6 +62,9 @@ public final class HorseManagement {
         List<HorseRosterEntry> roster = new ArrayList<>();
         for (UUID horseId : HorseTracker.findAllStoredHorsesOwnedBy(player.getUUID())) {
             AbstractHorse loaded = HorseTracker.getLoaded(horseId);
+            if (loaded == null && !storedIsOurs(horseId)) {
+                continue;
+            }
             if (loaded == null) {
                 CompoundTag snapshot = HorseTracker.getSnapshot(horseId);
                 CompoundTag summary = snapshot == null || !snapshot.contains("BH_Roster")
@@ -121,6 +124,11 @@ public final class HorseManagement {
         return roster;
     }
 
+    private static boolean storedIsOurs(UUID horseId) {
+        CompoundTag snapshot = HorseTracker.getSnapshot(horseId);
+        return snapshot != null && BhHorseKind.managedId(snapshot.getString("id"));
+    }
+
     private static String bh_summaryBreed(CompoundTag summary) {
         String id = summary.getString("breedId");
         if (!id.isEmpty()) {
@@ -140,8 +148,16 @@ public final class HorseManagement {
             if (loaded.level() != player.level()) {
                 return Outcome.fail(MSG_OTHER_DIMENSION);
             }
+            IcysBetterHorses.LOGGER.info("[whistle] {} calls horse {}: body is loaded in {} at {} {} {}, teleporting it",
+                    player.getName().getString(), horseId, loaded.level().dimension().location(),
+                    loaded.getBlockX(), loaded.getBlockY(), loaded.getBlockZ());
             return summonToPlayer(loaded, player);
         }
+
+        HorseTrackerState.KnownPosition seen = HorseTracker.getLastKnownPosition(horseId);
+        IcysBetterHorses.LOGGER.info("[whistle] {} calls horse {}: no loaded body, last seen in {} at {}, respawning from snapshot",
+                player.getName().getString(), horseId,
+                seen == null ? "nowhere" : seen.dimension().location(), seen == null ? "-" : seen.pos());
 
         ServerLevel level = (ServerLevel) player.level();
         AbstractHorse respawned = respawnFromSnapshot(
@@ -279,7 +295,9 @@ public final class HorseManagement {
     }
 
     private static void announce(ServerPlayer player, Outcome outcome) {
-        if (!outcome.ok()) player.sendSystemMessage(net.minecraft.network.chat.Component.translatable(outcome.messageKey()));
+        if (outcome.ok()) return;
+        IcysBetterHorses.LOGGER.info("[whistle] {} got {}", player.getName().getString(), outcome.messageKey());
+        player.sendSystemMessage(net.minecraft.network.chat.Component.translatable(outcome.messageKey()));
     }
 
     private static Outcome summonToPlayer(AbstractHorse horse, ServerPlayer player) {
@@ -380,7 +398,7 @@ public final class HorseManagement {
             if (!(level.getEntity(fresh.getUUID()) instanceof AbstractHorse old) || old == fresh) {
                 continue;
             }
-            IcysBetterHorses.LOGGER.debug("[whistle] discarding old body of horse {} in {}",
+            IcysBetterHorses.LOGGER.info("[whistle] discarding old body of horse {} in {}",
                     fresh.getUUID(), level.dimension().location());
             old.ejectPassengers();
             old.discard();
@@ -413,6 +431,12 @@ public final class HorseManagement {
             return null;
         }
 
+        if (!BhHorseKind.managedId(snapshot.getString("id"))) {
+            IcysBetterHorses.LOGGER.debug("[whistle] horse {} is a {}, not one of ours — not respawning",
+                    horseId, snapshot.getString("id"));
+            return null;
+        }
+
         Entity loaded = EntityType.loadEntityRecursive(snapshot, level, entity -> entity);
         if (!(loaded instanceof AbstractHorse horse)) {
             IcysBetterHorses.LOGGER.warn("[whistle] snapshot of horse {} did not deserialize to a horse", horseId);
@@ -436,7 +460,7 @@ public final class HorseManagement {
         HorseTracker.setGeneration(horseId, newGeneration);
         discardOldBody(server, horse);
         if (IHorseData.of(horse).bh_isOwned()) HorseTracker.register(horse);
-        IcysBetterHorses.LOGGER.debug("[whistle] respawned horse {} at {} {} {} in {} (generation {})",
+        IcysBetterHorses.LOGGER.info("[whistle] respawned horse {} at {} {} {} in {} (generation {})",
                 horseId, x, y, z, level.dimension().location(), newGeneration);
         return horse;
     }

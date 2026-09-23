@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseKind;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.level.BlockGetter;
@@ -33,8 +34,8 @@ public abstract class LeafPassthroughMixin {
         Entity entity = ecc.getEntity();
         if (entity == null) return;
 
-        boolean horseMounted = entity instanceof AbstractHorse
-                || entity.getVehicle() instanceof AbstractHorse;
+        boolean horseMounted = BhHorseKind.managed(entity)
+                || BhHorseKind.managed(entity.getVehicle());
         if (horseMounted) {
             cir.setReturnValue(Shapes.empty());
         }

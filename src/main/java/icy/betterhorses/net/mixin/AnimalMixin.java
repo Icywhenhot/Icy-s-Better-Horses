@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhCriteria;
 import icy.betterhorses.net.BhHorseSpawnRules;
@@ -51,7 +52,8 @@ public abstract class AnimalMixin {
     private void bh_blockSameGenderBreeding(Animal other, CallbackInfoReturnable<Boolean> cir) {
         Animal self = (Animal) (Object) this;
         if (!BhConfig.genderBreedingEnabled()
-                || !(self instanceof AbstractHorse selfHorse) || !(other instanceof AbstractHorse otherHorse)) {
+                || !(self instanceof AbstractHorse selfHorse) || !(other instanceof AbstractHorse otherHorse)
+                || !BhHorseKind.managed(selfHorse) || !BhHorseKind.managed(otherHorse)) {
             return;
         }
         ResourceKey<GenderType> selfGender = IHorseData.of(selfHorse).bh_getGender();
@@ -77,7 +79,8 @@ public abstract class AnimalMixin {
         this.bh_breeder = null;
         if (!(self instanceof AbstractHorse selfHorse)
                 || !(partner instanceof AbstractHorse partnerHorse)
-                || !(child instanceof AbstractHorse childHorse)) {
+                || !(child instanceof AbstractHorse childHorse)
+                || !BhHorseKind.managed(selfHorse)) {
             return;
         }
 

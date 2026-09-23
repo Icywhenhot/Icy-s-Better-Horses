@@ -137,7 +137,7 @@ public final class IcysBetterHorsesClient {
         AABB searchBox = player.getBoundingBox().expandTowards(look.scale(RADIAL_REACH)).inflate(1.0D);
         EntityHitResult hit = ProjectileUtil.getEntityHitResult(
                 player, eye, end, searchBox,
-                entity -> entity instanceof AbstractHorse && entity.isPickable(),
+                entity -> BhHorseKind.managed(entity) && entity.isPickable(),
                 RADIAL_REACH * RADIAL_REACH);
         return hit != null && hit.getEntity() instanceof AbstractHorse horse ? horse : null;
     }

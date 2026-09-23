@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhConfig;
@@ -34,7 +35,7 @@ public abstract class MapItemMixin {
 
     @ModifyConstant(method = "update", constant = @Constant(intValue = 128, ordinal = 0))
     private int bh_widenTrailBlazerScan(int scanWidth, Level level, Entity entity, MapItemSavedData data) {
-        if (!(entity.getVehicle() instanceof AbstractHorse horse)) {
+        if (!(entity.getVehicle() instanceof AbstractHorse horse) || !BhHorseKind.managed(horse)) {
             return scanWidth;
         }
         IHorseData d = IHorseData.of(horse);
@@ -50,7 +51,8 @@ public abstract class MapItemMixin {
         if (!(world instanceof ServerLevel level)) {
             return;
         }
-        if (level.getGameTime() % 20L != 0L || !(holder.getVehicle() instanceof AbstractHorse horse)) {
+        if (level.getGameTime() % 20L != 0L || !(holder.getVehicle() instanceof AbstractHorse horse)
+                || !BhHorseKind.managed(horse)) {
             return;
         }
         IHorseData d = IHorseData.of(horse);
