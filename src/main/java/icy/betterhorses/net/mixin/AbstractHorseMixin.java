@@ -36,6 +36,9 @@ import icy.betterhorses.net.feature.breed.Ironclad;
 import icy.betterhorses.net.feature.HorseCombat;
 import icy.betterhorses.net.feature.FrostHooves;
 import icy.betterhorses.net.feature.HorseFeature;
+import icy.betterhorses.net.api.HorseFeaturesEvent;
+import icy.betterhorses.net.registry.AbilityType;
+import net.minecraftforge.common.MinecraftForge;
 import icy.betterhorses.net.feature.RiderGate;
 import icy.betterhorses.net.feature.Stabilizer;
 import icy.betterhorses.net.feature.SpeedRecord;
@@ -185,6 +188,13 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             bh_combat,
             bh_abilities,
             };
+            if (bh_ours()) {
+                HorseFeaturesEvent event = new HorseFeaturesEvent((AbstractHorse) (Object) this);
+                MinecraftForge.EVENT_BUS.post(event);
+                java.util.List<HorseFeature> features = new java.util.ArrayList<>(java.util.Arrays.asList(bh_features));
+                features.addAll(event.features());
+                bh_features = features.toArray(HorseFeature[]::new);
+            }
         }
         return bh_features;
     }
@@ -693,6 +703,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
     private void bh_onWrite(CompoundTag output, CallbackInfo ci) {
+        if (bh_ours()) output.put("BH_Abilities", bh_abilities.write());
         if (bh_owner != null) {
             output.putUUID("BH_Owner", bh_owner);
         }
@@ -807,6 +818,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         }
 
         bh_setLargeCart(input.contains("BH_CartLarge") ? input.getBoolean("BH_CartLarge") : this.bh_mayUseLargeCart());
+        if (bh_ours()) bh_abilities.read(self, this, input.getCompound("BH_Abilities"));
     }
 
     @Inject(method = "finalizeSpawn", at = @At("TAIL"))
@@ -938,12 +950,24 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Override
     public @Nullable BreedAbility bh_currentAbility() {
+        this.bh_abilities.initialize((AbstractHorse) (Object) this, this);
         return this.bh_abilities.current();
     }
 
     @Override
     public List<BreedAbility> bh_allAbilities() {
+        this.bh_abilities.initialize((AbstractHorse) (Object) this, this);
         return this.bh_abilities.all();
+    }
+
+    @Override
+    public List<ResourceKey<AbilityType>> bh_activeAbilities() {
+        return this.bh_abilities.active((AbstractHorse) (Object) this, this);
+    }
+
+    @Override
+    public boolean bh_activateAbility(ResourceKey<AbilityType> ability) {
+        return this.bh_abilities.activate((AbstractHorse) (Object) this, this, ability);
     }
 
     @Override

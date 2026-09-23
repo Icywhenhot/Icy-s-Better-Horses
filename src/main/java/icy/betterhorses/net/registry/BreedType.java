@@ -24,7 +24,7 @@ public final class BreedType {
         this.entityType = builder.entityType;
         this.chestRowsOverride = builder.chestRowsOverride;
         this.bondedChestRowsOverride = builder.bondedChestRowsOverride;
-        this.abilities = List.copyOf(builder.abilities);
+        this.abilities = new ArrayList<>(builder.abilities);
         this.stabilizerBody = builder.stabilizerBody;
     }
 
@@ -49,7 +49,12 @@ public final class BreedType {
     }
 
     public List<ResourceKey<AbilityType>> abilities() {
-        return abilities;
+        return List.copyOf(abilities);
+    }
+
+    public void addAbility(ResourceKey<AbilityType> ability) {
+        java.util.Objects.requireNonNull(ability);
+        if (!abilities.contains(ability)) abilities.add(ability);
     }
 
     public StabilizerBody stabilizerBody() {

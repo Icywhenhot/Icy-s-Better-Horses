@@ -1,6 +1,7 @@
 package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.IHorseData;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 public interface BreedAbility {
@@ -14,4 +15,8 @@ public interface BreedAbility {
     }
 
     default void onActivate(AbstractHorse horse, IHorseData data) {}
+
+    default void save(CompoundTag tag) {}
+
+    default void load(CompoundTag tag) {}
 }

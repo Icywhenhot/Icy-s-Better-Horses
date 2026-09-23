@@ -2,7 +2,8 @@ package icy.betterhorses.net.client;
 
 import icy.betterhorses.net.IHorseAbilityHost;
 import icy.betterhorses.net.IHorseData;
-import icy.betterhorses.net.feature.breed.BreedAbility;
+import icy.betterhorses.net.registry.AbilityType;
+import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.network.RadialCommandPayload;
 import icy.betterhorses.net.BhNetworking;
 import icy.betterhorses.net.registry.BhContent;
@@ -14,7 +15,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class RadialMenuScreen extends Screen {
 
@@ -58,30 +61,45 @@ public class RadialMenuScreen extends Screen {
     private final BhAnim.Lift hover = new BhAnim.Lift();
     private long bhOpenMs;
 
-    private final ResourceKey<CommandType>[] commands;
+    private final List<Entry> commands;
     private final int segmentCount;
 
     public RadialMenuScreen(int horseId) {
         super(Component.translatable("screen.icys-better-horses.radial"));
         this.horseId = horseId;
         this.commands = wheelFor(horseId);
-        this.segmentCount = this.commands.length;
+        this.segmentCount = this.commands.size();
     }
 
-    private static ResourceKey<CommandType>[] wheelFor(int horseId) {
+    private record Entry(ResourceKey<CommandType> command, String ability, Component label) {}
+
+    private static List<Entry> wheelFor(int horseId) {
+        List<Entry> entries = new ArrayList<>();
+        for (ResourceKey<CommandType> command : COMMANDS) {
+            entries.add(new Entry(command, "", CommandType.displayName(command)));
+        }
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || !(mc.level.getEntity(horseId) instanceof AbstractHorse horse)) {
-            return COMMANDS;
-        }
+        if (mc.level == null || mc.player == null
+                || !(mc.level.getEntity(horseId) instanceof AbstractHorse horse)) return entries;
         IHorseData data = IHorseData.of(horse);
-        BreedAbility ability = ((IHorseAbilityHost) horse).bh_currentAbility();
-        if (!CommandType.toggleable(data.bh_getBreedKey())
-                && (ability == null || !ability.hasActiveSkill())) {
-            return COMMANDS;
+        if (CommandType.toggleable(data.bh_getBreedKey())) {
+            entries.add(new Entry(BhContent.COMMAND_ABILITY.getKey(), "",
+                    CommandType.displayName(BhContent.COMMAND_ABILITY.getKey())));
         }
-        ResourceKey<CommandType>[] wide = Arrays.copyOf(COMMANDS, COMMANDS.length + 1);
-        wide[COMMANDS.length] = BhContent.COMMAND_ABILITY.getKey();
-        return wide;
+        for (ResourceKey<AbilityType> ability : ((IHorseAbilityHost) horse).bh_activeAbilities()) {
+            entries.add(new Entry(BhContent.COMMAND_ABILITY.getKey(), ability.location().toString(),
+                    Component.translatable("ability." + ability.location().getNamespace() + "."
+                            + ability.location().getPath())));
+        }
+        BhRegistries.commandTypeRegistry().getKeys().stream().sorted(Comparator.comparing(Object::toString))
+                .forEach(id -> {
+                    CommandType type = BhRegistries.commandTypeRegistry().getValue(id);
+                    if (type.custom() && type.available(horse, mc.player)) {
+                        ResourceKey<CommandType> key = ResourceKey.create(BhRegistries.COMMAND_TYPES, id);
+                        entries.add(new Entry(key, "", CommandType.displayName(key)));
+                    }
+                });
+        return entries;
     }
 
     @Override
@@ -150,7 +168,7 @@ public class RadialMenuScreen extends Screen {
             float labelRadius = LABEL_RADIUS + HOVER_PUSH * 0.5F * hoverAmount[i];
             int lx = cx + Math.round((float) Math.cos(labelAngle) * labelRadius);
             int ly = cy + Math.round((float) Math.sin(labelAngle) * labelRadius);
-            String text = CommandType.displayName(this.commands[i]).getString();
+            String text = this.commands.get(i).label().getString();
             int textColor = bh_mixColor(LABEL_COLOR, LABEL_HOVER_COLOR, hoverAmount[i]);
             gfx.drawCenteredString(font, text, lx, ly - font.lineHeight / 2, textColor);
         }
@@ -184,7 +202,7 @@ public class RadialMenuScreen extends Screen {
             double dy = mouseY - height / 2.0;
             double dist = Math.sqrt(dx * dx + dy * dy);
             if (dist >= RING_INNER && dist <= RING_OUTER) {
-                sendCommand(this.commands[bh_angleToIndex(Math.atan2(dy, dx))]);
+                sendCommand(this.commands.get(bh_angleToIndex(Math.atan2(dy, dx))));
             }
             onClose();
             return true;
@@ -192,7 +210,8 @@ public class RadialMenuScreen extends Screen {
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
-    private void sendCommand(ResourceKey<CommandType> command) {
-        BhNetworking.sendToServer(new RadialCommandPayload(this.horseId, command.location().toString()));
+    private void sendCommand(Entry entry) {
+        BhNetworking.sendToServer(new RadialCommandPayload(this.horseId,
+                entry.command().location().toString(), entry.ability()));
     }
 }

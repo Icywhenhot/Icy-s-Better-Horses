@@ -15,7 +15,6 @@ import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
-import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.CommandType;
 import net.minecraft.resources.ResourceKey;
@@ -28,6 +27,7 @@ import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -35,7 +35,7 @@ import java.util.function.Supplier;
 
 public final class BhNetworking {
 
-    private static final String PROTOCOL_VERSION = "2";
+    private static final String PROTOCOL_VERSION = "3";
     private static final ResourceLocation CHANNEL_ID =
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "main");
     private static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
@@ -52,7 +52,7 @@ public final class BhNetworking {
     public static void register() {
         toServer(RadialCommandPayload.class, RadialCommandPayload::encode, RadialCommandPayload::decode,
                 (payload, player) -> IcysBetterHorses.handleRadialCommand(
-                        player, payload.horseId(), bh_parseCommand(payload.commandId())));
+                        player, payload.horseId(), bh_parseCommand(payload.commandId()), payload.abilityId()));
         toServer(CallHorsePayload.class, CallHorsePayload::encode, CallHorsePayload::decode,
                 (payload, player) -> IcysBetterHorses.handleCallHorse(player));
         toServer(HorseRecallPayload.class, HorseRecallPayload::encode, HorseRecallPayload::decode,
@@ -87,11 +87,11 @@ public final class BhNetworking {
                 payload -> () -> IcysBetterHorsesClient.receiveBreeds(payload));
     }
 
-    private static ResourceKey<CommandType> bh_parseCommand(String raw) {
+    private static @Nullable ResourceKey<CommandType> bh_parseCommand(String raw) {
         ResourceLocation loc = ResourceLocation.tryParse(raw);
         return loc != null
                 ? ResourceKey.create(BhRegistries.COMMAND_TYPES, loc)
-                : BhContent.COMMAND_FOLLOW.getKey();
+                : null;
     }
 
     public static void sendToServer(Object payload) {

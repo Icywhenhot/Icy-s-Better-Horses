@@ -1,7 +1,6 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.entity.CartSize;
-import icy.betterhorses.net.feature.breed.BreedAbility;
 import icy.betterhorses.net.feature.breed.Ironclad;
 import icy.betterhorses.net.network.BreedDataPayload;
 import icy.betterhorses.net.network.ConfigSyncPayload;
@@ -12,6 +11,7 @@ import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
 import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.registry.CommandType;
+import net.minecraft.resources.ResourceLocation;
 import icy.betterhorses.net.registry.BhRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
@@ -261,24 +261,38 @@ public final class IcysBetterHorses {
     }
 
     public static void handleRadialCommand(ServerPlayer player, int horseId, ResourceKey<CommandType> command) {
+        handleRadialCommand(player, horseId, command, "");
+    }
+
+    public static void handleRadialCommand(ServerPlayer player, int horseId,
+                                          ResourceKey<CommandType> command, String abilityId) {
+        if (command == null) return;
+        CommandType type = BhRegistries.commandTypeRegistry().getValue(command.location());
+        if (type == null) return;
         AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
         if (horse == null) {
             return;
         }
 
+        if (type.custom()) {
+            if (type.execute(horse, player)) playCommandAnswer(horse);
+            return;
+        }
         IHorseData data = (IHorseData) horse;
         if (command.equals(BhContent.COMMAND_ABILITY.getKey())) {
-            if (CommandType.toggleable(data.bh_getBreedKey())) {
+            IHorseAbilityHost host = (IHorseAbilityHost) horse;
+            if (!abilityId.isEmpty()) {
+                ResourceLocation id = ResourceLocation.tryParse(abilityId);
+                if (id == null || !host.bh_activateAbility(ResourceKey.create(BhRegistries.ABILITY_TYPES, id))) return;
+            } else if (CommandType.toggleable(data.bh_getBreedKey())) {
                 boolean paused = !data.bh_isAbilityPaused();
                 data.bh_setAbilityPaused(paused);
                 player.sendSystemMessage(Component.translatable(paused
                         ? "message.icys-better-horses.ability_off"
                         : "message.icys-better-horses.ability_on"));
             } else {
-                BreedAbility ability = ((IHorseAbilityHost) horse).bh_currentAbility();
-                if (ability != null && ability.hasActiveSkill()) {
-                    ability.onActivate(horse, data);
-                }
+                var active = host.bh_activeAbilities();
+                if (active.isEmpty() || !host.bh_activateAbility(active.get(0))) return;
             }
             playCommandAnswer(horse);
             return;

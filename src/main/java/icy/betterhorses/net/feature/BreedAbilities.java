@@ -4,6 +4,8 @@ import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.IcysBetterHorses;
+import net.minecraft.nbt.CompoundTag;
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.feature.breed.BhAbilityState;
 import icy.betterhorses.net.feature.breed.BreedAbility;
@@ -30,6 +32,7 @@ public final class BreedAbilities implements HorseFeature {
     private boolean breedInitialized;
     private final List<Slot> slots = new ArrayList<>();
     private int lastRows = -1;
+    private CompoundTag saved = new CompoundTag();
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data) {
@@ -43,19 +46,8 @@ public final class BreedAbilities implements HorseFeature {
             data.bh_setStompTicks(stomping - 1);
         }
 
-        ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
-        ArchetypeType archetype = BhBreedData.of(breedKey).archetype();
-        if (!breedInitialized || !Objects.equals(breedKey, activeBreedKey)) {
-            breedInitialized = true;
-            detachAll(horse, data);
-            perks.clear(horse);
-            activeBreedKey = breedKey;
-            slots.clear();
-            for (AbilityType type : resolveAbilityTypes(breedKey)) {
-                slots.add(new Slot(type, type.create()));
-            }
-            perks.onBreedChanged(horse, archetype);
-        }
+        initialize(horse, data);
+        ArchetypeType archetype = BhBreedData.of(data.bh_getBreedKey()).archetype();
 
         int rows = data.bh_getChestRows();
         if (lastRows >= 0 && rows < lastRows && horse.level() instanceof ServerLevel level) {
@@ -66,11 +58,8 @@ public final class BreedAbilities implements HorseFeature {
         state.tick(horse);
         perks.tick(horse, data, archetype);
         BhSurge.decayAbilities(data);
-        boolean realBreed = data.bh_getBreed().isRealBreed();
-        boolean breedEnabled = realBreed && BhConfig.anyAbilityEnabled(data.bh_getBreed());
         for (Slot slot : slots) {
-            boolean enabled = realBreed ? breedEnabled : slot.type.defaultEnabled();
-            if (!enabled) {
+            if (!enabled(slot, data)) {
                 if (slot.offered) {
                     slot.ability.onDetach(horse, data);
                     slot.offered = false;
@@ -82,53 +71,110 @@ public final class BreedAbilities implements HorseFeature {
         }
     }
 
+    public void initialize(AbstractHorse horse, IHorseData data) {
+        ResourceKey<BreedType> key = data.bh_getBreedKey();
+        if (breedInitialized && Objects.equals(key, activeBreedKey)) return;
+        if (!horse.level().isClientSide()) {
+            snapshot();
+            detachAll(horse, data);
+            perks.clear(horse);
+        }
+        breedInitialized = true;
+        activeBreedKey = key;
+        slots.clear();
+        BreedType breed = key == null ? null : BhRegistries.breedTypeRegistry().getValue(key.location());
+        if (breed != null) {
+            CompoundTag tags = saved.getCompound(key.location().toString());
+            for (ResourceKey<AbilityType> id : breed.abilities()) {
+                AbilityType type = BhRegistries.abilityTypeRegistry().getValue(id.location());
+                if (type == null) continue;
+                BreedAbility ability = type.create();
+                if (!horse.level().isClientSide()) ability.load(tags.getCompound(id.location().toString()).copy());
+                slots.add(new Slot(id, type, ability));
+            }
+        }
+        if (!horse.level().isClientSide()) perks.onBreedChanged(horse, BhBreedData.of(key).archetype());
+    }
+
     public @Nullable BreedAbility current() {
         return slots.isEmpty() ? null : slots.get(0).ability;
     }
 
     public List<BreedAbility> all() {
         List<BreedAbility> out = new ArrayList<>(slots.size());
-        for (Slot slot : slots) {
-            out.add(slot.ability);
-        }
+        for (Slot slot : slots) out.add(slot.ability);
         return out;
+    }
+
+    public List<ResourceKey<AbilityType>> active(AbstractHorse horse, IHorseData data) {
+        initialize(horse, data);
+        List<ResourceKey<AbilityType>> out = new ArrayList<>();
+        for (Slot slot : slots) {
+            if (enabled(slot, data) && slot.ability.hasActiveSkill()) out.add(slot.id);
+        }
+        return List.copyOf(out);
+    }
+
+    public boolean activate(AbstractHorse horse, IHorseData data, ResourceKey<AbilityType> id) {
+        if (horse.level().isClientSide()) return false;
+        initialize(horse, data);
+        for (Slot slot : slots) {
+            if (slot.id.equals(id) && enabled(slot, data) && slot.ability.hasActiveSkill()) {
+                slot.ability.onActivate(horse, data);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean enabled(Slot slot, IHorseData data) {
+        return slot.id.location().getNamespace().equals(IcysBetterHorses.MOD_ID)
+                && data.bh_getBreed().isRealBreed()
+                ? BhConfig.anyAbilityEnabled(data.bh_getBreed()) : slot.type.defaultEnabled();
+    }
+
+    public void read(AbstractHorse horse, IHorseData data, CompoundTag tag) {
+        if (breedInitialized && !horse.level().isClientSide()) detachAll(horse, data);
+        saved = tag.copy();
+        breedInitialized = false;
+        activeBreedKey = null;
+        slots.clear();
+    }
+
+    public CompoundTag write() {
+        snapshot();
+        return saved.copy();
+    }
+
+    private void snapshot() {
+        if (!breedInitialized || activeBreedKey == null) return;
+        String breed = activeBreedKey.location().toString();
+        CompoundTag tags = saved.getCompound(breed).copy();
+        for (Slot slot : slots) {
+            CompoundTag tag = new CompoundTag();
+            slot.ability.save(tag);
+            tags.put(slot.id.location().toString(), tag);
+        }
+        saved.put(breed, tags);
     }
 
     @Override
     public void onRemoved(AbstractHorse horse, IHorseData data) {
-        detachAll(horse, data);
+        if (!horse.level().isClientSide()) detachAll(horse, data);
     }
 
     private void detachAll(AbstractHorse horse, IHorseData data) {
-        for (Slot slot : slots) {
-            slot.ability.onDetach(horse, data);
-        }
-    }
-
-    private static List<AbilityType> resolveAbilityTypes(@Nullable ResourceKey<BreedType> breedKey) {
-        if (breedKey == null) {
-            return List.of();
-        }
-        BreedType type = BhRegistries.breedTypeRegistry().getValue(breedKey.location());
-        if (type == null) {
-            return List.of();
-        }
-        List<AbilityType> out = new ArrayList<>();
-        for (ResourceKey<AbilityType> abilityKey : type.abilities()) {
-            AbilityType abilityType = BhRegistries.abilityTypeRegistry().getValue(abilityKey.location());
-            if (abilityType != null) {
-                out.add(abilityType);
-            }
-        }
-        return out;
+        for (Slot slot : slots) slot.ability.onDetach(horse, data);
     }
 
     private static final class Slot {
+        private final ResourceKey<AbilityType> id;
         private final AbilityType type;
         private final BreedAbility ability;
         private boolean offered;
 
-        private Slot(AbilityType type, BreedAbility ability) {
+        private Slot(ResourceKey<AbilityType> id, AbilityType type, BreedAbility ability) {
+            this.id = id;
             this.type = type;
             this.ability = ability;
         }

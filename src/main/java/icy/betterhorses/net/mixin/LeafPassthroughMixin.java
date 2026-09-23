@@ -1,8 +1,8 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhHorseKind;
+import icy.betterhorses.net.BhFeature;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -28,7 +28,7 @@ public abstract class LeafPassthroughMixin {
     )
     private void bh_leafPassthrough(BlockGetter level, BlockPos pos, CollisionContext context,
                                      CallbackInfoReturnable<VoxelShape> cir) {
-        if (!(getBlock() instanceof LeavesBlock)) return;
+        if (!(getBlock() instanceof LeavesBlock) || !BhFeature.LEAF_PASSTHROUGH.on()) return;
 
         if (!(context instanceof EntityCollisionContext ecc)) return;
         Entity entity = ecc.getEntity();
