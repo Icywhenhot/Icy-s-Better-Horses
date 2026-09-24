@@ -22,7 +22,8 @@
 			"icy.betterhorses.net.gametest.HorseTrackerGameTest",
 			"icy.betterhorses.net.gametest.MountStateGameTest",
 			"icy.betterhorses.net.gametest.HorsePersistenceGameTest",
-			"icy.betterhorses.net.gametest.HorseStateRoundTripGameTest"
+			"icy.betterhorses.net.gametest.HorseStateRoundTripGameTest",
+			"icy.betterhorses.net.gametest.SaddleSlotLockGameTest"
 		]
 	},
 	"depends": {
