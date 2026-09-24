@@ -324,7 +324,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         }
 
         ItemStack chestStack = this.menu.getSlot(chestSlotIndex).getItem();
-        return chestStack.is(Items.CHEST) || chestStack.is(Items.ENDER_CHEST);
+        return GearSlot.isChest(chestStack);
     }
 
     @Unique

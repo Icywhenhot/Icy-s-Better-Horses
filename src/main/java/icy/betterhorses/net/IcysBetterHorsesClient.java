@@ -38,12 +38,16 @@ import icy.betterhorses.net.network.TrustSyncPayload;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.locale.Language;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -198,6 +202,16 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
             }
         });
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
+        ItemTooltipCallback.EVENT.register((stack, ctx, flag, lines) -> {
+            Identifier id = BuiltInRegistries.ITEM.getKey(stack.getItem());
+            if (!id.getNamespace().equals(IcysBetterHorses.MOD_ID) || lines.isEmpty()) {
+                return;
+            }
+            String key = "item." + id.getNamespace() + "." + id.getPath() + ".tooltip";
+            if (Language.getInstance().has(key)) {
+                lines.add(1, Component.translatable(key).withStyle(ChatFormatting.GRAY));
+            }
+        });
     }
 
     private void registerClientHandlers() {

@@ -246,6 +246,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private static final int BH_CART_CHEST_SIZE = CartChestMenu.SLOTS;
     @Unique private @Nullable SimpleContainer bh_cartChestContainer;
     @Unique private ItemStack bh_cartPlow = ItemStack.EMPTY;
+    @Unique private ItemStack bh_cartChestItem = ItemStack.EMPTY;
     @Unique private boolean bh_fedGoldenAppleThisTick = false;
     @Unique private static final float BH_HURT_NEIGH_CHANCE = 0.3F;
     @Unique private static final int BH_GRAZE_ROLL_INTERVAL = 1200;
@@ -539,12 +540,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public boolean bh_hasChestGear() {
         ItemStack chestGear = bh_gearContainer.getItem(GearSlot.CHEST.ordinal());
-        return chestGear.is(Items.CHEST) || chestGear.is(Items.ENDER_CHEST);
+        return GearSlot.isChest(chestGear);
     }
 
     @Override
     public void bh_onChestGearRemoved(ItemStack previousChestGear) {
-        if (previousChestGear.is(Items.CHEST)) {
+        if (GearSlot.isStorageChest(previousChestGear)) {
             bh_dropChestContents();
         }
     }
@@ -612,8 +613,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     }
 
     @Override
-    public void bh_setCartChest(boolean attached) {
-        this.entityData.set(BH_CART_CHEST_SYNCED, attached);
+    public void bh_setCartChest(ItemStack chest) {
+        bh_cartChestItem = chest;
+        this.entityData.set(BH_CART_CHEST_SYNCED, !chest.isEmpty());
     }
 
     @Override
@@ -630,11 +632,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (!(self.level() instanceof ServerLevel serverLevel) || !bh_hasCartChest()) {
             return;
         }
-        bh_setCartChest(false);
+        ItemStack chest = bh_cartChestItem.isEmpty() ? new ItemStack(Items.CHEST) : bh_cartChestItem;
+        bh_setCartChest(ItemStack.EMPTY);
         if (bh_cartChestContainer != null) {
             BhHorseStorage.dropContainerContents(self, serverLevel, bh_cartChestContainer);
         }
-        self.spawnAtLocation(serverLevel, new ItemStack(Items.CHEST));
+        self.spawnAtLocation(serverLevel, chest);
     }
 
     @Override
@@ -744,6 +747,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         BhHorseStorage.writeContainer(output.list("BH_Gear", BhHorseStorage.SlotEntry.CODEC), bh_gearContainer);
         BhHorseStorage.writeContainer(output.list("BH_Chest", BhHorseStorage.SlotEntry.CODEC), bh_chestContainer);
         output.putBoolean("BH_CartChestOn", this.entityData.get(BH_CART_CHEST_SYNCED));
+        if (!bh_cartChestItem.isEmpty()) {
+            output.store("BH_CartChestItem", ItemStack.CODEC, bh_cartChestItem);
+        }
         output.putBoolean("BH_CartLarge", this.entityData.get(BH_CART_LARGE_SYNCED));
         if (bh_cartId != null) output.store("BH_CartId", UUIDUtil.CODEC, bh_cartId);
         if (bh_cartChestContainer != null) {
@@ -802,7 +808,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         bh_applyBondAttributes();
         BhHorseStorage.readContainer(input.listOrEmpty("BH_Gear", BhHorseStorage.SlotEntry.CODEC), bh_gearContainer);
         BhHorseStorage.readContainer(input.listOrEmpty("BH_Chest", BhHorseStorage.SlotEntry.CODEC), bh_chestContainer);
-        this.entityData.set(BH_CART_CHEST_SYNCED, input.getBooleanOr("BH_CartChestOn", false));
+        bh_setCartChest(input.getBooleanOr("BH_CartChestOn", false)
+                ? input.read("BH_CartChestItem", ItemStack.CODEC).orElseGet(() -> new ItemStack(Items.CHEST))
+                : ItemStack.EMPTY);
         if (bh_hasCartChest()) {
             BhHorseStorage.readContainer(
                     input.listOrEmpty("BH_CartChest", BhHorseStorage.SlotEntry.CODEC),

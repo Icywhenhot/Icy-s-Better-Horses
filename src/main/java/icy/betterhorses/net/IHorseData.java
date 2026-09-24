@@ -159,7 +159,7 @@ public interface IHorseData {
 
     boolean bh_hasCartChest();
 
-    void bh_setCartChest(boolean attached);
+    void bh_setCartChest(ItemStack chest);
 
     SimpleContainer bh_getCartChestContainer();
 

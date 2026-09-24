@@ -40,6 +40,7 @@ import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.fox.Fox;
 import net.minecraft.world.entity.player.Player;
 import icy.betterhorses.net.inventory.CartChestMenu;
+import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -133,6 +134,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     private final List<ServerPlayer> chestViewers = new ArrayList<>();
     private final SimpleContainer placedChest = new SimpleContainer(CHEST_SLOTS);
+    private ItemStack placedChestItem = ItemStack.EMPTY;
     private ItemStack placedPlow = ItemStack.EMPTY;
     private float damageTaken;
     private boolean chestAnimPrimed = false;
@@ -582,7 +584,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             }
             return this.attachPlough(player, held) ? InteractionResult.CONSUME : InteractionResult.PASS;
         }
-        if (held.is(Items.CHEST) && !this.hasChest()) {
+        if (GearSlot.isStorageChest(held) && !this.hasChest()) {
             if (clientSide) {
                 return InteractionResult.SUCCESS;
             }
@@ -762,14 +764,16 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         return boundHorse == null ? null : IHorseData.of(boundHorse).bh_getCartChestContainer();
     }
 
-    private void setChestAttached(boolean attached) {
-        if (!this.isPlaced()) {
+    private void setChest(ItemStack chest) {
+        if (this.isPlaced()) {
+            this.placedChestItem = chest;
+        } else {
             AbstractHorse boundHorse = this.resolveHorse();
             if (boundHorse != null) {
-                IHorseData.of(boundHorse).bh_setCartChest(attached);
+                IHorseData.of(boundHorse).bh_setCartChest(chest);
             }
         }
-        this.entityData.set(DATA_HAS_CHEST, attached);
+        this.entityData.set(DATA_HAS_CHEST, !chest.isEmpty());
     }
 
     private boolean attachChest(Player player, ItemStack held) {
@@ -777,7 +781,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             return false;
         }
 
-        this.setChestAttached(true);
+        this.setChest(held.copyWithCount(1));
         this.dropOverflowPassengers();
         held.consume(1, player);
         this.playSound(SoundEvents.DONKEY_CHEST, 1.0F, 1.0F);
@@ -818,14 +822,15 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             return;
         }
 
-        this.setChestAttached(false);
+        ItemStack chest = this.placedChestItem.isEmpty() ? new ItemStack(Items.CHEST) : this.placedChestItem;
+        this.setChest(ItemStack.EMPTY);
         for (int slot = 0; slot < this.placedChest.getContainerSize(); slot++) {
             ItemStack stack = this.placedChest.removeItemNoUpdate(slot);
             if (!stack.isEmpty()) {
                 this.spawnAtLocation(level, stack);
             }
         }
-        this.spawnAtLocation(level, new ItemStack(Items.CHEST));
+        this.spawnAtLocation(level, chest);
     }
 
     private void openChestMenu(Player player) {
@@ -1063,7 +1068,10 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         if (this.isPlaced()) {
             this.setNoGravity(false);
         }
-        this.entityData.set(DATA_HAS_CHEST, input.getBooleanOr("BhHasChest", false));
+        this.placedChestItem = input.getBooleanOr("BhHasChest", false)
+                ? input.read("BhChestItem", ItemStack.CODEC).orElseGet(() -> new ItemStack(Items.CHEST))
+                : ItemStack.EMPTY;
+        this.entityData.set(DATA_HAS_CHEST, !this.placedChestItem.isEmpty());
         this.placedPlow = input.read("BhPlow", ItemStack.CODEC).orElse(ItemStack.EMPTY);
         this.entityData.set(DATA_HAS_PLOW, !this.placedPlow.isEmpty());
         this.entityData.set(DATA_LARGE, input.getBooleanOr("BhLarge", false));
@@ -1081,6 +1089,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         if (this.horseUuid != null) output.store("BhHorse", net.minecraft.core.UUIDUtil.CODEC, this.horseUuid);
         output.putBoolean("BhPlaced", this.isPlaced());
         output.putBoolean("BhHasChest", this.hasChest());
+        if (!this.placedChestItem.isEmpty()) {
+            output.store("BhChestItem", ItemStack.CODEC, this.placedChestItem);
+        }
         if (!this.placedPlow.isEmpty()) {
             output.store("BhPlow", ItemStack.CODEC, this.placedPlow);
         }

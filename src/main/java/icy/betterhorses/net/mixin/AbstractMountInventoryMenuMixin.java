@@ -21,7 +21,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import net.minecraft.world.item.Items;
 
 @Mixin(AbstractMountInventoryMenu.class)
 public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerMenu {
@@ -157,7 +156,6 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
         }
 
         ItemStack chestStack = this.slots.get(chestGearSlotIndex).getItem();
-        return chestStack.is(Items.CHEST)
-                || chestStack.is(Items.ENDER_CHEST);
+        return GearSlot.isChest(chestStack);
     }
 }
