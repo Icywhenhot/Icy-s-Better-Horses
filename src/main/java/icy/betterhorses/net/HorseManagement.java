@@ -299,6 +299,13 @@ public final class HorseManagement {
             return;
         }
 
+        AbstractHorse unbonded = findNearestOwnedHorse(player, playerId);
+        if (unbonded != null && unbonded.distanceToSqr(player) <= CALL_TELEPORT_DIST_SQ) {
+            player.displayClientMessage(Component.translatable(
+                    "message.icys-better-horses.call.no_bond", unbonded.getDisplayName()), true);
+            return;
+        }
+
         IcysBetterHorses.LOGGER.debug("[whistle] {} whistled: no loaded horse found, trying stored respawn",
                 player.getName().getString());
 
@@ -345,10 +352,27 @@ public final class HorseManagement {
         if (lastRidden != null
                 && playerId.equals(IHorseData.of(lastRidden).bh_getOwner())
                 && lastRidden.level() == player.level()
-                && lastRidden.isAlive()) {
+                && lastRidden.isAlive()
+                && IHorseData.of(lastRidden).bh_getBond() > 0) {
             return lastRidden;
         }
 
+        AbstractHorse nearest = null;
+        double nearestDistSq = Double.MAX_VALUE;
+        for (AbstractHorse candidate : HorseTracker.getAll()) {
+            if (!candidate.isAlive() || candidate.level() != player.level()) continue;
+            IHorseData data = IHorseData.of(candidate);
+            if (!playerId.equals(data.bh_getOwner()) || data.bh_getBond() <= 0) continue;
+            double distSq = candidate.distanceToSqr(player);
+            if (distSq < nearestDistSq) {
+                nearestDistSq = distSq;
+                nearest = candidate;
+            }
+        }
+        return nearest;
+    }
+
+    private static @Nullable AbstractHorse findNearestOwnedHorse(ServerPlayer player, UUID playerId) {
         AbstractHorse nearest = null;
         double nearestDistSq = Double.MAX_VALUE;
         for (AbstractHorse candidate : HorseTracker.getAll()) {
