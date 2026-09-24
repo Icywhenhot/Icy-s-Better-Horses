@@ -158,6 +158,39 @@ public class DeathAndGearLossGameTest implements FabricGameTest {
         helper.succeed();
     }
 
+    // Round 2, item 14: the cart's actual storage (chest contents, plough) lives on the horse's
+    // IHorseData, not on the drawn HorseCartEntity. AbstractHorseMixin's death hook now calls
+    // bh_dropCartChest()/bh_dropCartPlough() directly (matching upstream), instead of leaving that
+    // to CartRig.tick's next pass - which is not guaranteed to run before the horse is gone.
+    // Was deathWithCartLosesChestAndPloughContents_KNOWN_BUG.
+    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 40)
+    public void deathWithCartDropsChestAndPloughContents(GameTestHelper helper) {
+        helper.setBlock(2, 1, 2, Blocks.STONE);
+        AbstractHorse horse = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
+        IHorseData data = IHorseData.of(horse);
+        data.bh_setBreed(HorseBreed.CLYDESDALE);
+        data.bh_setOwner(UUID.randomUUID());
+        horse.setTamed(true);
+        data.bh_getGearContainer().setItem(GearSlot.STABILIZER.ordinal(), new ItemStack(ModItems.HORSE_CART));
+        data.bh_setCartChest(true);
+        data.bh_getCartChestContainer().setItem(0, new ItemStack(Items.DIAMOND, 7));
+        data.bh_setCartPlough(new ItemStack(Items.IRON_HOE));
+
+        horse.kill();
+
+        // Checked in the same tick as kill(), deliberately with no delay: CartRig.tick's next pass
+        // would eventually clean this up too (once the gear slot itself is cleared), which would
+        // mask the actual bug - dropEquipment must drop the cart's contents itself, right away.
+        Map<Item, Integer> found = countDrops(helper, horse);
+        helper.assertTrue(found.getOrDefault(Items.DIAMOND, 0) == 7,
+                "expected the cart chest's 7 diamonds to drop on death, found "
+                        + found.getOrDefault(Items.DIAMOND, 0));
+        helper.assertTrue(found.getOrDefault(Items.IRON_HOE, 0) == 1,
+                "expected the cart plough to drop on death, found "
+                        + found.getOrDefault(Items.IRON_HOE, 0));
+        helper.succeed();
+    }
+
     private static Map<Item, Integer> countDrops(GameTestHelper helper, AbstractHorse horse) {
         AABB area = new AABB(horse.getX() - 6, horse.getY() - 6, horse.getZ() - 6,
                 horse.getX() + 6, horse.getY() + 6, horse.getZ() + 6);

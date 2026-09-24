@@ -984,6 +984,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private void bh_dropGearAndChest(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!(self.level() instanceof ServerLevel level)) return;
+        bh_dropCartChest();
+        bh_dropCartPlough();
         bh_dropContainerContents(self, level, bh_gearContainer);
         bh_dropContainerContents(self, level, bh_chestContainer);
         bh_syncGearFlags();
