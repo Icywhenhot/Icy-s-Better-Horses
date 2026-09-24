@@ -44,6 +44,13 @@
       "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.size.text"
     },
     {
+      "type": "modonomicon:text",
+      "id": "shade",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_cart.shade.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.shade.text"
+    },
+    {
       "type": "icys-better-horses:cart_models",
       "id": "models"
     },

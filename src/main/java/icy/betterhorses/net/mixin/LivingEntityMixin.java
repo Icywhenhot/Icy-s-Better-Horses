@@ -32,6 +32,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity {
 
+    @Inject(method = "lerpTo", at = @At("HEAD"))
+    private void bh_snapFarHorseTeleport(double x, double y, double z, float yRot, float xRot, int steps, CallbackInfo ci) {
+        if (this.level().isClientSide() && (Object) this instanceof AbstractHorse
+                && this.distanceToSqr(x, y, z) > 4096.0D) {
+            this.moveTo(x, y, z, yRot, xRot);
+        }
+    }
+
     @Unique private static final float BH_MEDKIT_HEALTH_THRESHOLD_FRACTION = 0.5F;
     @Unique private static final int BH_MEDKIT_EFFECT_DURATION = 20 * 30;
     @Unique private boolean bh_triggerHorseMedkitAfterDamage = false;

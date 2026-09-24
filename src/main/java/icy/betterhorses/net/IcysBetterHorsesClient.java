@@ -37,6 +37,15 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.locale.Language;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import icy.betterhorses.net.client.render.BhNamedCoats;
+import icy.betterhorses.net.client.render.BhTackTextures;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+import java.util.List;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -106,6 +115,8 @@ public class IcysBetterHorsesClient {
         modEventBus.addListener(this::registerBookModel);
         modEventBus.addListener(this::aliasBookModel);
         modEventBus.addListener(this::registerItemColors);
+        modEventBus.addListener(this::registerReloadListeners);
+        NeoForge.EVENT_BUS.addListener(this::onItemTooltip);
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         NeoForge.EVENT_BUS.addListener(this::onDisconnect);
         NeoForge.EVENT_BUS.addListener(this::onEntityLeave);
@@ -233,6 +244,25 @@ public class IcysBetterHorsesClient {
         }
         event.getModels().put(ModelResourceLocation.inventory(ResourceLocation.fromNamespaceAndPath(
                 IcysBetterHorses.RESOURCE_NAMESPACE, "stable_handbook_book")), baked);
+    }
+
+    private void registerReloadListeners(RegisterClientReloadListenersEvent event) {
+        event.registerReloadListener((ResourceManagerReloadListener) manager -> {
+            BhTackTextures.clearCache();
+            BhNamedCoats.clearCache();
+        });
+    }
+
+    private void onItemTooltip(ItemTooltipEvent event) {
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(event.getItemStack().getItem());
+        List<Component> lines = event.getToolTip();
+        if (!id.getNamespace().equals(IcysBetterHorses.RESOURCE_NAMESPACE) || lines.isEmpty()) {
+            return;
+        }
+        String key = "item." + id.getNamespace() + "." + id.getPath() + ".tooltip";
+        if (Language.getInstance().has(key)) {
+            lines.add(1, Component.translatable(key).withStyle(ChatFormatting.GRAY));
+        }
     }
 
     private void registerItemColors(RegisterColorHandlersEvent.Item event) {

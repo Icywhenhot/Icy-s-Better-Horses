@@ -1,9 +1,15 @@
 package icy.betterhorses.net.client.render;
 
 import icy.betterhorses.net.IcysBetterHorses;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public final class BhTackTextures {
 
@@ -16,6 +22,11 @@ public final class BhTackTextures {
     public static final BhTackTextures SHIRE = new BhTackTextures("shire");
     public static final BhTackTextures SMALL = new BhTackTextures("small");
 
+    private static final BhTackTextures[] ALL = {BELGIAN, FRIESIAN, HAFLINGER, ICELANDIC, MEDIUM, PERCHERON, SHIRE, SMALL};
+
+    private final String base;
+    private final Map<Item, ResourceLocation> armors = new HashMap<>();
+
     private final ResourceLocation saddle;
     private final ResourceLocation saddleUpgraded;
     private final ResourceLocation chest;
@@ -27,9 +38,10 @@ public final class BhTackTextures {
     private final ResourceLocation armorGold;
     private final ResourceLocation armorDiamond;
     private final ResourceLocation armorNetherite;
+    private final ResourceLocation armorGeneric;
 
     private BhTackTextures(String breed) {
-        String base = "textures/entity/horse/" + breed + "/";
+        this.base = "textures/entity/horse/" + breed + "/";
         this.saddle = tex(base, "saddle");
         this.saddleUpgraded = tex(base, "saddle_upgraded");
         this.chest = tex(base, "chest");
@@ -40,6 +52,13 @@ public final class BhTackTextures {
         this.armorGold = tex(base, "armor_gold");
         this.armorDiamond = tex(base, "armor_diamond");
         this.armorNetherite = tex(base, "armor_netherite");
+        this.armorGeneric = tex(base, "armor_generic");
+    }
+
+    public static void clearCache() {
+        for (BhTackTextures t : ALL) {
+            t.armors.clear();
+        }
     }
 
     private static ResourceLocation tex(String base, String name) {
@@ -55,15 +74,28 @@ public final class BhTackTextures {
     }
 
     public ResourceLocation armor(ItemStack stack) {
-        if (stack.is(Items.LEATHER_HORSE_ARMOR)) {
+        return armors.computeIfAbsent(stack.getItem(), this::lookup);
+    }
+
+    private ResourceLocation lookup(Item item) {
+        ResourceLocation key = BuiltInRegistries.ITEM.getKey(item);
+        ResourceLocation named = ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE,
+                base + "armor/" + key.getNamespace() + "/" + key.getPath() + ".png");
+        if (Minecraft.getInstance().getResourceManager().getResource(named).isPresent()) {
+            return named;
+        }
+        if (item == Items.LEATHER_HORSE_ARMOR) {
             return armorLeather;
         }
-        if (stack.is(Items.GOLDEN_HORSE_ARMOR)) {
+        if (item == Items.IRON_HORSE_ARMOR) {
+            return armorIron;
+        }
+        if (item == Items.GOLDEN_HORSE_ARMOR) {
             return armorGold;
         }
-        if (stack.is(Items.DIAMOND_HORSE_ARMOR)) {
+        if (item == Items.DIAMOND_HORSE_ARMOR) {
             return armorDiamond;
         }
-        return armorIron;
+        return armorGeneric;
     }
 }

@@ -23,11 +23,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Locale;
 import icy.betterhorses.net.client.BhAbilityBadges;
+import icy.betterhorses.net.client.BhInventoryEffects;
+import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
 
 @Mixin(Gui.class)
 public abstract class GuiMixin {
 
     @Shadow @Final private Minecraft minecraft;
+
+    @Inject(method = "renderEffects", at = @At("HEAD"), cancellable = true)
+    private void bh_hideEffectsBehindHorseScreen(GuiGraphics gfx, DeltaTracker deltaTracker, CallbackInfo ci) {
+        if (this.minecraft.screen instanceof HorseInventoryScreen screen && BhInventoryEffects.fits(screen)) {
+            ci.cancel();
+        }
+    }
 
     @Unique private static final int BH_STATS_HUD_TOP = 12;
     @Unique private static final int BH_STATS_HUD_PADDING = 6;

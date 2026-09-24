@@ -5,12 +5,9 @@ import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
-import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.PowderSnowBlock;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -36,13 +33,7 @@ public abstract class PowderSnowBlockMixin {
             return;
         }
 
-        SimpleContainer gear = data.bh_getGearContainer();
-        if (gear == null || gear.getContainerSize() <= GearSlot.HOOVES.ordinal()) {
-            return;
-        }
-
-        ItemStack hooves = gear.getItem(GearSlot.HOOVES.ordinal());
-        if (hooves.is(ModItems.HORSE_HOOVES)) {
+        if (data.bh_hasGear(GearSlot.HOOVES)) {
             cir.setReturnValue(true);
         }
     }

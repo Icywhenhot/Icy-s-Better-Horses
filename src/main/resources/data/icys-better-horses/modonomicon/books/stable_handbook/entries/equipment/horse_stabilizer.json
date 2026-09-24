@@ -35,6 +35,13 @@
       },
       "title": "book.icys-better-horses.stable_handbook.equipment.horse_stabilizer.info.title",
       "text": "book.icys-better-horses.stable_handbook.equipment.horse_stabilizer.info.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "fuel",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_stabilizer.fuel.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_stabilizer.fuel.text"
     }
   ]
 }

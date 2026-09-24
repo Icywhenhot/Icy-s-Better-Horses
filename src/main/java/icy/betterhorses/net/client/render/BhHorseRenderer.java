@@ -4,12 +4,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import icy.betterhorses.net.entity.BhBreedHorse;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.inventory.GearSlot;
-import icy.betterhorses.net.registry.BhRegistries;
-import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -51,9 +50,11 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
             return stack.isEmpty() ? null : textures.armor(stack);
         }, entity -> {
             ItemStack stack = entity.getBodyArmorItem();
-            return stack.is(Items.LEATHER_HORSE_ARMOR)
-                    ? 0xFF000000 | DyedItemColor.getOrDefault(stack, 0xBB744F)
-                    : -1;
+            if (stack.is(Items.LEATHER_HORSE_ARMOR)) {
+                return 0xFF000000 | DyedItemColor.getOrDefault(stack, 0xBB744F);
+            }
+            DyedItemColor dye = stack.get(DataComponents.DYED_COLOR);
+            return dye == null ? -1 : 0xFF000000 | dye.rgb();
         }));
         addLayer(new BhTackLayer<>(this, models.apply(chest), models.apply(chestBaby), entity -> {
             IHorseData data = IHorseData.of(entity);
@@ -74,7 +75,6 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
 
     @Override
     public ResourceLocation getTextureLocation(T entity) {
-        BreedType type = BhRegistries.breedTypeRegistry().get(entity.bhFixedBreed().location());
-        return type.coats().texture(entity.bhCoat(), entity.isBaby());
+        return BhNamedCoats.coat(entity);
     }
 }

@@ -87,12 +87,16 @@ The cart has a second size. Put one on a **draft horse** and press the **Cart Si
 | Bed seats with a chest | 0 | **2** |
 | Chest size | Double chest, 54 slots | **90 slots** |
 | Takes a plough | Yes | No |
+| Shades riders from the sun | No | **Yes** |
 
 Only the four draft breeds can pull it: [Percheron](../breeds/percheron), [Clydesdale](../breeds/clydesdale), [Shire](../breeds/shire), and [Belgian](../breeds/belgian). Ask any other horse and it refuses:
 
 > Only draft horses can pull the large cart.
 
 Press the key again to go back down to the small cart. The swap is refused, with a message saying which, if the wagon is carrying more than the small cart can hold: too many passengers, a plough fitted, or items sitting in the outer chest columns. Clear the problem and it swaps.
+
+{: .tip }
+> The wagon has a roof, so **undead riding in it don't burn in daylight**. It's a safe way to haul zombies or a zombie villager you're taking home to cure.
 
 {: .note }
 > This is the reason to raise a draft horse. They are the slowest class in the mod, and the wagon is what they are for: six seats and ninety slots is a moving base camp.

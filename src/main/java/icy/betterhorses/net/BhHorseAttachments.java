@@ -19,6 +19,7 @@ public final class BhHorseAttachments {
     public static final AttachmentType<Integer> BOND = integer(0);
     public static final AttachmentType<Integer> STABILIZER_STATE = integer(HorseStabilizerState.CLOSED.ordinal());
     public static final AttachmentType<Integer> GEAR_FLAGS = integer(0);
+    public static final AttachmentType<Integer> STABILIZER_CHARGE = integer(0);
     public static final AttachmentType<Boolean> CART = bool(false);
     public static final AttachmentType<Boolean> CART_CHEST = bool(false);
     public static final AttachmentType<Boolean> CART_PLOW = bool(false);
@@ -51,6 +52,7 @@ public final class BhHorseAttachments {
         register(event, "bond", BOND);
         register(event, "stabilizer_state", STABILIZER_STATE);
         register(event, "gear_flags", GEAR_FLAGS);
+        register(event, "stabilizer_charge", STABILIZER_CHARGE);
         register(event, "cart", CART);
         register(event, "cart_chest", CART_CHEST);
         register(event, "cart_plow", CART_PLOW);

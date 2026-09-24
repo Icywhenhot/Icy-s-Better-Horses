@@ -145,8 +145,13 @@ public interface IHorseData {
 
     default boolean bh_hasStabilizerItem() {
         return this instanceof Horse
-                && bh_hasGear(GearSlot.STABILIZER) && !bh_hasCartGear();
+                && bh_hasGear(GearSlot.STABILIZER) && !bh_hasCartGear()
+                && bh_getStabilizerCharge() > 0.0F;
     }
+
+    float bh_getStabilizerCharge();
+
+    void bh_syncStabilizerCharge();
 
     default boolean bh_mayUseLargeCart() {
         ResourceKey<BreedType> breedKey = bh_getBreedKey();
@@ -159,7 +164,7 @@ public interface IHorseData {
 
     boolean bh_hasCartChest();
 
-    void bh_setCartChest(boolean attached);
+    void bh_setCartChest(ItemStack chest);
 
     SimpleContainer bh_getCartChestContainer();
 
