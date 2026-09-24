@@ -14,7 +14,8 @@
 			"icy.betterhorses.net.gametest.ProjectileDeflectGameTest",
 			"icy.betterhorses.net.gametest.SpawnEggDispenserGameTest",
 			"icy.betterhorses.net.gametest.AbsorptionGameTest",
-			"icy.betterhorses.net.gametest.HorseCombatGameTest"
+			"icy.betterhorses.net.gametest.HorseCombatGameTest",
+			"icy.betterhorses.net.gametest.LootTableGameTest"
 		]
 	},
 	"depends": {
