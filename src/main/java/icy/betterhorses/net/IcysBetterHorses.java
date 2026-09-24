@@ -136,10 +136,10 @@ public final class IcysBetterHorses implements ModInitializer {
             return;
         }
         if (entity instanceof AbstractHorse horse && ((IHorseData) horse).bh_isOwned()) {
-            if (HorseTracker.consumePendingDisown(horse.getUUID())) {
-                pendingReleases.add(horse);
-            } else if (HorseTracker.isStale(horse)) {
+            if (HorseTracker.isStale(horse)) {
                 staleHorses.add(horse);
+            } else if (HorseTracker.consumePendingDisown(horse.getUUID())) {
+                pendingReleases.add(horse);
             } else {
                 HorseTracker.register(horse);
             }

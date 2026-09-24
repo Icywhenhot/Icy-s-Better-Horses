@@ -18,7 +18,9 @@
 			"icy.betterhorses.net.gametest.LootTableGameTest",
 			"icy.betterhorses.net.gametest.HorseKindGameTest",
 			"icy.betterhorses.net.gametest.DimensionChangeGameTest",
-			"icy.betterhorses.net.gametest.AdvancementsGameTest"
+			"icy.betterhorses.net.gametest.AdvancementsGameTest",
+			"icy.betterhorses.net.gametest.HorseTrackerGameTest",
+			"icy.betterhorses.net.gametest.MountStateGameTest"
 		]
 	},
 	"depends": {
