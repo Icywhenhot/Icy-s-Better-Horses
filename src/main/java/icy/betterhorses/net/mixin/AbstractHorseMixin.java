@@ -3,6 +3,7 @@ package icy.betterhorses.net.mixin;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import icy.betterhorses.net.BhAttributes;
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhFeature;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhGears;
 import icy.betterhorses.net.BhSurge;
@@ -736,6 +737,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public void bh_disown() {
         AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.getClass() == Horse.class && !BhFeature.CONVERT_TAMED_HORSES.on()) {
+            self.addTag(BhVanillaHorseSwap.KEEP_VANILLA_TAG);
+        }
         self.ejectPassengers();
         self.setOwnerUUID(null);
         self.setTamed(false);
