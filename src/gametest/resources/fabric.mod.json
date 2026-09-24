@@ -6,7 +6,11 @@
 	"environment": "*",
 	"entrypoints": {
 		"fabric-gametest": [
-			"icy.betterhorses.net.gametest.SmokeGameTest"
+			"icy.betterhorses.net.gametest.SmokeGameTest",
+			"icy.betterhorses.net.gametest.HandlerSecurityGameTest",
+			"icy.betterhorses.net.gametest.DeathAndGearLossGameTest",
+			"icy.betterhorses.net.gametest.VanillaSwapFidelityGameTest",
+			"icy.betterhorses.net.gametest.BreedingGameTest"
 		]
 	},
 	"depends": {
