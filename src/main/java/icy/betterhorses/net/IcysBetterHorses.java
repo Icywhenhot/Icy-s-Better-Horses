@@ -129,6 +129,7 @@ public final class IcysBetterHorses implements ModInitializer {
         staleHorses.clear();
         pendingReleases.clear();
         HorseTracker.detach();
+        BhRideRequests.reset();
     }
 
     private void onEntityJoinLevel(Entity entity, Level level) {

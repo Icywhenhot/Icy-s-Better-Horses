@@ -28,7 +28,8 @@
 			"icy.betterhorses.net.gametest.RiderSeatingGameTest",
 			"icy.betterhorses.net.gametest.BhTestBatches",
 			"icy.betterhorses.net.gametest.ReturnHomeGameTest",
-			"icy.betterhorses.net.gametest.VanillaHorseSwapGameTest"
+			"icy.betterhorses.net.gametest.VanillaHorseSwapGameTest",
+			"icy.betterhorses.net.gametest.AskToRideGameTest"
 		]
 	},
 	"depends": {
