@@ -1,5 +1,6 @@
 package icy.betterhorses.net.goal;
 
+import icy.betterhorses.net.BhFeature;
 import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModTicketTypes;
@@ -89,6 +90,11 @@ public class HorseReturnHomeGoal extends Goal {
         }
         if (checkStuck()) return;
         if (hasWalkedNaturalLeg()) {
+            if (!BhFeature.HORSE_TELEPORT.on()) {
+                walkStartPos = horse.position();
+                navigateHome();
+                return;
+            }
             teleportHome();
             return;
         }
@@ -114,7 +120,7 @@ public class HorseReturnHomeGoal extends Goal {
             target = horse.position().add(direction.scale(NATURAL_WALK_DISTANCE));
         }
         boolean reached = horse.getNavigation().moveTo(target.x, target.y, target.z, RETURN_SPEED);
-        if (!reached) {
+        if (!reached && BhFeature.HORSE_TELEPORT.on()) {
             teleportHome();
         }
     }
@@ -144,7 +150,7 @@ public class HorseReturnHomeGoal extends Goal {
         boolean stuck = lastProgressPos != null && current.distanceToSqr(lastProgressPos) < STUCK_MIN_PROGRESS_SQ;
         stuckCheckCooldown = STUCK_CHECK_INTERVAL_TICKS;
         lastProgressPos = current;
-        if (stuck) {
+        if (stuck && BhFeature.HORSE_TELEPORT.on()) {
             teleportHome();
         }
         return stuck;

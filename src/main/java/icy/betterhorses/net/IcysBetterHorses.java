@@ -453,7 +453,7 @@ public final class IcysBetterHorses implements ModInitializer {
         }
 
         BlockPos target = player.blockPosition();
-        if (horse.distanceToSqr(player) > 400.0) {
+        if (BhFeature.HORSE_TELEPORT.on() && horse.distanceToSqr(player) > 400.0) {
             horse.teleportTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
             data.bh_setWanderCenter(target);
             data.bh_setCommand(HorseCommand.WANDER);

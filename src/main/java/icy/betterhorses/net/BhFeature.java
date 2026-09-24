@@ -18,7 +18,8 @@ public enum BhFeature {
     HORSE_PVP("horse_pvp"),
     CART_PICKUP("cart_pickup"),
     CONVERT_TAMED_HORSES("convert_tamed_horses"),
-    SMOOTH_HORSE_CLIMBING("smooth_horse_climbing");
+    SMOOTH_HORSE_CLIMBING("smooth_horse_climbing"),
+    HORSE_TELEPORT("horse_teleport");
 
     private static final Map<String, BhFeature> BY_KEY = new HashMap<>();
 
