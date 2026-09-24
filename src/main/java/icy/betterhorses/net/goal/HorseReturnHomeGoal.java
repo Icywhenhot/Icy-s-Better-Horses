@@ -33,6 +33,7 @@ public class HorseReturnHomeGoal extends Goal {
     private ChunkPos ticketChunk;
     private int stuckCheckCooldown;
     private Vec3 lastProgressPos;
+    private int repathCooldown;
 
     public HorseReturnHomeGoal(AbstractHorse horse) {
         this.horse = horse;
@@ -78,6 +79,7 @@ public class HorseReturnHomeGoal extends Goal {
         ticketChunk = null;
         stuckCheckCooldown = STUCK_CHECK_INTERVAL_TICKS;
         lastProgressPos = horse.position();
+        repathCooldown = 0;
         refreshChunkTicket();
         navigateHome();
     }
@@ -98,7 +100,9 @@ public class HorseReturnHomeGoal extends Goal {
             teleportHome();
             return;
         }
-        if (horse.getNavigation().isDone()) {
+        if (repathCooldown > 0) {
+            repathCooldown--;
+        } else if (horse.getNavigation().isDone()) {
             navigateHome();
         }
     }
@@ -108,6 +112,7 @@ public class HorseReturnHomeGoal extends Goal {
         walkStartPos = null;
         ticketChunk = null;
         lastProgressPos = null;
+        repathCooldown = 0;
     }
 
     private void navigateHome() {
@@ -120,8 +125,12 @@ public class HorseReturnHomeGoal extends Goal {
             target = horse.position().add(direction.scale(NATURAL_WALK_DISTANCE));
         }
         boolean reached = horse.getNavigation().moveTo(target.x, target.y, target.z, RETURN_SPEED);
-        if (!reached && BhFeature.HORSE_TELEPORT.on()) {
-            teleportHome();
+        if (!reached) {
+            if (BhFeature.HORSE_TELEPORT.on()) {
+                teleportHome();
+            } else {
+                repathCooldown = STUCK_CHECK_INTERVAL_TICKS; // throttle repathing while home is unreachable
+            }
         }
     }
 
