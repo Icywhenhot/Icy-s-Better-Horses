@@ -120,6 +120,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private long bh_rescueReadyAt = 0L;
     @Unique private int bh_gear = 0;
     @Unique private int bh_spookTicks = 0;
+    @Unique private @Nullable Vec3 bh_lastPos = null;
+    @Unique private Vec3 bh_moved = Vec3.ZERO;
     @Unique private @Nullable UUID bh_combatTarget = null;
     @Unique private @Nullable UUID bh_cartId = null;
     @Unique private @Nullable ResourceKey<Level> bh_homeDim = null;
@@ -650,6 +652,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (BhVanillaHorseSwap.trySwap(self)) {
             return;
         }
+        Vec3 now = self.position();
+        this.bh_moved = this.bh_lastPos == null ? Vec3.ZERO : now.subtract(this.bh_lastPos);
+        this.bh_lastPos = now;
         for (HorseFeature feature : this.bh_features()) {
             feature.tick(self, this);
         }
@@ -1155,6 +1160,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     public void bh_setGear(int gear) {
         this.bh_gear = Mth.clamp(gear, 0, BhGears.TOP_GEAR);
         bh_push(BH_GEAR, this.bh_gear);
+    }
+
+    @Override
+    public Vec3 bh_getKnownMovement() {
+        return this.bh_moved;
     }
 
     @Override

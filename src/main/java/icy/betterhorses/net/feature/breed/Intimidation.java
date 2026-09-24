@@ -120,7 +120,7 @@ public final class Intimidation implements BreedAbility {
 
     private static boolean mayStomp(AbstractHorse horse) {
         return horse.getControllingPassenger() == null
-                || horse.getDeltaMovement().horizontalDistanceSqr() < STILL_SPEED_SQ;
+                || IHorseData.of(horse).bh_getKnownMovement().horizontalDistanceSqr() < STILL_SPEED_SQ;
     }
 
     private static @Nullable LivingEntity ward(AbstractHorse horse, IHorseData data) {
