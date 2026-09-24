@@ -103,6 +103,7 @@
   "command.icys-better-horses.stay": "Stay",
   "command.icys-better-horses.return_home": "Return Home",
   "command.icys-better-horses.set_home": "Set Home",
+  "command.icys-better-horses.horse_stats": "Horse Stats",
   "message.icys-better-horses.claimed": "You've bonded with this horse!",
   "message.icys-better-horses.home_set": "Home location set.",
   "message.icys-better-horses.no_horse_to_tether": "No owned horse close enough to tether.",

@@ -54,13 +54,18 @@ public class RadialMenuScreen extends Screen {
     private long bhOpenMs;
 
     private final HorseCommand[] commands;
+    // Horse stats always occupies the last segment, after the commands (including the
+    // conditionally-appended ABILITY one) - a client-only screen, not a HorseCommand, so it isn't
+    // sent to the server and can't renumber any saved command.
+    private final int statsIndex;
     private final int segmentCount;
 
     public RadialMenuScreen(int horseId) {
         super(Component.translatable("screen.icys-better-horses.radial"));
         this.horseId = horseId;
         this.commands = wheelFor(horseId);
-        this.segmentCount = this.commands.length;
+        this.statsIndex = this.commands.length;
+        this.segmentCount = this.commands.length + 1;
     }
 
     private static HorseCommand[] wheelFor(int horseId) {
@@ -140,7 +145,7 @@ public class RadialMenuScreen extends Screen {
             float labelRadius = LABEL_RADIUS + HOVER_PUSH * 0.5F * hoverAmount[i];
             int lx = cx + Math.round((float) Math.cos(labelAngle) * labelRadius);
             int ly = cy + Math.round((float) Math.sin(labelAngle) * labelRadius);
-            String text = Component.translatable(commandKey(this.commands[i])).getString();
+            String text = Component.translatable(labelKey(i)).getString();
             int textColor = bh_mixColor(LABEL_COLOR, LABEL_HOVER_COLOR, hoverAmount[i]);
             gfx.drawCenteredString(font, text, lx, ly - font.lineHeight / 2, textColor);
         }
@@ -174,16 +179,36 @@ public class RadialMenuScreen extends Screen {
             double dy = mouseY - height / 2.0;
             double dist = Math.sqrt(dx * dx + dy * dy);
             if (dist >= RING_INNER && dist <= RING_OUTER) {
-                sendCommand(this.commands[bh_angleToIndex(Math.atan2(dy, dx))]);
+                activate(bh_angleToIndex(Math.atan2(dy, dx)));
             }
-            onClose();
+            // Stats swaps in its own screen; closing here would replace it.
+            if (minecraft != null && minecraft.screen == this) onClose();
             return true;
         }
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
+    private void activate(int index) {
+        if (index == this.statsIndex) {
+            openStats();
+        } else {
+            sendCommand(this.commands[index]);
+        }
+    }
+
+    private void openStats() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null && mc.level.getEntity(this.horseId) instanceof AbstractHorse horse) {
+            mc.setScreen(new HorseInfoScreen(horse));
+        }
+    }
+
     private void sendCommand(HorseCommand command) {
         BhNetworking.sendToServer(new RadialCommandPayload(this.horseId, command.ordinal()));
+    }
+
+    private String labelKey(int index) {
+        return index == this.statsIndex ? "command.icys-better-horses.horse_stats" : commandKey(this.commands[index]);
     }
 
     private String commandKey(HorseCommand command) {
