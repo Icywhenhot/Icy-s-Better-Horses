@@ -16,7 +16,8 @@
 			"icy.betterhorses.net.gametest.AbsorptionGameTest",
 			"icy.betterhorses.net.gametest.HorseCombatGameTest",
 			"icy.betterhorses.net.gametest.LootTableGameTest",
-			"icy.betterhorses.net.gametest.HorseKindGameTest"
+			"icy.betterhorses.net.gametest.HorseKindGameTest",
+			"icy.betterhorses.net.gametest.DimensionChangeGameTest"
 		]
 	},
 	"depends": {

@@ -62,7 +62,7 @@ public class DefendOwnerGoal extends Goal {
                 || data.bh_getCommand() == HorseCommand.STAY) {
             return false;
         }
-        if (target == null || !target.isAlive()
+        if (target == null || !target.isAlive() || target.level() != horse.level()
                 || horse.getHealth() < horse.getMaxHealth() * BREAK_OFF_HEALTH
                 || horse.distanceToSqr(target) > LEASH_SQ
                 || origin != null && (horse.position().distanceToSqr(origin) > LEASH_SQ || target.position().distanceToSqr(origin) > LEASH_SQ)) {
