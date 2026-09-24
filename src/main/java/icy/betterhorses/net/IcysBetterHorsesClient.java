@@ -12,6 +12,7 @@ import icy.betterhorses.net.client.HorseRosterScreen;
 import icy.betterhorses.net.client.HorseStabilizerSoundController;
 import icy.betterhorses.net.client.RadialMenuScreen;
 import icy.betterhorses.net.client.render.BelgianHorseRenderer;
+import icy.betterhorses.net.client.render.BhClientHorseUnload;
 import icy.betterhorses.net.client.render.BhModelLayers;
 import icy.betterhorses.net.client.render.ClydesdaleHorseRenderer;
 import icy.betterhorses.net.client.render.FriesianHorseRenderer;
@@ -35,6 +36,7 @@ import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
@@ -121,6 +123,11 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         registerItemColors();
         ClientTickEvents.END_CLIENT_TICK.register(IcysBetterHorsesClient::onClientTick);
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> onDisconnect());
+        ClientEntityEvents.ENTITY_UNLOAD.register((entity, level) -> {
+            if (entity instanceof AbstractHorse) {
+                BhClientHorseUnload.handle(entity.getId());
+            }
+        });
     }
 
     private static void registerKeyMappings() {
