@@ -1,0 +1,16 @@
+{
+	"schemaVersion": 1,
+	"id": "icys-better-horses-gametest",
+	"version": "1.0.0",
+	"name": "Icy's Better Horses GameTests",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-gametest": [
+			"icy.betterhorses.net.gametest.SmokeGameTest"
+		]
+	},
+	"depends": {
+		"icys-better-horses": "*",
+		"fabric-gametest-api-v1": "*"
+	}
+}

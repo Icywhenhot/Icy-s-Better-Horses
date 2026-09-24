@@ -41,11 +41,25 @@ repositories {
 	mavenCentral()
 }
 
+fabricApi {
+	// In-world tests under src/gametest; `./gradlew runGameTest` (also run by `test`).
+	configureTests {
+		createSourceSet = true
+		modId = "icys-better-horses-gametest"
+		enableClientGameTests = false
+		eula = true
+	}
+}
+
 loom {
 	runs {
 		client {
 			// Fixed username so the offline UUID, and horse ownership with it, survives relaunches.
 			programArgs '--username', 'Dev'
+		}
+		gameTest {
+			// JUnit-style XML report from each `runGameTest`, for CI or just reading results after the fact.
+			property 'fabric-api.gametest.report-file', "${project.buildDir}/test-results/gametest/report.xml"
 		}
 	}
 }
