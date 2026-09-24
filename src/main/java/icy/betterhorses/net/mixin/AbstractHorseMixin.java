@@ -2,6 +2,7 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhAttributes;
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhHorseSteering;
 import icy.betterhorses.net.BhRiderSeat;
 import icy.betterhorses.net.BhGears;
@@ -757,7 +758,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         player.startRiding(self);
         // Moved here from a TAIL inject: this method itself can cancel doPlayerRide above, which
         // used to skip the TAIL inject and never record the ride at all.
-        if (player.getVehicle() == self && owner != null && owner.equals(player.getUUID())) {
+        if (player.getVehicle() == self && owner != null && owner.equals(player.getUUID())
+                && BhHorseKind.managed(self)) {
             HorseTracker.setLastRidden(owner, self);
         }
 
@@ -770,7 +772,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Inject(method = "tameWithName", at = @At("RETURN"))
     private void bh_claimHorseOnTame(net.minecraft.world.entity.player.Player player, CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (!cir.getReturnValueZ() || self.level().isClientSide() || player.getUUID().equals(this.bh_getOwner())) {
+        if (!cir.getReturnValueZ() || self.level().isClientSide() || player.getUUID().equals(this.bh_getOwner())
+                || !BhHorseKind.managed(self)) {
             return;
         }
 
