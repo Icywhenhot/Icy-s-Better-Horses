@@ -284,7 +284,10 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         if (boundHorse == null && this.horseUuid != null) {
             this.closeChestViewers();
             if (this.horse != null && this.horse.getRemovalReason() != null
-                    && this.horse.getRemovalReason().shouldDestroy()) this.discard();
+                    && (this.horse.getRemovalReason().shouldDestroy()
+                            || this.horse.getRemovalReason() == Entity.RemovalReason.CHANGED_DIMENSION)) {
+                this.discard();
+            }
             return;
         }
         if (boundHorse == null || !boundHorse.isAlive() || boundHorse.isRemoved()

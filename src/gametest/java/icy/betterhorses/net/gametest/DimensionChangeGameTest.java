@@ -81,4 +81,34 @@ public class DimensionChangeGameTest implements FabricGameTest {
             BhConfig.apply(java.util.Map.of(BhFeature.HORSE_PVP, false), BhConfig.tuning());
         }
     }
+
+    // Round 2, item 9: a drawn cart left behind when its horse changes dimension (no portal for
+    // carts) used to sit there forever - RemovalReason.CHANGED_DIMENSION.shouldDestroy() is false,
+    // so the old "only discard on shouldDestroy" check never fired for it.
+    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 40)
+    public void cartIsRemovedWhenItsHorseChangesDimension(GameTestHelper helper) {
+        helper.setBlock(2, 1, 2, Blocks.STONE);
+        AbstractHorse horse = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
+        IHorseData data = IHorseData.of(horse);
+        data.bh_setBreed(HorseBreed.CLYDESDALE);
+        horse.setTamed(true);
+        data.bh_getGearContainer().setItem(icy.betterhorses.net.inventory.GearSlot.STABILIZER.ordinal(),
+                new net.minecraft.world.item.ItemStack(icy.betterhorses.net.ModItems.HORSE_CART));
+
+        helper.runAfterDelay(5, () -> {
+            icy.betterhorses.net.entity.HorseCartEntity cart = data.bh_getCartEntity();
+            helper.assertTrue(cart != null && cart.isAlive(), "setup: the cart should have spawned and be alive");
+
+            // A real portal round trip needs a working destination portal, which this test level
+            // doesn't have - go straight to the post-condition the cart's tick() actually checks:
+            // its horse gone from this level with RemovalReason.CHANGED_DIMENSION.
+            horse.remove(net.minecraft.world.entity.Entity.RemovalReason.CHANGED_DIMENSION);
+
+            helper.runAfterDelay(5, () -> {
+                helper.assertTrue(cart.isRemoved(),
+                        "the orphaned cart should be discarded once its horse has changed dimension");
+                helper.succeed();
+            });
+        });
+    }
 }
