@@ -2,6 +2,7 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhAttributes;
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhCriteria;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhHorseSteering;
 import icy.betterhorses.net.BhRiderSeat;
@@ -47,6 +48,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -361,9 +363,23 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Override
     public void bh_setBond(int level) {
+        int previous = this.bh_syncState().bond;
         this.bh_syncState().bond = Math.max(0, Math.min(100, level));
         this.bh_syncHorseData();
         bh_applyBondAttributes();
+        if (previous < 100 && this.bh_syncState().bond >= 100) {
+            bh_awardOwner(BhCriteria.BOND_MAX);
+        }
+    }
+
+    @Unique
+    private void bh_awardOwner(String key) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.level().isClientSide()) return;
+        UUID owner = this.bh_getOwner();
+        MinecraftServer server = self.level().getServer();
+        if (owner == null || server == null) return;
+        BhCriteria.fire(server.getPlayerList().getPlayer(owner), key);
     }
 
     @Override
