@@ -22,6 +22,10 @@ public final class BhVanillaHorseSwap {
                 || !horse.isAlive() || horse.isVehicle() || horse.isPassenger()) {
             return false;
         }
+        // Off keeps existing tamed horses vanilla, so they keep their stats.
+        if (horse.isTamed() && !BhFeature.CONVERT_TAMED_HORSES.on()) {
+            return false;
+        }
 
         HorseBreed breed = IHorseData.of(horse).bh_getBreed();
         if (!breed.isRealBreed()) {

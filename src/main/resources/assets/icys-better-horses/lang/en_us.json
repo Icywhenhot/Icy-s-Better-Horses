@@ -345,6 +345,8 @@
   "config.icys-better-horses.horse_pvp.tooltip": "Off: a charge or kick never damages a player, or any animal a player owns.",
   "config.icys-better-horses.cart_pickup": "Carts pick up mobs",
   "config.icys-better-horses.cart_pickup.tooltip": "Off: animals stop climbing into a cart bed on their own. Players can still ride it.",
+  "config.icys-better-horses.convert_tamed_horses": "Convert tamed horses",
+  "config.icys-better-horses.convert_tamed_horses.tooltip": "Off: vanilla horses that are already tamed stay vanilla and keep their stats. Wild horses still become breeds.",
   "config.icys-better-horses.category.tuning": "Tuning",
   "config.icys-better-horses.bond_per_interval": "Bond gained",
   "config.icys-better-horses.bond_per_interval.tooltip": "Bond a horse gains each interval while its owner is within 10 blocks. 0 turns passive bonding off.",
