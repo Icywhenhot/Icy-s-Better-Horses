@@ -90,7 +90,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -111,6 +110,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Shadow
     protected int standCounter;
+
+    @Shadow
+    private float standAnimO;
 
     @Unique private static final int BH_CART_CHEST_SIZE = 54;
 
@@ -1004,13 +1006,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         goalSelector.addGoal(2, new DefendOwnerGoal(self));
     }
 
-    @Redirect(
+    @Inject(
             method = "positionRider(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/Entity$MoveFunction;)V",
-            at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/world/entity/Entity$MoveFunction;accept(Lnet/minecraft/world/entity/Entity;DDD)V"))
-    private void bh_offsetSecondPassenger(
-            net.minecraft.world.entity.Entity.MoveFunction moveFunction,
-            Entity passenger, double x, double y, double z) {
+            at = @At("TAIL"))
+    private void bh_offsetSecondPassenger(Entity passenger, Entity.MoveFunction moveFunction, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (this.bh_hasCartGear()) {
             if (self.level().isClientSide()) {
@@ -1018,18 +1017,34 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             }
             Vec3 bench = HorseCartEntity.benchSeatOffset(
                     self, BhHorseSteering.benchSeatIndex(self, passenger), self.yBodyRot);
-            moveFunction.accept(passenger, self.getX() + bench.x, self.getY() + bench.y, self.getZ() + bench.z);
+            moveFunction.accept(passenger, self.getX() + bench.x,
+                    self.getY() + bench.y - BhRiderSeat.seatDrop(passenger),
+                    self.getZ() + bench.z);
             return;
         }
 
-        double lift = BhRiderSeat.seatLift(self);
+        // Camera follows part of the rear; the renderer draws the body back by the published shift.
+        float yaw = self.yBodyRot * Mth.DEG_TO_RAD;
+        double rear = 0.7D * this.standAnimO * BhRiderSeat.REAR_CAMERA_FOLLOW;
+        Vec3 shift = new Vec3(rear * Mth.sin(yaw),
+                0.15D * this.standAnimO * BhRiderSeat.REAR_CAMERA_FOLLOW + BhRiderSeat.seatLift(self),
+                -rear * Mth.cos(yaw));
         if (self.level().isClientSide()) {
-            BhRiderSeat.publish(self.getId(), new Vec3(0.0D, lift, 0.0D));
+            double lift = BhRiderSeat.seatLift(self);
+            BhRiderSeat.publish(self.getId(), new Vec3(
+                    shift.x * (1.0D - BhRiderSeat.REAR_BODY_FOLLOW_BACK),
+                    lift + (shift.y - lift) * (1.0D - BhRiderSeat.REAR_BODY_FOLLOW_UP),
+                    shift.z * (1.0D - BhRiderSeat.REAR_BODY_FOLLOW_BACK)));
         }
-        y += lift;
 
-        if (self instanceof BhBreedHorse) {
-            y -= passenger.getMyRidingOffset();
+        double x = self.getX() + shift.x;
+        double y = self.getY() + shift.y + self.getPassengersRidingOffset();
+        double z = self.getZ() + shift.z;
+        // Breed models sit players lower than vanilla (Icy's upstream seat drop).
+        y += self instanceof BhBreedHorse ? -BhRiderSeat.seatDrop(passenger) : passenger.getMyRidingOffset();
+        if (self instanceof BhBreedHorse && passenger instanceof net.minecraft.world.entity.player.Player) {
+            x -= BhRiderSeat.BREED_SEAT_FORWARD * Mth.sin(yaw);
+            z += BhRiderSeat.BREED_SEAT_FORWARD * Mth.cos(yaw);
         }
 
         Vec3 offset = BhHorseSteering.multiRiderOffset(self, passenger);

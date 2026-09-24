@@ -28,8 +28,8 @@ public class TrustGameTest implements FabricGameTest {
         AbstractHorse horse = ownedHorse(helper, owner.getUUID());
         IHorseData.of(horse).bh_ridePlayer(owner);
         helper.assertTrue(owner.getVehicle() == horse, "owner should be riding");
-        helper.assertTrue(horse.getUUID().equals(HorseTracker.getActiveHorseId(owner.getUUID())),
-                "owner's active horse should be the ridden horse");
+        helper.assertTrue(horse.getUUID().equals(HorseTracker.getLastRiddenId(owner.getUUID())),
+                "owner's last-ridden horse should be the ridden horse");
         helper.succeed();
     }
 

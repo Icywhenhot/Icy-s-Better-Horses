@@ -1,5 +1,7 @@
 package icy.betterhorses.net.entity;
 
+import icy.betterhorses.net.BhRiderSeat;
+
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.BhHorseSteering;
@@ -515,7 +517,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         }
         int seatIndex = Math.max(0, this.getPassengers().indexOf(passenger));
         Vec3 seat = this.carriageSeatOffset(seatIndex, this.getYRot());
-        move.accept(passenger, this.getX() + seat.x, this.getY() + seat.y, this.getZ() + seat.z);
+        move.accept(passenger, this.getX() + seat.x,
+                this.getY() + seat.y - BhRiderSeat.seatDrop(passenger),
+                this.getZ() + seat.z);
     }
 
     private boolean canCarry(Entity candidate) {
