@@ -29,8 +29,8 @@ public class VanillaSwapFidelityGameTest implements FabricGameTest {
         floor(helper);
         Horse horse = helper.spawn(EntityType.HORSE, 2, 2, 2);
         // A breed set up front (isRealBreed()) keeps this test's clamp math deterministic - it
-        // sidesteps the biome-pick fallback, which has its own bug covered separately below
-        // (swapOfUnassignedBreedHorseKeepsThePickedBreed_KNOWN_BUG).
+        // sidesteps the biome-pick fallback, covered separately below
+        // (swapOfUnassignedBreedHorseKeepsThePickedBreed).
         IHorseData.of(horse).bh_setBreed(icy.betterhorses.net.HorseBreed.CLYDESDALE);
         horse.setCustomName(Component.literal("Silver"));
         horse.setAge(-20000); // baby
@@ -114,15 +114,11 @@ public class VanillaSwapFidelityGameTest implements FabricGameTest {
     // A horse that hasn't been assigned a real breed yet (bh_getBreed() == UNKNOWN_SPECIES - the
     // ModAttachments.BhHorseSyncState default, true of any horse whose finalizeSpawn hook never
     // ran) makes BhVanillaHorseSwap.trySwap pick a fresh breed via pickForBiome/random fallback.
-    // But that pick never actually lands: trySwap does `tag.putString("BH_BreedId", breed.id())`
-    // on the save tag, while AbstractHorseMixin.bh_onRead only ever reads the *int* key
-    // "BH_Breed" - which is still sitting in `tag` from the original (unreal) horse's own
-    // bh_onWrite, since nothing overwrites it. So swap.load(tag) puts the freshly-picked breed's
-    // ENTITY TYPE under the hood (ModEntities.forBreed(breed) chose the class) but then silently
-    // reverts bh_getBreed() itself back to UNKNOWN_SPECIES/NONE archetype - breaking the health/
-    // speed/jump clamp, chest-row count, cart eligibility, and anything else keyed off archetype.
-    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 40, required = false)
-    public void swapOfUnassignedBreedHorseKeepsThePickedBreed_KNOWN_BUG(GameTestHelper helper) {
+    // Round 2, item 15: that pick used to never land - trySwap wrote `BH_BreedId` (a string,
+    // never read) while AbstractHorseMixin.bh_onRead only reads the int key "BH_Breed", so it now
+    // writes that key instead. Was swapOfUnassignedBreedHorseKeepsThePickedBreed_KNOWN_BUG.
+    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 40)
+    public void swapOfUnassignedBreedHorseKeepsThePickedBreed(GameTestHelper helper) {
         floor(helper);
         Horse horse = helper.spawn(EntityType.HORSE, 2, 2, 2);
         helper.assertFalse(IHorseData.of(horse).bh_getBreed().isRealBreed(),
@@ -134,10 +130,7 @@ public class VanillaSwapFidelityGameTest implements FabricGameTest {
             helper.assertTrue(swapped.size() == 1, "setup: expected exactly one mod breed horse after the swap");
             HorseBreed resultBreed = IHorseData.of(swapped.get(0)).bh_getBreed();
             helper.assertTrue(resultBreed.isRealBreed(),
-                    "KNOWN BUG: BhVanillaHorseSwap picks a real breed for the entity TYPE but bh_onRead reverts "
-                            + "bh_getBreed() back to the original's stale BH_Breed tag - got " + resultBreed
-                            + " (BhVanillaHorseSwap.trySwap writes \"BH_BreedId\" (string, never read) instead of "
-                            + "overwriting \"BH_Breed\" (int, what bh_onRead actually reads))");
+                    "expected the freshly-picked breed to stick, got " + resultBreed);
             helper.succeed();
         });
     }
