@@ -68,6 +68,9 @@ public class DeathAndGearLossGameTest implements FabricGameTest {
                                 + " dropped on death, found " + count);
             }
             for (Map.Entry<Item, Integer> entry : found.entrySet()) {
+                // Round 2, item 3: horses now use the vanilla horse loot table too, which drops 0-2
+                // leather at random - not part of gear/chest loss, so it's not an "unexpected extra".
+                if (entry.getKey() == Items.LEATHER) continue;
                 helper.assertTrue(expected.containsKey(entry.getKey()),
                         "unexpected extra item dropped on death: " + entry.getValue() + "x " + entry.getKey());
             }

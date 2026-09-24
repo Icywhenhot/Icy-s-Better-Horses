@@ -514,7 +514,8 @@ public final class IcysBetterHorses implements ModInitializer {
 
     private static AbstractHorse findCommandHorse(ServerPlayer player, int horseId, double radius) {
         ServerLevel serverLevel = (ServerLevel) player.level();
-        if (!(serverLevel.getEntity(horseId) instanceof AbstractHorse horse) || !horse.isTamed()) {
+        if (!(serverLevel.getEntity(horseId) instanceof AbstractHorse horse)
+                || !BhHorseKind.managed(horse) || !horse.isTamed()) {
             return null;
         }
         if (horse.distanceToSqr(player) > radius * radius) {

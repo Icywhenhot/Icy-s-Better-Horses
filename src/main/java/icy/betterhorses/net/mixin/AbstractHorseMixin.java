@@ -731,19 +731,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         ci.cancel();
     }
 
-    @Inject(method = "doPlayerRide", at = @At("TAIL"))
-    private void bh_trackLastRidden(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self.level().isClientSide() || player.getVehicle() != self) {
-            return;
-        }
-        UUID owner = this.bh_getOwner();
-        if (owner == null || !owner.equals(player.getUUID())) {
-            return;
-        }
-        HorseTracker.setLastRidden(owner, self);
-    }
-
     @Inject(
             method = "doPlayerRide",
             at = @At("HEAD"),
@@ -768,6 +755,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         self.setXRot(player.getXRot());
 
         player.startRiding(self);
+        // Moved here from a TAIL inject: this method itself can cancel doPlayerRide above, which
+        // used to skip the TAIL inject and never record the ride at all.
+        if (player.getVehicle() == self && owner != null && owner.equals(player.getUUID())) {
+            HorseTracker.setLastRidden(owner, self);
+        }
 
         player.setYRot(self.getYRot());
         player.yRotO = self.yRotO;
