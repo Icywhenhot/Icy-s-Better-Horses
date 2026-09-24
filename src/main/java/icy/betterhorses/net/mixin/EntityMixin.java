@@ -76,6 +76,7 @@ public abstract class EntityMixin {
 
         if (player.getUUID().equals(IHorseData.of(horse).bh_getOwner())) {
             HorseTracker.setLastRidden(player.getUUID(), horse);
+            HorseTracker.setActiveHorse(player.getUUID(), horse.getUUID());
         }
 
         @Nullable AttributeInstance stepHeight = horse.getAttribute(BhAttributes.STEP_HEIGHT_ADDITION);
