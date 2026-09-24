@@ -444,11 +444,16 @@ public final class IcysBetterHorses implements ModInitializer {
         UUID playerId = player.getUUID();
         AbstractHorse horse = findCallableHorse(player, playerId);
         if (horse == null) {
+            String key = HorseTracker.findAllStoredHorsesOwnedBy(playerId).isEmpty()
+                    ? "message.icys-better-horses.call.none"
+                    : "message.icys-better-horses.call.too_far";
+            player.displayClientMessage(Component.translatable(key), true);
             return;
         }
 
         IHorseData data = (IHorseData) horse;
         if (data.bh_getBond() <= 0) {
+            player.displayClientMessage(Component.translatable(HorseManagement.MSG_NO_BOND), true);
             return;
         }
 
@@ -457,10 +462,12 @@ public final class IcysBetterHorses implements ModInitializer {
             horse.teleportTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
             data.bh_setWanderCenter(target);
             data.bh_setCommand(HorseCommand.WANDER);
+            HorseManagement.announceComing(player, horse);
             return;
         }
 
         data.bh_setCommand(HorseCommand.FOLLOW);
+        HorseManagement.announceComing(player, horse);
     }
 
     private static AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {
