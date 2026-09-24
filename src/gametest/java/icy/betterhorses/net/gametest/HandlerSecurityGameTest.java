@@ -69,9 +69,8 @@ public class HandlerSecurityGameTest implements FabricGameTest {
     }
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
-    public void radialCommandTrustedStrangerStillDenied(GameTestHelper helper) {
-        // Radial commands check ownership only (IcysBetterHorses.findCommandHorse), not trust -
-        // trust is strictly a riding/gear/handling grant elsewhere. Documents that boundary.
+    public void radialCommandTrustedPlayerAllowed(GameTestHelper helper) {
+        // Trust covers commanding the owner's horses too (findCommandHorse checks bh_mayHandle).
         UUID ownerId = UUID.randomUUID();
         UUID trustedId = UUID.randomUUID();
         AbstractHorse horse = ownedHorse(helper, ownerId);
@@ -81,8 +80,8 @@ public class HandlerSecurityGameTest implements FabricGameTest {
 
         IcysBetterHorses.handleRadialCommand(trusted, horse.getId(), HorseCommand.WANDER);
 
-        helper.assertTrue(IHorseData.of(horse).bh_getCommand() == HorseCommand.FOLLOW,
-                "a trusted (non-owner) player should not be able to issue radial commands");
+        helper.assertTrue(IHorseData.of(horse).bh_getCommand() == HorseCommand.WANDER,
+                "a trusted player should be able to issue radial commands");
         helper.succeed();
     }
 

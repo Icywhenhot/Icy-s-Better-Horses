@@ -3,6 +3,7 @@ package icy.betterhorses.net.mixin;
 import icy.betterhorses.net.BhAttributes;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhCriteria;
+import icy.betterhorses.net.BhHorseInteraction;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhHorseSteering;
 import icy.betterhorses.net.BhRiderSeat;
@@ -773,8 +774,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (self.level().isClientSide() || !BhConfig.horseExclusivityEnabled()) return;
         UUID owner = this.bh_getOwner();
-        if (owner == null || owner.equals(player.getUUID())) return;
-        if (bh_ownerIsPrimaryPassenger(self, owner)) return;
+        if (owner == null || this.bh_maySaddleUp(player.getUUID())) return;
+        if (bh_ownerIsPrimaryPassenger(self, owner) || BhHorseInteraction.riderMayLeadPillion(self, this)) return;
         self.playSound(net.minecraft.sounds.SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
         if (player instanceof ServerPlayer serverPlayer) {
             serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_owner"));
@@ -798,8 +799,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         UUID owner = this.bh_getOwner();
         if (BhConfig.horseExclusivityEnabled()
                 && owner != null
-                && !owner.equals(player.getUUID())
-                && !bh_ownerIsPrimaryPassenger(self, owner)) {
+                && !this.bh_maySaddleUp(player.getUUID())
+                && !bh_ownerIsPrimaryPassenger(self, owner)
+                && !BhHorseInteraction.riderMayLeadPillion(self, this)) {
             ci.cancel();
             return;
         }
@@ -849,7 +851,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         }
 
         UUID owner = this.bh_getOwner();
-        if (owner == null || owner.equals(player.getUUID())) {
+        if (owner == null || this.bh_mayHandle(player.getUUID())) {
             return;
         }
 

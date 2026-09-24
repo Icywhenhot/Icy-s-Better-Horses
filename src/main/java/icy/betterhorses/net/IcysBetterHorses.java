@@ -522,8 +522,7 @@ public final class IcysBetterHorses implements ModInitializer {
             return null;
         }
 
-        UUID owner = ((IHorseData) horse).bh_getOwner();
-        if (owner != null && !owner.equals(player.getUUID())) {
+        if (!((IHorseData) horse).bh_mayHandle(player.getUUID())) {
             return null;
         }
         return horse;
