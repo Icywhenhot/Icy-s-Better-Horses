@@ -71,12 +71,13 @@ public class RadialMenuScreen extends Screen {
         this.segmentCount = this.commands.size();
     }
 
-    private record Entry(ResourceKey<CommandType> command, String ability, Component label) {}
+    // stats is a client-only screen, not a real command, so it gets its own segment and its own branch on click.
+    private record Entry(ResourceKey<CommandType> command, String ability, Component label, boolean stats) {}
 
     private static List<Entry> wheelFor(int horseId) {
         List<Entry> entries = new ArrayList<>();
         for (ResourceKey<CommandType> command : COMMANDS) {
-            entries.add(new Entry(command, "", CommandType.displayName(command)));
+            entries.add(new Entry(command, "", CommandType.displayName(command), false));
         }
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null
@@ -84,21 +85,22 @@ public class RadialMenuScreen extends Screen {
         IHorseData data = IHorseData.of(horse);
         if (CommandType.toggleable(data.bh_getBreedKey())) {
             entries.add(new Entry(BhContent.COMMAND_ABILITY.key(), "",
-                    CommandType.displayName(BhContent.COMMAND_ABILITY.key())));
+                    CommandType.displayName(BhContent.COMMAND_ABILITY.key()), false));
         }
         for (ResourceKey<AbilityType> ability : ((IHorseAbilityHost) horse).bh_activeAbilities()) {
             entries.add(new Entry(BhContent.COMMAND_ABILITY.key(), ability.location().toString(),
                     Component.translatable("ability." + ability.location().getNamespace() + "."
-                            + ability.location().getPath())));
+                            + ability.location().getPath()), false));
         }
         BhRegistries.commandTypeRegistry().keySet().stream().sorted(Comparator.comparing(Object::toString))
                 .forEach(id -> {
                     CommandType type = BhRegistries.commandTypeRegistry().get(id);
                     if (type.custom() && type.available(horse, mc.player)) {
                         ResourceKey<CommandType> key = ResourceKey.create(BhRegistries.COMMAND_TYPES, id);
-                        entries.add(new Entry(key, "", CommandType.displayName(key)));
+                        entries.add(new Entry(key, "", CommandType.displayName(key), false));
                     }
                 });
+        entries.add(new Entry(null, "", Component.translatable("command.icys-better-horses.horse_stats"), true));
         return entries;
     }
 
@@ -202,12 +204,28 @@ public class RadialMenuScreen extends Screen {
             double dy = mouseY - height / 2.0;
             double dist = Math.sqrt(dx * dx + dy * dy);
             if (dist >= RING_INNER && dist <= RING_OUTER) {
-                sendCommand(this.commands.get(bh_angleToIndex(Math.atan2(dy, dx))));
+                activate(this.commands.get(bh_angleToIndex(Math.atan2(dy, dx))));
             }
-            onClose();
+            // stats swaps in its own screen; closing here would replace it.
+            if (minecraft != null && minecraft.screen == this) onClose();
             return true;
         }
         return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    private void activate(Entry entry) {
+        if (entry.stats()) {
+            openStats();
+        } else {
+            sendCommand(entry);
+        }
+    }
+
+    private void openStats() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null && mc.level.getEntity(this.horseId) instanceof AbstractHorse horse) {
+            mc.setScreen(new HorseInfoScreen(horse));
+        }
     }
 
     private void sendCommand(Entry entry) {
