@@ -501,6 +501,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         output.putInt("BH_Gender", this.bh_getGender().ordinal());
         output.putInt("BH_Breed", this.bh_getBreed().ordinal());
         output.putBoolean("BH_BreedMixed", this.bh_isMixedBreed());
+        output.putInt("BH_Generation", this.bh_generation);
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
@@ -536,6 +537,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         } else {
             bh_assignBreedPreservingCoat();
         }
+        this.bh_generation = input.getInt("BH_Generation");
         this.bh_syncHorseData();
         AbstractHorse loaded = (AbstractHorse) (Object) this;
         for (HorseFeature feature : this.bh_features()) {

@@ -20,7 +20,8 @@
 			"icy.betterhorses.net.gametest.DimensionChangeGameTest",
 			"icy.betterhorses.net.gametest.AdvancementsGameTest",
 			"icy.betterhorses.net.gametest.HorseTrackerGameTest",
-			"icy.betterhorses.net.gametest.MountStateGameTest"
+			"icy.betterhorses.net.gametest.MountStateGameTest",
+			"icy.betterhorses.net.gametest.HorsePersistenceGameTest"
 		]
 	},
 	"depends": {
