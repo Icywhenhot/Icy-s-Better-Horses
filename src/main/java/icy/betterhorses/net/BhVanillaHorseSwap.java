@@ -14,12 +14,18 @@ import java.util.Optional;
 
 public final class BhVanillaHorseSwap {
 
+    // Marks vanilla foals/disowned horses that must stay vanilla while convert_tamed_horses is off.
+    public static final String KEEP_VANILLA_TAG = "icys-better-horses.keep_vanilla";
+
     private BhVanillaHorseSwap() {}
 
     public static boolean trySwap(Entity entity) {
         if (!(entity instanceof Horse horse) || horse.getClass() != Horse.class
                 || !(horse.level() instanceof ServerLevel level)
                 || !horse.isAlive() || horse.isVehicle() || horse.isPassenger()) {
+            return false;
+        }
+        if (horse.getTags().contains(KEEP_VANILLA_TAG)) {
             return false;
         }
         // Off keeps existing tamed horses vanilla, so they keep their stats.

@@ -3,6 +3,7 @@ package icy.betterhorses.net.mixin;
 import icy.betterhorses.net.BhAttributes;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhCriteria;
+import icy.betterhorses.net.BhFeature;
 import icy.betterhorses.net.BhHorseInteraction;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhHorseSteering;
@@ -1468,6 +1469,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public void bh_disown() {
         AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.getClass() == Horse.class && !BhFeature.CONVERT_TAMED_HORSES.on()) {
+            self.addTag(BhVanillaHorseSwap.KEEP_VANILLA_TAG);
+        }
         self.ejectPassengers();
         self.setOwnerUUID(null);
         self.setTamed(false);
