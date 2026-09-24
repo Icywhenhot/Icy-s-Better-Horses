@@ -16,9 +16,20 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.BlockSource;
+import net.minecraft.core.Direction;
+import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
+import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.level.block.DispenserBlock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,8 +89,32 @@ public final class IcysBetterHorses implements ModInitializer {
         ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register(this::onDatapackSync);
         CommandRegistrationCallback.EVENT.register(BhCommands::register);
         BhBreedLoader.register();
+        bh_registerSpawnEggDispensers();
 
         LOGGER.info("Icy's Better Horses initialized.");
+    }
+
+    // Vanilla's own spawn-egg dispense behaviour is registered in DispenserBlock's static init,
+    // which runs before our SpawnEggItem instances exist - so dispensers just no-op on our eggs
+    // unless we register the same behaviour for them here.
+    private static void bh_registerSpawnEggDispensers() {
+        DispenseItemBehavior behavior = new DefaultDispenseItemBehavior() {
+            @Override
+            protected ItemStack execute(BlockSource blockSource, ItemStack stack) {
+                if (!(stack.getItem() instanceof SpawnEggItem eggItem)) {
+                    return stack;
+                }
+                Direction facing = blockSource.getBlockState().getValue(DispenserBlock.FACING);
+                BlockPos pos = blockSource.getPos().relative(facing);
+                EntityType<?> type = eggItem.getType(new CompoundTag());
+                type.spawn(blockSource.getLevel(), stack, null, pos, MobSpawnType.DISPENSER, true, false);
+                stack.shrink(1);
+                return stack;
+            }
+        };
+        for (Item egg : ModItems.BREED_SPAWN_EGGS) {
+            DispenserBlock.registerBehavior(egg, behavior);
+        }
     }
 
     private void onServerStarted(MinecraftServer server) {

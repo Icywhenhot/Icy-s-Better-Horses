@@ -11,7 +11,8 @@
 			"icy.betterhorses.net.gametest.DeathAndGearLossGameTest",
 			"icy.betterhorses.net.gametest.VanillaSwapFidelityGameTest",
 			"icy.betterhorses.net.gametest.BreedingGameTest",
-			"icy.betterhorses.net.gametest.ProjectileDeflectGameTest"
+			"icy.betterhorses.net.gametest.ProjectileDeflectGameTest",
+			"icy.betterhorses.net.gametest.SpawnEggDispenserGameTest"
 		]
 	},
 	"depends": {
