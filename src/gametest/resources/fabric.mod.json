@@ -25,7 +25,10 @@
 			"icy.betterhorses.net.gametest.HorseStateRoundTripGameTest",
 			"icy.betterhorses.net.gametest.SaddleSlotLockGameTest",
 			"icy.betterhorses.net.gametest.TrustGameTest",
-			"icy.betterhorses.net.gametest.RiderSeatingGameTest"
+			"icy.betterhorses.net.gametest.RiderSeatingGameTest",
+			"icy.betterhorses.net.gametest.BhTestBatches",
+			"icy.betterhorses.net.gametest.ReturnHomeGameTest",
+			"icy.betterhorses.net.gametest.VanillaHorseSwapGameTest"
 		]
 	},
 	"depends": {
