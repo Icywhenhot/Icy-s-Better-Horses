@@ -30,6 +30,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.EntityHitResult;
 import org.slf4j.Logger;
@@ -171,6 +172,10 @@ public final class IcysBetterHorses implements ModInitializer {
 
         projectile.setDeltaMovement(projectile.getDeltaMovement().scale(-DEFLECT_BOUNCE));
         projectile.hurtMarked = true;
+        if (projectile instanceof AbstractArrow arrow) {
+            // pierce > 0 would re-find this same entity forever in AbstractArrow.tick's hit loop
+            arrow.setPierceLevel((byte) 0);
+        }
         if (!mount.level().isClientSide()) {
             BhSurge.pulse(IHorseData.of(mount), 0, 1);
         }
