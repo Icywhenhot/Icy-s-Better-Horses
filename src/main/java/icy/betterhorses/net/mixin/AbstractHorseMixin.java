@@ -135,6 +135,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private int bh_bond = 0;
     @Unique private boolean bh_nameTagBondReceived = false;
     @Unique private int bh_generation = 0;
+    @Unique private @Nullable UUID bh_identity = null;
     @Unique
     private final SimpleContainer bh_gearContainer = new SimpleContainer(GearSlot.COUNT) {
         @Override
@@ -407,6 +408,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public void bh_setGeneration(int generation) {
         this.bh_generation = generation;
+    }
+
+    @Override
+    public UUID bh_getIdentity() {
+        return bh_identity != null ? bh_identity : ((AbstractHorse) (Object) this).getUUID();
+    }
+
+    @Override
+    public void bh_setIdentity(UUID identity) {
+        this.bh_identity = identity;
     }
 
     @Override
@@ -713,6 +724,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         output.putInt("BH_BondRemainder", bh_bondRemainder);
         output.putLong("BH_RescueReadyAt", bh_rescueReadyAt);
         output.putInt("BH_Generation", bh_generation);
+        output.putUUID("BH_Identity", bh_getIdentity());
         output.putInt("BH_NameTagBondGiven", bh_nameTagBondReceived ? 1 : 0);
         if (bh_home != null) {
             bh_writeBlockPos(output, "BH_Home", bh_home);
@@ -766,6 +778,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         bh_bondRemainder = Math.floorMod(input.getInt("BH_BondRemainder"), 2);
         bh_rescueReadyAt = input.getLong("BH_RescueReadyAt");
         bh_generation = input.getInt("BH_Generation");
+        bh_identity = input.hasUUID("BH_Identity") ? input.getUUID("BH_Identity") : null;
         bh_push(BH_BOND, bh_bond);
         bh_nameTagBondReceived = input.contains("BH_NameTagBondGiven")
                 ? input.getInt("BH_NameTagBondGiven") != 0

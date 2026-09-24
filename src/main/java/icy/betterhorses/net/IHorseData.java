@@ -40,6 +40,9 @@ public interface IHorseData {
     int bh_getGeneration();
     void bh_setGeneration(int generation);
 
+    UUID bh_getIdentity();
+    void bh_setIdentity(UUID identity);
+
     boolean bh_hasReceivedNameTagBond();
     void bh_setReceivedNameTagBond(boolean received);
 

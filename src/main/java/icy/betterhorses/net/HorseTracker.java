@@ -37,9 +37,13 @@ public final class HorseTracker {
     }
 
     public static boolean isStale(AbstractHorse horse) {
+        //This should be a bit better, and prevent this problem again, chunk loading mods can still fuck it up
+        IHorseData data = IHorseData.of(horse);
+        UUID identity = data.bh_getIdentity();
+        AbstractHorse original = identity.equals(horse.getUUID()) ? null : ownedHorses.get(identity);
+        if (original != null && original != horse && original.isAlive()) return true;
         HorseTrackerState state = state();
-        return state != null
-                && IHorseData.of(horse).bh_getGeneration() < state.getGeneration(horse.getUUID());
+        return state != null && data.bh_getGeneration() < state.getGeneration(identity);
     }
 
     public static boolean discardIfStale(AbstractHorse horse) {
@@ -53,6 +57,7 @@ public final class HorseTracker {
                 horse.getUUID(), horse.level().dimension().location(),
                 IHorseData.of(horse).bh_getGeneration(), getGeneration(horse.getUUID()));
         ownedHorses.remove(horse.getUUID(), horse);
+        ownedHorses.remove(IHorseData.of(horse).bh_getIdentity(), horse);
         horse.ejectPassengers();
         horse.discard();
         return true;
@@ -60,6 +65,7 @@ public final class HorseTracker {
 
     public static void register(AbstractHorse horse) {
         if (isStale(horse) || !BhHorseKind.managed(horse)) return;
+        IHorseData.of(horse).bh_setIdentity(horse.getUUID());
         ownedHorses.put(horse.getUUID(), horse);
         HorseTrackerState state = state();
         if (state != null && IHorseData.of(horse).bh_isOwned()) {
