@@ -4,12 +4,15 @@ import icy.betterhorses.net.network.HorseRosterEntry;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
@@ -56,6 +59,12 @@ public final class HorseManagement {
     public static final String MSG_CART = MSG + "cart_attached";
     public static final String MSG_UNSAFE = MSG + "unsafe";
     public static final String MSG_TOO_FAR = MSG + "too_far";
+
+    public static void announceComing(ServerPlayer player, AbstractHorse horse) {
+        player.displayClientMessage(
+                Component.translatable("message.icys-better-horses.call.coming", horse.getDisplayName()), true);
+        horse.addEffect(new MobEffectInstance(MobEffects.GLOWING, 100, 0, false, false)); // 5s outline, no particles/icon
+    }
 
     public static List<HorseRosterEntry> buildRoster(ServerPlayer player) {
         MinecraftServer server = ((ServerLevel) player.level()).getServer();
@@ -172,6 +181,7 @@ public final class HorseManagement {
         }
         takeBackFromNpcs(respawned);
         IHorseData.of(respawned).bh_setCommand(BhContent.COMMAND_FOLLOW.key());
+        announceComing(player, respawned);
         return Outcome.OK;
     }
 
@@ -301,6 +311,7 @@ public final class HorseManagement {
         }
         if (horseId == null) {
             IcysBetterHorses.LOGGER.debug("[whistle] no stored horse found for {}", playerId);
+            player.displayClientMessage(Component.translatable("message.icys-better-horses.call.none"), true);
             return;
         }
         announce(player, whistle(player, horseId));
@@ -320,6 +331,7 @@ public final class HorseManagement {
                 && !HorsePlacement.teleport(horse, player.blockPosition())) return Outcome.fail(MSG_UNSAFE);
         takeBackFromNpcs(horse);
         data.bh_setCommand(BhContent.COMMAND_FOLLOW.key());
+        announceComing(player, horse);
         return Outcome.OK;
     }
 
