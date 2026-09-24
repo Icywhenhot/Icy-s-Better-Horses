@@ -771,6 +771,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         self.setYHeadRot(player.getYHeadRot());
         self.setXRot(player.getXRot());
 
+        // HEAD-cancelling doPlayerRide skips vanilla's own clears of these on mount
+        self.setEating(false);
+        self.setStanding(false);
         player.startRiding(self);
         // Moved here from a TAIL inject: this method itself can cancel doPlayerRide above, which
         // used to skip the TAIL inject and never record the ride at all.
