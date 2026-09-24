@@ -30,7 +30,7 @@ public class RiderSeatingGameTest implements FabricGameTest {
             helper.assertTrue(horse.getPassengers().size() == 2, "expected two riders to have mounted");
             double flatSeparation = rider1.position().distanceTo(rider2.position());
             helper.assertTrue(flatSeparation > 0.3D,
-                    "expected riders offset apart while flat (finding 8) - flatSeparation=" + flatSeparation);
+                    "expected riders offset apart while flat - flatSeparation=" + flatSeparation);
             double seatY = horse.getY() + horse.getPassengersRidingOffset() + BhRiderSeat.seatLift(horse)
                     - BhRiderSeat.seatDrop(rider1);
             helper.assertTrue(Math.abs(rider1.getY() - seatY) < 1.0E-6,
