@@ -9,6 +9,8 @@ import icy.betterhorses.net.client.HorseRosterScreen;
 import icy.betterhorses.net.client.HorseStabilizerSoundController;
 import icy.betterhorses.net.client.RadialMenuScreen;
 import icy.betterhorses.net.client.render.BhModelLayers;
+import icy.betterhorses.net.client.render.BhNamedCoats;
+import icy.betterhorses.net.client.render.BhTackTextures;
 import icy.betterhorses.net.client.render.FriesianHorseRenderer;
 import icy.betterhorses.net.client.render.PercheronHorseRenderer;
 import icy.betterhorses.net.client.render.BelgianHorseRenderer;
@@ -130,6 +132,8 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         MenuScreens.register(ModMenus.CART_CHEST, CartChestScreen::new);
 
         BhModelLayers.register();
+        BhTackTextures.register();
+        BhNamedCoats.register();
         EntityRendererRegistry.register(ModEntities.ICELANDIC_HORSE, context ->
                 new IcelandicHorseRenderer(context,
                         BhModelLayers.ICELANDIC_HORSE,

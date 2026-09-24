@@ -49,7 +49,7 @@ public class MediumHorseRenderer<T extends MediumHorse>
 
         state.onGround = entity.onGround();
         state.isPassenger = entity.isPassenger();
-        state.coatTexture = entity.bhCoatSet().texture(entity.bhCoat(), entity.isBaby());
+        state.coatTexture = BhNamedCoats.coat(entity);
         state.hurt = entity.hurtTime > 0 ? entity.hurtTime / 10.0F : 0.0F;
 
         state.bodyYaw = entity.getYRot();

@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -68,10 +69,14 @@ public class BhTackLayer<S extends BhHorseRenderState, M extends BhHorseModel>
                 },
                 state -> {
                     ItemStack stack = state.bodyArmorItem;
-                    if (stack == null || !stack.is(Items.LEATHER_HORSE_ARMOR)) {
+                    if (stack == null) {
                         return -1;
                     }
-                    return 0xFF000000 | DyedItemColor.getOrDefault(stack, UNDYED_LEATHER);
+                    if (stack.is(Items.LEATHER_HORSE_ARMOR)) {
+                        return 0xFF000000 | DyedItemColor.getOrDefault(stack, UNDYED_LEATHER);
+                    }
+                    DyedItemColor dye = stack.get(DataComponents.DYED_COLOR);
+                    return dye == null ? -1 : 0xFF000000 | dye.rgb();
                 });
     }
 
