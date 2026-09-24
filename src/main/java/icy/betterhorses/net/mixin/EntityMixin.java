@@ -1,10 +1,12 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseBackup;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.HorseTracker;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.entity.BhBreedHorse;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.feature.breed.Ironclad;
 import net.minecraft.core.component.DataComponents;
@@ -25,6 +27,8 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -37,6 +41,14 @@ import net.minecraft.world.item.equipment.Equippable;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
+
+    @Inject(method = "saveAsPassenger", at = @At("RETURN"))
+    private void bh_saveAsPlainHorse(ValueOutput output, CallbackInfoReturnable<Boolean> cir) {
+        if (cir.getReturnValueZ() && (Object) this instanceof BhBreedHorse horse
+                && output instanceof TagValueOutput tagged) {
+            BhHorseBackup.write(horse, tagged.buildResult());
+        }
+    }
 
     @Inject(method = "setRemoved", at = @At("HEAD"))
     private void bh_removeEffects(Entity.RemovalReason reason, CallbackInfo ci) {

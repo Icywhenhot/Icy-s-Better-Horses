@@ -65,6 +65,14 @@ public abstract class MobCartPassengerMixin {
         return vehicle instanceof AbstractHorse horse ? IHorseData.of(horse).bh_getCartEntity() : null;
     }
 
+    @Inject(method = "isSunBurnTick", at = @At("HEAD"), cancellable = true)
+    private void bh_shadedInWagon(CallbackInfoReturnable<Boolean> cir) {
+        HorseCartEntity cart = this.bh_carryingCart();
+        if (cart != null && cart.size().isLarge()) {
+            cir.setReturnValue(false);
+        }
+    }
+
     @Inject(method = "updateControlFlags", at = @At("TAIL"))
     private void bh_dropJumpFlagInCart(CallbackInfo ci) {
         if (this.bh_isCartCargo()) {

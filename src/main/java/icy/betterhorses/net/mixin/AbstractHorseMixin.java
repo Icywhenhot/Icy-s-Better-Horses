@@ -138,6 +138,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private static final EntityDataAccessor<Integer> BH_GEAR_FLAGS_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
     @Unique
+    private static final EntityDataAccessor<Float> BH_STABILIZER_CHARGE_SYNCED =
+            SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.FLOAT);
+    @Unique
     private static final EntityDataAccessor<Boolean> BH_CART_SYNCED =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
     @Unique
@@ -696,6 +699,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         builder.define(BH_BOND_SYNCED, 0);
         builder.define(BH_STABILIZER_STATE_SYNCED, HorseStabilizerState.CLOSED.ordinal());
         builder.define(BH_GEAR_FLAGS_SYNCED, 0);
+        builder.define(BH_STABILIZER_CHARGE_SYNCED, 0.0F);
         builder.define(BH_CART_SYNCED, false);
         builder.define(BH_CART_CHEST_SYNCED, false);
         builder.define(BH_CART_LARGE_SYNCED, false);
@@ -1589,6 +1593,23 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         }
         this.entityData.set(BH_ENDER_CHEST_SYNCED,
                 this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal()).is(Items.ENDER_CHEST));
+        this.bh_syncStabilizerCharge();
+    }
+
+    @Override
+    public float bh_getStabilizerCharge() {
+        return this.entityData.get(BH_STABILIZER_CHARGE_SYNCED);
+    }
+
+    @Override
+    public void bh_syncStabilizerCharge() {
+        ItemStack harness = this.bh_gearContainer.getItem(GearSlot.STABILIZER.ordinal());
+        float charge = 0.0F;
+        if (harness.is(ModItems.HORSE_STABILIZER)) {
+            int usable = harness.getMaxDamage() - 1;
+            charge = usable <= 0 ? 0.0F : Math.max(0, usable - harness.getDamageValue()) / (float) usable;
+        }
+        this.entityData.set(BH_STABILIZER_CHARGE_SYNCED, charge);
     }
 
     @Override

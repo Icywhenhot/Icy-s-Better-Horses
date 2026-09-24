@@ -10,6 +10,7 @@ import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractMountInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.EffectsInInventory;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -65,6 +66,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final int BH_STATS_LINE_SPACING = 10;
     @Unique private static final int BH_TEXT_COLOR = 0xFF404040;
     @Unique private static final float BH_LOCK_FLASH_ALPHA = 0.65F;
+
+    @Unique private @Nullable EffectsInInventory bh_effects;
 
     protected HorseInventoryScreenMixin(AbstractMountInventoryMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -149,6 +152,24 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         }
 
         this.bh_drawGearPanel(gfx);
+    }
+
+    @Inject(method = "extractRenderState", at = @At("HEAD"))
+    private void bh_drawEffects(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+        this.bh_effects().extractRenderState(gfx, mouseX, mouseY);
+    }
+
+    @Override
+    public boolean showsActiveEffects() {
+        return this.bh_effects().canSeeEffects();
+    }
+
+    @Unique
+    private EffectsInInventory bh_effects() {
+        if (this.bh_effects == null) {
+            this.bh_effects = new EffectsInInventory(this);
+        }
+        return this.bh_effects;
     }
 
     @Inject(method = "extractRenderState", at = @At("TAIL"))

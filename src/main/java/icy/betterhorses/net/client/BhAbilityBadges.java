@@ -1,6 +1,9 @@
 package icy.betterhorses.net.client;
 
 import icy.betterhorses.net.BhSurge;
+import icy.betterhorses.net.HorseStabilizerState;
+import icy.betterhorses.net.inventory.GearSlot;
+import net.minecraft.util.Mth;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.registry.BhRegistries;
@@ -89,6 +92,8 @@ public final class BhAbilityBadges {
     private static final int HOTBAR_GAP = 4;
     private static final int OFFHAND_WIDTH = 29;
     private static final int HOTBAR_HEIGHT = 22;
+    private static final long HARNESS_LINGER = 30L;
+    private static long harnessSeen = Long.MIN_VALUE / 2;
 
     private static final Identifier[] BASH = new Identifier[BASH_FRAMES + 1];
 
@@ -114,6 +119,7 @@ public final class BhAbilityBadges {
     public static void render(GuiGraphicsExtractor gfx, Font font, int screenW, int screenH,
                               AbstractHorse horse) {
         IHorseData data = IHorseData.of(horse);
+        harness(gfx, screenW, screenH, horse, data);
         ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
         if (breedKey == null) {
             return;
@@ -276,6 +282,35 @@ public final class BhAbilityBadges {
     private static boolean present(Identifier id) {
         return found.computeIfAbsent(id.toString(), k -> Minecraft.getInstance()
                 .getResourceManager().getResource(id).isPresent());
+    }
+
+    private static void harness(GuiGraphicsExtractor gfx, int screenW, int screenH, AbstractHorse horse, IHorseData data) {
+        if (!data.bh_hasGear(GearSlot.STABILIZER) || data.bh_hasCartGear()) {
+            return;
+        }
+        long now = horse.level().getGameTime();
+        HorseStabilizerState state = data.bh_getStabilizerState();
+        if (state == HorseStabilizerState.OPEN || state == HorseStabilizerState.HALF_OPEN) {
+            harnessSeen = now;
+        }
+        if (now - harnessSeen > HARNESS_LINGER || now < harnessSeen) {
+            return;
+        }
+
+        boolean lefty = Minecraft.getInstance().options.mainHand().get() == HumanoidArm.LEFT;
+        int x = screenW / 2 - HOTBAR_HALF - HOTBAR_GAP - BASH_SIZE - (lefty ? 0 : OFFHAND_WIDTH);
+        int y = screenH - HOTBAR_HEIGHT + (HOTBAR_HEIGHT - BASH_SIZE) / 2;
+        gfx.item(new ItemStack(ModItems.HORSE_STABILIZER), x, y);
+
+        float charge = data.bh_getStabilizerCharge();
+        int barX = x - 5;
+        gfx.fill(barX - 1, y - 1, barX + 4, y + BASH_SIZE + 1, 0xFF000000);
+        boolean blink = charge < 0.2F && (System.currentTimeMillis() / 250L) % 2L == 0L;
+        int filled = Math.round(BASH_SIZE * charge);
+        if (filled > 0 && !blink) {
+            gfx.fill(barX, y + BASH_SIZE - filled, barX + 3, y + BASH_SIZE,
+                    0xFF000000 | Mth.hsvToRgb(charge / 3.0F, 1.0F, 1.0F));
+        }
     }
 
     private static void shield(GuiGraphicsExtractor gfx, int screenW, int screenH, int charge) {

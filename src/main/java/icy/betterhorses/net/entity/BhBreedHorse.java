@@ -1,5 +1,6 @@
 package icy.betterhorses.net.entity;
 
+import icy.betterhorses.net.BhHorseBackup;
 import net.minecraft.core.Holder;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -116,6 +117,7 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
     @Override
     public void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
+        BhHorseBackup.forget(this);
         int saved = input.getIntOr(COAT_TAG, -1);
         this.entityData.set(BH_COAT, saved < 0 ? bhCoatSet().roll(this.random) : bhCoatSet().clamp(saved));
     }

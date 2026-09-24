@@ -34,7 +34,7 @@ public final class ModItems {
             new Item(itemProperties("canister")));
 
     public static final Item HORSE_STABILIZER = register("horse_stabilizer_gear",
-            new Item(itemProperties("horse_stabilizer_gear").stacksTo(1)));
+            new Item(itemProperties("horse_stabilizer_gear").durability(2400).repairable(CANISTER)));
 
     public static final Item HORSE_CART = register("horse_cart_gear",
             new HorseCartItem(itemProperties("horse_cart_gear").stacksTo(1)));

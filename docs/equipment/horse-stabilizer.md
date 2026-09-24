@@ -42,6 +42,21 @@ The gliding descent isn't just a damage check, it's an actual change in how fast
 
 ---
 
+## Durability and refuelling
+
+The stabilizer holds about **2 minutes** of gliding (2400 durability, one point per tick). It only wears down while it's **half open** or **fully open**, so riding around with it fitted costs nothing.
+
+While it's deployed, a **fuel gauge** appears beside the left end of your hotbar: the stabilizer icon with a bar that runs from green to red and blinks once it drops below 20%. It stays up for a moment after the stabilizer closes.
+
+When it runs dry it **doesn't break**. It stays on the horse, but won't deploy until you refuel it.
+
+To refuel, put it in an **Anvil** with a [Canister](canister). One canister restores **80%** of its durability.
+
+{: .warning }
+> The anvil and a canister are the **only** way to repair it. Combining two stabilizers on an anvil, a grindstone, or in a crafting grid doesn't work.
+
+---
+
 ## Fitting it
 
 Two ways:
@@ -66,6 +81,7 @@ They solve different problems and stack well when you can only bring one:
 | Descent speed | Unchanged | Slowed dramatically |
 | Cost | 7 copper, 1 leather | 18 copper, 4 gold, 1 leather |
 | Slot | Hooves | Stabilizer (shared with cart) |
+| Wear | None | About 2 minutes of gliding, refuelled with canisters |
 | Also does | Powder snow, Frost Walker | Nothing else |
 
 Hooves are everyday tack. The stabilizer is for routes where a mistake means a hundred-block drop.
@@ -80,6 +96,6 @@ Stabilizers can be switched off server-side with the `stabilizer` config toggle.
 
 ## Related pages
 
-- [Canister](canister): the component you need two of
+- [Canister](canister): the component you need two of, and its fuel
 - [Horse Cart](horse-cart): the alternative use for this slot
 - [Recipes](../recipes)

@@ -59,7 +59,7 @@ One-shot auto-heal below half health. Wool can be any colour. → [Details](equi
 
 {% include craft.html id="canister" %}
 
-Component only. You need **two** per stabilizer. → [Details](equipment/canister)
+You need **two** per stabilizer, and one refuels a spent stabilizer on an anvil. → [Details](equipment/canister)
 
 ---
 
@@ -67,7 +67,7 @@ Component only. You need **two** per stabilizer. → [Details](equipment/caniste
 
 {% include craft.html id="horse_stabilizer_gear" %}
 
-Slows long falls and can cancel the damage. → [Details](equipment/horse-stabilizer)
+Slows long falls and can cancel the damage. Wears out after about 2 minutes of gliding. → [Details](equipment/horse-stabilizer)
 
 ---
 

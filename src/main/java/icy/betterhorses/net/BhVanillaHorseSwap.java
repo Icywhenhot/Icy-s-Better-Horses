@@ -27,20 +27,24 @@ public final class BhVanillaHorseSwap {
             return false;
         }
 
-        ResourceKey<BreedType> breedKey = IHorseData.of(horse).bh_getBreedKey();
-        if (breedKey == null) {
-            breedKey = pickForBiome(level, horse);
+        CompoundTag backup = BhHorseBackup.find(horse);
+        EntityType<?> restored = backup == null ? null : BhHorseBackup.typeOf(backup);
+        ResourceKey<BreedType> breedKey = null;
+        EntityType<?> entityType = restored;
+        if (entityType == null) {
+            breedKey = IHorseData.of(horse).bh_getBreedKey();
             if (breedKey == null) {
+                breedKey = pickForBiome(level, horse);
+                if (breedKey == null) {
+                    return false;
+                }
+            }
+            entityType = ModEntities.forBreed(breedKey);
+            if (entityType == null) {
                 return false;
             }
         }
-
-        EntityType<? extends BhBreedHorse> entityType = ModEntities.forBreed(breedKey);
-        if (entityType == null) {
-            return false;
-        }
-        BhBreedHorse swap = entityType.create(level, EntitySpawnReason.CONVERSION);
-        if (swap == null) {
+        if (!(entityType.create(level, EntitySpawnReason.CONVERSION) instanceof BhBreedHorse swap)) {
             return false;
         }
 
@@ -48,11 +52,17 @@ public final class BhVanillaHorseSwap {
                 net.minecraft.util.ProblemReporter.DISCARDING, horse.registryAccess());
         horse.saveWithoutId(out);
         var tag = out.buildResult();
-        tag.putString("BH_BreedId", breedKey.identifier().toString());
+        if (restored != null) {
+            BhHorseBackup.restoreInto(tag, backup);
+        } else {
+            tag.putString("BH_BreedId", breedKey.identifier().toString());
+        }
         swap.load(net.minecraft.world.level.storage.TagValueInput.create(
                 net.minecraft.util.ProblemReporter.DISCARDING, horse.registryAccess(), tag));
-        swap.bhConvertFrom(horse);
-        swap.setHealth(Math.min(horse.getHealth(), swap.getMaxHealth()));
+        if (restored == null) {
+            swap.bhConvertFrom(horse);
+            swap.setHealth(Math.min(horse.getHealth(), swap.getMaxHealth()));
+        }
         horse.remove(Entity.RemovalReason.CHANGED_DIMENSION);
         if (!level.addFreshEntity(swap)) {
             ((icy.betterhorses.net.mixin.EntityAccessor) horse).bh_unsetRemoved();
