@@ -324,6 +324,7 @@ public final class IcysBetterHorses implements ModInitializer {
                 horseId, action.ordinal(), outcome.ok(), outcome.messageKey()));
         if (outcome.ok()) {
             if (action == HorseManageAction.WHISTLE) {
+                HorseTracker.setActiveHorse(player.getUUID(), horseId);
                 playWhistle(player);
             }
             sendRoster(player);
@@ -442,82 +443,19 @@ public final class IcysBetterHorses implements ModInitializer {
         }
 
         UUID playerId = player.getUUID();
-        AbstractHorse horse = findCallableHorse(player, playerId);
-        if (horse == null) {
-            AbstractHorse unbonded = findNearestOwnedHorse(player, playerId);
-            if (unbonded != null && unbonded.distanceToSqr(player) <= 32.0 * 32.0) {
-                player.displayClientMessage(Component.translatable(
-                        "message.icys-better-horses.call.no_bond", unbonded.getDisplayName()), true);
-                return;
-            }
-            String key = HorseTracker.findAllStoredHorsesOwnedBy(playerId).isEmpty()
-                    ? "message.icys-better-horses.call.none"
-                    : "message.icys-better-horses.call.too_far";
-            player.displayClientMessage(Component.translatable(key), true);
+        UUID id = HorseTracker.getActiveHorseId(playerId);
+        if (id == null) {
+            id = HorseTracker.getLastRiddenId(playerId);
+        }
+        if (id == null) {
+            player.displayClientMessage(Component.translatable("message.icys-better-horses.call.none"), true);
             return;
         }
 
-        IHorseData data = (IHorseData) horse;
-
-        BlockPos target = player.blockPosition();
-        if (BhFeature.HORSE_TELEPORT.on() && horse.distanceToSqr(player) > 400.0) {
-            horse.teleportTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
-            data.bh_setWanderCenter(target);
-            data.bh_setCommand(HorseCommand.WANDER);
-            HorseManagement.announceComing(player, horse);
-            return;
+        HorseManagement.Outcome outcome = HorseManagement.whistle(player, id);
+        if (!outcome.ok()) {
+            player.displayClientMessage(Component.translatable(outcome.messageKey()), true);
         }
-
-        data.bh_setCommand(HorseCommand.FOLLOW);
-        HorseManagement.announceComing(player, horse);
-    }
-
-    private static AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {
-        AbstractHorse lastRidden = HorseTracker.getLastRidden(playerId);
-        if (lastRidden != null
-                && playerId.equals(((IHorseData) lastRidden).bh_getOwner())
-                && lastRidden.level() == player.level()
-                && lastRidden.isAlive()
-                && ((IHorseData) lastRidden).bh_getBond() > 0) {
-            return lastRidden;
-        }
-
-        AbstractHorse nearest = null;
-        double nearestDistSq = Double.MAX_VALUE;
-        for (AbstractHorse candidate : HorseTracker.getAll()) {
-            if (!candidate.isAlive() || candidate.level() != player.level()) {
-                continue;
-            }
-            IHorseData data = (IHorseData) candidate;
-            if (!playerId.equals(data.bh_getOwner()) || data.bh_getBond() <= 0) {
-                continue;
-            }
-            double distSq = candidate.distanceToSqr(player);
-            if (distSq < nearestDistSq) {
-                nearestDistSq = distSq;
-                nearest = candidate;
-            }
-        }
-        return nearest;
-    }
-
-    private static AbstractHorse findNearestOwnedHorse(ServerPlayer player, UUID playerId) {
-        AbstractHorse nearest = null;
-        double nearestDistSq = Double.MAX_VALUE;
-        for (AbstractHorse candidate : HorseTracker.getAll()) {
-            if (!candidate.isAlive() || candidate.level() != player.level()) {
-                continue;
-            }
-            if (!playerId.equals(((IHorseData) candidate).bh_getOwner())) {
-                continue;
-            }
-            double distSq = candidate.distanceToSqr(player);
-            if (distSq < nearestDistSq) {
-                nearestDistSq = distSq;
-                nearest = candidate;
-            }
-        }
-        return nearest;
     }
 
     private static void growHorseBond(MinecraftServer server, int amount) {

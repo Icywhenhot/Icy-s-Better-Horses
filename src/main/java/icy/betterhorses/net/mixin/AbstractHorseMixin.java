@@ -821,6 +821,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (player.getVehicle() == self && owner != null && owner.equals(player.getUUID())
                 && BhHorseKind.managed(self)) {
             HorseTracker.setLastRidden(owner, self);
+            HorseTracker.setActiveHorse(owner, self.getUUID());
         }
 
         player.setYRot(self.getYRot());
