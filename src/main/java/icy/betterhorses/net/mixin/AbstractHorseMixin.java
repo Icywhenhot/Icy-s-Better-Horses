@@ -1,6 +1,7 @@
 package icy.betterhorses.net.mixin;
 
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import icy.betterhorses.net.BhAskToRide;
 import icy.betterhorses.net.BhAttributes;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhFeature;
@@ -1341,7 +1342,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (BhHorseInteraction.riderMayLeadPillion(self, this)) return;
         self.playSound(SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
         if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_owner"));
+            BhAskToRide.handleRefusal(serverPlayer, this.bh_getOwner());
         }
         if (player.getVehicle() == self) {
             player.stopRiding();
