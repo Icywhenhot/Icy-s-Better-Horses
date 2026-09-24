@@ -447,6 +447,12 @@ public final class IcysBetterHorses implements ModInitializer {
         if (id == null) {
             id = HorseTracker.getLastRiddenId(playerId);
         }
+        if (id != null && !HorseTracker.findAllStoredHorsesOwnedBy(playerId).contains(id)) {
+            id = null;
+        }
+        if (id == null) {
+            id = nearestOwnedBondedHorseId(player);
+        }
         if (id == null) {
             player.displayClientMessage(Component.translatable("message.icys-better-horses.call.none"), true);
             return;
@@ -456,6 +462,24 @@ public final class IcysBetterHorses implements ModInitializer {
         if (!outcome.ok()) {
             player.displayClientMessage(Component.translatable(outcome.messageKey()), true);
         }
+    }
+
+    // active/last-ridden horse gone: fall back to the nearest loaded, owned, bonded horse
+    private static UUID nearestOwnedBondedHorseId(ServerPlayer player) {
+        UUID playerId = player.getUUID();
+        AbstractHorse nearest = null;
+        double nearestDistSq = Double.MAX_VALUE;
+        for (AbstractHorse candidate : HorseTracker.getAll()) {
+            IHorseData data = (IHorseData) candidate;
+            if (!playerId.equals(data.bh_getOwner()) || data.bh_getBond() <= 0) continue;
+            if (candidate.level() != player.level()) continue;
+            double distSq = candidate.distanceToSqr(player);
+            if (distSq < nearestDistSq) {
+                nearestDistSq = distSq;
+                nearest = candidate;
+            }
+        }
+        return nearest == null ? null : nearest.getUUID();
     }
 
     private static void growHorseBond(MinecraftServer server, int amount) {

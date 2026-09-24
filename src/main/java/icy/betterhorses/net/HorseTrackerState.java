@@ -144,6 +144,8 @@ public class HorseTrackerState extends SavedData {
     public void forgetHorse(UUID horseId) {
         boolean removed = lastKnownPositions.remove(horseId) != null;
         removed |= snapshots.remove(horseId) != null;
+        removed |= activeHorseByPlayer.values().removeIf(horseId::equals);
+        removed |= lastRiddenByPlayer.values().removeIf(horseId::equals);
         if (removed) {
             setDirty();
         }
