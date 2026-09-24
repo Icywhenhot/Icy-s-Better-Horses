@@ -53,6 +53,7 @@ public final class HorseManagement {
     public static final String MSG_FAILED = MSG + "failed";
     public static final String MSG_CART = MSG + "cart_attached";
     public static final String MSG_UNSAFE = MSG + "unsafe";
+    public static final String MSG_TOO_FAR = MSG + "too_far";
 
     public static List<HorseRosterEntry> buildRoster(ServerPlayer player) {
         MinecraftServer server = ((ServerLevel) player.level()).getServer();
@@ -154,6 +155,8 @@ public final class HorseManagement {
             return summonToPlayer(loaded, player);
         }
 
+        if (!BhFeature.HORSE_TELEPORT.on()) return Outcome.fail(MSG_TOO_FAR);
+
         HorseTrackerState.KnownPosition seen = HorseTracker.getLastKnownPosition(horseId);
         IcysBetterHorses.LOGGER.info("[whistle] {} calls horse {}: no loaded body, last seen in {} at {}, respawning from snapshot",
                 player.getName().getString(), horseId,
@@ -185,6 +188,10 @@ public final class HorseManagement {
             }
 
             keepHomeChunkLoaded((ServerLevel) loaded.level(), home);
+            if (!BhFeature.HORSE_TELEPORT.on()) {
+                IHorseData.of(loaded).bh_setCommand(BhContent.COMMAND_RETURN_HOME.key());
+                return Outcome.OK;
+            }
             if (!HorsePlacement.teleport(loaded, home)) return Outcome.fail(MSG_UNSAFE);
             IHorseData.of(loaded).bh_setCommand(BhContent.COMMAND_STAY.key());
             return Outcome.OK;
@@ -204,6 +211,8 @@ public final class HorseManagement {
 
         ServerLevel homeLevel = server.getLevel(homeDim);
         if (homeLevel == null) return Outcome.fail(MSG_FAILED);
+
+        if (!BhFeature.HORSE_TELEPORT.on()) return Outcome.fail(MSG_TOO_FAR);
 
         keepHomeChunkLoaded(homeLevel, home);
         AbstractHorse respawned = respawnFromSnapshot(
@@ -304,7 +313,7 @@ public final class HorseManagement {
         IHorseData data = IHorseData.of(horse);
         if (data.bh_hasCartGear()) return Outcome.fail(MSG_CART);
         if (data.bh_getBond() <= 0) return Outcome.fail(MSG_NO_BOND);
-        if (horse.distanceToSqr(player) > CALL_TELEPORT_DIST_SQ
+        if (BhFeature.HORSE_TELEPORT.on() && horse.distanceToSqr(player) > CALL_TELEPORT_DIST_SQ
                 && !HorsePlacement.teleport(horse, player.blockPosition())) return Outcome.fail(MSG_UNSAFE);
         data.bh_setCommand(BhContent.COMMAND_FOLLOW.key());
         return Outcome.OK;

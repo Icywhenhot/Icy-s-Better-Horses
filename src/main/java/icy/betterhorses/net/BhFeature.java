@@ -23,7 +23,8 @@ public enum BhFeature {
     HORSE_DEFEND("horse_defend", true),
     HORSE_SPOOK("horse_spook", true),
     HORSE_PVP("horse_pvp", true),
-    CONVERT_TAMED_HORSES("convert_tamed_horses");
+    CONVERT_TAMED_HORSES("convert_tamed_horses"),
+    HORSE_TELEPORT("horse_teleport");
 
     private static final Map<String, BhFeature> BY_KEY = new HashMap<>();
 
