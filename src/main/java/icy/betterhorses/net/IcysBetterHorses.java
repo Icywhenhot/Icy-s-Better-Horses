@@ -59,6 +59,7 @@ public final class IcysBetterHorses implements ModInitializer {
     private static final int DISENGAGE_TICKS = 60;
     private static final double CART_SIZE_REACH = 6.0D;
     private static final double DEFLECT_BOUNCE = 0.5D;
+    private static final float REAR_NEIGH_CHANCE = 1.0F / 3.0F;
 
     private final List<AbstractHorse> staleHorses = new ArrayList<>();
     private final List<AbstractHorse> pendingReleases = new ArrayList<>();
@@ -358,6 +359,11 @@ public final class IcysBetterHorses implements ModInitializer {
             return;
         }
         horse.standIfPossible();
+        if (horse.isStanding() && horse.getRandom().nextFloat() < REAR_NEIGH_CHANCE) {
+            float pitch = 0.9F + horse.getRandom().nextFloat() * 0.2F;
+            horse.level().playSound(null, horse.getX(), horse.getY(), horse.getZ(),
+                    ModSounds.HORSE_NEIGH, horse.getSoundSource(), 1.0F, pitch);
+        }
     }
 
     public static void handleCartSize(ServerPlayer player, int targetId) {
