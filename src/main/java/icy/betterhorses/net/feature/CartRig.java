@@ -50,6 +50,7 @@ public final class CartRig implements HorseFeature {
 
         if (!wantsCart) {
             data.bh_dropCartChest();
+            data.bh_dropCartPlough();
         }
 
         if (wantsCart && !hasCart) {

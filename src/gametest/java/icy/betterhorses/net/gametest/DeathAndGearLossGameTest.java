@@ -101,8 +101,38 @@ public class DeathAndGearLossGameTest implements FabricGameTest {
         });
     }
 
-    // removingCartGearDropsChestAndPloughContents lives in PR2: it needs the cart-plough drop
-    // wiring from the cart persistence fix (bh_dropCartPlough() has no caller in the port).
+    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 40)
+    public void removingCartGearDropsChestAndPloughContents(GameTestHelper helper) {
+        helper.setBlock(2, 1, 2, Blocks.STONE);
+        AbstractHorse horse = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
+        IHorseData data = IHorseData.of(horse);
+        data.bh_setBreed(HorseBreed.CLYDESDALE);
+        data.bh_getGearContainer().setItem(GearSlot.STABILIZER.ordinal(), new ItemStack(ModItems.HORSE_CART));
+        helper.assertTrue(data.bh_hasCartGear(), "setup: cart gear should be equipped");
+        data.bh_setCartChest(true);
+        data.bh_getCartChestContainer().setItem(0, new ItemStack(Items.IRON_INGOT, 4));
+        data.bh_setCartPlough(new ItemStack(Items.IRON_HOE));
+
+        // Remove the cart item the way a player taking it out of the gear slot would.
+        data.bh_getGearContainer().setItem(GearSlot.STABILIZER.ordinal(), ItemStack.EMPTY);
+        helper.assertFalse(data.bh_hasCartGear(), "setup: cart gear should now be unequipped");
+
+        helper.runAfterDelay(5, () -> {
+            helper.assertFalse(data.bh_hasCartChest(), "cart chest flag should clear once cart gear is removed");
+            helper.assertTrue(data.bh_getCartChestContainer().isEmpty(), "cart chest container should be emptied");
+            helper.assertFalse(data.bh_hasCartPlough(), "cart plough flag should clear once cart gear is removed");
+
+            Map<Item, Integer> found = countDrops(helper, horse);
+            helper.assertTrue(found.getOrDefault(Items.IRON_INGOT, 0) == 4,
+                    "expected the cart chest's 4 iron ingots to drop, found "
+                            + found.getOrDefault(Items.IRON_INGOT, 0));
+            helper.assertTrue(found.getOrDefault(Items.IRON_HOE, 0) == 1,
+                    "expected the cart plough to drop, found " + found.getOrDefault(Items.IRON_HOE, 0));
+            helper.assertTrue(found.getOrDefault(ModItems.HORSE_CART, 0) == 0,
+                    "the cart item itself was emptied directly (not dropped), should not also appear on the ground");
+            helper.succeed();
+        });
+    }
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void removingChestGearWithItemsInsideDropsContents(GameTestHelper helper) {

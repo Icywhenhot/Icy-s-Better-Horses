@@ -334,6 +334,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public void bh_setHome(@Nullable BlockPos pos) {
         this.bh_home = pos;
+        this.bh_homeDim = pos == null ? null : ((AbstractHorse) (Object) this).level().dimension();
     }
 
     @Override
@@ -494,7 +495,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         output.putInt("BH_Bond", this.bh_getBond());
         output.putInt("BH_NameTagBondGiven", bh_nameTagBondReceived ? 1 : 0);
         output.putInt("BH_BondRemainder", bh_bondRemainder);
+        output.putInt("BH_AbilityPaused", bh_abilityPaused ? 1 : 0);
+        output.putLong("BH_RescueReadyAt", bh_rescueReadyAt);
         bh_writeBlockPos(output, "BH_Home", bh_home);
+        if (bh_homeDim != null) {
+            output.putString("BH_HomeDim", bh_homeDim.location().toString());
+        }
         bh_writeBlockPos(output, "BH_WanderCenter", bh_wanderCenter);
         output.put("BH_Gear", bh_writeContainer(bh_gearContainer));
         output.put("BH_Chest", bh_writeContainer(bh_chestContainer));
@@ -502,6 +508,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         output.putInt("BH_Breed", this.bh_getBreed().ordinal());
         output.putBoolean("BH_BreedMixed", this.bh_isMixedBreed());
         output.putInt("BH_Generation", this.bh_generation);
+        output.putBoolean("BH_CartChestOn", bh_hasCartChest());
+        output.put("BH_CartChest", bh_writeContainer(bh_getCartChestContainer()));
+        if (!this.bh_cartPlow.isEmpty()) {
+            output.put("BH_CartPlow", this.bh_cartPlow.save(new CompoundTag()));
+        }
+        output.putBoolean("BH_CartLarge", this.bh_hasLargeCart());
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
@@ -516,10 +528,18 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         this.bh_syncState().bond = Math.max(0, Math.min(100, input.contains("BH_Bond") ? input.getInt("BH_Bond") : 0));
         bh_nameTagBondReceived = (input.contains("BH_NameTagBondGiven") ? input.getInt("BH_NameTagBondGiven") : (this.bh_syncState().bond > 0 ? 1 : 0)) != 0;
         bh_bondRemainder = input.getInt("BH_BondRemainder");
+        bh_abilityPaused = input.getInt("BH_AbilityPaused") != 0;
+        bh_rescueReadyAt = input.getLong("BH_RescueReadyAt");
         bh_home = bh_readBlockPos(input, "BH_Home");
         bh_wanderCenter = bh_readBlockPos(input, "BH_WanderCenter");
         if (bh_home == null) bh_home = bh_readLegacyBlockPos(input, "BH_Home");
         if (bh_wanderCenter == null) bh_wanderCenter = bh_readLegacyBlockPos(input, "BH_WanderCenter");
+        bh_homeDim = input.contains("BH_HomeDim", Tag.TAG_STRING)
+                ? ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, ResourceLocation.tryParse(input.getString("BH_HomeDim")))
+                : null;
+        if (bh_home != null && bh_homeDim == null) {
+            bh_homeDim = ((AbstractHorse) (Object) this).level().dimension();
+        }
         bh_applyBondAttributes();
         bh_readContainer(input, "BH_Gear", bh_gearContainer);
         bh_readContainer(input, "BH_Chest", bh_chestContainer);
@@ -537,8 +557,23 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         } else {
             bh_assignBreedPreservingCoat();
         }
+        // LEGACY READ: horses saved before this fix have BH_CartChest as a boolean, with items in
+        // BH_CartChestItems. The current format is BH_CartChestOn (boolean) + BH_CartChest (the
+        // item list), matching upstream. Always write the current format.
+        if (input.contains("BH_CartChest", Tag.TAG_LIST)) {
+            bh_setCartChest(input.getBoolean("BH_CartChestOn"));
+            bh_readContainer(input, "BH_CartChest", bh_getCartChestContainer());
+        } else {
+            bh_setCartChest(input.getBoolean("BH_CartChest"));
+            bh_readContainer(input, "BH_CartChestItems", bh_getCartChestContainer());
+        }
+        bh_setCartPlough(input.contains("BH_CartPlow", Tag.TAG_COMPOUND)
+                ? ItemStack.of(input.getCompound("BH_CartPlow"))
+                : ItemStack.EMPTY);
         this.bh_generation = input.getInt("BH_Generation");
         this.bh_syncHorseData();
+        // After the sync, so the draft-breed check sees the loaded breed.
+        bh_setLargeCart(input.getBoolean("BH_CartLarge"));
         AbstractHorse loaded = (AbstractHorse) (Object) this;
         for (HorseFeature feature : this.bh_features()) {
             feature.onLoad(loaded, this);
