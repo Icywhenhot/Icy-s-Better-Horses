@@ -444,6 +444,12 @@ public final class IcysBetterHorses implements ModInitializer {
         UUID playerId = player.getUUID();
         AbstractHorse horse = findCallableHorse(player, playerId);
         if (horse == null) {
+            AbstractHorse unbonded = findNearestOwnedHorse(player, playerId);
+            if (unbonded != null && unbonded.distanceToSqr(player) <= 32.0 * 32.0) {
+                player.displayClientMessage(Component.translatable(
+                        "message.icys-better-horses.call.no_bond", unbonded.getDisplayName()), true);
+                return;
+            }
             String key = HorseTracker.findAllStoredHorsesOwnedBy(playerId).isEmpty()
                     ? "message.icys-better-horses.call.none"
                     : "message.icys-better-horses.call.too_far";
@@ -452,10 +458,6 @@ public final class IcysBetterHorses implements ModInitializer {
         }
 
         IHorseData data = (IHorseData) horse;
-        if (data.bh_getBond() <= 0) {
-            player.displayClientMessage(Component.translatable(HorseManagement.MSG_NO_BOND), true);
-            return;
-        }
 
         BlockPos target = player.blockPosition();
         if (BhFeature.HORSE_TELEPORT.on() && horse.distanceToSqr(player) > 400.0) {
@@ -475,7 +477,8 @@ public final class IcysBetterHorses implements ModInitializer {
         if (lastRidden != null
                 && playerId.equals(((IHorseData) lastRidden).bh_getOwner())
                 && lastRidden.level() == player.level()
-                && lastRidden.isAlive()) {
+                && lastRidden.isAlive()
+                && ((IHorseData) lastRidden).bh_getBond() > 0) {
             return lastRidden;
         }
 
@@ -485,8 +488,27 @@ public final class IcysBetterHorses implements ModInitializer {
             if (!candidate.isAlive() || candidate.level() != player.level()) {
                 continue;
             }
-            UUID owner = ((IHorseData) candidate).bh_getOwner();
-            if (!playerId.equals(owner)) {
+            IHorseData data = (IHorseData) candidate;
+            if (!playerId.equals(data.bh_getOwner()) || data.bh_getBond() <= 0) {
+                continue;
+            }
+            double distSq = candidate.distanceToSqr(player);
+            if (distSq < nearestDistSq) {
+                nearestDistSq = distSq;
+                nearest = candidate;
+            }
+        }
+        return nearest;
+    }
+
+    private static AbstractHorse findNearestOwnedHorse(ServerPlayer player, UUID playerId) {
+        AbstractHorse nearest = null;
+        double nearestDistSq = Double.MAX_VALUE;
+        for (AbstractHorse candidate : HorseTracker.getAll()) {
+            if (!candidate.isAlive() || candidate.level() != player.level()) {
+                continue;
+            }
+            if (!playerId.equals(((IHorseData) candidate).bh_getOwner())) {
                 continue;
             }
             double distSq = candidate.distanceToSqr(player);
