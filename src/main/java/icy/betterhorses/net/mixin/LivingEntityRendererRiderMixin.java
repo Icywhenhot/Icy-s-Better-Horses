@@ -19,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayDeque;
 import com.mojang.math.Axis;
-import icy.betterhorses.net.BhRiderSeat;
 import icy.betterhorses.net.client.render.IBhEquineStabilizerState;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Unique;

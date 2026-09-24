@@ -1,26 +1,34 @@
 package icy.betterhorses.net.client;
 
-import icy.betterhorses.net.HorseCommand;
+import icy.betterhorses.net.IHorseAbilityHost;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.registry.AbilityType;
+import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.network.RadialCommandPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.CommandType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class RadialMenuScreen extends Screen {
 
-    private static final HorseCommand[] COMMANDS = {
-            HorseCommand.FOLLOW,
-            HorseCommand.WANDER,
-            HorseCommand.STAY,
-            HorseCommand.RETURN_HOME,
-            HorseCommand.SET_HOME,
+    @SuppressWarnings("unchecked")
+    private static final ResourceKey<CommandType>[] COMMANDS = new ResourceKey[] {
+            BhContent.COMMAND_FOLLOW.key(),
+            BhContent.COMMAND_WANDER.key(),
+            BhContent.COMMAND_STAY.key(),
+            BhContent.COMMAND_RETURN_HOME.key(),
+            BhContent.COMMAND_SET_HOME.key(),
     };
     private static final int RING_INNER = 44;
     private static final int RING_OUTER = 110;
@@ -54,25 +62,45 @@ public class RadialMenuScreen extends Screen {
     private final BhAnim.Lift hover = new BhAnim.Lift();
     private long bhOpenMs;
 
-    private final HorseCommand[] commands;
+    private final List<Entry> commands;
     private final int segmentCount;
 
     public RadialMenuScreen(int horseId) {
         super(Component.translatable("screen.icys-better-horses.radial"));
         this.horseId = horseId;
         this.commands = wheelFor(horseId);
-        this.segmentCount = this.commands.length;
+        this.segmentCount = this.commands.size();
     }
 
-    private static HorseCommand[] wheelFor(int horseId) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || !(mc.level.getEntity(horseId) instanceof AbstractHorse horse)
-                || !HorseCommand.toggleable(IHorseData.of(horse).bh_getBreed())) {
-            return COMMANDS;
+    private record Entry(ResourceKey<CommandType> command, String ability, Component label) {}
+
+    private static List<Entry> wheelFor(int horseId) {
+        List<Entry> entries = new ArrayList<>();
+        for (ResourceKey<CommandType> command : COMMANDS) {
+            entries.add(new Entry(command, "", CommandType.displayName(command)));
         }
-        HorseCommand[] wide = Arrays.copyOf(COMMANDS, COMMANDS.length + 1);
-        wide[COMMANDS.length] = HorseCommand.ABILITY;
-        return wide;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || mc.player == null
+                || !(mc.level.getEntity(horseId) instanceof AbstractHorse horse)) return entries;
+        IHorseData data = IHorseData.of(horse);
+        if (CommandType.toggleable(data.bh_getBreedKey())) {
+            entries.add(new Entry(BhContent.COMMAND_ABILITY.key(), "",
+                    CommandType.displayName(BhContent.COMMAND_ABILITY.key())));
+        }
+        for (ResourceKey<AbilityType> ability : ((IHorseAbilityHost) horse).bh_activeAbilities()) {
+            entries.add(new Entry(BhContent.COMMAND_ABILITY.key(), ability.identifier().toString(),
+                    Component.translatable("ability." + ability.identifier().getNamespace() + "."
+                            + ability.identifier().getPath())));
+        }
+        BhRegistries.commandTypeRegistry().keySet().stream().sorted(Comparator.comparing(Object::toString))
+                .forEach(id -> {
+                    CommandType type = BhRegistries.commandTypeRegistry().getValue(id);
+                    if (type.custom() && type.available(horse, mc.player)) {
+                        ResourceKey<CommandType> key = ResourceKey.create(BhRegistries.COMMAND_TYPES, id);
+                        entries.add(new Entry(key, "", CommandType.displayName(key)));
+                    }
+                });
+        return entries;
     }
 
     @Override
@@ -141,7 +169,7 @@ public class RadialMenuScreen extends Screen {
             float labelRadius = LABEL_RADIUS + HOVER_PUSH * 0.5F * hoverAmount[i];
             int lx = cx + Math.round((float) Math.cos(labelAngle) * labelRadius);
             int ly = cy + Math.round((float) Math.sin(labelAngle) * labelRadius);
-            String text = Component.translatable(commandKey(this.commands[i])).getString();
+            String text = this.commands.get(i).label().getString();
             int textColor = bh_mixColor(LABEL_COLOR, LABEL_HOVER_COLOR, hoverAmount[i]);
             gfx.centeredText(font, text, lx, ly - font.lineHeight / 2, textColor);
         }
@@ -175,7 +203,7 @@ public class RadialMenuScreen extends Screen {
             double dy = event.y() - height / 2.0;
             double dist = Math.sqrt(dx * dx + dy * dy);
             if (dist >= RING_INNER && dist <= RING_OUTER) {
-                sendCommand(this.commands[bh_angleToIndex(Math.atan2(dy, dx))]);
+                sendCommand(this.commands.get(bh_angleToIndex(Math.atan2(dy, dx))));
             }
             onClose();
             return true;
@@ -183,18 +211,8 @@ public class RadialMenuScreen extends Screen {
         return super.mouseReleased(event);
     }
 
-    private void sendCommand(HorseCommand command) {
-        ClientPlayNetworking.send(new RadialCommandPayload(this.horseId, command.ordinal()));
-    }
-
-    private String commandKey(HorseCommand command) {
-        return switch (command) {
-            case FOLLOW -> "command.icys-better-horses.follow";
-            case WANDER -> "command.icys-better-horses.wander";
-            case STAY -> "command.icys-better-horses.stay";
-            case RETURN_HOME -> "command.icys-better-horses.return_home";
-            case SET_HOME -> "command.icys-better-horses.set_home";
-            case ABILITY -> "command.icys-better-horses.ability";
-        };
+    private void sendCommand(Entry entry) {
+        ClientPlayNetworking.send(new RadialCommandPayload(this.horseId,
+                entry.command().identifier().toString(), entry.ability()));
     }
 }

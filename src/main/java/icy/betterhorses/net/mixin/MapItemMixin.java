@@ -1,11 +1,12 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhHorseTraits;
-import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -28,16 +29,18 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Objects;
+
 @Mixin(MapItem.class)
 public abstract class MapItemMixin {
 
     @ModifyConstant(method = "update", constant = @Constant(intValue = 128, ordinal = 0))
     private int bh_widenTrailBlazerScan(int scanWidth, Level level, Entity entity, MapItemSavedData data) {
-        if (!(entity.getVehicle() instanceof AbstractHorse horse)) {
+        if (!(entity.getVehicle() instanceof AbstractHorse horse) || !BhHorseKind.managed(horse)) {
             return scanWidth;
         }
         IHorseData d = IHorseData.of(horse);
-        if (d.bh_getBreed() != HorseBreed.AMERICAN_PAINT || !BhAbility.PAINT_SCAN.on()) {
+        if (!Objects.equals(d.bh_getBreedKey(), BhContent.AMERICAN_PAINT.key()) || !BhAbility.PAINT_SCAN.on()) {
             return scanWidth;
         }
         return scanWidth * (2 + BhHorseTraits.bondTier(d.bh_getBond()));
@@ -46,11 +49,12 @@ public abstract class MapItemMixin {
     @Inject(method = "inventoryTick", at = @At("TAIL"))
     private void bh_markPassedStructures(ItemStack stack, ServerLevel level, Entity holder,
                                          EquipmentSlot slot, CallbackInfo ci) {
-        if (level.getGameTime() % 20L != 0L || !(holder.getVehicle() instanceof AbstractHorse horse)) {
+        if (level.getGameTime() % 20L != 0L || !(holder.getVehicle() instanceof AbstractHorse horse)
+                || !BhHorseKind.managed(horse)) {
             return;
         }
         IHorseData d = IHorseData.of(horse);
-        if (d.bh_getBreed() != HorseBreed.AMERICAN_PAINT
+        if (!Objects.equals(d.bh_getBreedKey(), BhContent.AMERICAN_PAINT.key())
                 || !BhAbility.PAINT_STRUCTURES.on()
                 || BhHorseTraits.bondTier(d.bh_getBond()) < 2) {
             return;

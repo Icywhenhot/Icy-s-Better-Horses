@@ -1,8 +1,8 @@
 package icy.betterhorses.net.goal;
 
-import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModTicketTypes;
+import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
@@ -42,10 +42,10 @@ public class HorseReturnHomeGoal extends Goal {
     public boolean canUse() {
         if (horse.isVehicle()) return false;
         IHorseData data = IHorseData.of(horse);
-        if (!data.bh_isOwned() || data.bh_getCommand() != HorseCommand.RETURN_HOME) return false;
+        if (!data.bh_isOwned() || !data.bh_getCommand().equals(BhContent.COMMAND_RETURN_HOME.key())) return false;
         BlockPos home = data.bh_getHome();
         if (home == null) {
-            data.bh_setCommand(HorseCommand.STAY);
+            data.bh_setCommand(BhContent.COMMAND_STAY.key());
             return false;
         }
         if (!homeIsHere(data)) return false;
@@ -55,11 +55,11 @@ public class HorseReturnHomeGoal extends Goal {
     @Override
     public boolean canContinueToUse() {
         IHorseData data = IHorseData.of(horse);
-        if (data.bh_getCommand() != HorseCommand.RETURN_HOME) return false;
+        if (!data.bh_getCommand().equals(BhContent.COMMAND_RETURN_HOME.key())) return false;
         BlockPos home = data.bh_getHome();
         if (home == null || !homeIsHere(data)) return false;
         if (horse.distanceToSqr(Vec3.atBottomCenterOf(home)) <= ARRIVED_DIST_SQ) {
-            data.bh_setCommand(HorseCommand.STAY);
+            data.bh_setCommand(BhContent.COMMAND_STAY.key());
             return false;
         }
         return true;
@@ -157,6 +157,6 @@ public class HorseReturnHomeGoal extends Goal {
             serverLevel.getChunkSource().addTicketWithRadius(ModTicketTypes.HORSE_TASK, ChunkPos.containing(home), 1);
         }
         if (!icy.betterhorses.net.HorsePlacement.teleport(horse, home)) return;
-        IHorseData.of(horse).bh_setCommand(HorseCommand.STAY);
+        IHorseData.of(horse).bh_setCommand(BhContent.COMMAND_STAY.key());
     }
 }

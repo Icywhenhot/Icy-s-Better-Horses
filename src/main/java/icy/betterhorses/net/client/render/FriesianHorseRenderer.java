@@ -1,7 +1,7 @@
 package icy.betterhorses.net.client.render;
 
 import icy.betterhorses.net.IHorseData;
-import icy.betterhorses.net.HorseCommand;
+import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.entity.FriesianHorse;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.AbstractHorseRenderer;
@@ -52,7 +52,7 @@ public class FriesianHorseRenderer
 
         state.onGround = entity.onGround();
         state.isPassenger = entity.isPassenger();
-        state.coatTexture = entity.bhCoats().texture(entity.bhCoat(), entity.isBaby());
+        state.coatTexture = entity.bhCoatSet().texture(entity.bhCoat(), entity.isBaby());
         state.hurt = entity.hurtTime > 0 ? entity.hurtTime / 10.0F : 0.0F;
 
         state.bodyYaw = entity.getYRot();
@@ -63,7 +63,7 @@ public class FriesianHorseRenderer
         state.phaseOffset = (entity.getId() * 0.6180339887F % 1.0F) * Mth.TWO_PI;
 
         state.commandedToStay =
-                IHorseData.of(entity).bh_getCommand() == HorseCommand.STAY;
+                IHorseData.of(entity).bh_getCommand().equals(BhContent.COMMAND_STAY.key());
 
         state.entityId = entity.getId();
 

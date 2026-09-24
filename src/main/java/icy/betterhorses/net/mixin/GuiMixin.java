@@ -1,13 +1,17 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
+import icy.betterhorses.net.registry.BreedType;
+import icy.betterhorses.net.registry.GenderType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import org.spongepowered.asm.mixin.Final;
@@ -42,7 +46,8 @@ public abstract class GuiMixin {
         if (!this.bh_isHoldingUpgradedSaddle()) {
             return;
         }
-        if (!(this.minecraft.crosshairPickEntity instanceof AbstractHorse horse)) {
+        if (!BhHorseKind.managed(this.minecraft.crosshairPickEntity)
+                || !(this.minecraft.crosshairPickEntity instanceof AbstractHorse horse)) {
             return;
         }
 
@@ -52,9 +57,13 @@ public abstract class GuiMixin {
                 Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D));
 
         IHorseData data = IHorseData.of(horse);
+        ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
+        Component breedName = breedKey != null
+                ? BreedType.displayName(breedKey, data.bh_isMixedBreed())
+                : data.bh_getBreed().displayName(data.bh_isMixedBreed());
         Component title = Component.translatable("hud.icys-better-horses.horse_stats");
-        Component genderLine = Component.translatable("hud.icys-better-horses.gender", data.bh_getGender().displayName());
-        Component breedLine = Component.translatable("hud.icys-better-horses.breed", data.bh_getBreed().displayName(data.bh_isMixedBreed()));
+        Component genderLine = Component.translatable("hud.icys-better-horses.gender", GenderType.displayName(data.bh_getGender()));
+        Component breedLine = Component.translatable("hud.icys-better-horses.breed", breedName);
         Component speedLine = Component.translatable("hud.icys-better-horses.speed", speedValue);
         Component jumpLine = Component.translatable("hud.icys-better-horses.jump", jumpValue);
 
@@ -90,7 +99,8 @@ public abstract class GuiMixin {
                 || this.minecraft.gui.screen() != null) {
             return;
         }
-        if (!(this.minecraft.player.getVehicle() instanceof AbstractHorse horse)) {
+        if (!BhHorseKind.managed(this.minecraft.player.getVehicle())
+                || !(this.minecraft.player.getVehicle() instanceof AbstractHorse horse)) {
             return;
         }
         int scaledWidth = this.minecraft.getWindow().getGuiScaledWidth();

@@ -1,7 +1,7 @@
 package icy.betterhorses.net.client.render;
 
 import icy.betterhorses.net.BhGears;
-import icy.betterhorses.net.HorseCommand;
+import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.IcelandicHorse;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -53,7 +53,7 @@ public class IcelandicHorseRenderer
 
         state.onGround = entity.onGround();
         state.isPassenger = entity.isPassenger();
-        state.coatTexture = entity.bhCoats().texture(entity.bhCoat(), entity.isBaby());
+        state.coatTexture = entity.bhCoatSet().texture(entity.bhCoat(), entity.isBaby());
         state.hurt = entity.hurtTime > 0 ? entity.hurtTime / 10.0F : 0.0F;
 
         state.bodyYaw = entity.getYRot();
@@ -67,13 +67,13 @@ public class IcelandicHorseRenderer
 
         IHorseData data = IHorseData.of(entity);
         int gear = data.bh_getGaitGear();
-        boolean following = data.bh_isOwned() && data.bh_getCommand() == HorseCommand.FOLLOW;
+        boolean following = data.bh_isOwned() && data.bh_getCommand().equals(BhContent.COMMAND_FOLLOW.key());
         state.toltRequest = state.isRidden
                 ? (gear == BhGears.TOLT_GEAR ? 1.0F : 0.0F)
                 : (following ? 1.0F : 0.0F);
 
         state.commandedToStay =
-                IHorseData.of(entity).bh_getCommand() == HorseCommand.STAY;
+                IHorseData.of(entity).bh_getCommand().equals(BhContent.COMMAND_STAY.key());
 
         state.entityId = entity.getId();
 

@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.client.HorseAutodriveController;
 import icy.betterhorses.net.client.HorseGearController;
 import icy.betterhorses.net.client.HorseFreeLookController;
@@ -33,7 +34,8 @@ public abstract class KeyboardInputMixin extends ClientInput {
 
         if (client.level != null && player != null) {
             Entity vehicle = player.getControlledVehicle();
-            if (vehicle instanceof AbstractHorse horse && horse.getControllingPassenger() == player) {
+            if (vehicle instanceof AbstractHorse horse && BhHorseKind.managed(horse)
+                    && horse.getControllingPassenger() == player) {
                 mounted = true;
                 horseId = horse.getId();
                 riddenHorse = horse;

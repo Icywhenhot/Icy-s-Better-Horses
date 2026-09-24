@@ -11,7 +11,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import icy.betterhorses.net.BreedArchetype;
+import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.registry.ArchetypeType;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.BreedCoatSet;
+import icy.betterhorses.net.registry.BreedType;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -35,9 +41,17 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
         super(type, level);
     }
 
-    public abstract BhBreedCoats bhCoats();
+    public BreedCoatSet bhCoatSet() {
+        ResourceKey<BreedType> key = bhFixedBreed();
+        BreedType type = BhRegistries.breedTypeRegistry().getValue(key.identifier());
+        if (type == null) {
+            throw new IllegalStateException("No BreedType registered for " + key.identifier()
+                    + " - is its DeferredRegister<BreedType> targeting BhRegistries.BREED_TYPES actually registered?");
+        }
+        return type.coats();
+    }
 
-    public static AttributeSupplier.Builder bhAttributes(BreedArchetype arch) {
+    public static AttributeSupplier.Builder bhAttributes(ArchetypeType arch) {
         return AbstractHorse.createBaseHorseAttributes()
                 .add(Attributes.MAX_HEALTH, arch.midHealth())
                 .add(Attributes.MOVEMENT_SPEED, arch.midSpeed())
@@ -45,12 +59,12 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
                 .add(Attributes.STEP_HEIGHT, arch.stepHeight());
     }
 
-    private BreedArchetype bhArchetype() {
-        return bhFixedBreed().archetype();
+    private ArchetypeType bhArchetype() {
+        return BhBreedData.of(bhFixedBreed()).archetype();
     }
 
     private void bhRollStats() {
-        BreedArchetype arch = bhArchetype();
+        ArchetypeType arch = bhArchetype();
         setBase(Attributes.MAX_HEALTH, arch.rollHealth(this.random));
         setBase(Attributes.MOVEMENT_SPEED, arch.rollSpeed(this.random));
         setBase(Attributes.JUMP_STRENGTH, arch.rollJump(this.random));
@@ -58,7 +72,7 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
     }
 
     private void bhInheritStats(BhBreedHorse a, BhBreedHorse b) {
-        BreedArchetype arch = bhArchetype();
+        ArchetypeType arch = bhArchetype();
         setBase(Attributes.MAX_HEALTH,
                 arch.clampHealth(mix(a, b, Attributes.MAX_HEALTH, arch.rollHealth(this.random))));
         setBase(Attributes.MOVEMENT_SPEED,
@@ -86,11 +100,11 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
     }
 
     public int bhCoat() {
-        return bhCoats().clamp(this.entityData.get(BH_COAT));
+        return bhCoatSet().clamp(this.entityData.get(BH_COAT));
     }
 
     public void bhSetCoat(int index) {
-        this.entityData.set(BH_COAT, bhCoats().clamp(index));
+        this.entityData.set(BH_COAT, bhCoatSet().clamp(index));
     }
 
     @Override
@@ -103,7 +117,7 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
     public void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
         int saved = input.getIntOr(COAT_TAG, -1);
-        this.entityData.set(BH_COAT, saved < 0 ? bhCoats().roll(this.random) : bhCoats().clamp(saved));
+        this.entityData.set(BH_COAT, saved < 0 ? bhCoatSet().roll(this.random) : bhCoatSet().clamp(saved));
     }
 
     @Override
@@ -114,13 +128,13 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
             SpawnGroupData groupData) {
         SpawnGroupData result =
                 super.finalizeSpawn(level, difficulty, reason, groupData);
-        bhSetCoat(bhCoats().roll(this.random));
+        bhSetCoat(bhCoatSet().roll(this.random));
         bhRollStats();
         return result;
     }
 
     public void bhConvertFrom(AbstractHorse from) {
-        BreedArchetype arch = bhArchetype();
+        ArchetypeType arch = bhArchetype();
         setBase(Attributes.MAX_HEALTH,
                 arch.clampHealth(from.getAttributeBaseValue(Attributes.MAX_HEALTH)));
         setBase(Attributes.MOVEMENT_SPEED,
@@ -128,12 +142,12 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
         setBase(Attributes.JUMP_STRENGTH,
                 arch.clampJump(from.getAttributeBaseValue(Attributes.JUMP_STRENGTH)));
         setHealth(getMaxHealth());
-        bhSetCoat(bhCoats().roll(this.random));
+        bhSetCoat(bhCoatSet().roll(this.random));
     }
 
     protected void bhInheritCoat(int coatA, int coatB) {
         if (this.random.nextBoolean()) {
-            int fresh = bhCoats().rollOther(this.random, coatA, coatB);
+            int fresh = bhCoatSet().rollOther(this.random, coatA, coatB);
             if (fresh >= 0) {
                 bhSetCoat(fresh);
                 return;
@@ -154,7 +168,7 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
             if (!(created instanceof BhBreedHorse foal)) {
                 return null;
             }
-            ((IHorseData) foal).bh_setBreed(source.bhFixedBreed());
+            ((IHorseData) foal).bh_setBreedKey(source.bhFixedBreed());
             ((IHorseData) foal).bh_setMixedBreed(!sameBreed);
             if (sameBreed) {
                 foal.bhInheritCoat(this.bhCoat(), other.bhCoat());

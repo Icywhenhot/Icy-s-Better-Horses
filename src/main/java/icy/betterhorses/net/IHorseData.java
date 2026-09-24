@@ -9,6 +9,10 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import icy.betterhorses.net.inventory.GearSlot;
+import icy.betterhorses.net.registry.BreedType;
+import icy.betterhorses.net.registry.CommandType;
+import icy.betterhorses.net.registry.GenderType;
+import icy.betterhorses.net.registry.SpeciesType;
 
 import java.util.UUID;
 import icy.betterhorses.net.entity.CartSize;
@@ -20,8 +24,8 @@ public interface IHorseData {
     @Nullable UUID bh_getOwner();
     void bh_setOwner(@Nullable UUID owner);
 
-    HorseCommand bh_getCommand();
-    void bh_setCommand(HorseCommand command);
+    ResourceKey<CommandType> bh_getCommand();
+    void bh_setCommand(ResourceKey<CommandType> command);
 
     @Nullable BlockPos bh_getHome();
     void bh_setHome(@Nullable BlockPos pos);
@@ -39,11 +43,16 @@ public interface IHorseData {
     boolean bh_hasReceivedNameTagBond();
     void bh_setReceivedNameTagBond(boolean received);
 
-    HorseGender bh_getGender();
-    void bh_setGender(HorseGender gender);
+    ResourceKey<GenderType> bh_getGender();
+    void bh_setGender(ResourceKey<GenderType> gender);
 
     HorseBreed bh_getBreed();
     void bh_setBreed(HorseBreed breed);
+
+    @Nullable ResourceKey<BreedType> bh_getBreedKey();
+    void bh_setBreedKey(@Nullable ResourceKey<BreedType> breed);
+    ResourceKey<SpeciesType> bh_getSpecies();
+    void bh_setSpecies(ResourceKey<SpeciesType> species);
 
     boolean bh_isMixedBreed();
     void bh_setMixedBreed(boolean mixed);
@@ -84,7 +93,7 @@ public interface IHorseData {
         if (bh_hasEnderChestGear()) {
             return 3;
         }
-        return bh_getBreed().chestRows(BhHorseTraits.bondTier(bh_getBond()));
+        return BhBreedData.of(bh_getBreedKey()).rowsAt(BhHorseTraits.bondTier(bh_getBond()));
     }
 
     int bh_getGaitGear();
@@ -98,6 +107,9 @@ public interface IHorseData {
 
     int bh_getSurge();
     void bh_setSurge(int packed);
+
+    int bh_getAbilitySurge(int slot);
+    void bh_setAbilitySurge(int slot, int packed);
 
     int bh_getPerkSurge();
     void bh_setPerkSurge(int packed);
@@ -137,7 +149,8 @@ public interface IHorseData {
     }
 
     default boolean bh_mayUseLargeCart() {
-        return CartSize.forArchetype(bh_getBreed().archetype()).isLarge();
+        ResourceKey<BreedType> breedKey = bh_getBreedKey();
+        return breedKey != null && BhBreedData.of(breedKey).archetype().allowsLargeCart();
     }
 
     boolean bh_hasLargeCart();

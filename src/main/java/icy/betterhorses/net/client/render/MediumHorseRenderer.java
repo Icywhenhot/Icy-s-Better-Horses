@@ -1,7 +1,7 @@
 package icy.betterhorses.net.client.render;
 
 import icy.betterhorses.net.IHorseData;
-import icy.betterhorses.net.HorseCommand;
+import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.entity.MediumHorse;
 import net.minecraft.client.renderer.entity.AbstractHorseRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -49,7 +49,7 @@ public class MediumHorseRenderer<T extends MediumHorse>
 
         state.onGround = entity.onGround();
         state.isPassenger = entity.isPassenger();
-        state.coatTexture = entity.bhCoats().texture(entity.bhCoat(), entity.isBaby());
+        state.coatTexture = entity.bhCoatSet().texture(entity.bhCoat(), entity.isBaby());
         state.hurt = entity.hurtTime > 0 ? entity.hurtTime / 10.0F : 0.0F;
 
         state.bodyYaw = entity.getYRot();
@@ -62,7 +62,7 @@ public class MediumHorseRenderer<T extends MediumHorse>
         state.riddenHeadDrop = 25.0F * Mth.DEG_TO_RAD;
 
         state.commandedToStay =
-                IHorseData.of(entity).bh_getCommand() == HorseCommand.STAY;
+                IHorseData.of(entity).bh_getCommand().equals(BhContent.COMMAND_STAY.key());
 
         state.entityId = entity.getId();
 

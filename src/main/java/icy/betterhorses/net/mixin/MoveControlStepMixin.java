@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseKind;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.control.JumpControl;
 import net.minecraft.world.entity.ai.control.MoveControl;
@@ -27,7 +28,8 @@ public abstract class MoveControlStepMixin {
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/entity/ai/control/JumpControl;jump()V"))
     private void bh_walkUpInsteadOfJumping(JumpControl control) {
-        if (!(this.mob instanceof AbstractHorse horse) || !bh_canStepOver(horse)) {
+        if (!(this.mob instanceof AbstractHorse horse) || !BhHorseKind.managed(horse)
+                || !bh_canStepOver(horse)) {
             control.jump();
         }
     }

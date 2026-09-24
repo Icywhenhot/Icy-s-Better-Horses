@@ -1,10 +1,12 @@
 package icy.betterhorses.net.client;
 
-import icy.betterhorses.net.BreedArchetype;
 import icy.betterhorses.net.HorseManageAction;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.network.HorseManagePayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import icy.betterhorses.net.registry.ArchetypeType;
+import icy.betterhorses.net.registry.BreedType;
+import icy.betterhorses.net.registry.GenderType;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
@@ -19,6 +21,7 @@ import net.minecraft.world.entity.animal.equine.Variant;
 import icy.betterhorses.net.entity.BhBreedHorse;
 import java.util.Locale;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import org.lwjgl.glfw.GLFW;
 
 public class HorseInfoScreen extends Screen {
@@ -44,10 +47,10 @@ public class HorseInfoScreen extends Screen {
 
     private static final double BOND_MAX_MULTIPLIER = 1.0D + 5 * 0.15D;
     private static final double SPEED_MAX =
-            BreedArchetype.topSpeed() * BOND_MAX_MULTIPLIER * SPEED_DISPLAY_FACTOR;
+            ArchetypeType.topSpeed() * BOND_MAX_MULTIPLIER * SPEED_DISPLAY_FACTOR;
     private static final double JUMP_MAX =
-            Math.max(0.0D, BreedArchetype.topJump() * BOND_MAX_MULTIPLIER * 6.0D - 1.0D);
-    private static final double HEALTH_MAX = BreedArchetype.topHealth();
+            Math.max(0.0D, ArchetypeType.topJump() * BOND_MAX_MULTIPLIER * 6.0D - 1.0D);
+    private static final double HEALTH_MAX = ArchetypeType.topHealth();
 
     private static final int DISOWN_BTN_WIDTH = 110;
     private static final int DISOWN_BTN_HEIGHT = 24;
@@ -156,12 +159,16 @@ public class HorseInfoScreen extends Screen {
 
         drawLabel(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.gender"),
-                data.bh_getGender().displayName());
+                GenderType.displayName(data.bh_getGender()));
         y += ROW_HEIGHT;
 
+        ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
+        Component breedName = breedKey != null
+                ? BreedType.displayName(breedKey, data.bh_isMixedBreed())
+                : data.bh_getBreed().displayName(data.bh_isMixedBreed());
         drawLabel(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.breed"),
-                data.bh_getBreed().displayName(data.bh_isMixedBreed()));
+                breedName);
         y += ROW_HEIGHT;
 
         drawLabel(gfx, font, left + PADDING, y,
@@ -251,8 +258,12 @@ public class HorseInfoScreen extends Screen {
         BhAnim.enter(pose, BhAnim.easeOutBack(t), cx + CONFIRM_WIDTH / 2f, cy + CONFIRM_HEIGHT / 2f, 6f, 0.9f);
         BhScreenDraw.panelTexture(gfx, cx, cy, CONFIRM_WIDTH, CONFIRM_HEIGHT, BhScreenDraw.SCREEN_CONFIRM_TEXTURE, t);
 
-        Component name = horse.hasCustomName() ? horse.getCustomName() : IHorseData.of(horse).bh_getBreed()
-                .displayName(IHorseData.of(horse).bh_isMixedBreed());
+        IHorseData confirmData = IHorseData.of(horse);
+        ResourceKey<BreedType> confirmBreedKey = confirmData.bh_getBreedKey();
+        Component name = horse.hasCustomName() ? horse.getCustomName()
+                : confirmBreedKey != null
+                        ? BreedType.displayName(confirmBreedKey, confirmData.bh_isMixedBreed())
+                        : confirmData.bh_getBreed().displayName(confirmData.bh_isMixedBreed());
         gfx.centeredText(font, Component.translatable("screen.icys-better-horses.manage.confirm_title"),
                 cx + CONFIRM_WIDTH / 2, cy + 12, BhScreenDraw.TEXT);
         gfx.centeredText(font, Component.translatable("screen.icys-better-horses.manage.confirm_body", name),
@@ -351,7 +362,7 @@ public class HorseInfoScreen extends Screen {
 
     private static Component coatLabel(AbstractHorse horse) {
         if (horse instanceof BhBreedHorse breedHorse) {
-            return breedHorse.bhCoats().displayName(breedHorse.bhCoat());
+            return breedHorse.bhCoatSet().displayName(breedHorse.bhCoat());
         }
         if (!(horse instanceof Horse h)) {
             return Component.translatable("coat.icys-better-horses.none");

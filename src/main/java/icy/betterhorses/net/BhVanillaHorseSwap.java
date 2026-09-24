@@ -1,13 +1,17 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.entity.BhBreedHorse;
-import net.minecraft.core.Holder;
+import icy.betterhorses.net.registry.BhBreeds;
+import icy.betterhorses.net.registry.BreedType;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.level.biome.Biome;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,12 +27,19 @@ public final class BhVanillaHorseSwap {
             return false;
         }
 
-        HorseBreed breed = IHorseData.of(horse).bh_getBreed();
-        if (!breed.isRealBreed()) {
-            breed = pickForBiome(level, horse);
+        ResourceKey<BreedType> breedKey = IHorseData.of(horse).bh_getBreedKey();
+        if (breedKey == null) {
+            breedKey = pickForBiome(level, horse);
+            if (breedKey == null) {
+                return false;
+            }
         }
 
-        BhBreedHorse swap = ModEntities.forBreed(breed).create(level, EntitySpawnReason.CONVERSION);
+        EntityType<? extends BhBreedHorse> entityType = ModEntities.forBreed(breedKey);
+        if (entityType == null) {
+            return false;
+        }
+        BhBreedHorse swap = entityType.create(level, EntitySpawnReason.CONVERSION);
         if (swap == null) {
             return false;
         }
@@ -37,7 +48,7 @@ public final class BhVanillaHorseSwap {
                 net.minecraft.util.ProblemReporter.DISCARDING, horse.registryAccess());
         horse.saveWithoutId(out);
         var tag = out.buildResult();
-        tag.putString("BH_BreedId", breed.id());
+        tag.putString("BH_BreedId", breedKey.identifier().toString());
         swap.load(net.minecraft.world.level.storage.TagValueInput.create(
                 net.minecraft.util.ProblemReporter.DISCARDING, horse.registryAccess(), tag));
         swap.bhConvertFrom(horse);
@@ -54,11 +65,11 @@ public final class BhVanillaHorseSwap {
         return true;
     }
 
-    private static HorseBreed pickForBiome(ServerLevel level, Horse horse) {
+    private static @Nullable ResourceKey<BreedType> pickForBiome(ServerLevel level, Horse horse) {
         HorseBreed picked = HorseBreed.pickForBiome(level.getBiome(horse.blockPosition()), horse.getRandom());
-        return picked != null
+        HorseBreed fallback = picked != null
                 ? picked
                 : HorseBreed.fromId(horse.getRandom().nextInt(HorseBreed.HORSE_BREED_COUNT));
+        return BhBreeds.keyOf(fallback);
     }
-
 }

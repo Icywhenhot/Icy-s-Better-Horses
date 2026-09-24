@@ -1,12 +1,15 @@
 package icy.betterhorses.net.feature;
 
+import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhHorseTraits;
-import icy.betterhorses.net.BreedArchetype;
-import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.HorseCartEntity;
+import icy.betterhorses.net.registry.ArchetypeType;
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.BreedType;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.server.level.ServerLevel;
@@ -15,6 +18,8 @@ import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 public final class CartRig implements HorseFeature {
 
@@ -88,11 +93,11 @@ public final class CartRig implements HorseFeature {
     }
 
     private static boolean pullsFree(IHorseData data) {
-        HorseBreed breed = data.bh_getBreed();
-        if (breed.archetype() == BreedArchetype.DRAFT) {
+        ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
+        if (BhBreedData.of(breedKey).archetype() == BhContent.DRAFT.value()) {
             return BhAbility.DRAFT_HAUL.on();
         }
-        return breed == HorseBreed.HAFLINGER
+        return Objects.equals(breedKey, BhContent.HAFLINGER.key())
                 && BhHorseTraits.bondTier(data.bh_getBond()) >= 1
                 && BhAbility.HAFLINGER_HAUL.on();
     }
