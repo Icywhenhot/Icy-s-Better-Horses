@@ -346,6 +346,8 @@
   "config.icys-better-horses.cart_pickup": "Carts pick up mobs",
   "config.icys-better-horses.cart_pickup.tooltip": "Off: animals stop climbing into a cart bed on their own. Players can still ride it.",
   "config.icys-better-horses.convert_tamed_horses": "Convert tamed horses",
+  "config.icys-better-horses.smooth_horse_climbing": "Smooth horse climbing",
+  "config.icys-better-horses.smooth_horse_climbing.tooltip": "Stops the server snapping ridden horses back on stairs and hills. Off: vanilla behaviour.",
   "config.icys-better-horses.convert_tamed_horses.tooltip": "Off: vanilla horses that are already tamed stay vanilla and keep their stats. Wild horses still become breeds.",
   "config.icys-better-horses.category.tuning": "Tuning",
   "config.icys-better-horses.bond_per_interval": "Bond gained",
