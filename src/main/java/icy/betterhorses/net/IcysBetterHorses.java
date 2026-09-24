@@ -359,6 +359,7 @@ public final class IcysBetterHorses implements ModInitializer {
                 horseId, action.ordinal(), outcome.ok(), outcome.messageKey()));
         if (outcome.ok()) {
             if (action == HorseManageAction.WHISTLE) {
+                HorseTracker.setActiveHorse(player.getUUID(), horseId);
                 playWhistle(player);
             }
             sendRoster(player);
