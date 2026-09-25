@@ -2,6 +2,7 @@ package icy.betterhorses.net.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import icy.betterhorses.net.entity.BhBreedHorse;
+import icy.betterhorses.net.BhFeature;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.api.HoofStepEvent;
 import icy.betterhorses.net.inventory.GearSlot;
@@ -125,7 +126,7 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
             BlockState ground = level.getBlockState(pos);
             if (ground.getRenderShape() == RenderShape.INVISIBLE) continue;
             HoofStepEvent step = new HoofStepEvent(entity, i, new Vec3(hx, y, hz), ground, ParticleTypes.POOF);
-            if (MinecraftForge.EVENT_BUS.post(step)) continue;
+            if (MinecraftForge.EVENT_BUS.post(step) || !BhFeature.HOOF_DUST.on()) continue;
             for (int n = 0; n < HOOF_DUST; n++) {
                 level.addParticle(step.particle(), hx, y + 0.05, hz,
                         random.nextGaussian() * HOOF_DUST_SPREAD, HOOF_DUST_SPREAD,
