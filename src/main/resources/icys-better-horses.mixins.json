@@ -44,7 +44,8 @@
 		"HorseModelMixin",
 		"KeyboardInputMixin",
 		"LivingEntityRendererMixin",
-		"LivingEntityRendererRiderMixin"
+		"LivingEntityRendererRiderMixin",
+		"SpyglassModListMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
