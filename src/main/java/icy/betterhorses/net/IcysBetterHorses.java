@@ -11,6 +11,7 @@ import icy.betterhorses.net.network.HorseGearPayload;
 import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
+import icy.betterhorses.net.network.HorseJumpPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
@@ -142,6 +143,8 @@ public class IcysBetterHorses {
                 (payload, context) -> context.enqueueWork(() -> IcysBetterHorsesClient.receiveBreeds(payload)));
         registrar.playToClient(HorseChargeShakePayload.TYPE, new HorseChargeShakePayload.StreamCodec(),
                 (payload, context) -> context.enqueueWork(() -> IcysBetterHorsesClient.receiveChargeShake(payload)));
+        registrar.playToClient(HorseJumpPayload.TYPE, new HorseJumpPayload.StreamCodec(),
+                (payload, context) -> context.enqueueWork(() -> IcysBetterHorsesClient.receiveJump(payload)));
     }
 
     private static ResourceKey<CommandType> bh_parseCommand(String raw) {

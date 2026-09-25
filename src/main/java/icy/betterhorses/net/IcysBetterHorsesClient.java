@@ -27,6 +27,7 @@ import icy.betterhorses.net.network.CartSizePayload;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
+import icy.betterhorses.net.network.HorseJumpPayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.BreedDataPayload;
@@ -41,6 +42,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.locale.Language;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import icy.betterhorses.net.client.render.BhJumpClips;
 import icy.betterhorses.net.client.render.BhNamedCoats;
 import icy.betterhorses.net.client.render.BhTackTextures;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
@@ -250,6 +252,7 @@ public class IcysBetterHorsesClient {
         event.registerReloadListener((ResourceManagerReloadListener) manager -> {
             BhTackTextures.clearCache();
             BhNamedCoats.clearCache();
+            BhJumpClips.load(manager);
         });
     }
 
@@ -288,6 +291,15 @@ public class IcysBetterHorsesClient {
 
     public static void receiveChargeShake(HorseChargeShakePayload payload) {
         ChargeShakeController.trigger();
+    }
+
+    public static void receiveJump(HorseJumpPayload payload) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.level != null
+                && client.level.getEntity(payload.horseId()) instanceof AbstractHorse horse
+                && horse.getControllingPassenger() != client.player) {
+            IHorseData.of(horse).bh_cueJump();
+        }
     }
 
     public static void receiveConfig(ConfigSyncPayload payload) {
