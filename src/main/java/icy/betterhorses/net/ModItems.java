@@ -44,7 +44,17 @@ public final class ModItems {
             () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> HORSE_STABILIZER = ITEMS.register(
             "horse_stabilizer_gear",
-            () -> new Item(new Item.Properties().stacksTo(1)));
+            () -> new Item(new Item.Properties().durability(2400)) {
+                @Override
+                public boolean isValidRepairItem(ItemStack stack, ItemStack repairCandidate) {
+                    return repairCandidate.is(CANISTER.get());
+                }
+
+                @Override
+                public boolean isRepairable(ItemStack stack) {
+                    return false;
+                }
+            });
     public static final RegistryObject<Item> HORSE_CART = ITEMS.register(
             "horse_cart_gear",
             () -> new HorseCartItem(new Item.Properties().stacksTo(1)));

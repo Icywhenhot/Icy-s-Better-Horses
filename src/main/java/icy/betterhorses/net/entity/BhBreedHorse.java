@@ -1,5 +1,6 @@
 package icy.betterhorses.net.entity;
 
+import icy.betterhorses.net.BhHorseBackup;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -124,6 +125,7 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        BhHorseBackup.forget(this);
         int saved = tag.contains(COAT_TAG) ? tag.getInt(COAT_TAG) : -1;
         this.entityData.set(BH_COAT, saved < 0 ? bhCoatSet().roll(this.random) : bhCoatSet().clamp(saved));
     }

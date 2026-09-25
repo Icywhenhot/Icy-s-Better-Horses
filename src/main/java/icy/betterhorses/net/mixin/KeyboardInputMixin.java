@@ -62,7 +62,7 @@ public abstract class KeyboardInputMixin extends Input {
         if (output.active()) {
             HorseGearController.INSTANCE.reset();
         } else if (HorseGearController.INSTANCE
-                .tick(eligible, riddenHorse, this.up, this.down)
+                .tick(mounted, riddenHorse, this.up, this.down)
                 .geared()) {
             forwardDown = true;
             forwardImpulse = 1.0F;

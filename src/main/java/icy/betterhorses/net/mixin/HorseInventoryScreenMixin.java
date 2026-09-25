@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.client.BhInventoryEffects;
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
@@ -160,6 +161,11 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Inject(method = "render", at = @At("RETURN"))
     private void bh_endHorsePreview(GuiGraphics gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
         BhHorseRenderState.endPreview();
+    }
+
+    @Inject(method = "render", at = @At("TAIL"))
+    private void bh_drawEffects(GuiGraphics gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+        BhInventoryEffects.render(this, gfx, this.font, mouseX, mouseY);
     }
 
     @Inject(method = "render", at = @At("TAIL"))
@@ -335,7 +341,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         }
 
         ItemStack chestStack = this.menu.getSlot(chestSlotIndex).getItem();
-        return chestStack.is(Items.CHEST) || chestStack.is(Items.ENDER_CHEST);
+        return GearSlot.isChest(chestStack);
     }
 
     @Unique

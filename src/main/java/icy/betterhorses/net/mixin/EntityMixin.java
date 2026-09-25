@@ -1,5 +1,8 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseBackup;
+import icy.betterhorses.net.entity.BhBreedHorse;
+import net.minecraft.nbt.CompoundTag;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.HorseTracker;
@@ -26,6 +29,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
+
+    @Inject(method = "saveAsPassenger", at = @At("RETURN"))
+    private void bh_saveAsPlainHorse(CompoundTag compound, CallbackInfoReturnable<Boolean> cir) {
+        if (cir.getReturnValueZ() && (Object) this instanceof BhBreedHorse horse) {
+            BhHorseBackup.write(horse, compound);
+        }
+    }
 
     @Inject(method = "isInvulnerableTo", at = @At("HEAD"), cancellable = true)
     private void bh_shrugOffSlowBlocks(DamageSource source, CallbackInfoReturnable<Boolean> cir) {

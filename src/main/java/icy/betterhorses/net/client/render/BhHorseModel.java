@@ -478,7 +478,7 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
               + (5.5F * Mth.DEG_TO_RAD) * soreSign * limpStand
               + (3.0F * Mth.DEG_TO_RAD) * Mth.cos(rearT25) * rear;
 
-        final float bankAngle = BANK_ROLL * bank;
+        final float bankAngle = -BANK_ROLL * bank;
         rootPart.zRot = rootRest.zRot() + bankAngle;
         rootPart.xRot = rootRest.xRot() + arcPitch;
         rootPart.x = rootRest.x() + GROUND_Y * Mth.sin(bankAngle);
@@ -520,7 +520,7 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
               - 0.3F * arcPitch
               - 0.45F * arcWhip;
 
-        float neckYaw = (7.0F * Mth.DEG_TO_RAD) * bank
+        float neckYaw = (16.0F * Mth.DEG_TO_RAD) * bank
               + (14.0F * Mth.DEG_TO_RAD) * pivotDir * pivot
               + Mth.clamp(state.yRot * Mth.DEG_TO_RAD, -0.6F, 0.6F) * 0.35F
               + (3.0F * Mth.DEG_TO_RAD)
@@ -561,13 +561,14 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
               - 0.30F * arcWhip;
 
         float headYaw = Mth.clamp(state.yRot * Mth.DEG_TO_RAD, -0.6F, 0.6F) * 0.5F
+              + (10.0F * Mth.DEG_TO_RAD) * bank
               + (5.0F * Mth.DEG_TO_RAD)
                 * Mth.cos(Mth.clamp(0.5F - Mth.sin(idleT) * 1.5F, 0.0F, 1.0F) * Mth.PI) * alive
               + (-Mth.sin(shakeT) / 3.0F + Mth.cos(shakeT) / 8.0F) * shake;
 
         head.yRot = headRest.yRot() + headYaw;
         head.zRot = headRest.zRot()
-              - BANK_ROLL * 0.45F * bank
+              + BANK_ROLL * 0.45F * bank
               + (2.0F * Mth.DEG_TO_RAD)
                 * Mth.cos(Mth.clamp(0.5F - Mth.sin(idleT) * 1.5F, 0.0F, 1.0F) * Mth.PI)
                 * alive * (1.0F - graze)

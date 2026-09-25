@@ -1,5 +1,9 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.client.render.BhNamedCoats;
+import icy.betterhorses.net.client.render.BhTackTextures;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import com.mojang.blaze3d.platform.InputConstants;
 import icy.betterhorses.net.client.BhClientCaches;
 import icy.betterhorses.net.client.CartChestScreen;
@@ -222,6 +226,14 @@ public final class IcysBetterHorsesClient {
                         () -> new ConfigScreenHandler.ConfigScreenFactory(
                                 (client, parent) -> BhConfigScreen.create(parent)));
             }
+        });
+    }
+
+    @SubscribeEvent
+    public static void registerReloadListeners(RegisterClientReloadListenersEvent event) {
+        event.registerReloadListener((ResourceManagerReloadListener) manager -> {
+            BhTackTextures.clearCache();
+            BhNamedCoats.clearCache();
         });
     }
 

@@ -1,5 +1,8 @@
 package icy.betterhorses.net;
 
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.AnvilUpdateEvent;
+import net.minecraft.world.item.ItemStack;
 import icy.betterhorses.net.entity.CartSize;
 import icy.betterhorses.net.feature.breed.Ironclad;
 import icy.betterhorses.net.network.BreedDataPayload;
@@ -102,6 +105,36 @@ public final class IcysBetterHorses {
         event.enqueueWork(BhCriteria::register);
         event.enqueueWork(BhContent::logSummary);
         event.enqueueWork(BhBreedData::initializeBuiltIns);
+    }
+
+    @SubscribeEvent
+    public void onLivingDamage(LivingDamageEvent event) {
+        if (event.getEntity() instanceof Player player && player.level() instanceof ServerLevel level
+                && BhSecondChance.intercept(level, player, event.getSource(), event.getAmount())) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public void onAnvilUpdate(AnvilUpdateEvent event) {
+        ItemStack harness = event.getLeft();
+        ItemStack addition = event.getRight();
+        if (!harness.is(ModItems.HORSE_STABILIZER.get()) || addition.isEmpty()) {
+            return;
+        }
+        if (!addition.is(ModItems.CANISTER.get()) || !harness.isDamaged()) {
+            event.setCanceled(true);
+            return;
+        }
+        ItemStack refuelled = harness.copy();
+        refuelled.setDamageValue(Math.max(0, harness.getDamageValue() - harness.getMaxDamage() * 4 / 5));
+        String name = event.getName();
+        if (name != null && !name.isBlank() && !name.equals(harness.getHoverName().getString())) {
+            refuelled.setHoverName(Component.literal(name));
+        }
+        event.setOutput(refuelled);
+        event.setCost(Math.max(1, harness.getBaseRepairCost() + 1));
+        event.setMaterialCost(1);
     }
 
     @SubscribeEvent

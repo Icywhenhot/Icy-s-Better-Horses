@@ -22,6 +22,15 @@
     {
       "type": "icys_better_horses:padded_text_plain",
       "text": "book.icys-better-horses.stable_handbook.equipment.horse_stabilizer.info.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.equipment.horse_stabilizer.fuel.title",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_stabilizer.fuel.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.equipment.horse_stabilizer.fuel.text2"
     }
   ]
 }

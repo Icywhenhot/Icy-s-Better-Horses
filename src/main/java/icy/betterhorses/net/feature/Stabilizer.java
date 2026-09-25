@@ -1,5 +1,8 @@
 package icy.betterhorses.net.feature;
 
+import icy.betterhorses.net.ModItems;
+import icy.betterhorses.net.inventory.GearSlot;
+import net.minecraft.world.item.ItemStack;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.HorseStabilizerLogic;
 import icy.betterhorses.net.HorseStabilizerState;
@@ -57,7 +60,19 @@ public final class Stabilizer implements HorseFeature {
 
         if (serverSide) {
             data.bh_setStabilizerState(state);
+            if (state == HorseStabilizerState.OPEN || state == HorseStabilizerState.HALF_OPEN) {
+                wear(data);
+            }
         }
+    }
+
+    private static void wear(IHorseData data) {
+        ItemStack harness = data.bh_getGearContainer().getItem(GearSlot.STABILIZER.ordinal());
+        if (!harness.is(ModItems.HORSE_STABILIZER.get()) || harness.getDamageValue() >= harness.getMaxDamage() - 1) {
+            return;
+        }
+        harness.setDamageValue(harness.getDamageValue() + 1);
+        data.bh_syncStabilizerCharge();
     }
 
     private void trackDescent(AbstractHorse horse, IHorseData data) {

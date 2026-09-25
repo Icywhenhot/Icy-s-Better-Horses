@@ -4,8 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import icy.betterhorses.net.entity.BhBreedHorse;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.inventory.GearSlot;
-import icy.betterhorses.net.registry.BhRegistries;
-import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -55,7 +53,10 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
             if (!(stack.getItem() instanceof DyeableLeatherItem dyed)) {
                 return -1;
             }
-            return 0xFF000000 | (dyed.hasCustomColor(stack) ? dyed.getColor(stack) : UNDYED_BARDING);
+            if (dyed.hasCustomColor(stack)) {
+                return 0xFF000000 | dyed.getColor(stack);
+            }
+            return stack.is(Items.LEATHER_HORSE_ARMOR) ? 0xFF000000 | UNDYED_BARDING : -1;
         }));
         addLayer(new BhTackLayer<>(this, models.apply(chest), models.apply(chestBaby), entity -> {
             IHorseData data = IHorseData.of(entity);
@@ -76,8 +77,7 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
 
     @Override
     public ResourceLocation getTextureLocation(T entity) {
-        BreedType type = BhRegistries.breedTypeRegistry().getValue(entity.bhFixedBreed().location());
-        return type.coats().texture(entity.bhCoat(), entity.isBaby());
+        return BhNamedCoats.coat(entity);
     }
 
     private static final int UNDYED_BARDING = 0xBB744F;

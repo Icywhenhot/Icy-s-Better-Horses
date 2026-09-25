@@ -1,5 +1,15 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.client.BhInventoryEffects;
+import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.locale.Language;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import java.util.List;
 import icy.betterhorses.net.client.BhHorseHud;
 import icy.betterhorses.net.client.HorseGearController;
 import icy.betterhorses.net.client.HorseInfoScreen;
@@ -87,6 +97,28 @@ public final class IcysBetterHorsesClientForgeEvents {
 
         while (IcysBetterHorsesClient.CART_SIZE_KEY.consumeClick()) {
             trySwapCartSize(client);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onItemTooltip(ItemTooltipEvent event) {
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(event.getItemStack().getItem());
+        List<Component> lines = event.getToolTip();
+        if (!id.getNamespace().equals(IcysBetterHorses.RESOURCE_NAMESPACE) || lines.isEmpty()) {
+            return;
+        }
+        String key = "item." + id.getNamespace() + "." + id.getPath() + ".tooltip";
+        if (Language.getInstance().has(key)) {
+            lines.add(1, Component.translatable(key).withStyle(ChatFormatting.GRAY));
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRenderOverlay(RenderGuiOverlayEvent.Pre event) {
+        if (event.getOverlay() == VanillaGuiOverlay.POTION_ICONS.type()
+                && Minecraft.getInstance().screen instanceof HorseInventoryScreen screen
+                && BhInventoryEffects.fits(screen)) {
+            event.setCanceled(true);
         }
     }
 

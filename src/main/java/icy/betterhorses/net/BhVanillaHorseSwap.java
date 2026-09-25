@@ -22,28 +22,38 @@ public final class BhVanillaHorseSwap {
             return false;
         }
 
-        ResourceKey<BreedType> breedKey = IHorseData.of(horse).bh_getBreedKey();
-        if (breedKey == null) {
-            breedKey = pickForBiome(level, horse);
+        CompoundTag backup = BhHorseBackup.find(horse);
+        EntityType<?> restored = backup == null ? null : BhHorseBackup.typeOf(backup);
+        ResourceKey<BreedType> breedKey = null;
+        EntityType<?> entityType = restored;
+        if (entityType == null) {
+            breedKey = IHorseData.of(horse).bh_getBreedKey();
             if (breedKey == null) {
+                breedKey = pickForBiome(level, horse);
+                if (breedKey == null) {
+                    return false;
+                }
+            }
+            entityType = ModEntities.forBreed(breedKey);
+            if (entityType == null) {
                 return false;
             }
         }
-
-        EntityType<? extends BhBreedHorse> entityType = ModEntities.forBreed(breedKey);
-        if (entityType == null) {
-            return false;
-        }
-        BhBreedHorse swap = entityType.create(level);
-        if (swap == null) {
+        if (!(entityType.create(level) instanceof BhBreedHorse swap)) {
             return false;
         }
 
         CompoundTag tag = horse.saveWithoutId(new CompoundTag());
-        tag.putString("BH_BreedId", breedKey.location().toString());
+        if (restored != null) {
+            BhHorseBackup.restoreInto(tag, backup);
+        } else {
+            tag.putString("BH_BreedId", breedKey.location().toString());
+        }
         swap.load(tag);
-        swap.bhConvertFrom(horse);
-        swap.setHealth(Math.min(horse.getHealth(), swap.getMaxHealth()));
+        if (restored == null) {
+            swap.bhConvertFrom(horse);
+            swap.setHealth(Math.min(horse.getHealth(), swap.getMaxHealth()));
+        }
         horse.remove(Entity.RemovalReason.CHANGED_DIMENSION);
         if (!level.addFreshEntity(swap)) {
             ((icy.betterhorses.net.mixin.EntityAccessor) horse).bh_unsetRemoved();
