@@ -17,7 +17,8 @@ public enum BhFeature {
     GENDER_BREEDING("gender_breeding"),
     HORSE_PVP("horse_pvp"),
     CART_PICKUP("cart_pickup"),
-    LEAF_PASSTHROUGH("leaf_passthrough");
+    LEAF_PASSTHROUGH("leaf_passthrough"),
+    HOOF_DUST("hoof_dust");
 
     private static final Map<String, BhFeature> BY_KEY = new HashMap<>();
 

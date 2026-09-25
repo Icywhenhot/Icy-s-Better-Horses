@@ -19,6 +19,8 @@ public class ClydesdaleHorseRenderer
                 new ClydesdaleHorseModel(context.bakeLayer(adultLayer)),
                 new ClydesdaleFoalModel(context.bakeLayer(babyLayer)));
 
+        this.addLayer(new HoofDustLayer<>(this));
+
         this.addLayer(BhTackLayer.<BhHorseRenderState, ClydesdaleHorseModel>forItem(this,
                 new ClydesdaleHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_SADDLE)),
                 new ClydesdaleHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_SADDLE_BABY)),

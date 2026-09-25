@@ -138,6 +138,8 @@ public final class BhEquineGait {
 
     private final float leadSign;
 
+    private final boolean[] hoofLifted = new boolean[4];
+
     private float walk;
     private float trot;
     private float canter;
@@ -270,6 +272,9 @@ public final class BhEquineGait {
                 ((IBhEquineStabilizerState) (Object) state).bh_isRiddenByPlayerInFirstPerson();
 
         BhEquineGait gait = ACTIVE.computeIfAbsent(entity.getId(), BhEquineGait::new);
+        state.hoofLifted = gait.hoofLifted;
+        state.kicksDust = entity.getId() >= 0 && !entity.isInWater()
+                && entity.level().getEntity(entity.getId()) == entity;
         gait.sense(entity, state);
         gait.advance(state, state.ageInTicks);
     }

@@ -19,6 +19,8 @@ public class BelgianHorseRenderer
                 new BelgianHorseModel(context.bakeLayer(adultLayer)),
                 new BelgianFoalModel(context.bakeLayer(babyLayer)));
 
+        this.addLayer(new HoofDustLayer<>(this));
+
         this.addLayer(BhTackLayer.<BhHorseRenderState, BelgianHorseModel>forItem(this,
                 new BelgianHorseModel(context.bakeLayer(BhModelLayers.BELGIAN_SADDLE)),
                 new BelgianHorseModel(context.bakeLayer(BhModelLayers.BELGIAN_SADDLE_BABY)),

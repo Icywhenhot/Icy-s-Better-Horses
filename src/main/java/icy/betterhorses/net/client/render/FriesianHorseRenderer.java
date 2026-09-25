@@ -19,6 +19,8 @@ public class FriesianHorseRenderer
                 new FriesianHorseModel(context.bakeLayer(adultLayer)),
                 new FriesianFoalModel(context.bakeLayer(babyLayer)));
 
+        this.addLayer(new HoofDustLayer<>(this));
+
         this.addLayer(BhTackLayer.<BhHorseRenderState, FriesianHorseModel>forItem(this,
                 new FriesianHorseModel(context.bakeLayer(BhModelLayers.FRIESIAN_SADDLE)),
                 new FriesianHorseModel(context.bakeLayer(BhModelLayers.FRIESIAN_SADDLE_BABY)),

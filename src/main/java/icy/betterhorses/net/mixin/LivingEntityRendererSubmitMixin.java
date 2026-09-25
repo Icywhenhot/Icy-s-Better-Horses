@@ -1,6 +1,7 @@
 package icy.betterhorses.net.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import icy.betterhorses.net.client.render.BhHorseRenderState;
 import icy.betterhorses.net.client.render.BhRenderContext;
 import icy.betterhorses.net.client.render.IBhEquineStabilizerState;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -20,6 +21,9 @@ public abstract class LivingEntityRendererSubmitMixin {
             at = @At("HEAD"))
     private void bh_pushCamera(LivingEntityRenderState state, PoseStack poseStack,
                                SubmitNodeCollector collector, CameraRenderState camera, CallbackInfo ci) {
+        if (state instanceof BhHorseRenderState horseState) {
+            horseState.dustOrigin.set(poseStack.last().pose()).invert();
+        }
         BhRenderContext.pushCamera(camera);
         float opacity = state instanceof IBhEquineStabilizerState bhState ? bhState.bh_getOpacity() : 1.0F;
         BhRenderContext.pushOpacity(opacity);

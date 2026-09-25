@@ -16,6 +16,8 @@ public class HaflingerHorseRenderer
                 new HaflingerHorseModel(context.bakeLayer(BhModelLayers.HAFLINGER_HORSE)),
                 new HaflingerFoalModel(context.bakeLayer(BhModelLayers.HAFLINGER_HORSE_BABY)));
 
+        this.addLayer(new HoofDustLayer<>(this));
+
         this.addLayer(BhTackLayer.<BhHorseRenderState, HaflingerHorseModel>forItem(this,
                 new HaflingerHorseModel(context.bakeLayer(BhModelLayers.HAFLINGER_SADDLE)),
                 new HaflingerHorseModel(context.bakeLayer(BhModelLayers.HAFLINGER_SADDLE_BABY)),

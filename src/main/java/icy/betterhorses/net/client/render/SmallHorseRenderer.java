@@ -16,6 +16,8 @@ public class SmallHorseRenderer<T extends SmallHorse>
                 new SmallHorseModel(context.bakeLayer(BhModelLayers.SMALL_HORSE)),
                 new SmallFoalModel(context.bakeLayer(BhModelLayers.SMALL_HORSE_BABY)));
 
+        this.addLayer(new HoofDustLayer<>(this));
+
         this.addLayer(BhTackLayer.<BhHorseRenderState, SmallHorseModel>forItem(this,
                 new SmallHorseModel(context.bakeLayer(BhModelLayers.SMALL_SADDLE)),
                 new SmallHorseModel(context.bakeLayer(BhModelLayers.SMALL_SADDLE_BABY)),

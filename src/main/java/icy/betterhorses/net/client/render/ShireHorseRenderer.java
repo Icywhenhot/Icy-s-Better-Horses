@@ -19,6 +19,8 @@ public class ShireHorseRenderer
                 new ShireHorseModel(context.bakeLayer(adultLayer)),
                 new ShireFoalModel(context.bakeLayer(babyLayer)));
 
+        this.addLayer(new HoofDustLayer<>(this));
+
         this.addLayer(BhTackLayer.<BhHorseRenderState, ShireHorseModel>forItem(this,
                 new ShireHorseModel(context.bakeLayer(BhModelLayers.SHIRE_SADDLE)),
                 new ShireHorseModel(context.bakeLayer(BhModelLayers.SHIRE_SADDLE_BABY)),

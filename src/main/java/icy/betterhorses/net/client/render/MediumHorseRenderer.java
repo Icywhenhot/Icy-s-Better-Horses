@@ -16,6 +16,8 @@ public class MediumHorseRenderer<T extends MediumHorse>
                 new MediumHorseModel(context.bakeLayer(BhModelLayers.MEDIUM_HORSE)),
                 new MediumFoalModel(context.bakeLayer(BhModelLayers.MEDIUM_HORSE_BABY)));
 
+        this.addLayer(new HoofDustLayer<>(this));
+
         this.addLayer(BhTackLayer.<BhHorseRenderState, MediumHorseModel>forItem(this,
                 new MediumHorseModel(context.bakeLayer(BhModelLayers.MEDIUM_SADDLE)),
                 new MediumHorseModel(context.bakeLayer(BhModelLayers.MEDIUM_SADDLE_BABY)),

@@ -7,6 +7,9 @@ public class BhHorseRenderState extends EquineRenderState {
 
     final java.util.Map<BhHorseModel.PoseKey, BhHorseModel.Pose> poses = new java.util.HashMap<>();
     int poseRevision;
+    boolean[] hoofLifted;
+    boolean kicksDust;
+    public final org.joml.Matrix4f dustOrigin = new org.joml.Matrix4f();
 
     public Identifier coatTexture;
 

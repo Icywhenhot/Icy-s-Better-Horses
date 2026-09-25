@@ -19,6 +19,8 @@ public class PercheronHorseRenderer
                 new PercheronHorseModel(context.bakeLayer(adultLayer)),
                 new PercheronFoalModel(context.bakeLayer(babyLayer)));
 
+        this.addLayer(new HoofDustLayer<>(this));
+
         this.addLayer(BhTackLayer.<BhHorseRenderState, PercheronHorseModel>forItem(this,
                 new PercheronHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_SADDLE)),
                 new PercheronHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_SADDLE_BABY)),

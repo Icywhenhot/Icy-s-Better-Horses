@@ -20,6 +20,8 @@ public class IcelandicHorseRenderer
                 new IcelandicHorseModel(context.bakeLayer(adultLayer)),
                 new IcelandicFoalModel(context.bakeLayer(babyLayer)));
 
+        this.addLayer(new HoofDustLayer<>(this));
+
         this.addLayer(BhTackLayer.<BhHorseRenderState, IcelandicHorseModel>forItem(this,
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_SADDLE)),
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_SADDLE_BABY)),
