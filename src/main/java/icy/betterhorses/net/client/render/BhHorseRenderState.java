@@ -42,6 +42,7 @@ public class BhHorseRenderState {
 
     final java.util.Map<BhHorseModel.PoseKey, BhHorseModel.Pose> poses = new java.util.HashMap<>();
     int poseRevision;
+    final boolean[] hoofLifted = new boolean[4];
     public float ageInTicks;
     public float walkAnimationSpeed;
     public float walkAnimationPos;

@@ -199,6 +199,21 @@ Register the listener once from your mod constructor. `HorseFeature` also has `o
 
 Feature initialization can happen while the horse's inventory or saved data is being restored. Do not assume all breed or equipment fields are final inside the attachment event; evaluate changing eligibility inside your feature methods. Features can run on both sides, so guard server-only gameplay work. For feature persistence use a namespaced key in Forge's entity persistent data or your own capability; automatic per-instance save/load in this API belongs to `BreedAbility`.
 
+## Hoof step particles
+
+Each time a breed horse's hoof touches the ground, `HoofStepEvent` is posted on `MinecraftForge.EVENT_BUS` on the client. The default particle is `ParticleTypes.POOF`. Swap it with `setParticle`, or cancel the event to spawn nothing and draw your own effect:
+
+```java
+MinecraftForge.EVENT_BUS.addListener((icy.betterhorses.net.api.HoofStepEvent event) -> {
+    if (event.ground().is(net.minecraft.tags.BlockTags.SAND)) {
+        event.setParticle(new net.minecraft.core.particles.BlockParticleOption(
+                net.minecraft.core.particles.ParticleTypes.BLOCK, event.ground()));
+    }
+});
+```
+
+`hoof()` is 0 front left, 1 front right, 2 back left, 3 back right. `position()` is the hoof's contact point and `ground()` the block under it. The event fires from rendering, so it only runs for horses on screen, and only on the physical client: register the listener from client-only code.
+
 ## Register a new breed
 
 Use `DeferredRegister<BreedType>` with `BhRegistries.BREED_TYPES`, and register an entity type for a subclass of `BhBreedHorse`. Implement `bhFixedBreed()` to return your breed's key. `BhBreedHorse` supplies coat storage and inheritance; `bhAttributes(archetype)` supplies the matching starting attribute builder.

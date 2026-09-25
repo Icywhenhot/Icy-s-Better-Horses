@@ -12,6 +12,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import org.joml.Vector3f;
 import java.util.List;
 import java.util.Map;
 
@@ -229,6 +230,20 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
                                int packedLight, int packedOverlay,
                                float red, float green, float blue, float alpha) {
         rootPart.render(poseStack, consumer, packedLight, packedOverlay, red, green, blue, alpha);
+    }
+
+    public void bhHoofBottoms(PoseStack poseStack, Vector3f[] out) {
+        for (int i = 0; i < legs.length; i++) {
+            Vector3f hoof = out[i].set(0.0F, Float.MAX_VALUE, 0.0F);
+            poseStack.pushPose();
+            rootPart.translateAndRotate(poseStack);
+            legs[i].visit(poseStack, (pose, path, index, cube) -> {
+                Vector3f p = pose.pose().transformPosition((cube.minX + cube.maxX) / 32.0F,
+                        cube.maxY / 16.0F, (cube.minZ + cube.maxZ) / 32.0F, new Vector3f());
+                if (p.y < hoof.y) hoof.set(p);
+            });
+            poseStack.popPose();
+        }
     }
 
     public float bhBodyRestY() {
