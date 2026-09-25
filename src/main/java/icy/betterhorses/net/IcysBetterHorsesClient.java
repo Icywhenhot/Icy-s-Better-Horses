@@ -1,5 +1,6 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.client.render.BhJumpClips;
 import icy.betterhorses.net.client.render.BhNamedCoats;
 import icy.betterhorses.net.client.render.BhTackTextures;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -23,6 +24,7 @@ import icy.betterhorses.net.client.render.PercheronHorseRenderer;
 import icy.betterhorses.net.client.render.ShireHorseRenderer;
 import icy.betterhorses.net.client.render.SmallHorseRenderer;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
+import icy.betterhorses.net.network.HorseJumpPayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
@@ -178,6 +180,15 @@ public final class IcysBetterHorsesClient {
         ChargeShakeController.trigger();
     }
 
+    public static void receiveJump(HorseJumpPayload payload) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.level != null
+                && client.level.getEntity(payload.horseId()) instanceof AbstractHorse horse
+                && horse.getControllingPassenger() != client.player) {
+            IHorseData.of(horse).bh_cueJump();
+        }
+    }
+
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.HORSE_CART.get(), HorseCartRenderer::new);
@@ -234,6 +245,7 @@ public final class IcysBetterHorsesClient {
         event.registerReloadListener((ResourceManagerReloadListener) manager -> {
             BhTackTextures.clearCache();
             BhNamedCoats.clearCache();
+            BhJumpClips.load(manager);
         });
     }
 

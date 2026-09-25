@@ -84,9 +84,15 @@ public final class HorseStabilizerLayer<T extends AbstractHorse, M extends Entit
         animatable.syncFromHorse(entity, state, ageInTicks);
 
         Variant variant = BY_BODY.getOrDefault(stabilizerBodyOf(data), GENERIC);
-        double anchorY = model instanceof BhHorseModel<?> breed
-                ? variant.feetY() - breed.bhBodyRestY() / 16.0D
-                : variant.feetY() - body.y / 16.0D;
+        float restX = body.x;
+        float restY = body.y;
+        float restZ = body.z;
+        if (model instanceof BhHorseModel<?> breed) {
+            BhHorseModel.Rest rest = breed.bhBodyRest();
+            restX = rest.x();
+            restY = rest.y();
+            restZ = rest.z();
+        }
 
         poseStack.pushPose();
         if (model instanceof BhHorseModel<?> breed) {
@@ -94,9 +100,9 @@ public final class HorseStabilizerLayer<T extends AbstractHorse, M extends Entit
         }
         body.translateAndRotate(poseStack);
         poseStack.translate(
-                -body.x / 16.0F + GEO_BLOCK_ANCHOR,
-                anchorY + GEO_BLOCK_ANCHOR_Y,
-                -body.z / 16.0F + variant.zOffset() - GEO_BLOCK_ANCHOR);
+                -restX / 16.0F + GEO_BLOCK_ANCHOR,
+                variant.feetY() - restY / 16.0D + GEO_BLOCK_ANCHOR_Y,
+                -restZ / 16.0F + variant.zOffset() - GEO_BLOCK_ANCHOR);
         poseStack.mulPose(Axis.ZP.rotationDegrees(MODEL_ROLL_DEGREES));
 
         variant.renderer().renderAt(poseStack, animatable, bufferSource, partialTicks, packedLight);

@@ -81,6 +81,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import icy.betterhorses.net.network.HorseJumpPayload;
+import icy.betterhorses.net.BhNetworking;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -156,6 +158,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private static final int BH_GRAZE_HURT_COOLDOWN_TICKS = 200;
     @Unique private int bh_grazeBlockedUntilTick = 0;
     @Unique private int bh_gear = 0;
+    @Unique private int bh_jumpCue;
     @Unique private @Nullable UUID bh_combatTarget = null;
     @Unique private boolean bh_abilityPaused = false;
     @Unique private int bh_spookTicks = 0;
@@ -1019,6 +1022,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         bh_push(BH_KICK, Math.max(0, ticks));
     }
 
+    @Override
+    public int bh_getJumpCue() {
+        return this.bh_jumpCue;
+    }
+
+    @Override
+    public void bh_cueJump() {
+        this.bh_jumpCue++;
+    }
+
     @Unique
     private void bh_syncCombatState() {
         int next = this.bh_spookTicks > 0 ? 2 : this.bh_combatTarget != null ? 1 : 0;
@@ -1655,6 +1668,20 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
                             + "standIfPossible()V"))
     private void bh_noRearOnPlayerJump(AbstractHorse horse) {
         if (!bh_ours()) horse.standIfPossible();
+    }
+
+    @Inject(method = "executeRidersJump", at = @At("TAIL"))
+    private void bh_cueRiderJump(float scale, Vec3 input, CallbackInfo ci) {
+        if (bh_ours() && ((AbstractHorse) (Object) this).level().isClientSide()) {
+            this.bh_jumpCue++;
+        }
+    }
+
+    @Inject(method = "handleStartJump", at = @At("TAIL"))
+    private void bh_shareJump(int power, CallbackInfo ci) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (!bh_ours() || self.level().isClientSide()) return;
+        BhNetworking.sendToTracking(self, new HorseJumpPayload(self.getId()));
     }
 
     @Unique

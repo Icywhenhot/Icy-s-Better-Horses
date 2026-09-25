@@ -1,13 +1,19 @@
 package icy.betterhorses.net.client.render;
 
 import icy.betterhorses.net.BhGears;
+import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.client.BhClientCaches;
+import icy.betterhorses.net.feature.Stabilizer;
 import net.minecraft.util.Mth;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -69,27 +75,54 @@ public final class BhEquineGait {
     private static final float LIMP_SPEED_MAX = 0.45F;
     private static final float LIMP_SPEED_FADE = 0.15F;
 
-    private static final float JUMP_TAKEOFF_SPEED = 0.16F;
-    private static final float JUMP_RISE_FULL = 0.34F;
     private static final float JUMP_FALL_FULL = 0.40F;
     private static final float JUMP_MIN_AIR_SECONDS = 0.12F;
-    private static final float JUMP_THRUST_SECONDS = 0.24F;
-    private static final float JUMP_THRUST_ATTACK = 0.34F;
     private static final float JUMP_IMPACT_SECONDS = 0.62F;
     private static final float JUMP_IMPACT_FIRST_SPAN = 0.55F;
     private static final float JUMP_IMPACT_SECOND_START = 0.30F;
     private static final float JUMP_IMPACT_FIRST_ATTACK = 0.40F;
     private static final float JUMP_IMPACT_SECOND_ATTACK = 0.42F;
-    private static final float JUMP_GATHER_IN_PER_SECOND = 6.0F;
-    private static final float JUMP_GATHER_OUT_PER_SECOND = 14.0F;
-    private static final float JUMP_FLIGHT_PER_SECOND = 10.0F;
-    private static final float JUMP_REACH_IN_PER_SECOND = 5.0F;
-    private static final float JUMP_REACH_OUT_PER_SECOND = 4.5F;
     private static final float JUMP_IMPACT_POWER_MIN = 0.30F;
     private static final float JUMP_IMPACT_POWER_MAX = 1.35F;
-    private static final float JUMP_RISE_IN_PER_SECOND = 14.0F;
-    private static final float JUMP_RISE_OUT_PER_SECOND = 5.0F;
     private static final float ARC_LAG_SECONDS = 0.10F;
+
+    private static final int JUMP_NONE = 0;
+    private static final int JUMP_HOLD = 1;
+    private static final int JUMP_TAKEOFF = 2;
+    private static final int JUMP_RISE = 3;
+    private static final int JUMP_APEX = 4;
+    private static final int JUMP_FALL = 5;
+    private static final int JUMP_LAND = 6;
+
+    private static final int JUMP_ARM_TICKS = 4;
+    private static final float JUMP_LATE_SECONDS = 0.25F;
+    private static final float JUMP_LAUNCH_SPEED = 0.05F;
+    private static final float JUMP_MAX_RATE = 3.0F;
+    private static final float JUMP_RATE_SLEW = 12.0F;
+    private static final float JUMP_SEAM_SECONDS = 0.10F;
+    private static final float JUMP_IN_PER_SECOND = 10.0F;
+    private static final float JUMP_OUT_PER_SECOND = 6.0F;
+    private static final float HOLD_IN_PER_SECOND = 6.0F;
+    private static final float HOLD_OUT_PER_SECOND = 4.0F;
+    private static final float LAND_FADE_SECONDS = JUMP_IMPACT_SECONDS * JUMP_IMPACT_FIRST_SPAN;
+    private static final float WATER_FADE_SECONDS = 0.2F;
+    private static final float FLAIL_START_SECONDS = 0.35F;
+    private static final float FLAIL_FULL_SECONDS = 0.9F;
+    private static final float PANIC_IN_PER_SECOND = 2.5F;
+    private static final float PANIC_OUT_PER_SECOND = 3.0F;
+    private static final float PANIC_MIN_LAND_SECONDS = 0.4F;
+    private static final float FALL_DAMP_START_SECONDS = 0.3F;
+    private static final float FALL_DAMP_MAX = 0.5F;
+    private static final float FALL_DAMP_IN_PER_SECOND = 3.0F;
+    private static final float FALL_DAMP_OUT_PER_SECOND = 6.0F;
+    private static final float PLAIN_DROP_BLOCKS = 1.9F;
+    private static final float PLAIN_IMPACT_SCALE = 0.5F;
+    private static final float FIRST_PERSON_PITCH = 0.5F;
+    private static final float CART_PITCH = 0.4F;
+    private static final float GRAVITY = 0.08F;
+    private static final float DRAG = 0.98F;
+    private static final int GROUND_PROBE_BLOCKS = 48;
+    private static final int PREDICT_TICKS = 100;
 
     private static final float KICK_SECONDS = 0.62F;
     private static final float STOMP_SECONDS = 0.5F;
@@ -150,18 +183,36 @@ public final class BhEquineGait {
     private float previousRun;
     private float limp;
 
-    private float jumpGather;
-    private float jumpFlight;
-    private float jumpReach;
-    private float jumpRiseSmooth;
-    private float arcLag;
-    private float jumpThrustClock = Float.MAX_VALUE;
+    private int jumpPhase = JUMP_NONE;
+    private int jumpClip = BhJumpClips.HOLD;
+    private float jumpClipTime;
+    private int jumpFromClip = BhJumpClips.HOLD;
+    private float jumpFromTime;
+    private float jumpFade = 1.0F;
+    private float jumpWeight;
+    private float jumpRate = 1.0F;
+    private float holdPeak;
+    private float landFrom;
+    private float landClock;
+    private float landFadeSeconds = LAND_FADE_SECONDS;
+    private int lastJumpCue;
+    private int jumpArmedUntil = Integer.MIN_VALUE;
+    private float lastCharge;
+    private float flailRamp;
+    private float panic;
+    private float fallDamp;
+    private float takeoffY;
+    private float pitchLag;
     private float jumpImpactClock = Float.MAX_VALUE;
     private float jumpAirSeconds;
-    private float jumpLaunchPower;
     private float jumpImpactPower;
     private float jumpDeepestFall;
     private boolean jumpWasAirborne;
+
+    private int senseTick = Integer.MIN_VALUE;
+    private boolean senseAirborne;
+    private float apexSeconds;
+    private float landSeconds;
 
     private float lastEarSignalLeft = Float.NaN;
     private float lastEarSignalRight = Float.NaN;
@@ -180,6 +231,7 @@ public final class BhEquineGait {
     public static void fillJumpInputs(Entity entity,
                                       BhHorseRenderState state) {
         state.verticalSpeed = (float) (entity.getY() - entity.yOld);
+        state.posY = (float) entity.getY();
 
         double dx = entity.getX() - entity.xOld;
         double dz = entity.getZ() - entity.zOld;
@@ -193,6 +245,9 @@ public final class BhEquineGait {
                 && client.options.keyJump.isDown()
                 ? Mth.clamp(player.getJumpRidingScale(), 0.0F, 1.0F)
                 : 0.0F;
+        state.firstPersonRider = player != null
+                && client.options.getCameraType().isFirstPerson()
+                && entity.hasPassenger(player);
     }
 
     public static void advanceFor(Entity entity,
@@ -204,15 +259,69 @@ public final class BhEquineGait {
             state.kickTicks = data.bh_getKickTicks();
             state.stompTicks = data.bh_getStompTicks();
             state.pullingCart = data.bh_hasCartGear();
+            state.jumpCue = data.bh_getJumpCue();
+            state.stabilizer = data.bh_getStabilizerState().ordinal();
         } else {
             state.gear = 0;
             state.kickTicks = 0;
             state.stompTicks = 0;
             state.pullingCart = false;
+            state.jumpCue = 0;
+            state.stabilizer = 0;
         }
 
         BhEquineGait gait = ACTIVE.computeIfAbsent(state.entityId, key -> new BhEquineGait(entity.getId()));
+        gait.sense(entity, state);
         gait.advance(state, state.ageInTicks);
+    }
+
+    private void sense(Entity entity, BhHorseRenderState state) {
+        int tick = (int) state.ageInTicks;
+        boolean airborne = !state.onGround && !state.isInWater && !state.isPassenger;
+        if (tick == senseTick && airborne == senseAirborne) {
+            return;
+        }
+        senseTick = tick;
+        senseAirborne = airborne;
+        if (!airborne) {
+            apexSeconds = 0.0F;
+            landSeconds = 0.0F;
+            return;
+        }
+
+        double x = entity.getX();
+        double y = entity.getY();
+        double z = entity.getZ();
+        BlockHitResult hit = entity.level().clip(new ClipContext(
+                new Vec3(x, y + 0.01D, z), new Vec3(x, y - GROUND_PROBE_BLOCKS, z),
+                ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, entity));
+        float drop = hit.getType() == HitResult.Type.MISS
+                ? GROUND_PROBE_BLOCKS
+                : (float) (y - hit.getLocation().y);
+
+        float cap = state.stabilizer == HorseStabilizerState.OPEN.ordinal()
+                ? (float) Stabilizer.MAX_DESCENT_SPEED
+                : state.stabilizer == HorseStabilizerState.HALF_OPEN.ordinal()
+                ? (float) Stabilizer.HALF_OPEN_DESCENT_SPEED
+                : -Float.MAX_VALUE;
+
+        float d = state.verticalSpeed;
+        float pos = 0.0F;
+        int apex = -1;
+        int land = -1;
+        for (int k = 1; k <= PREDICT_TICKS; k++) {
+            d = Math.max((d - GRAVITY) * DRAG, cap);
+            if (apex < 0 && d <= 0.0F) {
+                apex = k;
+            }
+            pos += d;
+            if (pos <= -drop) {
+                land = k;
+                break;
+            }
+        }
+        apexSeconds = apex < 0 ? 0.0F : (apex - 0.5F) / 20.0F;
+        landSeconds = land < 0 ? PREDICT_TICKS / 20.0F : land / 20.0F;
     }
 
     public static void reset() {
@@ -380,93 +489,9 @@ public final class BhEquineGait {
                 (LIMP_SPEED_MAX - limbSpeed) / LIMP_SPEED_FADE, 0.0F, 1.0F);
         state.limpWeight = limp * limpSpeedGate * Math.max(0.0F, 1.0F - swim);
 
-        final float verticalSpeed = Mth.clamp(state.verticalSpeed, -3.0F, 3.0F);
-        final boolean airborne = !state.onGround && !state.isInWater && !state.isPassenger;
-
-        final float gatherTarget = airborne || state.isInWater
-                ? 0.0F
-                : Mth.clamp(state.jumpChargeInput, 0.0F, 1.0F);
-        jumpGather += Mth.clamp(gatherTarget - jumpGather,
-                -JUMP_GATHER_OUT_PER_SECOND * deltaSeconds,
-                JUMP_GATHER_IN_PER_SECOND * deltaSeconds);
-
-        if (!jumpSeeded) {
-            jumpSeeded = true;
-            jumpWasAirborne = airborne;
-        }
-
-        if (airborne && !jumpWasAirborne) {
-            jumpAirSeconds = 0.0F;
-            jumpDeepestFall = 0.0F;
-            if (verticalSpeed >= JUMP_TAKEOFF_SPEED || jumpGather > 0.15F) {
-                jumpThrustClock = 0.0F;
-                jumpLaunchPower = Mth.clamp(
-                        Math.max(verticalSpeed / JUMP_RISE_FULL, jumpGather), 0.35F, 1.0F);
-            } else {
-                jumpLaunchPower = 0.6F;
-            }
-        }
-
-        if (airborne) {
-            jumpAirSeconds += deltaSeconds;
-            jumpDeepestFall = Math.min(jumpDeepestFall, verticalSpeed);
-        } else if (jumpWasAirborne) {
-            if (state.onGround && jumpAirSeconds >= JUMP_MIN_AIR_SECONDS) {
-                float landingSpeed = Math.min(jumpDeepestFall, verticalSpeed);
-                jumpImpactClock = 0.0F;
-                jumpImpactPower = Mth.clamp(-landingSpeed / JUMP_FALL_FULL,
-                        JUMP_IMPACT_POWER_MIN, JUMP_IMPACT_POWER_MAX);
-            }
-            jumpAirSeconds = 0.0F;
-        }
-        jumpWasAirborne = airborne;
-
-        if (jumpThrustClock < JUMP_THRUST_SECONDS) {
-            jumpThrustClock += deltaSeconds;
-        }
-        if (jumpImpactClock < JUMP_IMPACT_SECONDS) {
-            jumpImpactClock += deltaSeconds;
-        }
-
-        jumpFlight = airborne && jumpAirSeconds > 0.0F
-                ? Math.min(1.0F, jumpFlight + JUMP_FLIGHT_PER_SECOND * deltaSeconds)
-                : 0.0F;
-
-        state.jumpThrustProgress = jumpThrustClock / JUMP_THRUST_SECONDS;
-        state.jumpImpactProgress = jumpImpactClock / JUMP_IMPACT_SECONDS;
-        state.jumpLaunchPower = jumpLaunchPower;
-        state.jumpImpactPower = jumpImpactPower;
+        advanceJump(state, deltaSeconds, ageInTicks, move);
         state.jumpLeadSign = leadSign;
-
-        state.jumpThrust = thrustShifted(state, 0.0F);
-
-        state.jumpGather = jumpGather;
-        state.jumpFlight = jumpFlight;
-
-        final float riseTarget = Mth.clamp(verticalSpeed / JUMP_RISE_FULL, 0.0F, 1.0F) * jumpFlight;
-        jumpRiseSmooth += Mth.clamp(riseTarget - jumpRiseSmooth,
-                -JUMP_RISE_OUT_PER_SECOND * deltaSeconds,
-                JUMP_RISE_IN_PER_SECOND * deltaSeconds);
-        state.jumpRise = jumpRiseSmooth;
-        state.jumpFall = Mth.clamp(-verticalSpeed / JUMP_FALL_FULL, 0.0F, 1.0F) * jumpFlight;
-
-        jumpReach += Mth.clamp(state.jumpFall - jumpReach,
-                -JUMP_REACH_OUT_PER_SECOND * deltaSeconds,
-                JUMP_REACH_IN_PER_SECOND * deltaSeconds);
-        state.jumpReach = jumpReach;
-
-        state.jumpImpact = impactShifted(state, 0.0F);
-        state.jumpImpactSecond = impactSecondShifted(state, 0.0F);
-
-        float jumpTail = Math.max(Math.max(jumpFlight, jumpReach),
-                Math.max(state.jumpThrust, state.jumpImpact));
-        state.jumpActive = Math.min(1.0F, Math.max(jumpGather, jumpTail));
         lastJumpActive = state.jumpActive;
-
-        final float arc = arcPitch(state);
-        arcLag += (arc - arcLag) * (1.0F - (float) Math.exp(-deltaSeconds / ARC_LAG_SECONDS));
-        state.arcPitch = arc;
-        state.arcWhip = arc - arcLag;
 
         if (rear > 0.2F) {
             landPhase = 0.0F;
@@ -586,20 +611,253 @@ public final class BhEquineGait {
 
     }
 
-    public static float arcPitch(BhHorseRenderState state) {
-        return (-16.0F * state.jumpRise
-              - 10.0F * state.jumpThrust
-              + 9.0F * state.jumpReach
-              + 5.0F * state.jumpImpact
-              - 7.0F * state.jumpImpactSecond) * Mth.DEG_TO_RAD;
+    private void advanceJump(BhHorseRenderState state, float dt, float ageInTicks, float move) {
+        final float verticalSpeed = Mth.clamp(state.verticalSpeed, -3.0F, 3.0F);
+        final boolean airborne = !state.onGround && !state.isInWater && !state.isPassenger;
+        final int tick = (int) ageInTicks;
+        final float sinceSense = Math.max(0.0F, (ageInTicks - senseTick) / 20.0F);
+        final float apexLeft = Math.max(0.0F, apexSeconds - sinceSense);
+        final float landLeft = Math.max(0.0F, landSeconds - sinceSense);
+
+        if (!jumpSeeded) {
+            jumpSeeded = true;
+            jumpWasAirborne = airborne;
+            lastJumpCue = state.jumpCue;
+        }
+        final boolean cued = state.jumpCue != lastJumpCue;
+        lastJumpCue = state.jumpCue;
+
+        final float charge = airborne || state.isInWater ? 0.0F : Mth.clamp(state.jumpChargeInput, 0.0F, 1.0F);
+        if (lastCharge > 0.0F && charge <= 0.0F && !airborne) {
+            jumpArmedUntil = Math.max(jumpArmedUntil, tick + JUMP_ARM_TICKS);
+        }
+        lastCharge = charge;
+
+        if (airborne && !jumpWasAirborne) {
+            jumpAirSeconds = 0.0F;
+            jumpDeepestFall = 0.0F;
+            flailRamp = 0.0F;
+            takeoffY = state.posY;
+            if (tick <= jumpArmedUntil && verticalSpeed > JUMP_LAUNCH_SPEED) {
+                startJump(apexLeft);
+            }
+            jumpArmedUntil = Integer.MIN_VALUE;
+        }
+
+        if (cued) {
+            if (!airborne) {
+                jumpArmedUntil = tick + JUMP_ARM_TICKS;
+            } else if (!inAir(jumpPhase) && jumpAirSeconds <= JUMP_LATE_SECONDS
+                    && verticalSpeed > JUMP_LAUNCH_SPEED) {
+                startJump(apexLeft);
+            }
+        }
+
+        if (charge > 0.0F && (jumpPhase == JUMP_NONE || jumpPhase == JUMP_HOLD || jumpPhase == JUMP_LAND)) {
+            if (jumpPhase != JUMP_HOLD) {
+                crossTo(BhJumpClips.HOLD, 0.0F);
+                jumpPhase = JUMP_HOLD;
+            }
+            holdPeak = Math.max(holdPeak, charge);
+        } else if (jumpPhase == JUMP_HOLD && charge <= 0.0F && tick > jumpArmedUntil) {
+            holdPeak = 0.0F;
+        }
+
+        if (airborne) {
+            jumpAirSeconds += dt;
+            jumpDeepestFall = Math.min(jumpDeepestFall, verticalSpeed);
+            if (inAir(jumpPhase) && jumpPhase != JUMP_TAKEOFF) {
+                flailRamp = Mth.clamp((jumpAirSeconds - FLAIL_START_SECONDS)
+                        / (FLAIL_FULL_SECONDS - FLAIL_START_SECONDS), 0.0F, 1.0F);
+            }
+        } else if (jumpWasAirborne) {
+            boolean jumped = inAir(jumpPhase);
+            if (jumped) {
+                landFrom = jumpWeight * (1.0F - panic);
+                jumpWeight = landFrom;
+                landClock = 0.0F;
+                landFadeSeconds = state.isInWater ? WATER_FADE_SECONDS : LAND_FADE_SECONDS;
+                jumpPhase = JUMP_LAND;
+            }
+            if (state.onGround) {
+                float landingSpeed = Math.min(jumpDeepestFall, verticalSpeed);
+                float power = Mth.clamp(-landingSpeed / JUMP_FALL_FULL,
+                        JUMP_IMPACT_POWER_MIN, JUMP_IMPACT_POWER_MAX);
+                if (jumped && jumpAirSeconds >= JUMP_MIN_AIR_SECONDS) {
+                    jumpImpactClock = 0.0F;
+                    jumpImpactPower = power;
+                } else if (!jumped && takeoffY - state.posY >= PLAIN_DROP_BLOCKS) {
+                    jumpImpactClock = 0.0F;
+                    jumpImpactPower = power * PLAIN_IMPACT_SCALE;
+                }
+            }
+            jumpAirSeconds = 0.0F;
+        }
+        jumpWasAirborne = airborne;
+
+        if (jumpImpactClock < JUMP_IMPACT_SECONDS) {
+            jumpImpactClock += dt;
+        }
+
+        final boolean panicking = airborne && state.stabilizer != 0
+                && (panic > 0.0F || landLeft > PANIC_MIN_LAND_SECONDS);
+        panic = Mth.clamp(panic + (panicking ? PANIC_IN_PER_SECOND : -PANIC_OUT_PER_SECOND) * dt,
+                0.0F, 1.0F);
+
+        final float dampTarget = airborne && !inAir(jumpPhase) && jumpAirSeconds > FALL_DAMP_START_SECONDS
+                ? FALL_DAMP_MAX : 0.0F;
+        fallDamp += Mth.clamp(dampTarget - fallDamp,
+                -FALL_DAMP_OUT_PER_SECOND * dt, FALL_DAMP_IN_PER_SECOND * dt);
+
+        stepJumpClock(dt, apexLeft, landLeft, airborne);
+
+        switch (jumpPhase) {
+            case JUMP_HOLD -> {
+                float target = smoothstep(holdPeak);
+                jumpWeight += Mth.clamp(target - jumpWeight,
+                        -HOLD_OUT_PER_SECOND * dt, HOLD_IN_PER_SECOND * dt);
+                if (holdPeak <= 0.0F && jumpWeight <= 0.0F) {
+                    jumpPhase = JUMP_NONE;
+                }
+            }
+            case JUMP_TAKEOFF, JUMP_RISE, JUMP_APEX, JUMP_FALL ->
+                    jumpWeight = Math.min(1.0F, jumpWeight + JUMP_IN_PER_SECOND * dt);
+            case JUMP_LAND -> {
+                landClock += dt;
+                float k = landClock / landFadeSeconds;
+                jumpWeight = landFrom * (1.0F - smoothstep(k));
+                if (k >= 1.0F) {
+                    jumpWeight = 0.0F;
+                    jumpPhase = JUMP_NONE;
+                }
+            }
+            default -> jumpWeight = Math.max(0.0F, jumpWeight - JUMP_OUT_PER_SECOND * dt);
+        }
+        if (jumpFade < 1.0F) {
+            jumpFade = Math.min(1.0F, jumpFade + dt / JUMP_SEAM_SECONDS);
+        }
+
+        final float weight = jumpPhase == JUMP_LAND ? jumpWeight : jumpWeight * (1.0F - panic);
+        final float pitchScale = state.pullingCart ? CART_PITCH
+                : state.firstPersonRider ? FIRST_PERSON_PITCH : 1.0F;
+
+        state.jumpClip = jumpClip;
+        state.jumpClipTime = jumpClipTime;
+        state.jumpFromClip = jumpFromClip;
+        state.jumpFromTime = jumpFromTime;
+        state.jumpFade = smoothstep(jumpFade);
+        state.jumpWeight = weight;
+        state.jumpLegWeight = jumpPhase == JUMP_HOLD ? weight * (1.0F - move) : weight;
+        state.jumpPitchScale = pitchScale;
+        state.panicWeight = panic;
+        state.fallDamp = fallDamp;
+
+        state.jumpImpactProgress = jumpImpactClock / JUMP_IMPACT_SECONDS;
+        state.jumpImpactPower = jumpImpactPower;
+        state.jumpImpact = impactShifted(state, 0.0F);
+        state.jumpImpactSecond = impactSecondShifted(state, 0.0F);
+
+        final boolean flying = jumpPhase >= JUMP_TAKEOFF;
+        state.jumpAir = flying ? weight : 0.0F;
+        state.jumpFlail = (jumpPhase >= JUMP_RISE ? weight * flailRamp : 0.0F)
+                * Math.max(0.0F, 1.0F - Mth.clamp(state.jumpImpact, 0.0F, 1.0F));
+        if (jumpPhase == JUMP_TAKEOFF) {
+            float span = BhJumpClips.length(BhJumpClips.TAKEOFF) - BhJumpClips.crouchEnd();
+            float p = span > 0.0F ? Mth.clamp((jumpClipTime - BhJumpClips.crouchEnd()) / span, 0.0F, 1.0F) : 1.0F;
+            state.jumpPush = Mth.sin(p * Mth.PI) * weight;
+        } else {
+            state.jumpPush = 0.0F;
+        }
+
+        state.jumpActive = Math.min(1.0F, Math.max(weight, Math.max(panic, state.jumpImpact)));
+
+        float pitch = 0.0F;
+        if (weight > 0.0F) {
+            float now = BhJumpClips.bodyPitch(jumpClip, jumpClipTime);
+            if (state.jumpFade < 1.0F) {
+                float from = BhJumpClips.bodyPitch(jumpFromClip, jumpFromTime);
+                now = from + (now - from) * state.jumpFade;
+            }
+            pitch = -now * Mth.DEG_TO_RAD * pitchScale * weight;
+        }
+        pitchLag += (pitch - pitchLag) * (1.0F - (float) Math.exp(-dt / ARC_LAG_SECONDS));
+        state.jumpWhip = pitch - pitchLag;
     }
 
-    public static float thrustShifted(BhHorseRenderState state, float shiftSeconds) {
-        float progress = state.jumpThrustProgress + shiftSeconds / JUMP_THRUST_SECONDS;
-        if (progress <= 0.0F || progress >= 1.0F) {
-            return 0.0F;
+    private void stepJumpClock(float dt, float apexLeft, float landLeft, boolean airborne) {
+        if (!inAir(jumpPhase)) {
+            return;
         }
-        return smoothPulse(progress, JUMP_THRUST_ATTACK) * state.jumpLaunchPower;
+        final float apexAt = BhJumpClips.apexAt();
+        final float takeoffEnd = BhJumpClips.length(BhJumpClips.TAKEOFF);
+        final float apexEnd = BhJumpClips.length(BhJumpClips.APEX);
+
+        float target = 1.0F;
+        if (jumpPhase == JUMP_TAKEOFF) {
+            target = (takeoffEnd - jumpClipTime + apexAt) / Math.max(apexLeft, 0.02F);
+        } else if (jumpPhase == JUMP_APEX) {
+            target = jumpClipTime < apexAt
+                    ? (apexAt - jumpClipTime) / Math.max(apexLeft, 0.02F)
+                    : (apexEnd - jumpClipTime) / Math.max(landLeft, 0.02F);
+        }
+        target = Mth.clamp(target, 1.0F, JUMP_MAX_RATE);
+        jumpRate += Mth.clamp(target - jumpRate, -JUMP_RATE_SLEW * dt, JUMP_RATE_SLEW * dt);
+
+        switch (jumpPhase) {
+            case JUMP_TAKEOFF -> {
+                jumpClipTime += dt * jumpRate;
+                if (jumpClipTime >= takeoffEnd && airborne) {
+                    jumpClipTime = takeoffEnd;
+                    if (apexLeft > apexAt + JUMP_SEAM_SECONDS) {
+                        crossTo(BhJumpClips.RISE, 0.0F);
+                        jumpPhase = JUMP_RISE;
+                    } else {
+                        crossTo(BhJumpClips.APEX, 0.0F);
+                        jumpPhase = JUMP_APEX;
+                    }
+                } else if (jumpClipTime >= takeoffEnd) {
+                    jumpClipTime = takeoffEnd;
+                }
+            }
+            case JUMP_RISE -> {
+                jumpClipTime += dt;
+                if (apexLeft <= apexAt) {
+                    crossTo(BhJumpClips.APEX, 0.0F);
+                    jumpPhase = JUMP_APEX;
+                }
+            }
+            case JUMP_APEX -> {
+                jumpClipTime += dt * jumpRate;
+                if (jumpClipTime >= apexEnd) {
+                    jumpClipTime = apexEnd;
+                    crossTo(BhJumpClips.FALL, 0.0F);
+                    jumpPhase = JUMP_FALL;
+                }
+            }
+            default -> jumpClipTime += dt;
+        }
+    }
+
+    private void startJump(float apexLeft) {
+        crossTo(BhJumpClips.TAKEOFF, BhJumpClips.crouchEnd());
+        jumpPhase = JUMP_TAKEOFF;
+        holdPeak = 0.0F;
+        jumpArmedUntil = Integer.MIN_VALUE;
+        float remaining = BhJumpClips.length(BhJumpClips.TAKEOFF) - BhJumpClips.crouchEnd()
+                + BhJumpClips.apexAt();
+        jumpRate = Mth.clamp(remaining / Math.max(apexLeft, 0.02F), 1.0F, JUMP_MAX_RATE);
+    }
+
+    private void crossTo(int clip, float time) {
+        jumpFromClip = jumpClip;
+        jumpFromTime = jumpClipTime;
+        jumpClip = clip;
+        jumpClipTime = time;
+        jumpFade = jumpWeight > 0.0F ? 0.0F : 1.0F;
+    }
+
+    private static boolean inAir(int phase) {
+        return phase >= JUMP_TAKEOFF && phase <= JUMP_FALL;
     }
 
     public static float impactShifted(BhHorseRenderState state, float shiftSeconds) {

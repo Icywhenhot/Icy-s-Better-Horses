@@ -89,6 +89,8 @@ public interface IHorseData {
     void bh_setSpookTicks(int ticks);
     int bh_getCombatState();
     int bh_getKickTicks();
+    int bh_getJumpCue();
+    void bh_cueJump();
     void bh_setKickTicks(int ticks);
 
     boolean bh_isAbilityPaused();

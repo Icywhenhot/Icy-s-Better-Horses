@@ -7,6 +7,7 @@ import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.CartSizePayload;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
+import icy.betterhorses.net.network.HorseJumpPayload;
 import icy.betterhorses.net.network.HorseGearPayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
@@ -20,6 +21,7 @@ import icy.betterhorses.net.registry.CommandType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkDirection;
@@ -81,6 +83,8 @@ public final class BhNetworking {
                 payload -> () -> IcysBetterHorsesClient.receiveTrust(payload));
         toClient(HorseChargeShakePayload.class, HorseChargeShakePayload::encode, HorseChargeShakePayload::decode,
                 payload -> () -> IcysBetterHorsesClient.receiveChargeShake(payload));
+        toClient(HorseJumpPayload.class, HorseJumpPayload::encode, HorseJumpPayload::decode,
+                payload -> () -> IcysBetterHorsesClient.receiveJump(payload));
         toClient(ConfigSyncPayload.class, ConfigSyncPayload::encode, ConfigSyncPayload::decode,
                 payload -> () -> IcysBetterHorsesClient.receiveConfig(payload));
         toClient(BreedDataPayload.class, BreedDataPayload::encode, BreedDataPayload::decode,
@@ -100,6 +104,10 @@ public final class BhNetworking {
 
     public static void sendToPlayer(ServerPlayer player, Object payload) {
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), payload);
+    }
+
+    public static void sendToTracking(Entity entity, Object payload) {
+        CHANNEL.send(PacketDistributor.TRACKING_ENTITY.with(() -> entity), payload);
     }
 
     private static <T> void toServer(Class<T> type, BiConsumer<T, net.minecraft.network.FriendlyByteBuf> encoder,
