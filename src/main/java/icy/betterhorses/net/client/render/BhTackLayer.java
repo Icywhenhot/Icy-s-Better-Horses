@@ -39,6 +39,7 @@ public class BhTackLayer<S extends BhHorseRenderState, M extends BhHorseModel>
                         Function<S, Identifier> textureGetter,
                         ToIntFunction<S> tint) {
         super(parent);
+        adultModel.matchFrame(parent.getModel());
         this.adultModel = adultModel;
         this.babyModel = babyModel;
         this.textureGetter = textureGetter;

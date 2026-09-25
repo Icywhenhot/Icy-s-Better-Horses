@@ -106,17 +106,23 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
         ModelPart body = ((HorseModelAccessor) this.getParentModel()).bh_getBody();
         Variant variant = variantFor(state);
 
-        double anchorY = (this.getParentModel() instanceof BhHorseModel model)
-                ? variant.feetY() - model.bhBodyRestY() / 16.0D
-                : variant.feetY() - body.y / 16.0D;
+        float restX = body.x;
+        float restY = body.y;
+        float restZ = body.z;
+        if (this.getParentModel() instanceof BhHorseModel model) {
+            BhHorseModel.Rest rest = model.bhBodyRest();
+            restX = rest.x();
+            restY = rest.y();
+            restZ = rest.z();
+        }
 
         poseStack.pushPose();
         this.getParentModel().root().translateAndRotate(poseStack);
         body.translateAndRotate(poseStack);
         poseStack.translate(
-                -body.x / 16.0F,
-                anchorY,
-                -body.z / 16.0F + variant.zOffset());
+                -restX / 16.0F,
+                variant.feetY() - restY / 16.0D,
+                -restZ / 16.0F + variant.zOffset());
         poseStack.mulPose(Axis.ZP.rotationDegrees(MODEL_ROLL_DEGREES));
 
         variant.renderer().performRenderPass(

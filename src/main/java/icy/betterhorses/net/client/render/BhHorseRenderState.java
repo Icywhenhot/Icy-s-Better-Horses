@@ -56,24 +56,32 @@ public class BhHorseRenderState extends EquineRenderState {
     public float stompPhase = 1.0F;
 
     public float verticalSpeed;
+    public float posY;
     public float jumpChargeInput;
+    public int jumpCue;
+    public int stabilizer;
+    public boolean firstPersonRider;
 
-    public float jumpGather;
-    public float jumpThrust;
-    public float jumpFlight;
-    public float jumpRise;
-    public float jumpFall;
-    public float jumpReach;
+    public int jumpClip;
+    public float jumpClipTime;
+    public int jumpFromClip;
+    public float jumpFromTime;
+    public float jumpFade = 1.0F;
+    public float jumpWeight;
+    public float jumpLegWeight;
+    public float jumpPitchScale = 1.0F;
+    public float jumpAir;
+    public float jumpPush;
+    public float jumpFlail;
+    public float jumpWhip;
+    public float panicWeight;
+    public float fallDamp;
+
     public float jumpImpact;
     public float jumpImpactSecond;
     public float jumpActive;
 
-    public float arcPitch;
-    public float arcWhip;
-
-    public float jumpThrustProgress = Float.MAX_VALUE;
     public float jumpImpactProgress = Float.MAX_VALUE;
-    public float jumpLaunchPower;
     public float jumpImpactPower;
     public float jumpLeadSign;
 

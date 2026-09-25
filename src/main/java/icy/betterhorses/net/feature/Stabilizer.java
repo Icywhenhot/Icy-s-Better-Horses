@@ -13,8 +13,8 @@ import net.minecraft.world.phys.Vec3;
 
 public final class Stabilizer implements HorseFeature {
 
-    private static final double HALF_OPEN_DESCENT_SPEED = -0.35D;
-    private static final double MAX_DESCENT_SPEED = -0.125D;
+    public static final double HALF_OPEN_DESCENT_SPEED = -0.35D;
+    public static final double MAX_DESCENT_SPEED = -0.125D;
     private static final double SMOOTHING = 0.35D;
     private static final double HALF_OPEN_SMOOTHING = 0.2D;
 

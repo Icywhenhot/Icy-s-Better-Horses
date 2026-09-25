@@ -9,6 +9,7 @@ import icy.betterhorses.net.client.HorseRosterScreen;
 import icy.betterhorses.net.client.HorseStabilizerSoundController;
 import icy.betterhorses.net.client.RadialMenuScreen;
 import icy.betterhorses.net.client.render.BhModelLayers;
+import icy.betterhorses.net.client.render.BhJumpClips;
 import icy.betterhorses.net.client.render.BhNamedCoats;
 import icy.betterhorses.net.client.render.BhTackTextures;
 import icy.betterhorses.net.client.render.FriesianHorseRenderer;
@@ -30,6 +31,7 @@ import icy.betterhorses.net.network.CartSizePayload;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
+import icy.betterhorses.net.network.HorseJumpPayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.BreedDataPayload;
@@ -138,6 +140,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         BhModelLayers.register();
         BhTackTextures.register();
         BhNamedCoats.register();
+        BhJumpClips.register();
         EntityRendererRegistry.register(ModEntities.ICELANDIC_HORSE, context ->
                 new IcelandicHorseRenderer(context,
                         BhModelLayers.ICELANDIC_HORSE,
@@ -230,6 +233,14 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
 
         ClientPlayNetworking.registerGlobalReceiver(HorseChargeShakePayload.TYPE, (payload, context) ->
                 context.client().execute(ChargeShakeController::trigger));
+
+        ClientPlayNetworking.registerGlobalReceiver(HorseJumpPayload.TYPE, (payload, context) ->
+                context.client().execute(() -> {
+                    if (context.client().level != null
+                            && context.client().level.getEntity(payload.horseId()) instanceof AbstractHorse horse) {
+                        IHorseData.of(horse).bh_cueJump();
+                    }
+                }));
 
         ClientPlayNetworking.registerGlobalReceiver(ConfigSyncPayload.TYPE, (payload, context) ->
                 context.client().execute(() -> {

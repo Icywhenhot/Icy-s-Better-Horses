@@ -11,6 +11,7 @@ import icy.betterhorses.net.network.HorseGearPayload;
 import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
+import icy.betterhorses.net.network.HorseJumpPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
@@ -100,6 +101,7 @@ public class IcysBetterHorses implements ModInitializer {
         PayloadTypeRegistry.clientboundPlay().register(ConfigSyncPayload.TYPE, new ConfigSyncPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(BreedDataPayload.TYPE, new BreedDataPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(HorseChargeShakePayload.TYPE, new HorseChargeShakePayload.StreamCodec());
+        PayloadTypeRegistry.clientboundPlay().register(HorseJumpPayload.TYPE, new HorseJumpPayload.StreamCodec());
     }
 
     private static ResourceKey<CommandType> bh_parseCommand(String raw) {
