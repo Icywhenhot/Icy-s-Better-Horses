@@ -1,7 +1,10 @@
 package icy.betterhorses.net.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhHorseCombatAlert;
+import icy.betterhorses.net.BhSecondChance;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -14,13 +17,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Player.class)
 public abstract class PlayerHurtMixin {
 
-    @org.spongepowered.asm.mixin.injection.Redirect(method = "actuallyHurt", at = @At(value = "INVOKE",
+    @WrapOperation(method = "actuallyHurt", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;setHealth(F)V"))
-    private void bh_rescueRider(Player player, float health, ServerLevel level, DamageSource source, float amount) {
-        if (health <= 0.0F && icy.betterhorses.net.BhSecondChance.intercept(level, player, source, player.getHealth() - health)) {
+    private void bh_rescueRider(Player player, float health, Operation<Void> setHealth,
+                                ServerLevel level, DamageSource source, float amount) {
+        if (health <= 0.0F && BhSecondChance.intercept(level, player, source, player.getHealth() - health)) {
             return;
         }
-        player.setHealth(health);
+        setHealth.call(player, health);
     }
 
     @Inject(method = "actuallyHurt", at = @At("TAIL"))
