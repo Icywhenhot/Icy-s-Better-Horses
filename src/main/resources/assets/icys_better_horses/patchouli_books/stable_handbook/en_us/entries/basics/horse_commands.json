@@ -1,0 +1,45 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.basics.horse_commands.name",
+  "category": "icys_better_horses:basics",
+  "icon": "minecraft:command_block",
+  "sortnum": 10,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.horse_commands.overview.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_commands.overview.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.horse_commands.coat.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_commands.coat.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_commands.coat2.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.horse_commands.edits.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_commands.edits.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_commands.edits2.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.horse_commands.spawn.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_commands.spawn.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_commands.spawn2.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.horse_commands.lookup.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_commands.lookup.text"
+    }
+  ]
+}
