@@ -64,6 +64,8 @@ public final class BhCommands {
                 .then(Commands.literal("debug")
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .executes(BhCommands::dumpHorses)));
+
+        BhHorseCommands.build(dispatcher);
     }
 
     private static int setBond(CommandContext<CommandSourceStack> context, int level)
