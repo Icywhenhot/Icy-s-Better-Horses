@@ -60,6 +60,25 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             Container horseContainer,
             AbstractHorse horse,
             CallbackInfo ci) {
+        Slot saddle = new Slot(horseContainer, 0, 8, 18) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return (stack.is(Items.SADDLE) || stack.is(ModItems.UPGRADED_SADDLE))
+                        && !hasItem() && horse.isSaddleable();
+            }
+
+            @Override
+            public boolean mayPickup(Player player) {
+                return !IHorseData.of(horse).bh_hasCartGear() && super.mayPickup(player);
+            }
+
+            @Override
+            public boolean isActive() {
+                return horse.isSaddleable();
+            }
+        };
+        saddle.index = 0;
+        this.slots.set(0, saddle);
         final IHorseData data = IHorseData.of(horse);
         this.bh_horse = horse;
         final SimpleContainer gear = data.bh_getGearContainer();
@@ -145,7 +164,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                 this.bh_active().clearContent();
             }
         };
-        // Player slots start right after the horse's own (2, or 17 with a chest).
         this.bh_playerInventoryStartIndex = horseContainer.getContainerSize();
         this.bh_playerInventoryEndIndex = Math.min(this.bh_playerInventoryStartIndex + 36, this.slots.size());
 
@@ -272,7 +290,6 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                 && this.bh_isEnderChestGear(this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal()))) {
             rows = Math.min(rows, BH_ENDER_SLOT_COUNT / 9);
         } else {
-            // Showing more rows than the container holds would silently delete items.
             rows = Math.min(rows, IHorseData.of(this.bh_horse).bh_getChestContainer().getContainerSize() / 9);
         }
         return rows;
@@ -295,7 +312,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
     @Unique
     private boolean bh_isStorageChestGear(ItemStack stack) {
-        return stack.is(Items.CHEST);
+        return GearSlot.isStorageChest(stack);
     }
 
     @Unique

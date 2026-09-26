@@ -1,7 +1,8 @@
 package icy.betterhorses.net.gametest;
 
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.BhBreeds;
 import icy.betterhorses.net.HorseBreed;
-import icy.betterhorses.net.HorseGender;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModEntities;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
@@ -16,8 +17,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.level.block.Blocks;
 
-// Round 2, item 10: FOAL/MIXED_FOAL/BOND_MAX were defined as criteria keys but never fired from
-// anywhere, so foal_play/best_of_both_worlds/ride_or_die were unobtainable.
 public class AdvancementsGameTest implements FabricGameTest {
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
@@ -25,11 +24,11 @@ public class AdvancementsGameTest implements FabricGameTest {
         helper.setBlock(2, 1, 2, Blocks.STONE);
         ServerLevel level = helper.getLevel();
         AbstractHorse mother = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
-        AbstractHorse father = helper.spawn(ModEntities.forBreed(HorseBreed.SHIRE), 3, 2, 2);
+        AbstractHorse father = helper.spawn(ModEntities.forBreed(BhBreeds.keyOf(HorseBreed.SHIRE)), 3, 2, 2);
         IHorseData.of(mother).bh_setBreed(HorseBreed.CLYDESDALE);
-        IHorseData.of(mother).bh_setGender(HorseGender.FEMALE);
+        IHorseData.of(mother).bh_setGender(BhContent.FEMALE.key());
         IHorseData.of(father).bh_setBreed(HorseBreed.SHIRE);
-        IHorseData.of(father).bh_setGender(HorseGender.MALE);
+        IHorseData.of(father).bh_setGender(BhContent.MALE.key());
         mother.setTamed(true);
         father.setTamed(true);
 

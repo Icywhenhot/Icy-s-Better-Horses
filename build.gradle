@@ -42,7 +42,6 @@ repositories {
 }
 
 fabricApi {
-	// In-world tests under src/gametest; `./gradlew runGameTest` (also run by `test`).
 	configureTests {
 		createSourceSet = true
 		modId = "icys-better-horses-gametest"
@@ -54,11 +53,9 @@ fabricApi {
 loom {
 	runs {
 		client {
-			// Fixed username so the offline UUID, and horse ownership with it, survives relaunches.
 			programArgs '--username', 'Dev'
 		}
 		gameTest {
-			// JUnit-style XML report from each `runGameTest`, for CI or just reading results after the fact.
 			property 'fabric-api.gametest.report-file', "${project.buildDir}/test-results/gametest/report.xml"
 		}
 	}
@@ -85,10 +82,7 @@ dependencies {
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.0"
 }
 
-// Dev only: Loom doesn't unpack Patchouli's nested Fiber jar, so runClient crashes without it.
-// Pulls it out of Patchouli's own jar. Doesn't touch the published jar; delete if Loom fixes this.
 configurations {
-	// Patchouli's raw jar, only used to extract Fiber from.
 	patchouliBundle {
 		canBeConsumed = false
 		transitive = false
@@ -101,7 +95,6 @@ dependencies {
 
 def patchouliFiberDir = layout.buildDirectory.dir('patchouliFiber')
 
-// Resolved lazily, so builds that never run the game skip it.
 def extractPatchouliFiber = tasks.register('extractPatchouliFiber', Copy) {
 	from { zipTree(configurations.patchouliBundle.singleFile) }
 	include 'META-INF/jars/fiber-*.jar'
@@ -111,7 +104,6 @@ def extractPatchouliFiber = tasks.register('extractPatchouliFiber', Copy) {
 }
 
 dependencies {
-	// Not modLocalRuntime: that's resolved before extraction runs, so a clean first launch crashes.
 	localRuntime fileTree(patchouliFiberDir.get().asFile) {
 		include '*.jar'
 	}.builtBy(extractPatchouliFiber)

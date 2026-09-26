@@ -24,9 +24,6 @@ import net.minecraft.world.phys.Vec3;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
-// Round 2, item 6: vanilla's actuallyHurt() returns early once armour/absorption fully soak a hit
-// (verified with javap: an early RETURN once the mitigated damage hits zero, another for
-// invulnerable). The rouse and medkit TAIL injects never used to run for those hits.
 public class AbsorptionGameTest implements FabricGameTest {
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
@@ -36,11 +33,9 @@ public class AbsorptionGameTest implements FabricGameTest {
         IHorseData data = IHorseData.of(horse);
         data.bh_setBreed(HorseBreed.CLYDESDALE);
         horse.setTamed(true);
-        data.bh_setBond(60); // tier 1, needed for the defend-when-unridden branch
+        data.bh_setBond(60);
 
         ServerLevel level = helper.getLevel();
-        // A real (unadded) ServerPlayer, not FakePlayer/the GameTest mock player - both of those
-        // hard-code isInvulnerableTo() to always return true, which would defeat this test.
         ServerPlayer owner = new ServerPlayer(level.getServer(), level,
                 new GameProfile(UUID.randomUUID(), "bh-absorption-owner"));
         owner.setPos(helper.absoluteVec(new Vec3(2, 2, 3)));
@@ -48,11 +43,9 @@ public class AbsorptionGameTest implements FabricGameTest {
         HorseTracker.register(horse);
 
         Zombie zombie = helper.spawn(EntityType.ZOMBIE, 2, 2, 4);
-        owner.setAbsorptionAmount(20.0F); // fully soaks the hit below - net health damage is zero
+        owner.setAbsorptionAmount(20.0F);
 
         DamageSource source = level.damageSources().mobAttack(zombie);
-        // Skip the outer hurt() wrapper (and its own difficulty scaling etc.) and call
-        // actuallyHurt() directly - the exact method the bug/fix is about.
         try {
             Method actuallyHurt = net.minecraft.world.entity.player.Player.class
                     .getDeclaredMethod("actuallyHurt", DamageSource.class, float.class);
@@ -76,10 +69,10 @@ public class AbsorptionGameTest implements FabricGameTest {
         data.bh_setOwner(UUID.randomUUID());
         horse.setTamed(true);
         data.bh_getGearContainer().setItem(GearSlot.MEDKIT.ordinal(), new ItemStack(ModItems.HORSE_MEDKIT));
-        horse.setHealth(horse.getMaxHealth() * 0.4F); // already below the 50% trigger threshold
+        horse.setHealth(horse.getMaxHealth() * 0.4F);
 
         Zombie zombie = helper.spawn(EntityType.ZOMBIE, 2, 2, 4);
-        horse.setAbsorptionAmount(20.0F); // fully soaks the hit below - net health damage is zero
+        horse.setAbsorptionAmount(20.0F);
 
         ServerLevel level = helper.getLevel();
         DamageSource source = level.damageSources().mobAttack(zombie);

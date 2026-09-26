@@ -12,8 +12,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Projectile.class)
 public abstract class ProjectileImpactMixin {
 
-    // Every projectile's onHit calls super first, so one hook here catches them all.
-    // Cancelling at HEAD skips the hit, same as cancelling Forge's ProjectileImpactEvent.
     @Inject(method = "onHit", at = @At("HEAD"), cancellable = true)
     private void bh_deflectOffHorse(HitResult hitResult, CallbackInfo ci) {
         if (hitResult instanceof EntityHitResult hit

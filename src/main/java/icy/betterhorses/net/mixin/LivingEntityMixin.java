@@ -1,7 +1,10 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseKind;
+import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhSurge;
+import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.feature.breed.HardyNorthern;
@@ -30,6 +33,7 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Unique private static final float BH_MEDKIT_HEALTH_THRESHOLD_FRACTION = 0.5F;
     @Unique private static final int BH_MEDKIT_EFFECT_DURATION = 20 * 30;
+    @Unique private boolean bh_triggerHorseMedkitAfterDamage = false;
 
     protected LivingEntityMixin(EntityType<?> entityType, Level level) {
         super(entityType, level);
@@ -41,12 +45,12 @@ public abstract class LivingEntityMixin extends Entity {
     @Shadow
     protected abstract float getDamageAfterMagicAbsorb(DamageSource source, float amount);
 
-    // HEAD, not TAIL: vanilla returns early once absorption/armour fully soak a hit, but the medkit
-    // still needs to trigger on those hits - bh_calculateHealthDamage already mirrors that math itself.
     @Inject(method = "actuallyHurt", at = @At("HEAD"))
-    private void bh_useHorseMedkit(DamageSource source, float amount, CallbackInfo ci) {
+    private void bh_queueHorseMedkit(DamageSource source, float amount, CallbackInfo ci) {
+        this.bh_triggerHorseMedkitAfterDamage = false;
+
         LivingEntity self = (LivingEntity) (Object) this;
-        if (!(self instanceof AbstractHorse) || !(self instanceof IHorseData data)) {
+        if (!BhHorseKind.managed(self) || !(self instanceof IHorseData data)) {
             return;
         }
 
@@ -56,11 +60,26 @@ public abstract class LivingEntityMixin extends Entity {
 
         float damageToHealth = this.bh_calculateHealthDamage(self, source, amount);
         float healthAfterDamage = self.getHealth() - damageToHealth;
-        if (healthAfterDamage >= self.getMaxHealth() * BH_MEDKIT_HEALTH_THRESHOLD_FRACTION) {
+        if (healthAfterDamage < self.getMaxHealth() * BH_MEDKIT_HEALTH_THRESHOLD_FRACTION) {
+            this.bh_triggerHorseMedkitAfterDamage = true;
+        }
+    }
+
+    @Inject(method = "actuallyHurt", at = @At("RETURN"))
+    private void bh_useHorseMedkit(DamageSource source, float amount, CallbackInfo ci) {
+        if (!this.bh_triggerHorseMedkitAfterDamage) {
+            return;
+        }
+
+        this.bh_triggerHorseMedkitAfterDamage = false;
+
+        LivingEntity self = (LivingEntity) (Object) this;
+        if (!BhHorseKind.managed(self) || !(self instanceof IHorseData data)) {
             return;
         }
 
         this.bh_consumeMedkitAndApplyEffects(self, data);
+        BhSurge.pulsePerk(data, ArchetypePerks.MEDKIT_BADGE);
     }
 
     @Unique
@@ -86,10 +105,11 @@ public abstract class LivingEntityMixin extends Entity {
         gear.setItem(GearSlot.MEDKIT.ordinal(), ItemStack.EMPTY);
         gear.setChanged();
 
-        self.addEffect(new MobEffectInstance(MobEffects.REGENERATION, BH_MEDKIT_EFFECT_DURATION, 0));
+        int dur = BH_MEDKIT_EFFECT_DURATION * ArchetypePerks.medkitMultiplier(BhBreedData.of(data.bh_getBreedKey()).archetype());
+        self.addEffect(new MobEffectInstance(MobEffects.REGENERATION, dur, 0));
         self.addEffect(new MobEffectInstance(MobEffects.HEAL, 1, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, BH_MEDKIT_EFFECT_DURATION, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, BH_MEDKIT_EFFECT_DURATION, 0));
+        self.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, dur, 0));
+        self.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, dur, 0));
     }
 
     @Inject(method = "canBeAffected", at = @At("HEAD"), cancellable = true)

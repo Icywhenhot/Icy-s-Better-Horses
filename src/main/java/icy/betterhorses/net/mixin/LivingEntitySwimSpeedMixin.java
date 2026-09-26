@@ -7,10 +7,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
-/**
- * Applies swim speed to the water acceleration in {@code travel()}, where Forge applied it.
- * Scaling the final velocity instead compounds every tick and the horse speeds up without limit.
- */
 @Mixin(LivingEntity.class)
 public abstract class LivingEntitySwimSpeedMixin {
 

@@ -9,11 +9,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * Adds our step height attribute to {@code Entity#maxUpStep()}, which vanilla uses for step-up.
- * Only horses have the attribute. Giving it to players would bring back two bugs Forge avoided
- * (MinecraftForge#8922, #9376).
- */
 @Mixin(Entity.class)
 public abstract class EntityStepHeightMixin {
 
@@ -26,7 +21,6 @@ public abstract class EntityStepHeightMixin {
         if (instance == null) {
             return;
         }
-        // Same formula as Forge: max(0, vanilla + attribute).
         cir.setReturnValue(Math.max(0.0F, cir.getReturnValueF() + (float) instance.getValue()));
     }
 }

@@ -26,9 +26,7 @@ public abstract class PlayerHurtMixin {
         player.setHealth(health);
     }
 
-    // HEAD, not TAIL: vanilla returns early once absorption/armour fully soak a hit, but horses
-    // should still rouse on a hit that connects, so this can't depend on the TAIL being reached.
-    @Inject(method = "actuallyHurt", at = @At("HEAD"))
+    @Inject(method = "actuallyHurt", at = @At("RETURN"))
     private void bh_rouseHorses(DamageSource source, float amount, CallbackInfo ci) {
         Player self = (Player) (Object) this;
         if (!BhConfig.horseCombatEnabled()
