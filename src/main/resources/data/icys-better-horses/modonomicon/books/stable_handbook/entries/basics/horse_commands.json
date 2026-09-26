@@ -1,0 +1,59 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:basics/horse_commands",
+  "category": "icys-better-horses:basics",
+  "name": "book.icys-better-horses.stable_handbook.basics.horse_commands.name",
+  "icon": {
+    "id": "minecraft:command_block"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": -5,
+  "y": -2,
+  "sort_number": 8,
+  "parents": [
+    {
+      "entry": "icys-better-horses:basics/configuration"
+    }
+  ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "overview",
+      "title": "book.icys-better-horses.stable_handbook.basics.horse_commands.overview.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_commands.overview.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "coat",
+      "title": "book.icys-better-horses.stable_handbook.basics.horse_commands.coat.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_commands.coat.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "edits",
+      "title": "book.icys-better-horses.stable_handbook.basics.horse_commands.edits.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_commands.edits.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "spawn",
+      "title": "book.icys-better-horses.stable_handbook.basics.horse_commands.spawn.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_commands.spawn.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "lookup",
+      "title": "book.icys-better-horses.stable_handbook.basics.horse_commands.lookup.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_commands.lookup.text"
+    }
+  ]
+}
