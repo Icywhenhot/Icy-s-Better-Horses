@@ -1,11 +1,15 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.client.render.BhJumpClips;
+import icy.betterhorses.net.client.render.BhNamedCoats;
+import icy.betterhorses.net.client.render.BhTackTextures;
 import com.mojang.blaze3d.platform.InputConstants;
 import icy.betterhorses.net.client.BhClientCaches;
 import icy.betterhorses.net.client.CartChestScreen;
 import icy.betterhorses.net.client.ChargeShakeController;
 import icy.betterhorses.net.client.ClientHorseRoster;
 import icy.betterhorses.net.client.ClientTrustCache;
+import icy.betterhorses.net.client.BhHorseHud;
 import icy.betterhorses.net.client.HorseGearController;
 import icy.betterhorses.net.client.HorseInfoScreen;
 import icy.betterhorses.net.client.HorseRosterScreen;
@@ -18,6 +22,7 @@ import icy.betterhorses.net.client.render.ClydesdaleHorseRenderer;
 import icy.betterhorses.net.client.render.FriesianHorseRenderer;
 import icy.betterhorses.net.client.render.HaflingerHorseRenderer;
 import icy.betterhorses.net.client.render.HorseCartRenderer;
+import icy.betterhorses.net.client.render.HorseStabilizerAnimatable;
 import icy.betterhorses.net.client.render.IcelandicHorseRenderer;
 import icy.betterhorses.net.client.render.MediumHorseRenderer;
 import icy.betterhorses.net.client.render.PercheronHorseRenderer;
@@ -31,6 +36,7 @@ import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.CartSizePayload;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
+import icy.betterhorses.net.network.HorseJumpPayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
@@ -42,6 +48,16 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.locale.Language;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -67,7 +83,7 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
     private static final double RADIAL_REACH = 12.0D;
 
     private static final double REACH = 12.0D;
-    private static final double ROUSE_SCAN = 48.0D;
+    private static final double ROUSE_SCAN = 32.0D;
 
     private static boolean callKeyWasDown = false;
 
@@ -124,10 +140,36 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(IcysBetterHorsesClient::onClientTick);
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> onDisconnect());
         ClientEntityEvents.ENTITY_UNLOAD.register((entity, level) -> {
-            if (entity instanceof AbstractHorse) {
-                BhClientHorseUnload.handle(entity.getId());
+            BhClientHorseUnload.handle(entity.getId());
+            if (entity instanceof AbstractHorse horse) {
+                HorseStabilizerAnimatable.remove(horse);
             }
         });
+        HudRenderCallback.EVENT.register((gfx, delta) -> BhHorseHud.render(gfx));
+        ItemTooltipCallback.EVENT.register((stack, context, lines) -> {
+            ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
+            if (!id.getNamespace().equals(IcysBetterHorses.RESOURCE_NAMESPACE) || lines.isEmpty()) {
+                return;
+            }
+            String key = "item." + id.getNamespace() + "." + id.getPath() + ".tooltip";
+            if (Language.getInstance().has(key)) {
+                lines.add(1, Component.translatable(key).withStyle(ChatFormatting.GRAY));
+            }
+        });
+        ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(
+                new SimpleSynchronousResourceReloadListener() {
+                    @Override
+                    public ResourceLocation getFabricId() {
+                        return new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "client_caches");
+                    }
+
+                    @Override
+                    public void onResourceManagerReload(ResourceManager manager) {
+                        BhTackTextures.clearCache();
+                        BhNamedCoats.clearCache();
+                        BhJumpClips.load(manager);
+                    }
+                });
     }
 
     private static void registerKeyMappings() {
@@ -202,7 +244,7 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         AABB searchBox = player.getBoundingBox().expandTowards(look.scale(RADIAL_REACH)).inflate(1.0D);
         EntityHitResult hit = ProjectileUtil.getEntityHitResult(
                 player, eye, end, searchBox,
-                entity -> entity instanceof AbstractHorse && entity.isPickable(),
+                entity -> BhHorseKind.managed(entity) && entity.isPickable(),
                 RADIAL_REACH * RADIAL_REACH);
         return hit != null && hit.getEntity() instanceof AbstractHorse horse ? horse : null;
     }
@@ -239,6 +281,15 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         ChargeShakeController.trigger();
     }
 
+    public static void receiveJump(HorseJumpPayload payload) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.level != null
+                && client.level.getEntity(payload.horseId()) instanceof AbstractHorse horse
+                && horse.getControllingPassenger() != client.player) {
+            IHorseData.of(horse).bh_cueJump();
+        }
+    }
+
     private static void onClientTick(Minecraft client) {
         HorseStabilizerSoundController.tick(client);
         if (client.player == null || client.level == null) {
@@ -249,7 +300,8 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         if (callDown && !callKeyWasDown) {
             if (anyHorseRoused(client)) {
                 BhNetworking.sendToServer(new HorseRecallPayload());
-            } else if (client.player.getVehicle() instanceof AbstractHorse mount) {
+            } else if (BhHorseKind.managed(client.player.getVehicle())
+                    && client.player.getVehicle() instanceof AbstractHorse mount) {
                 client.setScreen(new HorseInfoScreen(mount));
             } else {
                 BhNetworking.sendToServer(new CallHorsePayload());
@@ -286,7 +338,8 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         if (player == null || client.screen != null) {
             return;
         }
-        if (!(player.getVehicle() instanceof AbstractHorse horse)
+        if (!BhHorseKind.managed(player.getVehicle())
+                || !(player.getVehicle() instanceof AbstractHorse horse)
                 || horse.getControllingPassenger() != player) {
             return;
         }
@@ -306,7 +359,8 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         if (player == null || client.screen != null) {
             return;
         }
-        AbstractHorse horse = player.getVehicle() instanceof AbstractHorse mount
+        AbstractHorse horse = BhHorseKind.managed(player.getVehicle())
+                && player.getVehicle() instanceof AbstractHorse mount
                 ? mount
                 : lookedAtHorse(player);
         if (horse == null) {
@@ -328,13 +382,13 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
     }
 
     private static @Nullable AbstractHorse lookedAtHorse(LocalPlayer player) {
-        Entity hit = lookedAt(player, entity -> entity instanceof AbstractHorse && entity.isPickable());
+        Entity hit = lookedAt(player, entity -> BhHorseKind.managed(entity) && entity.isPickable());
         return hit instanceof AbstractHorse horse ? horse : null;
     }
 
     private static @Nullable Entity lookedAtCartTarget(LocalPlayer player) {
         return lookedAt(player, entity ->
-                (entity instanceof HorseCartEntity || entity instanceof AbstractHorse) && entity.isPickable());
+                (entity instanceof HorseCartEntity || BhHorseKind.managed(entity)) && entity.isPickable());
     }
 
     private static @Nullable Entity lookedAt(LocalPlayer player, java.util.function.Predicate<Entity> filter) {

@@ -137,6 +137,18 @@ public final class BhBreedCoats {
                 .toList();
     }
 
+    public String folder() {
+        return folder;
+    }
+
+    public List<String> coatIds() {
+        return coatIds;
+    }
+
+    public boolean hasFoalVariant() {
+        return foalTextures != null;
+    }
+
     public int count() {
         return coatIds.size();
     }

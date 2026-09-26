@@ -15,6 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class HorseTracker {
 
+    private static final int STALE_SWEEP_TICKS = 100;
+
     private static final Map<UUID, AbstractHorse> ownedHorses = new ConcurrentHashMap<>();
     private static @Nullable HorseTrackerState cachedState;
 
@@ -35,13 +37,35 @@ public final class HorseTracker {
     }
 
     public static boolean isStale(AbstractHorse horse) {
+        //This should be a bit better, and prevent this problem again, chunk loading mods can still fuck it up
+        IHorseData data = IHorseData.of(horse);
+        UUID identity = data.bh_getIdentity();
+        AbstractHorse original = identity.equals(horse.getUUID()) ? null : ownedHorses.get(identity);
+        if (original != null && original != horse && original.isAlive()) return true;
         HorseTrackerState state = state();
-        return state != null
-                && IHorseData.of(horse).bh_getGeneration() < state.getGeneration(horse.getUUID());
+        return state != null && data.bh_getGeneration() < state.getGeneration(identity);
+    }
+
+    public static boolean discardIfStale(AbstractHorse horse) {
+        if (horse.level().isClientSide()
+                || horse.tickCount % STALE_SWEEP_TICKS != 0
+                || !IHorseData.of(horse).bh_isOwned()
+                || !isStale(horse)) {
+            return false;
+        }
+        IcysBetterHorses.LOGGER.info("[whistle] discarding stale horse copy {} in {} (generation {} < {})",
+                horse.getUUID(), horse.level().dimension().location(),
+                IHorseData.of(horse).bh_getGeneration(), getGeneration(horse.getUUID()));
+        ownedHorses.remove(horse.getUUID(), horse);
+        ownedHorses.remove(IHorseData.of(horse).bh_getIdentity(), horse);
+        horse.ejectPassengers();
+        horse.discard();
+        return true;
     }
 
     public static void register(AbstractHorse horse) {
         if (isStale(horse) || !BhHorseKind.managed(horse)) return;
+        IHorseData.of(horse).bh_setIdentity(horse.getUUID());
         ownedHorses.put(horse.getUUID(), horse);
         HorseTrackerState state = state();
         if (state != null && IHorseData.of(horse).bh_isOwned()) {

@@ -12,6 +12,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
@@ -31,7 +32,12 @@ public final class ModItems {
     public static final Item CANISTER = item(
             "canister", new Item(new Item.Properties()));
     public static final Item HORSE_STABILIZER = item(
-            "horse_stabilizer_gear", new Item(new Item.Properties().stacksTo(1)));
+            "horse_stabilizer_gear", new Item(new Item.Properties().durability(2400)) {
+                @Override
+                public boolean isValidRepairItem(ItemStack stack, ItemStack repairCandidate) {
+                    return repairCandidate.is(CANISTER);
+                }
+            });
     public static final Item HORSE_CART = item(
             "horse_cart_gear", new HorseCartItem(new Item.Properties().stacksTo(1)));
     public static final Item WHEEL = item(

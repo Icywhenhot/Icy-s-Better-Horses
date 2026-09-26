@@ -1,5 +1,6 @@
 package icy.betterhorses.net;
 
+import net.minecraft.world.item.ItemStack;
 import icy.betterhorses.net.entity.CartSize;
 import icy.betterhorses.net.feature.breed.Ironclad;
 import icy.betterhorses.net.network.BreedDataPayload;
@@ -15,6 +16,11 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.CommandType;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import icy.betterhorses.net.registry.BhRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockSource;
 import net.minecraft.core.Direction;
@@ -55,9 +61,9 @@ public final class IcysBetterHorses implements ModInitializer {
     public static final String RESOURCE_NAMESPACE = "icys-better-horses";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    private static final float COMMAND_ANSWER_CHANCE = 0.35F;
+    private static final float COMMAND_ANSWER_CHANCE = 0.5F;
     private static final int DISENGAGE_TICKS = 60;
-    private static final double CART_SIZE_REACH = 6.0D;
+    private static final double CART_SIZE_REACH = 12.0D;
     private static final double DEFLECT_BOUNCE = 0.5D;
 
     private final List<AbstractHorse> staleHorses = new ArrayList<>();
@@ -71,10 +77,13 @@ public final class IcysBetterHorses implements ModInitializer {
         ModItems.register();
         ModMenus.register();
         ModSounds.register();
-        ModAttachments.register();
         BhAttributes.register();
         ModEntities.registerAttributes();
+        BhRegistries.register();
+        BhContent.register();
         BhCriteria.register();
+        BhContent.logSummary();
+        BhBreedData.initializeBuiltIns();
         BhHorseSpawnRules.installSpawnPlacementOverride();
         BhBiomeSpawns.register();
         BhNetworking.registerServer();
@@ -94,9 +103,6 @@ public final class IcysBetterHorses implements ModInitializer {
         LOGGER.info("Icy's Better Horses initialized.");
     }
 
-    // Vanilla's own spawn-egg dispense behaviour is registered in DispenserBlock's static init,
-    // which runs before our SpawnEggItem instances exist - so dispensers just no-op on our eggs
-    // unless we register the same behaviour for them here.
     private static void bh_registerSpawnEggDispensers() {
         DispenseItemBehavior behavior = new DefaultDispenseItemBehavior() {
             @Override
@@ -128,6 +134,7 @@ public final class IcysBetterHorses implements ModInitializer {
     private void onServerStopped() {
         staleHorses.clear();
         pendingReleases.clear();
+        BhTwinWatch.reset();
         HorseTracker.detach();
     }
 
@@ -177,7 +184,7 @@ public final class IcysBetterHorses implements ModInitializer {
         if (staleHorses.isEmpty()) return;
         for (AbstractHorse stale : staleHorses) {
             if (!stale.isRemoved()) {
-                LOGGER.debug("Discarding stale horse copy {} (generation {} < {})",
+                LOGGER.info("[whistle] discarding stale horse copy {} on load (generation {} < {})",
                         stale.getUUID(),
                         IHorseData.of(stale).bh_getGeneration(),
                         HorseTracker.getGeneration(stale.getUUID()));
@@ -206,9 +213,10 @@ public final class IcysBetterHorses implements ModInitializer {
         }
 
         projectile.setDeltaMovement(projectile.getDeltaMovement().scale(-DEFLECT_BOUNCE));
+        projectile.setYRot(projectile.getYRot() + 180.0F);
+        projectile.yRotO += 180.0F;
         projectile.hurtMarked = true;
         if (projectile instanceof AbstractArrow arrow) {
-            // pierce > 0 would re-find this same entity forever in AbstractArrow.tick's hit loop
             arrow.setPierceLevel((byte) 0);
         }
         if (!mount.level().isClientSide()) {
@@ -223,6 +231,7 @@ public final class IcysBetterHorses implements ModInitializer {
             growHorseBond(server, tuning.bondAmount());
         }
         HorseTracker.tick(server.getTickCount());
+        BhTwinWatch.tick(server, server.getTickCount());
         discardStaleHorses();
         applyPendingReleases();
     }
@@ -234,29 +243,50 @@ public final class IcysBetterHorses implements ModInitializer {
         return original;
     }
 
-    public static void handleRadialCommand(ServerPlayer player, int horseId, HorseCommand command) {
+    public static void handleRadialCommand(ServerPlayer player, int horseId, ResourceKey<CommandType> command) {
+        handleRadialCommand(player, horseId, command, "");
+    }
+
+    public static void handleRadialCommand(ServerPlayer player, int horseId,
+                                          ResourceKey<CommandType> command, String abilityId) {
+        if (command == null) return;
+        CommandType type = BhRegistries.commandTypeRegistry().get(command.location());
+        if (type == null) return;
         AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
         if (horse == null) {
             return;
         }
 
+        if (type.custom()) {
+            if (type.execute(horse, player)) playCommandAnswer(horse);
+            return;
+        }
         IHorseData data = (IHorseData) horse;
-        if (command == HorseCommand.ABILITY) {
-            boolean paused = !data.bh_isAbilityPaused();
-            data.bh_setAbilityPaused(paused);
-            player.sendSystemMessage(Component.translatable(paused
-                    ? "message.icys-better-horses.ability_off"
-                    : "message.icys-better-horses.ability_on"));
+        if (command.equals(BhContent.COMMAND_ABILITY.key())) {
+            IHorseAbilityHost host = (IHorseAbilityHost) horse;
+            if (!abilityId.isEmpty()) {
+                ResourceLocation id = ResourceLocation.tryParse(abilityId);
+                if (id == null || !host.bh_activateAbility(ResourceKey.create(BhRegistries.ABILITY_TYPES, id))) return;
+            } else if (CommandType.toggleable(data.bh_getBreedKey())) {
+                boolean paused = !data.bh_isAbilityPaused();
+                data.bh_setAbilityPaused(paused);
+                player.sendSystemMessage(Component.translatable(paused
+                        ? "message.icys-better-horses.ability_off"
+                        : "message.icys-better-horses.ability_on"));
+            } else {
+                var active = host.bh_activeAbilities();
+                if (active.isEmpty() || !host.bh_activateAbility(active.get(0))) return;
+            }
             playCommandAnswer(horse);
             return;
         }
-        if (command == HorseCommand.SET_HOME) {
+        if (command.equals(BhContent.COMMAND_SET_HOME.key())) {
             data.bh_setHome(horse.blockPosition());
-            data.bh_setCommand(HorseCommand.STAY);
+            data.bh_setCommand(BhContent.COMMAND_STAY.key());
             player.sendSystemMessage(Component.translatable("message.icys-better-horses.home_set"));
             BhCriteria.fire(player, BhCriteria.SET_HOME);
         } else {
-            if (command == HorseCommand.WANDER) {
+            if (command.equals(BhContent.COMMAND_WANDER.key())) {
                 data.bh_setWanderCenter(horse.blockPosition());
             }
             data.bh_setCommand(command);
@@ -430,65 +460,10 @@ public final class IcysBetterHorses implements ModInitializer {
 
     public static void handleCallHorse(ServerPlayer player) {
         if (!(player.getVehicle() instanceof AbstractHorse)) {
-            player.level().playSound(
-                    null,
-                    player.getX(),
-                    player.getY(),
-                    player.getZ(),
-                    ModSounds.CALL_WHISTLE,
-                    SoundSource.PLAYERS,
-                    1.0F,
-                    1.0F);
+            playWhistle(player);
         }
 
-        UUID playerId = player.getUUID();
-        AbstractHorse horse = findCallableHorse(player, playerId);
-        if (horse == null) {
-            return;
-        }
-
-        IHorseData data = (IHorseData) horse;
-        if (data.bh_getBond() <= 0) {
-            return;
-        }
-
-        BlockPos target = player.blockPosition();
-        if (horse.distanceToSqr(player) > 400.0) {
-            horse.teleportTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
-            data.bh_setWanderCenter(target);
-            data.bh_setCommand(HorseCommand.WANDER);
-            return;
-        }
-
-        data.bh_setCommand(HorseCommand.FOLLOW);
-    }
-
-    private static AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {
-        AbstractHorse lastRidden = HorseTracker.getLastRidden(playerId);
-        if (lastRidden != null
-                && playerId.equals(((IHorseData) lastRidden).bh_getOwner())
-                && lastRidden.level() == player.level()
-                && lastRidden.isAlive()) {
-            return lastRidden;
-        }
-
-        AbstractHorse nearest = null;
-        double nearestDistSq = Double.MAX_VALUE;
-        for (AbstractHorse candidate : HorseTracker.getAll()) {
-            if (!candidate.isAlive() || candidate.level() != player.level()) {
-                continue;
-            }
-            UUID owner = ((IHorseData) candidate).bh_getOwner();
-            if (!playerId.equals(owner)) {
-                continue;
-            }
-            double distSq = candidate.distanceToSqr(player);
-            if (distSq < nearestDistSq) {
-                nearestDistSq = distSq;
-                nearest = candidate;
-            }
-        }
-        return nearest;
+        HorseManagement.callNearestHorse(player);
     }
 
     private static void growHorseBond(MinecraftServer server, int amount) {
@@ -522,7 +497,7 @@ public final class IcysBetterHorses implements ModInitializer {
             return null;
         }
 
-        if (!((IHorseData) horse).bh_mayHandle(player.getUUID())) {
+        if (!IHorseData.of(horse).bh_mayHandle(player.getUUID())) {
             return null;
         }
         return horse;

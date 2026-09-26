@@ -10,4 +10,13 @@ public interface AbstractContainerScreenAccessor {
     @Mutable
     @Accessor("imageHeight")
     void bh_setImageHeight(int value);
+
+    @Accessor("leftPos")
+    int bh_leftPos();
+
+    @Accessor("topPos")
+    int bh_topPos();
+
+    @Accessor("imageWidth")
+    int bh_imageWidth();
 }

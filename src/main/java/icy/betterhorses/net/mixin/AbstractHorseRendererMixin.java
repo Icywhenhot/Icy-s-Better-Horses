@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.client.render.HorseChestLayer;
 import icy.betterhorses.net.client.render.HorseStabilizerLayer;
 import net.minecraft.client.model.HorseModel;
 import net.minecraft.client.renderer.entity.AbstractHorseRenderer;
@@ -22,5 +23,6 @@ public abstract class AbstractHorseRendererMixin<T extends AbstractHorse, M exte
     @Inject(method = "<init>", at = @At("TAIL"))
     private void bh_addStabilizerLayer(EntityRendererProvider.Context context, HorseModel<T> model, float shadowRadius, CallbackInfo ci) {
         this.addLayer(new HorseStabilizerLayer<>(this));
+        this.addLayer(new HorseChestLayer<>(this));
     }
 }

@@ -2,12 +2,12 @@ package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhHorseTraits;
-import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedAbilities;
+import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -16,6 +16,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.HorseArmorItem;
 import net.minecraft.world.item.ItemStack;
 import icy.betterhorses.net.mixin.AbstractHorseAccessor;
+
+import java.util.Objects;
 
 public final class Ironclad implements BreedAbility {
 
@@ -67,7 +69,7 @@ public final class Ironclad implements BreedAbility {
     }
 
     public static boolean deflectsProjectiles(IHorseData data) {
-        return data.bh_getBreed() == HorseBreed.CLYDESDALE
+        return Objects.equals(data.bh_getBreedKey(), BhContent.CLYDESDALE.key())
                 && BhHorseTraits.bondTier(data.bh_getBond()) >= 2
                 && BhAbility.CLYDESDALE_DEFLECT.on();
     }

@@ -1,7 +1,7 @@
 package icy.betterhorses.net.goal;
 
-import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -29,7 +29,7 @@ public class HorseWanderBoundsGoal extends Goal {
     public boolean canUse() {
         if (horse.isVehicle()) return false;
         IHorseData data = IHorseData.of(horse);
-        if (!data.bh_isOwned() || data.bh_getCommand() != HorseCommand.WANDER) return false;
+        if (!data.bh_isOwned() || !data.bh_getCommand().equals(BhContent.COMMAND_WANDER.key())) return false;
         wanderCenter = data.bh_getWanderCenter();
         if (wanderCenter == null) {
             data.bh_setWanderCenter(horse.blockPosition());
@@ -41,7 +41,7 @@ public class HorseWanderBoundsGoal extends Goal {
     @Override
     public boolean canContinueToUse() {
         IHorseData data = IHorseData.of(horse);
-        if (data.bh_getCommand() != HorseCommand.WANDER) return false;
+        if (!data.bh_getCommand().equals(BhContent.COMMAND_WANDER.key())) return false;
         wanderCenter = data.bh_getWanderCenter();
         return wanderCenter != null && bh_isOutsideBounds(wanderCenter, WANDER_HALF_EXTENT - RETURN_PADDING);
     }

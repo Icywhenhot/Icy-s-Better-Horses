@@ -18,10 +18,17 @@ public final class HorseStabilizerLogic {
         }
 
         if (currentState == HorseStabilizerState.HALF_OPEN) {
-            if (fallDistance >= OPEN_FALL_DISTANCE) {
+            if (fallDistance >= OPEN_FALL_DISTANCE && verticalSpeed < MIN_SUSTAINED_DESCENT_SPEED) {
                 return HorseStabilizerState.OPEN;
             }
-            return HorseStabilizerState.HALF_OPEN;
+
+            return verticalSpeed < MIN_SUSTAINED_DESCENT_SPEED
+                    ? HorseStabilizerState.HALF_OPEN
+                    : HorseStabilizerState.CLOSED;
+        }
+
+        if (verticalSpeed >= MIN_DEPLOY_DESCENT_SPEED) {
+            return HorseStabilizerState.CLOSED;
         }
 
         if (fallDistance >= OPEN_FALL_DISTANCE) {

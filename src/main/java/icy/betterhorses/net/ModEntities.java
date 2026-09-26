@@ -22,12 +22,16 @@ import icy.betterhorses.net.entity.MorganHorse;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.BreedType;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import org.jetbrains.annotations.Nullable;
 
 public final class ModEntities {
 
@@ -128,25 +132,16 @@ public final class ModEntities {
                     .sized(SmallHorse.WIDTH, SmallHorse.HEIGHT)
                     .clientTrackingRange(10));
 
-    public static EntityType<? extends BhBreedHorse> forBreed(HorseBreed breed) {
-        return switch (breed) {
-            case THOROUGHBRED -> THOROUGHBRED_HORSE;
-            case ARABIAN -> ARABIAN_HORSE;
-            case QUARTER -> QUARTER_HORSE;
-            case FRIESIAN -> FRIESIAN_HORSE;
-            case ANDALUSIAN -> ANDALUSIAN_HORSE;
-            case PERCHERON -> PERCHERON_HORSE;
-            case CLYDESDALE -> CLYDESDALE_HORSE;
-            case SHIRE -> SHIRE_HORSE;
-            case BELGIAN -> BELGIAN_HORSE;
-            case ICELANDIC -> ICELANDIC_HORSE;
-            case MUSTANG -> MUSTANG_HORSE;
-            case HAFLINGER -> HAFLINGER_HORSE;
-            case MORGAN -> MORGAN_HORSE;
-            case AMERICAN_PAINT -> AMERICAN_PAINT_HORSE;
-            case APPALOOSA -> APPALOOSA_HORSE;
-            default -> MUSTANG_HORSE;
-        };
+    //No more jankyness!!!!! YIPPYYPYPYPYPPPYPY
+    public static @Nullable EntityType<? extends BhBreedHorse> forBreed(ResourceKey<BreedType> breedKey) {
+        BreedType type = BhRegistries.breedTypeRegistry().get(breedKey.location());
+        if (type == null) {
+            return null;
+        }
+        EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(type.entityType().location());
+        @SuppressWarnings("unchecked")
+        EntityType<? extends BhBreedHorse> result = (EntityType<? extends BhBreedHorse>) entityType;
+        return result;
     }
 
     public static void register() {}
@@ -169,8 +164,6 @@ public final class ModEntities {
         registerBreed(MORGAN_HORSE, MorganHorse.createAttributes());
     }
 
-    // Step height and swim speed already come from AbstractHorseMixin. Don't add them again here:
-    // re-adding an attribute resets any custom base value a breed set.
     private static void registerBreed(
             EntityType<? extends LivingEntity> type, AttributeSupplier.Builder builder) {
         FabricDefaultAttributeRegistry.register(type, builder);
