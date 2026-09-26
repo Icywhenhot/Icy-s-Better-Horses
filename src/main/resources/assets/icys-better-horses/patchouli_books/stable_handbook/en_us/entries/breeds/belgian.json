@@ -15,6 +15,10 @@
       "text": "book.icys-better-horses.stable_handbook.classes.breed_belgian.ability.text"
     },
     {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_belgian.ability.text2"
+    },
+    {
       "type": "icys-better-horses:padded_text",
       "title": "book.icys-better-horses.stable_handbook.classes.breed_belgian.spawns.title",
       "text": "book.icys-better-horses.stable_handbook.classes.breed_belgian.spawns.text"

@@ -15,6 +15,10 @@
       "text": "book.icys-better-horses.stable_handbook.classes.breed_shire.ability.text"
     },
     {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_shire.ability.text2"
+    },
+    {
       "type": "icys-better-horses:padded_text",
       "title": "book.icys-better-horses.stable_handbook.classes.breed_shire.spawns.title",
       "text": "book.icys-better-horses.stable_handbook.classes.breed_shire.spawns.text"

@@ -8,6 +8,10 @@
       "type": "icys-better-horses:padded_text",
       "title": "book.icys-better-horses.stable_handbook.classes.root.about.title",
       "text": "book.icys-better-horses.stable_handbook.classes.root.about.text"
+    },
+    {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.root.about.text2"
     }
   ]
 }

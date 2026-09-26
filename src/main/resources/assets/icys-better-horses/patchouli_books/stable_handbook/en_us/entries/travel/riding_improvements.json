@@ -23,6 +23,10 @@
       "type": "icys-better-horses:padded_text",
       "title": "book.icys-better-horses.stable_handbook.travel.riding_improvements.rear.title",
       "text": "book.icys-better-horses.stable_handbook.travel.riding_improvements.rear.text"
+    },
+    {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.travel.riding_improvements.rear.text2"
     }
   ]
 }

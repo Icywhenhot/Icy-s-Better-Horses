@@ -15,9 +15,17 @@
       "text": "book.icys-better-horses.stable_handbook.basics.trusted_riders.limits.text"
     },
     {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.trusted_riders.limits.text2"
+    },
+    {
       "type": "icys-better-horses:padded_text",
       "title": "book.icys-better-horses.stable_handbook.basics.trusted_riders.revoke.title",
       "text": "book.icys-better-horses.stable_handbook.basics.trusted_riders.revoke.text"
+    },
+    {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.trusted_riders.revoke.text2"
     }
   ]
 }

@@ -9,21 +9,21 @@
     },
     {
       "type": "patchouli:separator",
-      "x": 6,
+      "x": 3,
       "y": 12
     },
     {
       "type": "patchouli:text",
       "text": "#text",
-      "x": 6,
-      "y": 22,
-      "max_width": 104
+      "x": 8,
+      "y": 48,
+      "max_width": 100
     },
     {
       "type": "patchouli:custom",
       "class": "icy.betterhorses.net.client.book.BhChargeMeterComponent",
       "x": 0,
-      "y": 124
+      "y": 18
     }
   ]
 }

@@ -15,9 +15,17 @@
       "text": "book.icys-better-horses.stable_handbook.basics.goals.early.text"
     },
     {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.goals.early.text2"
+    },
+    {
       "type": "icys-better-horses:padded_text",
       "title": "book.icys-better-horses.stable_handbook.basics.goals.late.title",
       "text": "book.icys-better-horses.stable_handbook.basics.goals.late.text"
+    },
+    {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.goals.late.text2"
     }
   ]
 }

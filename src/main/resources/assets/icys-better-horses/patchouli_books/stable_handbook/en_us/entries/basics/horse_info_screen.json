@@ -18,6 +18,10 @@
       "type": "icys-better-horses:padded_text",
       "title": "book.icys-better-horses.stable_handbook.basics.horse_info_screen.bars.title",
       "text": "book.icys-better-horses.stable_handbook.basics.horse_info_screen.bars.text"
+    },
+    {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_info_screen.bars.text2"
     }
   ]
 }

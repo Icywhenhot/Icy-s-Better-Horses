@@ -15,6 +15,10 @@
       "text": "book.icys-better-horses.stable_handbook.basics.configuration.toggles.text"
     },
     {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.configuration.toggles.text2"
+    },
+    {
       "type": "icys-better-horses:padded_text",
       "title": "book.icys-better-horses.stable_handbook.basics.configuration.dummy.title",
       "text": "book.icys-better-horses.stable_handbook.basics.configuration.dummy.text"

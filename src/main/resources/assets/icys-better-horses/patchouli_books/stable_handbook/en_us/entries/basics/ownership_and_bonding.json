@@ -15,9 +15,17 @@
       "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.command_wheel.text"
     },
     {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.command_wheel.text2"
+    },
+    {
       "type": "icys-better-horses:padded_text",
       "title": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.whistle_bond.title",
       "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.whistle_bond.text"
+    },
+    {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.whistle_bond.text2"
     }
   ]
 }

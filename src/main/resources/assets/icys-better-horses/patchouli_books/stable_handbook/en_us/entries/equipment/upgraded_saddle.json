@@ -34,6 +34,10 @@
       "type": "icys-better-horses:padded_text",
       "title": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.stats.title",
       "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.stats.text"
+    },
+    {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.stats.text2"
     }
   ]
 }

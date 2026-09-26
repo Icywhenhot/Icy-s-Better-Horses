@@ -17,9 +17,9 @@
     {
       "type": "patchouli:text",
       "text": "#text",
-      "x": 6,
+      "x": 8,
       "y": 44,
-      "max_width": 104
+      "max_width": 100
     }
   ]
 }

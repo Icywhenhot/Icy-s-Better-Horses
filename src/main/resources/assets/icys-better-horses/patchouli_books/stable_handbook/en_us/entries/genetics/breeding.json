@@ -15,6 +15,10 @@
       "text": "book.icys-better-horses.stable_handbook.genetics.breeding.inherit.text"
     },
     {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.genetics.breeding.inherit.text2"
+    },
+    {
       "type": "icys-better-horses:padded_text",
       "title": "book.icys-better-horses.stable_handbook.genetics.breeding.stats.title",
       "text": "book.icys-better-horses.stable_handbook.genetics.breeding.stats.text"
@@ -23,6 +27,10 @@
       "type": "icys-better-horses:padded_text",
       "title": "book.icys-better-horses.stable_handbook.genetics.breeding.coat.title",
       "text": "book.icys-better-horses.stable_handbook.genetics.breeding.coat.text"
+    },
+    {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.genetics.breeding.coat.text2"
     }
   ]
 }
