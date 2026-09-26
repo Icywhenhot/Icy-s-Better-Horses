@@ -1,218 +1,164 @@
-buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net' }
-        maven { url = 'https://maven.parchmentmc.org' }
-        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '6.+', changing: true
-        classpath 'org.parchmentmc:librarian:1.+'
-        classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
-    }
-}
-
 plugins {
-    id 'java-library'
-    id 'maven-publish'
-    id 'idea'
+	id 'fabric-loom' version "${loom_version}"
+	id 'maven-publish'
 }
 
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'org.parchmentmc.librarian.forgegradle'
-apply plugin: 'org.spongepowered.mixin'
-
-tasks.named('wrapper', Wrapper).configure {
-    distributionType = Wrapper.DistributionType.BIN
-}
-
-version = mod_version
-group = mod_group_id
+version = project.mod_version
+group = project.maven_group
 
 base {
-    archivesName = mod_archive_name
-}
-
-java {
-    withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+	archivesName = project.mod_archive_name
 }
 
 repositories {
-    maven { url = 'https://maven.minecraftforge.net' }
-    maven { url = 'https://maven.parchmentmc.org' }
-    maven {
-        name = 'GeckoLib'
-        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
-        content {
-            includeGroupAndSubgroups 'software.bernie.geckolib'
-        }
-    }
-    maven {
-        name = 'Modrinth'
-        url = 'https://api.modrinth.com/maven'
-        content {
-            includeGroup 'maven.modrinth'
-        }
-    }
-    mavenCentral()
+	maven {
+		name = 'GeckoLib'
+		url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+		content {
+			includeGroupAndSubgroups 'software.bernie.geckolib'
+			includeGroupAndSubgroups 'com.eliotlash.mclib'
+		}
+	}
+	exclusiveContent {
+		forRepository {
+			maven {
+				name = 'Modrinth'
+				url = 'https://api.modrinth.com/maven'
+			}
+		}
+		filter { includeGroup 'maven.modrinth' }
+	}
+	maven {
+		name = 'TerraformersMC'
+		url = 'https://maven.terraformersmc.com/releases/'
+		content { includeGroup 'com.terraformersmc' }
+	}
+	maven {
+		name = 'Shedaniel'
+		url = 'https://maven.shedaniel.me/'
+		content { includeGroup 'me.shedaniel.cloth' }
+	}
+	mavenCentral()
 }
 
-minecraft {
-    mappings channel: 'parchment', version: "${parchment_mappings_version}-${parchment_minecraft_version}"
-
-    runs {
-        client {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', mod_id
-            mods {
-                "${mod_id}" {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        server {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', mod_id
-            arg '--nogui'
-            mods {
-                "${mod_id}" {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        gameTestServer {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', mod_id
-            mods {
-                "${mod_id}" {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        data {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-            mods {
-                "${mod_id}" {
-                    source sourceSets.main
-                }
-            }
-        }
-    }
+fabricApi {
+	// In-world tests under src/gametest; `./gradlew runGameTest` (also run by `test`).
+	configureTests {
+		createSourceSet = true
+		modId = "icys-better-horses-gametest"
+		enableClientGameTests = false
+		eula = true
+	}
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
-
-mixin {
-    add sourceSets.main, "${mod_id}.refmap.json"
-    config "${mod_id}.mixins.json"
+loom {
+	runs {
+		client {
+			// Fixed username so the offline UUID, and horse ownership with it, survives relaunches.
+			programArgs '--username', 'Dev'
+		}
+		gameTest {
+			// JUnit-style XML report from each `runGameTest`, for CI or just reading results after the fact.
+			property 'fabric-api.gametest.report-file', "${project.buildDir}/test-results/gametest/report.xml"
+		}
+	}
 }
-
-tasks.named('compileJava').configure {
-    outputs.cacheIf { false }
-}
-
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-1.20.1:${geckolib_version}")
-    implementation fg.deobf("maven.modrinth:patchouli:${patchouli_version}")
-    implementation fg.deobf("maven.modrinth:cloth-config:${cloth_config_version}")
+	modImplementation "software.bernie.geckolib:geckolib-fabric-1.20.1:${project.geckolib_version}"
+	modImplementation "maven.modrinth:patchouli:${project.patchouli_version}"
+	modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+	modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
+		exclude group: "net.fabricmc.fabric-api"
+	}
 
-    compileOnly "org.jetbrains:annotations:26.0.2"
-    runtimeOnly "org.jetbrains:annotations:26.0.2"
-    implementation "com.google.code.gson:gson:2.10.1"
+	implementation "com.google.code.gson:gson:2.10.1"
+	compileOnly "org.jetbrains:annotations:26.0.2"
 
-    annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
+	testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
+	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.0"
+}
 
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
-    testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.0"
+// Dev only: Loom doesn't unpack Patchouli's nested Fiber jar, so runClient crashes without it.
+// Pulls it out of Patchouli's own jar. Doesn't touch the published jar; delete if Loom fixes this.
+configurations {
+	// Patchouli's raw jar, only used to extract Fiber from.
+	patchouliBundle {
+		canBeConsumed = false
+		transitive = false
+	}
+}
+
+dependencies {
+	patchouliBundle "maven.modrinth:patchouli:${project.patchouli_version}"
+}
+
+def patchouliFiberDir = layout.buildDirectory.dir('patchouliFiber')
+
+// Resolved lazily, so builds that never run the game skip it.
+def extractPatchouliFiber = tasks.register('extractPatchouliFiber', Copy) {
+	from { zipTree(configurations.patchouliBundle.singleFile) }
+	include 'META-INF/jars/fiber-*.jar'
+	includeEmptyDirs = false
+	eachFile { fcd -> fcd.path = fcd.name }
+	into patchouliFiberDir
+}
+
+dependencies {
+	// Not modLocalRuntime: that's resolved before extraction runs, so a clean first launch crashes.
+	localRuntime fileTree(patchouliFiberDir.get().asFile) {
+		include '*.jar'
+	}.builtBy(extractPatchouliFiber)
+}
+
+processResources {
+	def replaceProperties = [
+			version        : project.mod_version,
+			mod_name       : project.mod_name,
+			mod_license    : project.mod_license,
+			mod_authors    : project.mod_authors,
+			mod_description: project.mod_description,
+	]
+	inputs.properties replaceProperties
+	filesMatching(['fabric.mod.json', 'pack.mcmeta']) {
+		expand replaceProperties
+	}
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
-    options.release = 17
-}
-
-tasks.named('processResources', ProcessResources).configure {
-    def replaceProperties = [
-            minecraft_version      : minecraft_version,
-            minecraft_version_range: minecraft_version_range,
-            forge_version          : forge_version,
-            forge_version_range    : forge_version_range,
-            mod_id                 : mod_id,
-            mod_name               : mod_name,
-            mod_license            : mod_license,
-            mod_version            : mod_version,
-            mod_authors            : mod_authors,
-            mod_credits            : mod_credits,
-            mod_description        : mod_description,
-            patchouli_version      : patchouli_version,
-            geckolib_version       : geckolib_version,
-    ]
-    inputs.properties replaceProperties
-    exclude(
-            'data/icys_better_horses/recipe/**',
-            'data/icys_better_horses/loot_table/**',
-            'data/icys_better_horses/tags/item/**',
-            'data/icys_better_horses/neoforge/**',
-            'data/minecraft/enchantments/**'
-    )
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
-        expand replaceProperties
-    }
+	options.encoding = 'UTF-8'
+	options.release = 17
 }
 
 test {
-    useJUnitPlatform()
+	useJUnitPlatform()
 }
 
 jar {
-    manifest {
-        attributes(
-                'MixinConfigs': "${mod_id}.mixins.json"
-        )
-    }
-
-    def projectName = project.name
-    inputs.property "projectName", projectName
-
-    from("LICENSE") {
-        rename { "${it}_$projectName" }
-    }
+	def projectName = project.name
+	inputs.property "projectName", projectName
+	from("LICENSE") {
+		rename { "${it}_$projectName" }
+	}
 }
 
 publishing {
-    publications {
-        register('mavenJava', MavenPublication) {
-            from components.java
-        }
-    }
-    repositories {
-        maven {
-            url "file://${project.projectDir}/repo"
-        }
-    }
-}
-
-idea {
-    module {
-        downloadSources = true
-        downloadJavadoc = true
-    }
+	publications {
+		create("mavenJava", MavenPublication) {
+			from components.java
+		}
+	}
+	repositories {}
 }

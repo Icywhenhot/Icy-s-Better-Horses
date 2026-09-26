@@ -2,7 +2,7 @@ package icy.betterhorses.net.client.render;
 
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 
 public final class BhModelLayers {
 
@@ -83,150 +83,150 @@ public final class BhModelLayers {
 
     private BhModelLayers() {}
 
-    public static void register(EntityRenderersEvent.RegisterLayerDefinitions event) {
-        event.registerLayerDefinition(
+    public static void register() {
+        EntityModelLayerRegistry.registerModelLayer(
                 ICELANDIC_HORSE, IcelandicHorseGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 ICELANDIC_HORSE_BABY, IcelandicFoalGeometry::createBodyLayer);
 
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 ICELANDIC_SADDLE, IcelandicSaddleGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 ICELANDIC_SADDLE_BABY, IcelandicSaddleGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 ICELANDIC_ARMOR, IcelandicArmorGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 ICELANDIC_ARMOR_BABY, IcelandicArmorGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 ICELANDIC_CHEST, IcelandicChestGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 ICELANDIC_CHEST_BABY, IcelandicChestGeometry::createBodyLayer);
 
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 FRIESIAN_HORSE, FriesianHorseGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 FRIESIAN_HORSE_BABY, FriesianFoalGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 FRIESIAN_SADDLE, FriesianSaddleGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 FRIESIAN_SADDLE_BABY, FriesianSaddleGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 FRIESIAN_ARMOR, FriesianArmorGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 FRIESIAN_ARMOR_BABY, FriesianArmorGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 FRIESIAN_CHEST, FriesianChestGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 FRIESIAN_CHEST_BABY, FriesianChestGeometry::createBodyLayer);
 
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 SMALL_HORSE, SmallHorseGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 SMALL_HORSE_BABY, SmallFoalGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 SMALL_SADDLE, SmallSaddleGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 SMALL_SADDLE_BABY, SmallSaddleGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 SMALL_ARMOR, SmallArmorGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 SMALL_ARMOR_BABY, SmallArmorGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 SMALL_CHEST, SmallChestGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 SMALL_CHEST_BABY, SmallChestGeometry::createBodyLayer);
 
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 HAFLINGER_HORSE, HaflingerHorseGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 HAFLINGER_HORSE_BABY, SmallFoalGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 HAFLINGER_SADDLE, HaflingerSaddleGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 HAFLINGER_SADDLE_BABY, HaflingerSaddleGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 HAFLINGER_ARMOR, HaflingerArmorGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 HAFLINGER_ARMOR_BABY, HaflingerArmorGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 HAFLINGER_CHEST, HaflingerChestGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 HAFLINGER_CHEST_BABY, HaflingerChestGeometry::createBodyLayer);
 
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 MEDIUM_HORSE, MediumHorseGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 MEDIUM_HORSE_BABY, MediumFoalGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 MEDIUM_SADDLE, MediumSaddleGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 MEDIUM_SADDLE_BABY, MediumSaddleGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 MEDIUM_ARMOR, MediumArmorGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 MEDIUM_ARMOR_BABY, MediumArmorGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 MEDIUM_CHEST, MediumChestGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 MEDIUM_CHEST_BABY, MediumChestGeometry::createBodyLayer);
 
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 PERCHERON_HORSE, PercheronHorseGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 PERCHERON_HORSE_BABY, PercheronFoalGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 PERCHERON_SADDLE, PercheronSaddleGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 PERCHERON_SADDLE_BABY, PercheronSaddleGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 PERCHERON_ARMOR, PercheronArmorGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 PERCHERON_ARMOR_BABY, PercheronArmorGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 PERCHERON_CHEST, PercheronChestGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 PERCHERON_CHEST_BABY, PercheronChestGeometry::createBodyLayer);
 
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 SHIRE_HORSE, ShireHorseGeometry::createBodyLayer);
 
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 SHIRE_HORSE_BABY, PercheronFoalGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 SHIRE_SADDLE, ShireSaddleGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 SHIRE_SADDLE_BABY, ShireSaddleGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 SHIRE_ARMOR, ShireArmorGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 SHIRE_ARMOR_BABY, ShireArmorGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 SHIRE_CHEST, ShireChestGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 SHIRE_CHEST_BABY, ShireChestGeometry::createBodyLayer);
 
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 BELGIAN_HORSE, BelgianHorseGeometry::createBodyLayer);
 
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 BELGIAN_HORSE_BABY, PercheronFoalGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 BELGIAN_SADDLE, BelgianSaddleGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 BELGIAN_SADDLE_BABY, BelgianSaddleGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 BELGIAN_ARMOR, BelgianArmorGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 BELGIAN_ARMOR_BABY, BelgianArmorGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 BELGIAN_CHEST, BelgianChestGeometry::createBodyLayer);
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 BELGIAN_CHEST_BABY, BelgianChestGeometry::createBodyLayer);
 
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 CLYDESDALE_HORSE, ClydesdaleHorseGeometry::createBodyLayer);
 
-        event.registerLayerDefinition(
+        EntityModelLayerRegistry.registerModelLayer(
                 CLYDESDALE_HORSE_BABY, PercheronFoalGeometry::createBodyLayer);
     }
 

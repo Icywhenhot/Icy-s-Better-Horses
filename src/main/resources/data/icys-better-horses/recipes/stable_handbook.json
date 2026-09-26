@@ -1,11 +1,14 @@
 {
-  "forge:conditions": [
+  "fabric:load_conditions": [
     {
-      "type": "forge:mod_loaded",
-      "modid": "patchouli"
+      "condition": "fabric:all_mods_loaded",
+      "values": [
+        "patchouli"
+      ]
     }
   ],
-  "type": "minecraft:crafting_shapeless",
+  "type": "patchouli:shapeless_book_recipe",
+  "book": "icys-better-horses:stable_handbook",
   "category": "misc",
   "ingredients": [
     {
@@ -17,7 +20,6 @@
   ],
   "result": {
     "item": "patchouli:guide_book",
-    "count": 1,
-    "nbt": "{\"patchouli:book\":\"icys-better-horses:stable_handbook\"}"
+    "count": 1
   }
 }

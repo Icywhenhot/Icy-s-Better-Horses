@@ -1,0 +1,23 @@
+{
+	"schemaVersion": 1,
+	"id": "icys-better-horses-gametest",
+	"version": "1.0.0",
+	"name": "Icy's Better Horses GameTests",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-gametest": [
+			"icy.betterhorses.net.gametest.SmokeGameTest",
+			"icy.betterhorses.net.gametest.HandlerSecurityGameTest",
+			"icy.betterhorses.net.gametest.DeathAndGearLossGameTest",
+			"icy.betterhorses.net.gametest.VanillaSwapFidelityGameTest",
+			"icy.betterhorses.net.gametest.BreedingGameTest",
+			"icy.betterhorses.net.gametest.ProjectileDeflectGameTest",
+			"icy.betterhorses.net.gametest.SpawnEggDispenserGameTest",
+			"icy.betterhorses.net.gametest.AbsorptionGameTest"
+		]
+	},
+	"depends": {
+		"icys-better-horses": "*",
+		"fabric-gametest-api-v1": "*"
+	}
+}

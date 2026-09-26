@@ -6,8 +6,13 @@ import icy.betterhorses.net.client.CartChestScreen;
 import icy.betterhorses.net.client.ChargeShakeController;
 import icy.betterhorses.net.client.ClientHorseRoster;
 import icy.betterhorses.net.client.ClientTrustCache;
+import icy.betterhorses.net.client.HorseGearController;
+import icy.betterhorses.net.client.HorseInfoScreen;
+import icy.betterhorses.net.client.HorseRosterScreen;
+import icy.betterhorses.net.client.HorseStabilizerSoundController;
 import icy.betterhorses.net.client.RadialMenuScreen;
 import icy.betterhorses.net.client.render.BelgianHorseRenderer;
+import icy.betterhorses.net.client.render.BhClientHorseUnload;
 import icy.betterhorses.net.client.render.BhModelLayers;
 import icy.betterhorses.net.client.render.ClydesdaleHorseRenderer;
 import icy.betterhorses.net.client.render.FriesianHorseRenderer;
@@ -18,45 +23,53 @@ import icy.betterhorses.net.client.render.MediumHorseRenderer;
 import icy.betterhorses.net.client.render.PercheronHorseRenderer;
 import icy.betterhorses.net.client.render.ShireHorseRenderer;
 import icy.betterhorses.net.client.render.SmallHorseRenderer;
+import icy.betterhorses.net.entity.HorseCartEntity;
+import icy.betterhorses.net.entity.IcelandicHorse;
+import icy.betterhorses.net.network.BhRearPayload;
+import icy.betterhorses.net.network.BreedDataPayload;
+import icy.betterhorses.net.network.CallHorsePayload;
+import icy.betterhorses.net.network.CartSizePayload;
+import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
+import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
-import icy.betterhorses.net.client.BhConfigScreen;
-import net.minecraft.client.gui.screens.MenuScreens;
-import net.minecraftforge.client.ConfigScreenHandler;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraft.world.item.Item;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.registries.RegistryObject;
-import icy.betterhorses.net.network.BreedDataPayload;
-import icy.betterhorses.net.network.ConfigSyncPayload;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.UUID;
 
-@Mod.EventBusSubscriber(modid = IcysBetterHorses.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
-public final class IcysBetterHorsesClient {
+public final class IcysBetterHorsesClient implements ClientModInitializer {
 
     private static boolean tookServerBreeds = false;
 
     private static final String KEY_CATEGORY = "key.categories.icys-better-horses";
     private static final double RADIAL_REACH = 12.0D;
+
+    private static final double REACH = 12.0D;
+    private static final double ROUSE_SCAN = 48.0D;
+
+    private static boolean callKeyWasDown = false;
 
     public static final KeyMapping CALL_KEY = new KeyMapping(
             "key.icys-better-horses.call",
@@ -100,17 +113,70 @@ public final class IcysBetterHorsesClient {
             GLFW.GLFW_KEY_LEFT_ALT,
             KEY_CATEGORY);
 
-    private IcysBetterHorsesClient() {}
+    @Override
+    public void onInitializeClient() {
+        BhNetworking.registerClient();
+        registerKeyMappings();
+        registerRenderers();
+        BhModelLayers.register();
+        MenuScreens.register(ModMenus.CART_CHEST, CartChestScreen::new);
+        registerItemColors();
+        ClientTickEvents.END_CLIENT_TICK.register(IcysBetterHorsesClient::onClientTick);
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> onDisconnect());
+        ClientEntityEvents.ENTITY_UNLOAD.register((entity, level) -> {
+            if (entity instanceof AbstractHorse) {
+                BhClientHorseUnload.handle(entity.getId());
+            }
+        });
+    }
 
-    @SubscribeEvent
-    public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
-        event.register(CALL_KEY);
-        event.register(RADIAL_KEY);
-        event.register(MANAGE_KEY);
-        event.register(GEAR_KEY);
-        event.register(REAR_KEY);
-        event.register(FREE_LOOK_KEY);
-        event.register(CART_SIZE_KEY);
+    private static void registerKeyMappings() {
+        KeyBindingHelper.registerKeyBinding(CALL_KEY);
+        KeyBindingHelper.registerKeyBinding(RADIAL_KEY);
+        KeyBindingHelper.registerKeyBinding(MANAGE_KEY);
+        KeyBindingHelper.registerKeyBinding(GEAR_KEY);
+        KeyBindingHelper.registerKeyBinding(REAR_KEY);
+        KeyBindingHelper.registerKeyBinding(FREE_LOOK_KEY);
+        KeyBindingHelper.registerKeyBinding(CART_SIZE_KEY);
+    }
+
+    private static void registerItemColors() {
+        for (Item egg : ModItems.BREED_SPAWN_EGGS) {
+            ColorProviderRegistry.ITEM.register((stack, layer) -> -1, egg);
+        }
+    }
+
+    private static void registerRenderers() {
+        EntityRendererRegistry.register(ModEntities.HORSE_CART, HorseCartRenderer::new);
+        EntityRendererRegistry.register(ModEntities.ICELANDIC_HORSE, context ->
+                new IcelandicHorseRenderer(context,
+                        BhModelLayers.ICELANDIC_HORSE, BhModelLayers.ICELANDIC_HORSE_BABY));
+        EntityRendererRegistry.register(ModEntities.FRIESIAN_HORSE, context ->
+                new FriesianHorseRenderer(context,
+                        BhModelLayers.FRIESIAN_HORSE, BhModelLayers.FRIESIAN_HORSE_BABY));
+        EntityRendererRegistry.register(ModEntities.HAFLINGER_HORSE, HaflingerHorseRenderer::new);
+
+        EntityRendererRegistry.register(ModEntities.APPALOOSA_HORSE, MediumHorseRenderer::new);
+        EntityRendererRegistry.register(ModEntities.THOROUGHBRED_HORSE, MediumHorseRenderer::new);
+        EntityRendererRegistry.register(ModEntities.AMERICAN_PAINT_HORSE, MediumHorseRenderer::new);
+        EntityRendererRegistry.register(ModEntities.ANDALUSIAN_HORSE, MediumHorseRenderer::new);
+        EntityRendererRegistry.register(ModEntities.MUSTANG_HORSE, MediumHorseRenderer::new);
+        EntityRendererRegistry.register(ModEntities.QUARTER_HORSE, MediumHorseRenderer::new);
+        EntityRendererRegistry.register(ModEntities.ARABIAN_HORSE, SmallHorseRenderer::new);
+        EntityRendererRegistry.register(ModEntities.MORGAN_HORSE, SmallHorseRenderer::new);
+
+        EntityRendererRegistry.register(ModEntities.PERCHERON_HORSE, context ->
+                new PercheronHorseRenderer(context,
+                        BhModelLayers.PERCHERON_HORSE, BhModelLayers.PERCHERON_HORSE_BABY));
+        EntityRendererRegistry.register(ModEntities.SHIRE_HORSE, context ->
+                new ShireHorseRenderer(context,
+                        BhModelLayers.SHIRE_HORSE, BhModelLayers.SHIRE_HORSE_BABY));
+        EntityRendererRegistry.register(ModEntities.BELGIAN_HORSE, context ->
+                new BelgianHorseRenderer(context,
+                        BhModelLayers.BELGIAN_HORSE, BhModelLayers.BELGIAN_HORSE_BABY));
+        EntityRendererRegistry.register(ModEntities.CLYDESDALE_HORSE, context ->
+                new ClydesdaleHorseRenderer(context,
+                        BhModelLayers.CLYDESDALE_HORSE, BhModelLayers.CLYDESDALE_HORSE_BABY));
     }
 
     public static void bh_tryOpenRadial(Minecraft client) {
@@ -173,62 +239,124 @@ public final class IcysBetterHorsesClient {
         ChargeShakeController.trigger();
     }
 
-    @SubscribeEvent
-    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(ModEntities.HORSE_CART.get(), HorseCartRenderer::new);
-        event.registerEntityRenderer(ModEntities.ICELANDIC_HORSE.get(), context ->
-                new IcelandicHorseRenderer(context,
-                        BhModelLayers.ICELANDIC_HORSE, BhModelLayers.ICELANDIC_HORSE_BABY));
-        event.registerEntityRenderer(ModEntities.FRIESIAN_HORSE.get(), context ->
-                new FriesianHorseRenderer(context,
-                        BhModelLayers.FRIESIAN_HORSE, BhModelLayers.FRIESIAN_HORSE_BABY));
-        event.registerEntityRenderer(ModEntities.HAFLINGER_HORSE.get(), HaflingerHorseRenderer::new);
-
-        event.registerEntityRenderer(ModEntities.APPALOOSA_HORSE.get(), MediumHorseRenderer::new);
-        event.registerEntityRenderer(ModEntities.THOROUGHBRED_HORSE.get(), MediumHorseRenderer::new);
-        event.registerEntityRenderer(ModEntities.AMERICAN_PAINT_HORSE.get(), MediumHorseRenderer::new);
-        event.registerEntityRenderer(ModEntities.ANDALUSIAN_HORSE.get(), MediumHorseRenderer::new);
-        event.registerEntityRenderer(ModEntities.MUSTANG_HORSE.get(), MediumHorseRenderer::new);
-        event.registerEntityRenderer(ModEntities.QUARTER_HORSE.get(), MediumHorseRenderer::new);
-        event.registerEntityRenderer(ModEntities.ARABIAN_HORSE.get(), SmallHorseRenderer::new);
-        event.registerEntityRenderer(ModEntities.MORGAN_HORSE.get(), SmallHorseRenderer::new);
-
-        event.registerEntityRenderer(ModEntities.PERCHERON_HORSE.get(), context ->
-                new PercheronHorseRenderer(context,
-                        BhModelLayers.PERCHERON_HORSE, BhModelLayers.PERCHERON_HORSE_BABY));
-        event.registerEntityRenderer(ModEntities.SHIRE_HORSE.get(), context ->
-                new ShireHorseRenderer(context,
-                        BhModelLayers.SHIRE_HORSE, BhModelLayers.SHIRE_HORSE_BABY));
-        event.registerEntityRenderer(ModEntities.BELGIAN_HORSE.get(), context ->
-                new BelgianHorseRenderer(context,
-                        BhModelLayers.BELGIAN_HORSE, BhModelLayers.BELGIAN_HORSE_BABY));
-        event.registerEntityRenderer(ModEntities.CLYDESDALE_HORSE.get(), context ->
-                new ClydesdaleHorseRenderer(context,
-                        BhModelLayers.CLYDESDALE_HORSE, BhModelLayers.CLYDESDALE_HORSE_BABY));
-    }
-
-    @SubscribeEvent
-    public static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
-        BhModelLayers.register(event);
-    }
-
-    @SubscribeEvent
-    public static void onClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> {
-            MenuScreens.register(ModMenus.CART_CHEST.get(), CartChestScreen::new);
-            if (ModList.get().isLoaded("cloth_config")) {
-                ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
-                        () -> new ConfigScreenHandler.ConfigScreenFactory(
-                                (client, parent) -> BhConfigScreen.create(parent)));
-            }
-        });
-    }
-
-    @SubscribeEvent
-    public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
-        for (RegistryObject<Item> egg : ModItems.BREED_SPAWN_EGGS) {
-            event.register((stack, layer) -> -1, egg.get());
+    private static void onClientTick(Minecraft client) {
+        HorseStabilizerSoundController.tick(client);
+        if (client.player == null || client.level == null) {
+            return;
         }
+
+        boolean callDown = IcysBetterHorsesClient.CALL_KEY.isDown();
+        if (callDown && !callKeyWasDown) {
+            if (anyHorseRoused(client)) {
+                BhNetworking.sendToServer(new HorseRecallPayload());
+            } else if (client.player.getVehicle() instanceof AbstractHorse mount) {
+                client.setScreen(new HorseInfoScreen(mount));
+            } else {
+                BhNetworking.sendToServer(new CallHorsePayload());
+            }
+        }
+        callKeyWasDown = callDown;
+        while (IcysBetterHorsesClient.CALL_KEY.consumeClick()) {}
+
+        while (IcysBetterHorsesClient.RADIAL_KEY.consumeClick()) {
+            IcysBetterHorsesClient.bh_tryOpenRadial(client);
+        }
+
+        while (IcysBetterHorsesClient.MANAGE_KEY.consumeClick()) {
+            if (client.screen == null) {
+                client.setScreen(new HorseRosterScreen());
+            }
+        }
+
+        while (IcysBetterHorsesClient.GEAR_KEY.consumeClick()) {
+            shiftGear(client);
+        }
+
+        while (IcysBetterHorsesClient.REAR_KEY.consumeClick()) {
+            tryRear(client);
+        }
+
+        while (IcysBetterHorsesClient.CART_SIZE_KEY.consumeClick()) {
+            trySwapCartSize(client);
+        }
+    }
+
+    private static void shiftGear(Minecraft client) {
+        LocalPlayer player = client.player;
+        if (player == null || client.screen != null) {
+            return;
+        }
+        if (!(player.getVehicle() instanceof AbstractHorse horse)
+                || horse.getControllingPassenger() != player) {
+            return;
+        }
+        int gear = HorseGearController.INSTANCE.shiftUp(horse);
+        String gait = switch (gear) {
+            case BhGears.WALK_GEAR -> "walk";
+            case BhGears.TROT_GEAR -> horse instanceof IcelandicHorse ? "tolt" : "trot";
+            case BhGears.CANTER_GEAR -> "canter";
+            case BhGears.GALLOP_GEAR -> "gallop";
+            default -> "halt";
+        };
+        client.gui.setOverlayMessage(Component.translatable("message.icys-better-horses.gait." + gait), false);
+    }
+
+    private static void tryRear(Minecraft client) {
+        LocalPlayer player = client.player;
+        if (player == null || client.screen != null) {
+            return;
+        }
+        AbstractHorse horse = player.getVehicle() instanceof AbstractHorse mount
+                ? mount
+                : lookedAtHorse(player);
+        if (horse == null) {
+            return;
+        }
+        BhNetworking.sendToServer(new BhRearPayload(horse.getId()));
+    }
+
+    private static void trySwapCartSize(Minecraft client) {
+        LocalPlayer player = client.player;
+        if (player == null || client.screen != null) {
+            return;
+        }
+        Entity target = lookedAtCartTarget(player);
+        if (target == null) {
+            return;
+        }
+        BhNetworking.sendToServer(new CartSizePayload(target.getId()));
+    }
+
+    private static @Nullable AbstractHorse lookedAtHorse(LocalPlayer player) {
+        Entity hit = lookedAt(player, entity -> entity instanceof AbstractHorse && entity.isPickable());
+        return hit instanceof AbstractHorse horse ? horse : null;
+    }
+
+    private static @Nullable Entity lookedAtCartTarget(LocalPlayer player) {
+        return lookedAt(player, entity ->
+                (entity instanceof HorseCartEntity || entity instanceof AbstractHorse) && entity.isPickable());
+    }
+
+    private static @Nullable Entity lookedAt(LocalPlayer player, java.util.function.Predicate<Entity> filter) {
+        Vec3 eye = player.getEyePosition(1.0F);
+        Vec3 look = player.getViewVector(1.0F);
+        Vec3 end = eye.add(look.scale(REACH));
+        AABB searchBox = player.getBoundingBox().expandTowards(look.scale(REACH)).inflate(1.0D);
+        EntityHitResult hit = ProjectileUtil.getEntityHitResult(
+                player, eye, end, searchBox, filter, REACH * REACH);
+        return hit == null ? null : hit.getEntity();
+    }
+
+    private static boolean anyHorseRoused(Minecraft client) {
+        UUID self = client.player.getUUID();
+        AABB box = client.player.getBoundingBox().inflate(ROUSE_SCAN);
+        for (AbstractHorse horse : client.level.getEntitiesOfClass(AbstractHorse.class, box)) {
+            IHorseData data = IHorseData.of(horse);
+            if (data.bh_getCombatState() != 0 && self.equals(data.bh_getOwner())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void onDisconnect() {

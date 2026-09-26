@@ -68,7 +68,7 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
         ItemStack sourceStack = sourceSlot.getItem();
         ItemStack copiedStack = sourceStack.copy();
 
-        int mountSlotEnd = this.horseContainer.getContainerSize() + 1;
+        int mountSlotEnd = this.horseContainer.getContainerSize();
         int playerInventoryStart = mountSlotEnd;
         int playerInventoryEnd = playerInventoryStart + 27;
         int hotbarStart = playerInventoryEnd;
@@ -144,7 +144,7 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
 
     @Unique
     private boolean bh_hasUpgradedSaddleInMenu() {
-        return this.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE.get());
+        return this.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE);
     }
 
     @Unique

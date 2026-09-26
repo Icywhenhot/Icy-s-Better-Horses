@@ -30,7 +30,6 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Unique private static final float BH_MEDKIT_HEALTH_THRESHOLD_FRACTION = 0.5F;
     @Unique private static final int BH_MEDKIT_EFFECT_DURATION = 20 * 30;
-    @Unique private boolean bh_triggerHorseMedkitAfterDamage = false;
 
     protected LivingEntityMixin(EntityType<?> entityType, Level level) {
         super(entityType, level);
@@ -42,10 +41,10 @@ public abstract class LivingEntityMixin extends Entity {
     @Shadow
     protected abstract float getDamageAfterMagicAbsorb(DamageSource source, float amount);
 
+    // HEAD, not TAIL: vanilla returns early once absorption/armour fully soak a hit, but the medkit
+    // still needs to trigger on those hits - bh_calculateHealthDamage already mirrors that math itself.
     @Inject(method = "actuallyHurt", at = @At("HEAD"))
-    private void bh_queueHorseMedkit(DamageSource source, float amount, CallbackInfo ci) {
-        this.bh_triggerHorseMedkitAfterDamage = false;
-
+    private void bh_useHorseMedkit(DamageSource source, float amount, CallbackInfo ci) {
         LivingEntity self = (LivingEntity) (Object) this;
         if (!(self instanceof AbstractHorse) || !(self instanceof IHorseData data)) {
             return;
@@ -57,21 +56,7 @@ public abstract class LivingEntityMixin extends Entity {
 
         float damageToHealth = this.bh_calculateHealthDamage(self, source, amount);
         float healthAfterDamage = self.getHealth() - damageToHealth;
-        if (healthAfterDamage < self.getMaxHealth() * BH_MEDKIT_HEALTH_THRESHOLD_FRACTION) {
-            this.bh_triggerHorseMedkitAfterDamage = true;
-        }
-    }
-
-    @Inject(method = "actuallyHurt", at = @At("TAIL"))
-    private void bh_useHorseMedkit(DamageSource source, float amount, CallbackInfo ci) {
-        if (!this.bh_triggerHorseMedkitAfterDamage) {
-            return;
-        }
-
-        this.bh_triggerHorseMedkitAfterDamage = false;
-
-        LivingEntity self = (LivingEntity) (Object) this;
-        if (!(self instanceof AbstractHorse) || !(self instanceof IHorseData data)) {
+        if (healthAfterDamage >= self.getMaxHealth() * BH_MEDKIT_HEALTH_THRESHOLD_FRACTION) {
             return;
         }
 
@@ -81,7 +66,7 @@ public abstract class LivingEntityMixin extends Entity {
     @Unique
     private boolean bh_hasEquippedMedkit(IHorseData data) {
         return BhConfig.medkitEnabled()
-                && data.bh_getGearContainer().getItem(GearSlot.MEDKIT.ordinal()).is(ModItems.HORSE_MEDKIT.get());
+                && data.bh_getGearContainer().getItem(GearSlot.MEDKIT.ordinal()).is(ModItems.HORSE_MEDKIT);
     }
 
     @Unique

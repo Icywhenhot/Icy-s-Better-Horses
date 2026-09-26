@@ -145,7 +145,8 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                 this.bh_active().clearContent();
             }
         };
-        this.bh_playerInventoryStartIndex = horseContainer.getContainerSize() + 1;
+        // Player slots start right after the horse's own (2, or 17 with a chest).
+        this.bh_playerInventoryStartIndex = horseContainer.getContainerSize();
         this.bh_playerInventoryEndIndex = Math.min(this.bh_playerInventoryStartIndex + 36, this.slots.size());
 
         this.bh_gearStartIndex = this.slots.size();
@@ -158,7 +159,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                         return false;
                     }
                     if (type == GearSlot.STABILIZER
-                            && stack.is(ModItems.HORSE_STABILIZER.get())
+                            && stack.is(ModItems.HORSE_STABILIZER)
                             && !(horse instanceof Horse)) {
                         return false;
                     }
@@ -270,6 +271,9 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         if (this.bh_gearContainer != null
                 && this.bh_isEnderChestGear(this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal()))) {
             rows = Math.min(rows, BH_ENDER_SLOT_COUNT / 9);
+        } else {
+            // Showing more rows than the container holds would silently delete items.
+            rows = Math.min(rows, IHorseData.of(this.bh_horse).bh_getChestContainer().getContainerSize() / 9);
         }
         return rows;
     }
@@ -318,7 +322,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
     @Unique
     private boolean bh_hasUpgradedSaddleInMenu() {
-        return this.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE.get());
+        return this.getSlot(0).getItem().is(ModItems.UPGRADED_SADDLE);
     }
 
     @Unique

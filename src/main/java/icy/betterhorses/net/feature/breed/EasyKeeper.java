@@ -1,11 +1,11 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.BhAttributes;
 import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraftforge.common.ForgeMod;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 public final class EasyKeeper implements BreedAbility {
@@ -22,7 +22,7 @@ public final class EasyKeeper implements BreedAbility {
             return;
         }
         applied = want;
-        BhHorseAttributes.apply(horse, ForgeMod.STEP_HEIGHT_ADDITION.get(),
+        BhHorseAttributes.apply(horse, BhAttributes.STEP_HEIGHT_ADDITION,
                 BhHorseAttributes.Source.ABILITY, KEY,
                 want ? STEP_BONUS : 0.0D, AttributeModifier.Operation.ADDITION);
     }
@@ -30,7 +30,7 @@ public final class EasyKeeper implements BreedAbility {
     @Override
     public void onDetach(AbstractHorse horse, IHorseData data) {
         applied = false;
-        BhHorseAttributes.clear(horse, ForgeMod.STEP_HEIGHT_ADDITION.get(),
+        BhHorseAttributes.clear(horse, BhAttributes.STEP_HEIGHT_ADDITION,
                 BhHorseAttributes.Source.ABILITY, KEY);
     }
 }

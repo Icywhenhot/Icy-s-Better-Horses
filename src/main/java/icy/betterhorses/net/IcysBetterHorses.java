@@ -9,59 +9,47 @@ import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRosterEntry;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.BlockSource;
+import net.minecraft.core.Direction;
+import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
+import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.level.block.DispenserBlock;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.entity.ProjectileImpactEvent;
-import net.minecraftforge.event.OnDatapackSyncEvent;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
-import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.common.MinecraftForge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import java.util.UUID;
 
-@Mod(IcysBetterHorses.MOD_ID)
-public final class IcysBetterHorses {
+public final class IcysBetterHorses implements ModInitializer {
 
     public static final String MOD_ID = "icys_better_horses";
     public static final String RESOURCE_NAMESPACE = "icys-better-horses";
@@ -75,60 +63,79 @@ public final class IcysBetterHorses {
     private final List<AbstractHorse> staleHorses = new ArrayList<>();
     private final List<AbstractHorse> pendingReleases = new ArrayList<>();
 
-    public IcysBetterHorses() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+    @Override
+    public void onInitialize() {
         BhConfig.load();
-        ModBlocks.register(modEventBus);
-        ModEntities.register(modEventBus);
-        ModItems.register(modEventBus);
-        ModMenus.register(modEventBus);
-        ModSounds.register(modEventBus);
-        ModAttachments.register(modEventBus);
-        BhNetworking.register();
-        BhBiomeSpawns.register(modEventBus);
-        modEventBus.addListener(this::registerSpawnPlacements);
-        modEventBus.addListener(this::onCommonSetup);
-        modEventBus.addListener(ModEntities::registerAttributes);
-        MinecraftForge.EVENT_BUS.register(this);
+        ModBlocks.register();
+        ModEntities.register();
+        ModItems.register();
+        ModMenus.register();
+        ModSounds.register();
+        ModAttachments.register();
+        BhAttributes.register();
+        ModEntities.registerAttributes();
+        BhCriteria.register();
+        BhHorseSpawnRules.installSpawnPlacementOverride();
+        BhBiomeSpawns.register();
+        BhNetworking.registerServer();
+
+        ServerLifecycleEvents.SERVER_STARTED.register(this::onServerStarted);
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> onServerStopping());
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> onServerStopped());
+        ServerTickEvents.END_SERVER_TICK.register(this::onServerTick);
+        ServerEntityEvents.ENTITY_LOAD.register(this::onEntityJoinLevel);
+        ServerEntityEvents.ENTITY_UNLOAD.register((entity, world) -> onEntityLeaveLevel(entity));
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> onPlayerJoin(handler.getPlayer()));
+        ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register(this::onDatapackSync);
+        CommandRegistrationCallback.EVENT.register(BhCommands::register);
+        BhBreedLoader.register();
+        bh_registerSpawnEggDispensers();
+
         LOGGER.info("Icy's Better Horses initialized.");
     }
 
-    private void onCommonSetup(FMLCommonSetupEvent event) {
-        event.enqueueWork(BhCriteria::register);
+    // Vanilla's own spawn-egg dispense behaviour is registered in DispenserBlock's static init,
+    // which runs before our SpawnEggItem instances exist - so dispensers just no-op on our eggs
+    // unless we register the same behaviour for them here.
+    private static void bh_registerSpawnEggDispensers() {
+        DispenseItemBehavior behavior = new DefaultDispenseItemBehavior() {
+            @Override
+            protected ItemStack execute(BlockSource blockSource, ItemStack stack) {
+                if (!(stack.getItem() instanceof SpawnEggItem eggItem)) {
+                    return stack;
+                }
+                Direction facing = blockSource.getBlockState().getValue(DispenserBlock.FACING);
+                BlockPos pos = blockSource.getPos().relative(facing);
+                EntityType<?> type = eggItem.getType(new CompoundTag());
+                type.spawn(blockSource.getLevel(), stack, null, pos, MobSpawnType.DISPENSER, true, false);
+                stack.shrink(1);
+                return stack;
+            }
+        };
+        for (Item egg : ModItems.BREED_SPAWN_EGGS) {
+            DispenserBlock.registerBehavior(egg, behavior);
+        }
     }
 
-    @SubscribeEvent
-    public void onServerStarted(ServerStartedEvent event) {
-        HorseTracker.attach(event.getServer());
+    private void onServerStarted(MinecraftServer server) {
+        HorseTracker.attach(server);
     }
 
-    @SubscribeEvent
-    public void onServerStopping(ServerStoppingEvent event) {
+    private void onServerStopping() {
         HorseTracker.recordLoadedPositions();
     }
 
-    @SubscribeEvent
-    public void onServerStopped(ServerStoppedEvent event) {
+    private void onServerStopped() {
         staleHorses.clear();
         pendingReleases.clear();
         HorseTracker.detach();
     }
 
-    private void registerSpawnPlacements(SpawnPlacementRegisterEvent event) {
-        event.register(
-                EntityType.HORSE,
-                SpawnPlacements.Type.ON_GROUND,
-                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                BhHorseSpawnRules::checkHorseSpawnRules,
-                SpawnPlacementRegisterEvent.Operation.REPLACE);
-    }
-
-    @SubscribeEvent
-    public void onEntityJoinLevel(EntityJoinLevelEvent event) {
-        if (event.getLevel().isClientSide()) {
+    private void onEntityJoinLevel(Entity entity, Level level) {
+        if (level.isClientSide()) {
             return;
         }
-        if (event.getEntity() instanceof AbstractHorse horse && ((IHorseData) horse).bh_isOwned()) {
+        if (entity instanceof AbstractHorse horse && ((IHorseData) horse).bh_isOwned()) {
             if (HorseTracker.consumePendingDisown(horse.getUUID())) {
                 pendingReleases.add(horse);
             } else if (HorseTracker.isStale(horse)) {
@@ -139,14 +146,7 @@ public final class IcysBetterHorses {
         }
     }
 
-    @SubscribeEvent
-    public void onRegisterCommands(RegisterCommandsEvent event) {
-        BhCommands.register(event);
-    }
-
-    @SubscribeEvent
-    public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+    private void onPlayerJoin(ServerPlayer player) {
         sendTrustList(player);
         BhNetworking.sendToPlayer(player, new ConfigSyncPayload(
                 BhConfig.disabledFeatures(),
@@ -157,11 +157,9 @@ public final class IcysBetterHorses {
         BhNetworking.sendToPlayer(player, BreedDataPayload.current());
     }
 
-    @SubscribeEvent
-    public void onDatapackSync(OnDatapackSyncEvent event) {
-        if (event.getPlayer() != null) return;
-        BreedDataPayload breeds = BreedDataPayload.current();
-        event.getPlayerList().getPlayers().forEach(player -> BhNetworking.sendToPlayer(player, breeds));
+    private void onDatapackSync(ServerPlayer player, boolean joined) {
+        if (joined) return;
+        BhNetworking.sendToPlayer(player, BreedDataPayload.current());
     }
 
     private void applyPendingReleases() {
@@ -189,18 +187,13 @@ public final class IcysBetterHorses {
         staleHorses.clear();
     }
 
-    @SubscribeEvent
-    public void onEntityLeaveLevel(EntityLeaveLevelEvent event) {
-        if (event.getEntity() instanceof AbstractHorse horse) {
+    private void onEntityLeaveLevel(Entity entity) {
+        if (entity instanceof AbstractHorse horse) {
             HorseTracker.unregister(horse);
         }
     }
 
-    @SubscribeEvent
-    public void onProjectileImpact(ProjectileImpactEvent event) {
-        if (!(event.getRayTraceResult() instanceof EntityHitResult hit)) {
-            return;
-        }
+    public static boolean bh_deflectProjectile(Projectile projectile, EntityHitResult hit) {
         Entity struck = hit.getEntity();
         AbstractHorse mount = null;
         if (struck instanceof AbstractHorse horse) {
@@ -209,30 +202,22 @@ public final class IcysBetterHorses {
             mount = ridden;
         }
         if (mount == null || !Ironclad.deflectsProjectiles(IHorseData.of(mount))) {
-            return;
+            return false;
         }
 
-        Projectile projectile = event.getProjectile();
         projectile.setDeltaMovement(projectile.getDeltaMovement().scale(-DEFLECT_BOUNCE));
         projectile.hurtMarked = true;
+        if (projectile instanceof AbstractArrow arrow) {
+            // pierce > 0 would re-find this same entity forever in AbstractArrow.tick's hit loop
+            arrow.setPierceLevel((byte) 0);
+        }
         if (!mount.level().isClientSide()) {
             BhSurge.pulse(IHorseData.of(mount), 0, 1);
         }
-        event.setCanceled(true);
+        return true;
     }
 
-    @SubscribeEvent
-    public void onAddReloadListener(AddReloadListenerEvent event) {
-        BhBreedLoader.register(event);
-    }
-
-    @SubscribeEvent
-    public void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) {
-            return;
-        }
-
-        MinecraftServer server = event.getServer();
+    private void onServerTick(MinecraftServer server) {
         BhTuning tuning = BhConfig.tuning();
         if (tuning.bondAmount() > 0 && server.getTickCount() % tuning.bondIntervalTicks() == 0) {
             growHorseBond(server, tuning.bondAmount());
@@ -242,11 +227,11 @@ public final class IcysBetterHorses {
         applyPendingReleases();
     }
 
-    @SubscribeEvent
-    public void onMountedBreakSpeed(PlayerEvent.BreakSpeed event) {
-        if (event.getEntity().getVehicle() instanceof AbstractHorse) {
-            event.setNewSpeed(event.getNewSpeed() * 6.0F);
+    public static float bh_mountedBreakSpeed(Player player, float original) {
+        if (player.getVehicle() instanceof AbstractHorse) {
+            return original * 6.0F;
         }
+        return original;
     }
 
     public static void handleRadialCommand(ServerPlayer player, int horseId, HorseCommand command) {
@@ -285,8 +270,8 @@ public final class IcysBetterHorses {
             return;
         }
         SoundEvent sound = horse.getRandom().nextBoolean()
-                ? ModSounds.HORSE_NEIGH.get()
-                : ModSounds.HORSE_SNORT.get();
+                ? ModSounds.HORSE_NEIGH
+                : ModSounds.HORSE_SNORT;
         horse.level().playSound(
                 null, horse.getX(), horse.getY(), horse.getZ(),
                 sound, horse.getSoundSource(), 1.0F, 1.0F);
@@ -311,7 +296,7 @@ public final class IcysBetterHorses {
         }
         if (any) {
             player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                    ModSounds.CALL_WHISTLE.get(), player.getSoundSource(), 1.0F, 1.0F);
+                    ModSounds.CALL_WHISTLE, player.getSoundSource(), 1.0F, 1.0F);
         }
     }
 
@@ -440,7 +425,7 @@ public final class IcysBetterHorses {
     private static void playWhistle(ServerPlayer player) {
         player.level().playSound(
                 null, player.getX(), player.getY(), player.getZ(),
-                ModSounds.CALL_WHISTLE.get(), SoundSource.PLAYERS, 0.5F, 1.0F);
+                ModSounds.CALL_WHISTLE, SoundSource.PLAYERS, 0.5F, 1.0F);
     }
 
     public static void handleCallHorse(ServerPlayer player) {
@@ -450,7 +435,7 @@ public final class IcysBetterHorses {
                     player.getX(),
                     player.getY(),
                     player.getZ(),
-                    ModSounds.CALL_WHISTLE.get(),
+                    ModSounds.CALL_WHISTLE,
                     SoundSource.PLAYERS,
                     1.0F,
                     1.0F);

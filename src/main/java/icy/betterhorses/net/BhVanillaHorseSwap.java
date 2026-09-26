@@ -34,7 +34,7 @@ public final class BhVanillaHorseSwap {
         }
 
         var tag = horse.saveWithoutId(new net.minecraft.nbt.CompoundTag());
-        tag.putString("BH_BreedId", breed.id());
+        tag.putInt("BH_Breed", breed.ordinal());
         swap.load(tag);
         swap.bhConvertFrom(horse);
         swap.setHealth(Math.min(horse.getHealth(), swap.getMaxHealth()));

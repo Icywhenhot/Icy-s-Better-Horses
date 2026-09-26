@@ -16,9 +16,9 @@ public enum GearSlot {
         if (stack.isEmpty()) return true;
         return switch (this) {
             case CHEST -> stack.is(Items.CHEST) || stack.is(Items.ENDER_CHEST);
-            case HOOVES -> stack.is(ModItems.HORSE_HOOVES.get());
-            case MEDKIT -> stack.is(ModItems.HORSE_MEDKIT.get());
-            case STABILIZER -> stack.is(ModItems.HORSE_STABILIZER.get());
+            case HOOVES -> stack.is(ModItems.HORSE_HOOVES);
+            case MEDKIT -> stack.is(ModItems.HORSE_MEDKIT);
+            case STABILIZER -> stack.is(ModItems.HORSE_STABILIZER);
         };
     }
 

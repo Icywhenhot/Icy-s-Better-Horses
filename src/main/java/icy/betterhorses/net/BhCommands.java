@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -14,7 +15,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.event.RegisterCommandsEvent;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,8 +31,10 @@ public final class BhCommands {
 
     private BhCommands() {}
 
-    public static void register(RegisterCommandsEvent event) {
-        build(event.getDispatcher());
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher,
+                                 CommandBuildContext context,
+                                 Commands.CommandSelection selection) {
+        build(dispatcher);
     }
 
     private static void build(CommandDispatcher<CommandSourceStack> dispatcher) {

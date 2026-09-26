@@ -212,7 +212,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     public static HorseCartEntity preview(Level level, CartSize size) {
-        HorseCartEntity cart = new HorseCartEntity(ModEntities.HORSE_CART.get(), level);
+        HorseCartEntity cart = new HorseCartEntity(ModEntities.HORSE_CART, level);
         cart.setId(-1);
         cart.entityData.set(DATA_PLACED, true);
         cart.entityData.set(DATA_LARGE, size.isLarge());
@@ -220,7 +220,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     public static @Nullable HorseCartEntity place(ServerLevel level, Vec3 pos, float yaw, CartSize size) {
-        HorseCartEntity cart = new HorseCartEntity(ModEntities.HORSE_CART.get(), level);
+        HorseCartEntity cart = new HorseCartEntity(ModEntities.HORSE_CART, level);
         cart.entityData.set(DATA_PLACED, true);
         cart.entityData.set(DATA_LARGE, size.isLarge());
         cart.setNoGravity(false);
@@ -240,14 +240,14 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     @Override
     public ItemStack getPickResult() {
-        return new ItemStack(ModItems.HORSE_CART.get());
+        return new ItemStack(ModItems.HORSE_CART);
     }
 
     public static @Nullable HorseCartEntity spawnFor(AbstractHorse horse) {
         if (!(horse.level() instanceof ServerLevel level)) {
             return null;
         }
-        HorseCartEntity cart = new HorseCartEntity(ModEntities.HORSE_CART.get(), level);
+        HorseCartEntity cart = new HorseCartEntity(ModEntities.HORSE_CART, level);
         cart.entityData.set(DATA_LARGE, IHorseData.of(horse).bh_hasLargeCart());
         cart.bindTo(horse);
         cart.followHorse(horse);
@@ -1032,7 +1032,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         this.dropChest();
         this.dropPlough();
         if (dropCart) {
-            this.spawnAtLocation(new ItemStack(ModItems.HORSE_CART.get()));
+            this.spawnAtLocation(new ItemStack(ModItems.HORSE_CART));
         }
         this.playSound(SoundEvents.WOOD_BREAK, 1.0F, 1.0F);
         this.discard();

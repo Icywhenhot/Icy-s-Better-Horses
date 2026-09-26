@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhAttributes;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhHorseSteering;
 import icy.betterhorses.net.BhRiderSeat;
@@ -57,6 +58,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -138,6 +140,15 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private HorseCombat bh_combat;
     @Unique private BreedAbilities bh_abilities;
     @Unique private HorseFeature[] bh_features;
+
+    // Every horse, vanilla or custom, builds its attributes through here, so this covers them all.
+    // Fabric can't register attributes on vanilla entities any other way.
+    @Inject(method = "createBaseHorseAttributes", at = @At("RETURN"))
+    private static void bh_addCustomAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
+        cir.getReturnValue()
+                .add(BhAttributes.STEP_HEIGHT_ADDITION)
+                .add(BhAttributes.SWIM_SPEED);
+    }
 
     @Unique
     private HorseCombat bh_combatFeature() {
@@ -413,7 +424,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Override
     public boolean bh_hasUpgradedSaddle() {
-        return inventory != null && inventory.getItem(0).is(ModItems.UPGRADED_SADDLE.get());
+        return inventory != null && inventory.getItem(0).is(ModItems.UPGRADED_SADDLE);
     }
 
     @Override
@@ -593,7 +604,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         }
         if (!input.contains("SaddleItem", Tag.TAG_COMPOUND)) return;
         ItemStack saddle = ItemStack.of(input.getCompound("SaddleItem"));
-        if (saddle.is(ModItems.UPGRADED_SADDLE.get())) {
+        if (saddle.is(ModItems.UPGRADED_SADDLE)) {
             inventory.setItem(0, saddle);
         }
     }
@@ -1069,14 +1080,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         this.bh_syncHorseData();
         boolean hadCart = this.entityData.get(BH_CART);
         boolean hasCart = this.bh_gearContainer.getItem(GearSlot.STABILIZER.ordinal())
-                .is(ModItems.HORSE_CART.get());
+                .is(ModItems.HORSE_CART);
         bh_push(BH_CART, hasCart);
         if (hasCart && !hadCart) {
             bh_setLargeCart(this.bh_mayUseLargeCart());
         }
         bh_push(BH_ENDER_CHEST, this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal()).is(Items.ENDER_CHEST));
         bh_push(BH_UPGRADED_SADDLE, this.inventory != null
-                && this.inventory.getItem(0).is(ModItems.UPGRADED_SADDLE.get()));
+                && this.inventory.getItem(0).is(ModItems.UPGRADED_SADDLE));
     }
 
     @Unique

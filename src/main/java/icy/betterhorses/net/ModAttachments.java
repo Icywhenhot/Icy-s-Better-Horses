@@ -1,7 +1,5 @@
 package icy.betterhorses.net;
 
-import net.minecraftforge.eventbus.api.IEventBus;
-
 public final class ModAttachments {
     public static final class BhHorseSyncState {
         public int bond = 0;
@@ -12,8 +10,7 @@ public final class ModAttachments {
         public boolean breedMixed = false;
     }
 
-    public static void register(IEventBus modEventBus) {
-    }
+    public static void register() {}
 
     private ModAttachments() {}
 }

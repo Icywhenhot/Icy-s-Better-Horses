@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhAttributes;
 import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
@@ -11,7 +12,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraftforge.common.ForgeMod;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -63,7 +63,7 @@ public abstract class EntityMixin {
             return;
         }
 
-        @Nullable AttributeInstance stepHeight = horse.getAttribute(ForgeMod.STEP_HEIGHT_ADDITION.get());
+        @Nullable AttributeInstance stepHeight = horse.getAttribute(BhAttributes.STEP_HEIGHT_ADDITION);
         if (stepHeight != null && stepHeight.getModifier(BH_MOUNTED_STEP_HEIGHT_ID) == null) {
             stepHeight.addTransientModifier(new AttributeModifier(
                     BH_MOUNTED_STEP_HEIGHT_ID,
@@ -85,7 +85,7 @@ public abstract class EntityMixin {
         Entity vehicle = player.getVehicle();
         if (vehicle instanceof AbstractHorse horse) {
             if (horse.getPassengers().size() == 1) {
-                @Nullable AttributeInstance stepHeight = horse.getAttribute(ForgeMod.STEP_HEIGHT_ADDITION.get());
+                @Nullable AttributeInstance stepHeight = horse.getAttribute(BhAttributes.STEP_HEIGHT_ADDITION);
                 if (stepHeight != null) {
                     stepHeight.removeModifier(BH_MOUNTED_STEP_HEIGHT_ID);
                 }

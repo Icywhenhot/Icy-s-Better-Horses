@@ -33,7 +33,7 @@ public final class BhSecondChance {
         horse.setHealth(1.0F);
         horse.hurt(source, 0.0F);
         rider.level().playSound(null, rider.getX(), rider.getY(), rider.getZ(),
-                ModSounds.HORSE_NEIGH.get(), rider.getSoundSource(), 1.0F, 0.7F);
+                ModSounds.HORSE_NEIGH, rider.getSoundSource(), 1.0F, 0.7F);
         return true;
     }
 }

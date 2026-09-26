@@ -64,7 +64,7 @@ public final class WildInstincts implements BreedAbility {
 
         alertCooldown = ALERT_COOLDOWN;
         horse.level().playSound(null, horse.getX(), horse.getY(), horse.getZ(),
-                ModSounds.HORSE_ANGRY_SNORT.get(), horse.getSoundSource(), 1.0F, 1.0F);
+                ModSounds.HORSE_ANGRY_SNORT, horse.getSoundSource(), 1.0F, 1.0F);
 
         for (LivingEntity hostile : hostiles) {
             hostile.addEffect(new net.minecraft.world.effect.MobEffectInstance(
