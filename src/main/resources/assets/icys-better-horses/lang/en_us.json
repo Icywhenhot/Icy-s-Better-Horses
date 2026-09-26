@@ -844,7 +844,7 @@
   "message.icys-better-horses.horse_cmd.gender_set": "%s is now %s.",
   "message.icys-better-horses.horse_cmd.stat_set": "%s %s set to %s.",
   "message.icys-better-horses.horse_cmd.stat_clamped": "%s %s clamped to %s (breed range %s to %s).",
-  "message.icys-better-horses.horse_cmd.spawned": "Spawned a %s: %s, %s, speed %s blk/s, jump %s blk, health %s HP.",
+  "message.icys-better-horses.horse_cmd.spawned": "Spawned a new %s: %s, %s, speed %s blk/s, jump %s blk, health %s HP.",
   "message.icys-better-horses.horse_cmd.coats": "%s coats (%s): %s",
   "message.icys-better-horses.horse_cmd.range_max": "Top of this breed's range",
   "message.icys-better-horses.horse_cmd.range_min": "Bottom of this breed's range",
