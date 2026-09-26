@@ -12,7 +12,6 @@ class BhConfigTest {
 
     @BeforeAll
     static void bootstrapMinecraftRegistries() {
-        // BhConfig touches vanilla registries, which need Minecraft bootstrapped first.
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
     }

@@ -1,0 +1,13 @@
+{
+  "values": [
+    "minecraft:chest",
+    {
+      "id": "#c:chests/wooden",
+      "required": false
+    },
+    {
+      "id": "#forge:chests/wooden",
+      "required": false
+    }
+  ]
+}

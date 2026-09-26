@@ -9,7 +9,7 @@
   },
   "display": {
     "announce_to_chat": true,
-    "background": "minecraft:gui/advancements/backgrounds/husbandry",
+    "background": "minecraft:textures/gui/advancements/backgrounds/husbandry.png",
     "description": {
       "translate": "advancements.icys-better-horses.hold_your_horses.description"
     },

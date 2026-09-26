@@ -12,17 +12,11 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * Round-trip tests for every network payload. Values are distinct and non-default so swapped
- * or dropped fields fail, and each test checks the buffer is fully read.
- */
 class PayloadCodecTest {
 
     private static FriendlyByteBuf buf() {
         return new FriendlyByteBuf(Unpooled.buffer());
     }
-
-    // ---- HorseGearPayload(int horseId, int gear, int gaitGear) ----
 
     @Test
     void horseGearPayloadRoundTrips() {
@@ -33,18 +27,14 @@ class PayloadCodecTest {
         assertEquals(0, buf.readableBytes(), "decode must consume every written byte");
     }
 
-    // ---- RadialCommandPayload(int horseId, int commandOrdinal) ----
-
     @Test
     void radialCommandPayloadRoundTrips() {
-        RadialCommandPayload original = new RadialCommandPayload(99, 4);
+        RadialCommandPayload original = new RadialCommandPayload(99, "icys_better_horses:wander", "icys_better_horses:top_end");
         FriendlyByteBuf buf = buf();
         RadialCommandPayload.encode(original, buf);
         assertEquals(original, RadialCommandPayload.decode(buf));
         assertEquals(0, buf.readableBytes());
     }
-
-    // ---- BhFreeLookPayload(int horseId, boolean freeLook) ----
 
     @Test
     void bhFreeLookPayloadRoundTripsWhenTrue() {
@@ -64,8 +54,6 @@ class PayloadCodecTest {
         assertEquals(0, buf.readableBytes());
     }
 
-    // ---- BhRearPayload(int horseId) ----
-
     @Test
     void bhRearPayloadRoundTrips() {
         BhRearPayload original = new BhRearPayload(42);
@@ -74,8 +62,6 @@ class PayloadCodecTest {
         assertEquals(original, BhRearPayload.decode(buf));
         assertEquals(0, buf.readableBytes());
     }
-
-    // ---- CartSizePayload(int targetId) ----
 
     @Test
     void cartSizePayloadRoundTrips() {
@@ -88,16 +74,12 @@ class PayloadCodecTest {
 
     @Test
     void cartSizePayloadRoundTripsWithNegativeValue() {
-        // Negative values must round-trip too.
         CartSizePayload original = new CartSizePayload(-12345);
         FriendlyByteBuf buf = buf();
         CartSizePayload.encode(original, buf);
         assertEquals(original, CartSizePayload.decode(buf));
         assertEquals(0, buf.readableBytes());
     }
-
-    // ---- HorseManagePayload(UUID horseId, int actionOrdinal) ----
-    // UUID halves differ so a swapped msb/lsb write is caught.
 
     @Test
     void horseManagePayloadRoundTrips() {
@@ -108,9 +90,6 @@ class PayloadCodecTest {
         assertEquals(original, HorseManagePayload.decode(buf));
         assertEquals(0, buf.readableBytes());
     }
-
-    // ---- Empty-record payloads: CallHorsePayload, HorseRecallPayload,
-    //      OpenHorseRosterPayload, HorseChargeShakePayload ----
 
     @Test
     void callHorsePayloadRoundTrips() {
@@ -148,9 +127,6 @@ class PayloadCodecTest {
         assertEquals(0, buf.readableBytes());
     }
 
-    // ---- HorseManageResultPayload(UUID horseId, int actionOrdinal, boolean success, String messageKey) ----
-    // Non-palindromic UUIDs, as above.
-
     @Test
     void horseManageResultPayloadRoundTripsOnSuccess() {
         HorseManageResultPayload original = new HorseManageResultPayload(
@@ -177,8 +153,6 @@ class PayloadCodecTest {
         assertEquals(0, buf.readableBytes());
     }
 
-    // ---- TrustSyncPayload(List<UUID> trustingOwners) ----
-
     @Test
     void trustSyncPayloadRoundTripsWithEntries() {
         TrustSyncPayload original = new TrustSyncPayload(List.of(
@@ -199,16 +173,13 @@ class PayloadCodecTest {
         assertEquals(0, buf.readableBytes());
     }
 
-    // ---- HorseRosterSyncPayload(List<HorseRosterEntry> entries) ----
-    // Three entries so every boolean column is unique and swapped fields get caught.
-    // Ordinal fields include -1, the unset value.
     @Test
     void horseRosterSyncPayloadRoundTripsWithEntries() {
         HorseRosterEntry populated = new HorseRosterEntry(
                 UUID.fromString("11111111-0000-1111-2222-444455556666"),
                 "Shadowfax",
                 "arabian",
-                1,
+                "icys_better_horses:female",
                 true,
                 250,
                 true,
@@ -225,7 +196,7 @@ class PayloadCodecTest {
                 UUID.fromString("22222222-0000-1111-2222-777788889999"),
                 "",
                 "clydesdale",
-                0,
+                "icys_better_horses:male",
                 false,
                 0,
                 false,
@@ -242,7 +213,7 @@ class PayloadCodecTest {
                 UUID.fromString("33333333-0000-1111-2222-101112131415"),
                 "Bucephalus",
                 "mustang",
-                2,
+                "",
                 true,
                 999,
                 false,
@@ -271,9 +242,6 @@ class PayloadCodecTest {
         assertEquals(original, HorseRosterSyncPayload.decode(buf));
         assertEquals(0, buf.readableBytes());
     }
-
-    // ---- ConfigSyncPayload(List<String>, boolean, boolean, List<String>, BhTuning) ----
-    // Values sit inside the clamp ranges and are exact as floats, so the round trip is exact.
 
     @Test
     void configSyncPayloadRoundTripsWithClassAbilitiesEnabled() {
@@ -319,7 +287,6 @@ class PayloadCodecTest {
 
     @Test
     void configSyncPayloadTruncatesDisabledFeaturesOverMaxKeysCap() {
-        // encode caps the list at MAX_KEYS. Over-long strings throw rather than truncate, so no test for that.
         List<String> tooManyFeatures = new ArrayList<>();
         for (int i = 0; i < 300; i++) {
             tooManyFeatures.add("feature-" + i);
@@ -339,8 +306,6 @@ class PayloadCodecTest {
         assertEquals(List.of("ability-a", "ability-b"), decoded.disabledAbilities());
         assertEquals(0, buf.readableBytes());
     }
-
-    // ---- BreedDataPayload(List<Entry> entries) ----
 
     @Test
     void breedDataPayloadRoundTripsWithEntries() {
@@ -364,7 +329,6 @@ class PayloadCodecTest {
 
     @Test
     void breedDataPayloadTruncatesEntriesOverMaxEntriesCap() {
-        // encode caps the list at MAX_ENTRIES. Over-long names throw rather than truncate.
         List<BreedDataPayload.Entry> tooManyEntries = new ArrayList<>();
         for (int i = 0; i < 150; i++) {
             tooManyEntries.add(new BreedDataPayload.Entry("breed-" + i, "archetype-" + i, i, i + 1, i + 2));
