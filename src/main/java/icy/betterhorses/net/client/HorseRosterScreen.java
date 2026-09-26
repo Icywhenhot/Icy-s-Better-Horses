@@ -210,6 +210,15 @@ public class HorseRosterScreen extends Screen {
     }
 
     private void renderFooter(GuiGraphics gfx, List<HorseRosterEntry> entries) {
+        UUID comingId = ClientHorseRoster.comingHorseId();
+        if (comingId != null) {
+            HorseRosterEntry entry = ClientHorseRoster.find(comingId);
+            Component name = entry == null ? Component.literal("?") : displayName(entry);
+            gfx.drawCenteredString(this.font,
+                    Component.translatable("message.icys-better-horses.call.coming", name),
+                    left + PADDING + ROWS_WIDTH / 2, top + PANEL_HEIGHT - FOOTER_HEIGHT + 5, BhScreenDraw.TEXT_MUTED);
+            return;
+        }
         String flashKey = ClientHorseRoster.flashMessageKey();
         if (!flashKey.isEmpty() && !isSilentFailure(flashKey)) {
             gfx.drawCenteredString(this.font, Component.translatable(flashKey),
@@ -221,6 +230,12 @@ public class HorseRosterScreen extends Screen {
         return HorseManagement.MSG_NO_HOME.equals(flashKey);
     }
 
+    private boolean hasFooterMessage() {
+        if (ClientHorseRoster.comingHorseId() != null) return true;
+        String flashKey = ClientHorseRoster.flashMessageKey();
+        return !flashKey.isEmpty() && !isSilentFailure(flashKey);
+    }
+
     private void renderScrollArrows(GuiGraphics gfx, List<HorseRosterEntry> entries) {
         int centerX = left + PADDING + ROWS_WIDTH / 2;
         float pulse = 0.5F + 0.5F * (float) Math.sin(System.currentTimeMillis() / 380.0D);
@@ -230,9 +245,7 @@ public class HorseRosterScreen extends Screen {
         if (scrollOffset > 0) {
             drawArrow(gfx, centerX, rowsTop - 2 - SCROLL_ARROW_HEIGHT, true, color);
         }
-        String flashKey = ClientHorseRoster.flashMessageKey();
-        boolean flashing = !flashKey.isEmpty() && !isSilentFailure(flashKey);
-        if (!flashing && scrollOffset + visibleRows < entries.size()) {
+        if (!hasFooterMessage() && scrollOffset + visibleRows < entries.size()) {
             int lastPlateBottom = rowY(visibleRows - 1) + ROW_HEIGHT;
             drawArrow(gfx, centerX, lastPlateBottom + 2, false, color);
         }

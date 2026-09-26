@@ -1,8 +1,10 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhAskToRide;
 import icy.betterhorses.net.BhAttributes;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhCriteria;
+import icy.betterhorses.net.BhFeature;
 import icy.betterhorses.net.BhHorseInteraction;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhHorseSteering;
@@ -780,7 +782,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (bh_ownerIsPrimaryPassenger(self, owner) || BhHorseInteraction.riderMayLeadPillion(self, this)) return;
         self.playSound(net.minecraft.sounds.SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
         if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_owner"));
+            BhAskToRide.handleRefusal(serverPlayer, owner);
         }
         if (player.getVehicle() == self) {
             player.stopRiding();
@@ -821,6 +823,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (player.getVehicle() == self && owner != null && owner.equals(player.getUUID())
                 && BhHorseKind.managed(self)) {
             HorseTracker.setLastRidden(owner, self);
+            HorseTracker.setActiveHorse(owner, self.getUUID());
         }
 
         player.setYRot(self.getYRot());
@@ -1467,6 +1470,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public void bh_disown() {
         AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.getClass() == Horse.class && !BhFeature.CONVERT_TAMED_HORSES.on()) {
+            self.addTag(BhVanillaHorseSwap.KEEP_VANILLA_TAG);
+        }
         self.ejectPassengers();
         self.setOwnerUUID(null);
         self.setTamed(false);

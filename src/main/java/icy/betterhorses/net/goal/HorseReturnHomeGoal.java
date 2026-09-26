@@ -1,5 +1,6 @@
 package icy.betterhorses.net.goal;
 
+import icy.betterhorses.net.BhFeature;
 import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModTicketTypes;
@@ -24,6 +25,7 @@ public class HorseReturnHomeGoal extends Goal {
     private static final int TICKET_REFRESH_INTERVAL_TICKS = 20;
     private static final int STUCK_CHECK_INTERVAL_TICKS = 100;
     private static final double STUCK_MIN_PROGRESS_SQ = 2.25;
+    private static final int GIVE_UP_AFTER = 3;
 
     private final AbstractHorse horse;
 
@@ -32,6 +34,8 @@ public class HorseReturnHomeGoal extends Goal {
     private ChunkPos ticketChunk;
     private int stuckCheckCooldown;
     private Vec3 lastProgressPos;
+    private int repathCooldown;
+    private int giveUpStreak;
 
     public HorseReturnHomeGoal(AbstractHorse horse) {
         this.horse = horse;
@@ -77,6 +81,8 @@ public class HorseReturnHomeGoal extends Goal {
         ticketChunk = null;
         stuckCheckCooldown = STUCK_CHECK_INTERVAL_TICKS;
         lastProgressPos = horse.position();
+        repathCooldown = 0;
+        giveUpStreak = 0;
         refreshChunkTicket();
         navigateHome();
     }
@@ -89,10 +95,17 @@ public class HorseReturnHomeGoal extends Goal {
         }
         if (checkStuck()) return;
         if (hasWalkedNaturalLeg()) {
+            if (!BhFeature.HORSE_TELEPORT.on()) {
+                walkStartPos = horse.position();
+                navigateHome();
+                return;
+            }
             teleportHome();
             return;
         }
-        if (horse.getNavigation().isDone()) {
+        if (repathCooldown > 0) {
+            repathCooldown--;
+        } else if (horse.getNavigation().isDone()) {
             navigateHome();
         }
     }
@@ -102,6 +115,8 @@ public class HorseReturnHomeGoal extends Goal {
         walkStartPos = null;
         ticketChunk = null;
         lastProgressPos = null;
+        repathCooldown = 0;
+        giveUpStreak = 0;
     }
 
     private void navigateHome() {
@@ -115,7 +130,19 @@ public class HorseReturnHomeGoal extends Goal {
         }
         boolean reached = horse.getNavigation().moveTo(target.x, target.y, target.z, RETURN_SPEED);
         if (!reached) {
-            teleportHome();
+            if (BhFeature.HORSE_TELEPORT.on()) {
+                teleportHome();
+            } else {
+                repathCooldown = STUCK_CHECK_INTERVAL_TICKS; // throttle repathing while home is unreachable
+                bumpGiveUpStreak();
+            }
+        }
+    }
+
+    // teleport off: give up after GIVE_UP_AFTER consecutive stuck checks / failed paths
+    private void bumpGiveUpStreak() {
+        if (++giveUpStreak >= GIVE_UP_AFTER) {
+            IHorseData.of(horse).bh_setCommand(HorseCommand.STAY);
         }
     }
 
@@ -145,7 +172,13 @@ public class HorseReturnHomeGoal extends Goal {
         stuckCheckCooldown = STUCK_CHECK_INTERVAL_TICKS;
         lastProgressPos = current;
         if (stuck) {
-            teleportHome();
+            if (BhFeature.HORSE_TELEPORT.on()) {
+                teleportHome();
+            } else {
+                bumpGiveUpStreak();
+            }
+        } else {
+            giveUpStreak = 0;
         }
         return stuck;
     }

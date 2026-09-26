@@ -3,12 +3,15 @@ package icy.betterhorses.net;
 import icy.betterhorses.net.network.HorseRosterEntry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
@@ -52,6 +55,13 @@ public final class HorseManagement {
     public static final String MSG_FAILED = MSG + "failed";
     public static final String MSG_CART = MSG + "cart_attached";
     public static final String MSG_UNSAFE = MSG + "unsafe";
+    public static final String MSG_TOO_FAR = MSG + "too_far";
+
+    public static void announceComing(ServerPlayer player, AbstractHorse horse) {
+        player.displayClientMessage(
+                Component.translatable("message.icys-better-horses.call.coming", horse.getDisplayName()), true);
+        horse.addEffect(new MobEffectInstance(MobEffects.GLOWING, 100, 0, false, false)); // 5s outline, no particles/icon
+    }
 
     public static List<HorseRosterEntry> buildRoster(ServerPlayer player) {
         MinecraftServer server = ((ServerLevel) player.level()).getServer();
@@ -142,6 +152,8 @@ public final class HorseManagement {
             return summonToPlayer(loaded, player);
         }
 
+        if (!BhFeature.HORSE_TELEPORT.on()) return Outcome.fail(MSG_TOO_FAR);
+
         ServerLevel level = (ServerLevel) player.level();
         AbstractHorse respawned = respawnFromSnapshot(
                 server, horseId, level, player.getX(), player.getY(), player.getZ());
@@ -149,6 +161,7 @@ public final class HorseManagement {
             return Outcome.fail(respawnFailureKey(player, horseId));
         }
         IHorseData.of(respawned).bh_setCommand(HorseCommand.FOLLOW);
+        announceComing(player, respawned);
         return Outcome.OK;
     }
 
@@ -168,6 +181,10 @@ public final class HorseManagement {
             }
 
             keepHomeChunkLoaded((ServerLevel) loaded.level(), home);
+            if (!BhFeature.HORSE_TELEPORT.on()) {
+                IHorseData.of(loaded).bh_setCommand(HorseCommand.RETURN_HOME);
+                return Outcome.OK;
+            }
             if (!HorsePlacement.teleport(loaded, home)) return Outcome.fail(MSG_UNSAFE);
             IHorseData.of(loaded).bh_setCommand(HorseCommand.STAY);
             return Outcome.OK;
@@ -187,6 +204,8 @@ public final class HorseManagement {
 
         ServerLevel homeLevel = server.getLevel(homeDim);
         if (homeLevel == null) return Outcome.fail(MSG_FAILED);
+
+        if (!BhFeature.HORSE_TELEPORT.on()) return Outcome.fail(MSG_TOO_FAR);
 
         keepHomeChunkLoaded(homeLevel, home);
         AbstractHorse respawned = respawnFromSnapshot(
@@ -285,9 +304,10 @@ public final class HorseManagement {
         IHorseData data = IHorseData.of(horse);
         if (data.bh_hasCartGear()) return Outcome.fail(MSG_CART);
         if (data.bh_getBond() <= 0) return Outcome.fail(MSG_NO_BOND);
-        if (horse.distanceToSqr(player) > CALL_TELEPORT_DIST_SQ
+        if (BhFeature.HORSE_TELEPORT.on() && horse.distanceToSqr(player) > CALL_TELEPORT_DIST_SQ
                 && !HorsePlacement.teleport(horse, player.blockPosition())) return Outcome.fail(MSG_UNSAFE);
         data.bh_setCommand(HorseCommand.FOLLOW);
+        announceComing(player, horse);
         return Outcome.OK;
     }
 

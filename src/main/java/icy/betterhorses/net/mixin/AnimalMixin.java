@@ -2,7 +2,9 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhCriteria;
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhFeature;
 import icy.betterhorses.net.BhHorseSpawnRules;
+import icy.betterhorses.net.BhVanillaHorseSwap;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.HorseGender;
 import icy.betterhorses.net.IHorseData;
@@ -67,6 +69,17 @@ public abstract class AnimalMixin {
         Animal self = (Animal) (Object) this;
         ServerPlayer breeder = self.getLoveCause();
         this.bh_breeder = breeder != null ? breeder : partner.getLoveCause();
+    }
+
+    // Both parents vanilla + conversion off: keep the foal vanilla too.
+    @Inject(method = "finalizeSpawnChildFromBreeding", at = @At("HEAD"))
+    private void bh_tagVanillaFoal(ServerLevel level, Animal partner, AgeableMob child, CallbackInfo ci) {
+        Animal self = (Animal) (Object) this;
+        if (self.getClass() == Horse.class
+                && partner.getClass() == Horse.class
+                && !BhFeature.CONVERT_TAMED_HORSES.on()) {
+            child.addTag(BhVanillaHorseSwap.KEEP_VANILLA_TAG);
+        }
     }
 
     @Inject(method = "finalizeSpawnChildFromBreeding", at = @At("TAIL"))

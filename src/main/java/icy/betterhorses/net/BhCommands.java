@@ -26,6 +26,7 @@ public final class BhCommands {
 
     private static final String MSG = "message.icys-better-horses.trust.";
     private static final String BOND_MSG = "message.icys-better-horses.bond.";
+    private static final String ASK_MSG = "message.icys-better-horses.ask_ride.";
     private static final int BOND_MAX = 100;
     private static final double BOND_REACH = 8.0D;
 
@@ -57,6 +58,9 @@ public final class BhCommands {
                                                     HorseTracker.getTrusted(owner.getUUID()).values(), builder);
                                 })
                                 .executes(context -> untrust(context, targets(context)))))
+                .then(Commands.literal("deny")
+                        .then(Commands.argument("player", GameProfileArgument.gameProfile())
+                                .executes(context -> deny(context, targets(context)))))
                 .then(Commands.literal("trusted")
                         .executes(BhCommands::listTrusted)));
     }
@@ -126,6 +130,7 @@ public final class BhCommands {
             }
 
             granted++;
+            BhRideRequests.instance().clear(owner.getUUID(), profile.getId());
             source.sendSuccess(() -> Component.translatable(MSG + "added", profile.getName())
                     .withStyle(ChatFormatting.GREEN), false);
             notify(source, profile.getId(), MSG + "notify_added", owner.getGameProfile().getName());
@@ -158,6 +163,22 @@ public final class BhCommands {
         }
 
         return revoked;
+    }
+
+    private static int deny(CommandContext<CommandSourceStack> context, Collection<GameProfile> profiles)
+            throws CommandSyntaxException {
+        CommandSourceStack source = context.getSource();
+        ServerPlayer owner = source.getPlayerOrException();
+        int muted = 0;
+
+        for (GameProfile profile : profiles) {
+            BhRideRequests.instance().mute(owner.getUUID(), profile.getId());
+            muted++;
+            source.sendSuccess(() -> Component.translatable(ASK_MSG + "muted_owner_notice", profile.getName())
+                    .withStyle(ChatFormatting.YELLOW), false);
+        }
+
+        return muted;
     }
 
     private static int listTrusted(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {

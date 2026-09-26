@@ -59,6 +59,7 @@ public final class IcysBetterHorses implements ModInitializer {
     private static final int DISENGAGE_TICKS = 60;
     private static final double CART_SIZE_REACH = 6.0D;
     private static final double DEFLECT_BOUNCE = 0.5D;
+    private static final float REAR_NEIGH_CHANCE = 1.0F / 3.0F;
 
     private final List<AbstractHorse> staleHorses = new ArrayList<>();
     private final List<AbstractHorse> pendingReleases = new ArrayList<>();
@@ -129,6 +130,7 @@ public final class IcysBetterHorses implements ModInitializer {
         staleHorses.clear();
         pendingReleases.clear();
         HorseTracker.detach();
+        BhRideRequests.reset();
     }
 
     private void onEntityJoinLevel(Entity entity, Level level) {
@@ -324,6 +326,7 @@ public final class IcysBetterHorses implements ModInitializer {
                 horseId, action.ordinal(), outcome.ok(), outcome.messageKey()));
         if (outcome.ok()) {
             if (action == HorseManageAction.WHISTLE) {
+                HorseTracker.setActiveHorse(player.getUUID(), horseId);
                 playWhistle(player);
             }
             sendRoster(player);
@@ -356,6 +359,11 @@ public final class IcysBetterHorses implements ModInitializer {
             return;
         }
         horse.standIfPossible();
+        if (horse.isStanding() && horse.getRandom().nextFloat() < REAR_NEIGH_CHANCE) {
+            float pitch = 0.9F + horse.getRandom().nextFloat() * 0.2F;
+            horse.level().playSound(null, horse.getX(), horse.getY(), horse.getZ(),
+                    ModSounds.HORSE_NEIGH, horse.getSoundSource(), 1.0F, pitch);
+        }
     }
 
     public static void handleCartSize(ServerPlayer player, int targetId) {
@@ -442,53 +450,43 @@ public final class IcysBetterHorses implements ModInitializer {
         }
 
         UUID playerId = player.getUUID();
-        AbstractHorse horse = findCallableHorse(player, playerId);
-        if (horse == null) {
+        UUID id = HorseTracker.getActiveHorseId(playerId);
+        if (id == null) {
+            id = HorseTracker.getLastRiddenId(playerId);
+        }
+        if (id != null && !HorseTracker.findAllStoredHorsesOwnedBy(playerId).contains(id)) {
+            id = null;
+        }
+        if (id == null) {
+            id = nearestOwnedBondedHorseId(player);
+        }
+        if (id == null) {
+            player.displayClientMessage(Component.translatable("message.icys-better-horses.call.none"), true);
             return;
         }
 
-        IHorseData data = (IHorseData) horse;
-        if (data.bh_getBond() <= 0) {
-            return;
+        HorseManagement.Outcome outcome = HorseManagement.whistle(player, id);
+        if (!outcome.ok()) {
+            player.displayClientMessage(Component.translatable(outcome.messageKey()), true);
         }
-
-        BlockPos target = player.blockPosition();
-        if (horse.distanceToSqr(player) > 400.0) {
-            horse.teleportTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5);
-            data.bh_setWanderCenter(target);
-            data.bh_setCommand(HorseCommand.WANDER);
-            return;
-        }
-
-        data.bh_setCommand(HorseCommand.FOLLOW);
     }
 
-    private static AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {
-        AbstractHorse lastRidden = HorseTracker.getLastRidden(playerId);
-        if (lastRidden != null
-                && playerId.equals(((IHorseData) lastRidden).bh_getOwner())
-                && lastRidden.level() == player.level()
-                && lastRidden.isAlive()) {
-            return lastRidden;
-        }
-
+    // active/last-ridden horse gone: fall back to the nearest loaded, owned, bonded horse
+    private static UUID nearestOwnedBondedHorseId(ServerPlayer player) {
+        UUID playerId = player.getUUID();
         AbstractHorse nearest = null;
         double nearestDistSq = Double.MAX_VALUE;
         for (AbstractHorse candidate : HorseTracker.getAll()) {
-            if (!candidate.isAlive() || candidate.level() != player.level()) {
-                continue;
-            }
-            UUID owner = ((IHorseData) candidate).bh_getOwner();
-            if (!playerId.equals(owner)) {
-                continue;
-            }
+            IHorseData data = (IHorseData) candidate;
+            if (!playerId.equals(data.bh_getOwner()) || data.bh_getBond() <= 0) continue;
+            if (candidate.level() != player.level()) continue;
             double distSq = candidate.distanceToSqr(player);
             if (distSq < nearestDistSq) {
                 nearestDistSq = distSq;
                 nearest = candidate;
             }
         }
-        return nearest;
+        return nearest == null ? null : nearest.getUUID();
     }
 
     private static void growHorseBond(MinecraftServer server, int amount) {
