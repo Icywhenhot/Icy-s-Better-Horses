@@ -11,9 +11,6 @@ import net.minecraft.world.level.block.Blocks;
 
 public class MountStateGameTest implements FabricGameTest {
 
-    // F6 (72a5fe3): the HEAD-cancelling doPlayerRide mixin skips vanilla's own clear of eating,
-    // so mounting must clear it itself or the horse stays immobile (grazing) after mount.
-    // (Eating and standing/rearing are mutually exclusive in vanilla, so these are two tests.)
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void mountingClearsGrazing(GameTestHelper helper) {
         helper.setBlock(2, 1, 2, Blocks.STONE);
@@ -29,7 +26,6 @@ public class MountStateGameTest implements FabricGameTest {
         helper.succeed();
     }
 
-    // Same fix, the standing/rearing half: mounting must also clear rearing itself.
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void mountingClearsRearing(GameTestHelper helper) {
         helper.setBlock(2, 1, 2, Blocks.STONE);

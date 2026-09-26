@@ -37,7 +37,7 @@ public final class BhHorseStorage {
             if (slot < 0 || slot >= container.getContainerSize()) {
                 continue;
             }
-            container.setItem(slot, ItemStack.of(entry));
+            container.setItem(slot, readStack(entry));
         }
     }
 
@@ -54,6 +54,12 @@ public final class BhHorseStorage {
     }
 
     public static @Nullable BlockPos readLegacyBlockPos(CompoundTag tag, String keyPrefix) {
+        if (tag.contains(keyPrefix, Tag.TAG_COMPOUND)) {
+            CompoundTag pos = tag.getCompound(keyPrefix);
+            if (pos.contains("X", Tag.TAG_INT) && pos.contains("Y", Tag.TAG_INT) && pos.contains("Z", Tag.TAG_INT)) {
+                return new BlockPos(pos.getInt("X"), pos.getInt("Y"), pos.getInt("Z"));
+            }
+        }
         if (!tag.contains(keyPrefix + "X", Tag.TAG_INT)
                 || !tag.contains(keyPrefix + "Y", Tag.TAG_INT)
                 || !tag.contains(keyPrefix + "Z", Tag.TAG_INT)) {
@@ -65,9 +71,13 @@ public final class BhHorseStorage {
     public static boolean contains(CompoundTag tag, String key, ItemStack wanted) {
         ListTag list = tag.getList(key, Tag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
-            if (ItemStack.of(list.getCompound(i)).is(wanted.getItem())) return true;
+            if (readStack(list.getCompound(i)).is(wanted.getItem())) return true;
         }
         return false;
+    }
+
+    private static ItemStack readStack(CompoundTag entry) {
+        return ItemStack.of(entry.contains("Item", Tag.TAG_COMPOUND) ? entry.getCompound("Item") : entry);
     }
 
     public static void dropContainerContents(AbstractHorse horse, ServerLevel level, SimpleContainer container) {

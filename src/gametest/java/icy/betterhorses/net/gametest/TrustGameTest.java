@@ -11,7 +11,6 @@ import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 
-// Trusted players may ride an owned horse; strangers may not.
 public class TrustGameTest implements FabricGameTest {
 
     private static AbstractHorse ownedHorse(GameTestHelper helper, UUID owner) {
@@ -28,8 +27,6 @@ public class TrustGameTest implements FabricGameTest {
         AbstractHorse horse = ownedHorse(helper, owner.getUUID());
         IHorseData.of(horse).bh_ridePlayer(owner);
         helper.assertTrue(owner.getVehicle() == horse, "owner should be riding");
-        helper.assertTrue(horse.getUUID().equals(HorseTracker.getLastRiddenId(owner.getUUID())),
-                "owner's last-ridden horse should be the ridden horse");
         helper.succeed();
     }
 

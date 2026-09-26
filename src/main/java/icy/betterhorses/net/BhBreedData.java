@@ -1,27 +1,69 @@
 package icy.betterhorses.net;
 
-import java.util.EnumMap;
+import icy.betterhorses.net.registry.ArchetypeType;
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.BreedType;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.Registry;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
 import java.util.Map;
 
-public record BhBreedData(BreedArchetype archetype, int chestRows, int bondedChestRows, int spawnWeight) {
+public record BhBreedData(ArchetypeType archetype, int chestRows, int bondedChestRows, int spawnWeight) {
 
-    private static final EnumMap<HorseBreed, BhBreedData> BUILT_IN = builtIn();
-    private static final EnumMap<HorseBreed, BhBreedData> live = new EnumMap<>(BUILT_IN);
+    private static final int DEFAULT_SPAWN_WEIGHT = 5;
+    private static final BhBreedData SPECIES_DEFAULT = new BhBreedData(
+            BhContent.NONE.value(), BhContent.NONE.value().defaultChestRows(),
+            BhContent.NONE.value().defaultChestRows(), DEFAULT_SPAWN_WEIGHT);
+
+    private static Map<ResourceLocation, BhBreedData> BUILT_IN = Map.of();
+    private static final Map<ResourceLocation, BhBreedData> live = new HashMap<>();
+
+    public static void initializeBuiltIns() {
+        BUILT_IN = builtIn();
+        live.clear();
+        live.putAll(BUILT_IN);
+    }
 
     public static BhBreedData of(HorseBreed breed) {
-        BhBreedData data = live.get(breed);
-        return data != null ? data : BUILT_IN.get(breed);
+        if (!breed.isRealBreed()) {
+            return SPECIES_DEFAULT;
+        }
+        return of(idOf(breed));
+    }
+
+    public static BhBreedData of(ResourceLocation id) {
+        BhBreedData data = live.get(id);
+        return data != null ? data : BUILT_IN.get(id);
+    }
+
+    public static BhBreedData of(@Nullable ResourceKey<BreedType> id) {
+        return id == null ? SPECIES_DEFAULT : of(id.location());
+    }
+
+    public static BhBreedData speciesDefault() {
+        return SPECIES_DEFAULT;
     }
 
     public static BhBreedData builtIn(HorseBreed breed) {
-        return BUILT_IN.get(breed);
+        if (!breed.isRealBreed()) {
+            return SPECIES_DEFAULT;
+        }
+        return builtIn(idOf(breed));
     }
 
-    public static Map<HorseBreed, BhBreedData> all() {
+    public static BhBreedData builtIn(ResourceLocation id) {
+        return BUILT_IN.get(id);
+    }
+
+    public static Map<ResourceLocation, BhBreedData> all() {
         return Map.copyOf(live);
     }
 
-    public static void replaceAll(Map<HorseBreed, BhBreedData> loaded) {
+    public static void replaceAll(Map<ResourceLocation, BhBreedData> loaded) {
         live.clear();
         live.putAll(BUILT_IN);
         live.putAll(loaded);
@@ -36,26 +78,28 @@ public record BhBreedData(BreedArchetype archetype, int chestRows, int bondedChe
         return bondTier >= 2 ? bondedChestRows : chestRows;
     }
 
-    private static EnumMap<HorseBreed, BhBreedData> builtIn() {
-        EnumMap<HorseBreed, BhBreedData> map = new EnumMap<>(HorseBreed.class);
-        for (HorseBreed breed : HorseBreed.values()) {
-            BreedArchetype arch = breed.builtInArchetype();
-            int rows = arch.chestRows();
-            int bonded = rows;
-            switch (breed) {
-                case BELGIAN -> {
-                    rows = 6;
-                    bonded = 6;
-                }
-                case HAFLINGER -> {
-                    rows = 4;
-                    bonded = 6;
-                }
-                case MORGAN -> bonded = 4;
-                default -> { }
+    private static ResourceLocation idOf(HorseBreed breed) {
+        return new ResourceLocation(IcysBetterHorses.MOD_ID, breed.id());
+    }
+
+    private static Map<ResourceLocation, BhBreedData> builtIn() {
+        Map<ResourceLocation, BhBreedData> map = new HashMap<>();
+        Registry<BreedType> registry = BhRegistries.breedTypeRegistry();
+        for (BreedType type : registry) {
+            ResourceLocation id = registry.getKey(type);
+            if (id == null) {
+                continue;
             }
-            map.put(breed, new BhBreedData(arch, rows, bonded, 5));
+            ArchetypeType archetype = resolveArchetype(type.archetype());
+            int rows = type.chestRowsOverride() != null ? type.chestRowsOverride() : archetype.defaultChestRows();
+            int bonded = type.bondedChestRowsOverride() != null ? type.bondedChestRowsOverride() : rows;
+            map.put(id, new BhBreedData(archetype, rows, bonded, DEFAULT_SPAWN_WEIGHT));
         }
-        return map;
+        return Map.copyOf(map);
+    }
+
+    private static ArchetypeType resolveArchetype(ResourceKey<ArchetypeType> key) {
+        ArchetypeType type = BhRegistries.archetypeTypeRegistry().get(key.location());
+        return type != null ? type : BhContent.NONE.value();
     }
 }

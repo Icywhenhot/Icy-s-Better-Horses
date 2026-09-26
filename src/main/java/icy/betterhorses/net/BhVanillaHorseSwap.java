@@ -1,16 +1,15 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.entity.BhBreedHorse;
-import net.minecraft.core.Holder;
+import icy.betterhorses.net.registry.BhBreeds;
+import icy.betterhorses.net.registry.BreedType;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.horse.Horse;
-import net.minecraft.world.level.biome.Biome;
-
-import java.util.List;
-import java.util.Optional;
+import org.jetbrains.annotations.Nullable;
 
 public final class BhVanillaHorseSwap {
 
@@ -23,21 +22,38 @@ public final class BhVanillaHorseSwap {
             return false;
         }
 
-        HorseBreed breed = IHorseData.of(horse).bh_getBreed();
-        if (!breed.isRealBreed()) {
-            breed = pickForBiome(level, horse);
+        CompoundTag backup = BhHorseBackup.find(horse);
+        EntityType<?> restored = backup == null ? null : BhHorseBackup.typeOf(backup);
+        ResourceKey<BreedType> breedKey = null;
+        EntityType<?> entityType = restored;
+        if (entityType == null) {
+            breedKey = IHorseData.of(horse).bh_getBreedKey();
+            if (breedKey == null) {
+                breedKey = pickForBiome(level, horse);
+                if (breedKey == null) {
+                    return false;
+                }
+            }
+            entityType = ModEntities.forBreed(breedKey);
+            if (entityType == null) {
+                return false;
+            }
         }
-
-        BhBreedHorse swap = ModEntities.forBreed(breed).create(level);
-        if (swap == null) {
+        if (!(entityType.create(level) instanceof BhBreedHorse swap)) {
             return false;
         }
 
-        var tag = horse.saveWithoutId(new net.minecraft.nbt.CompoundTag());
-        tag.putInt("BH_Breed", breed.ordinal());
+        CompoundTag tag = horse.saveWithoutId(new CompoundTag());
+        if (restored != null) {
+            BhHorseBackup.restoreInto(tag, backup);
+        } else {
+            tag.putString("BH_BreedId", breedKey.location().toString());
+        }
         swap.load(tag);
-        swap.bhConvertFrom(horse);
-        swap.setHealth(Math.min(horse.getHealth(), swap.getMaxHealth()));
+        if (restored == null) {
+            swap.bhConvertFrom(horse);
+            swap.setHealth(Math.min(horse.getHealth(), swap.getMaxHealth()));
+        }
         horse.remove(Entity.RemovalReason.CHANGED_DIMENSION);
         if (!level.addFreshEntity(swap)) {
             ((icy.betterhorses.net.mixin.EntityAccessor) horse).bh_unsetRemoved();
@@ -50,11 +66,11 @@ public final class BhVanillaHorseSwap {
         return true;
     }
 
-    private static HorseBreed pickForBiome(ServerLevel level, Horse horse) {
+    private static @Nullable ResourceKey<BreedType> pickForBiome(ServerLevel level, Horse horse) {
         HorseBreed picked = HorseBreed.pickForBiome(level.getBiome(horse.blockPosition()), horse.getRandom());
-        return picked != null
+        HorseBreed fallback = picked != null
                 ? picked
                 : HorseBreed.fromId(horse.getRandom().nextInt(HorseBreed.HORSE_BREED_COUNT));
+        return BhBreeds.keyOf(fallback);
     }
-
 }

@@ -1,6 +1,6 @@
 package icy.betterhorses.net.gametest;
 
-import icy.betterhorses.net.BreedArchetype;
+import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedHorse;
@@ -19,24 +19,18 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 
-// Round 2, item 5: an untamed vanilla horse with custom name, leash, age, saddle/armor and health
-// should convert to a mod breed cleanly - one entity, name/leash/age kept, items not lost or
-// duplicated, stats within the mod's clamp rules. Default batch: convert_tamed_horses on.
 public class VanillaSwapFidelityGameTest implements FabricGameTest {
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 40)
     public void swapPreservesNameLeashAgeSaddleArmorAndClampsHealth(GameTestHelper helper) {
         floor(helper);
         Horse horse = helper.spawn(EntityType.HORSE, 2, 2, 2);
-        // A breed set up front (isRealBreed()) keeps this test's clamp math deterministic - it
-        // sidesteps the biome-pick fallback, covered separately below
-        // (swapOfUnassignedBreedHorseKeepsThePickedBreed).
         IHorseData.of(horse).bh_setBreed(icy.betterhorses.net.HorseBreed.CLYDESDALE);
         horse.setCustomName(Component.literal("Silver"));
-        horse.setAge(-20000); // baby
+        horse.setAge(-20000);
         horse.equipSaddle(null);
         horse.equipArmor(helper.makeMockServerPlayerInLevel(), new ItemStack(Items.IRON_HORSE_ARMOR));
-        horse.getAttribute(Attributes.MAX_HEALTH).setBaseValue(500.0D); // wildly over any breed's clamp
+        horse.getAttribute(Attributes.MAX_HEALTH).setBaseValue(500.0D);
         horse.setHealth(horse.getMaxHealth());
 
         Pig anchor = helper.spawn(EntityType.PIG, 3, 2, 3);
@@ -60,8 +54,8 @@ public class VanillaSwapFidelityGameTest implements FabricGameTest {
             helper.assertTrue(result.isSaddled(), "the saddle should survive the swap");
             helper.assertTrue(result.getArmor().is(Items.IRON_HORSE_ARMOR), "the armor should survive the swap");
 
-            BreedArchetype archetype = IHorseData.of(result).bh_getBreed().archetype();
-            double clampedMax = archetype.clampHealth(500.0D);
+            ArchetypeType archetype = IHorseData.of(result).bh_getBreed().archetype();
+            double clampedMax = archetype.highHealth();
             helper.assertTrue(result.getMaxHealth() <= clampedMax + 1.0e-6,
                     "max health should be clamped to the breed's archetype rules, was " + result.getMaxHealth());
             helper.assertTrue(result.getHealth() <= result.getMaxHealth(),
@@ -70,8 +64,6 @@ public class VanillaSwapFidelityGameTest implements FabricGameTest {
         });
     }
 
-    // Confirms swapping doesn't create a second entity anywhere nearby (no stale copy left behind
-    // alongside the new one) and that the old entity id is genuinely gone from the level.
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 40)
     public void swapLeavesExactlyOneEntityBehind(GameTestHelper helper) {
         floor(helper);
@@ -89,11 +81,6 @@ public class VanillaSwapFidelityGameTest implements FabricGameTest {
         });
     }
 
-    // Confirms the UUID really does survive: BhVanillaHorseSwap.trySwap builds `swap` via
-    // horse.saveWithoutId(...) (that name only means "without the entity-TYPE id tag" - the
-    // "UUID" NBT key is still written) followed by swap.load(tag), and vanilla Entity#load()
-    // restores "UUID" from the tag over the entity's freshly-generated one. Worth pinning down
-    // explicitly since it's easy to misread "saveWithoutId" as "without UUID".
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 40)
     public void swapKeepsSameUUID(GameTestHelper helper) {
         floor(helper);
@@ -111,12 +98,6 @@ public class VanillaSwapFidelityGameTest implements FabricGameTest {
         });
     }
 
-    // A horse that hasn't been assigned a real breed yet (bh_getBreed() == UNKNOWN_SPECIES - the
-    // ModAttachments.BhHorseSyncState default, true of any horse whose finalizeSpawn hook never
-    // ran) makes BhVanillaHorseSwap.trySwap pick a fresh breed via pickForBiome/random fallback.
-    // Round 2, item 15: that pick used to never land - trySwap wrote `BH_BreedId` (a string,
-    // never read) while AbstractHorseMixin.bh_onRead only reads the int key "BH_Breed", so it now
-    // writes that key instead. Was swapOfUnassignedBreedHorseKeepsThePickedBreed_KNOWN_BUG.
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 40)
     public void swapOfUnassignedBreedHorseKeepsThePickedBreed(GameTestHelper helper) {
         floor(helper);

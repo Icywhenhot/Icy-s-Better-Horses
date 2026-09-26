@@ -2,6 +2,7 @@ package icy.betterhorses.net;
 
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.inventory.GearSlot;
+import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -11,6 +12,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public final class BhHorseSteering {
@@ -22,7 +24,7 @@ public final class BhHorseSteering {
     private BhHorseSteering() {}
 
     public static int bh_seatCount(IHorseData data) {
-        if (data.bh_getBreed() == HorseBreed.BELGIAN
+        if (Objects.equals(data.bh_getBreedKey(), BhContent.BELGIAN.key())
                 && BhHorseTraits.bondTier(data.bh_getBond()) >= 1
                 && !data.bh_hasGear(GearSlot.CHEST)) {
             return 3;
@@ -90,7 +92,7 @@ public final class BhHorseSteering {
         }
         if (passenger instanceof Player && !passengers.isEmpty()
                 && data.bh_hasGear(GearSlot.CHEST)
-                && !data.bh_getBreed().archetype().allowsChestAndRiders()) {
+                && !BhBreedData.of(data.bh_getBreedKey()).archetype().allowsChestAndRiders()) {
             return false;
         }
 

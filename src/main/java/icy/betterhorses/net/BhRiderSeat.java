@@ -3,7 +3,10 @@ package icy.betterhorses.net;
 import icy.betterhorses.net.client.BhClientCaches;
 
 import icy.betterhorses.net.entity.PercheronHorse;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Map;
@@ -14,15 +17,9 @@ public final class BhRiderSeat {
     public static final double REAR_CAMERA_FOLLOW = 0.64D;
 
     private static final double LARGE_SEAT_LIFT = 0.25D;
-
     private static final double PLAYER_SEAT_DROP = 0.6D;
-
-    // How much of the rear shift the rider's body follows, tuned in game against the breed models.
-    public static final double REAR_BODY_FOLLOW_BACK = -0.55D;
-    public static final double REAR_BODY_FOLLOW_UP = 1.11D;
-
-    // Players on breed horses sit this far forward so their hands reach the reins.
-    public static final double BREED_SEAT_FORWARD = 0.03D;
+    private static final double PLAYER_RIDING_OFFSET = 0.35D;
+    private static final float HUMANOID_HEIGHT = 1.2F;
 
     private static final Map<Integer, Vec3> APPLIED = new ConcurrentHashMap<>();
 
@@ -32,8 +29,18 @@ public final class BhRiderSeat {
         return horse instanceof PercheronHorse ? LARGE_SEAT_LIFT : 0.0D;
     }
 
-    public static double seatDrop(net.minecraft.world.entity.Entity passenger) {
-        return passenger instanceof net.minecraft.world.entity.player.Player ? PLAYER_SEAT_DROP : 0.0D;
+    public static double seatDrop(Entity passenger) {
+        if (passenger instanceof Player) {
+            return PLAYER_SEAT_DROP;
+        }
+        double offset = passenger.getMyRidingOffset();
+        if (offset < 0.0D) {
+            return PLAYER_SEAT_DROP - PLAYER_RIDING_OFFSET - offset;
+        }
+        if (offset == 0.0D && passenger instanceof LivingEntity && passenger.getBbHeight() >= HUMANOID_HEIGHT) {
+            return passenger.getBbHeight() / 3.0D;
+        }
+        return 0.0D;
     }
 
     public static void publish(int horseId, Vec3 shift) {

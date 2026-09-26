@@ -1,7 +1,7 @@
 package icy.betterhorses.net.gametest;
 
+import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.BhHorseKind;
-import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.HorseTracker;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.IcysBetterHorses;
@@ -17,8 +17,6 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
 
-// Round 2, item 4: llamas/trader llamas are AbstractHorse subclasses, so they must not be
-// claimable/trackable/whistleable like real horses - gate on the icys-better-horses:horses tag.
 public class HorseKindGameTest implements FabricGameTest {
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
@@ -65,9 +63,9 @@ public class HorseKindGameTest implements FabricGameTest {
         llama.setTamed(true);
         ServerPlayer owner = BhTestPlayers.owner(helper, new Vec3(2, 2, 3), ownerId);
 
-        IcysBetterHorses.handleRadialCommand(owner, llama.getId(), HorseCommand.WANDER);
+        IcysBetterHorses.handleRadialCommand(owner, llama.getId(), BhContent.COMMAND_WANDER.key());
 
-        helper.assertTrue(data.bh_getCommand() != HorseCommand.WANDER,
+        helper.assertTrue(data.bh_getCommand() != BhContent.COMMAND_WANDER.key(),
                 "the whistle/radial command path should never target a llama");
         helper.succeed();
     }

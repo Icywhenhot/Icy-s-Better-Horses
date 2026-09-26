@@ -12,9 +12,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
-// Round 2, item 2: the server zeroes a player-ridden horse's getDeltaMovement() (see
-// LivingEntity.travelRidden), so charge/bash logic must read bh_getKnownMovement() (a real
-// position delta recorded in bh_tick) instead.
 public class HorseCombatGameTest implements FabricGameTest {
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 60)
@@ -23,8 +20,8 @@ public class HorseCombatGameTest implements FabricGameTest {
         AbstractHorse horse = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
         IHorseData data = IHorseData.of(horse);
         data.bh_setBreed(HorseBreed.CLYDESDALE);
-        horse.setTamed(true); // horse left unowned so RiderGate doesn't eject the mock rider each tick
-        horse.equipSaddle(null); // getControllingPassenger() only returns a rider once saddled
+        horse.setTamed(true);
+        horse.equipSaddle(null);
 
         Player rider = helper.makeMockPlayer();
         helper.assertTrue(rider.startRiding(horse, true) && horse.getControllingPassenger() == rider,
@@ -45,8 +42,6 @@ public class HorseCombatGameTest implements FabricGameTest {
             helper.succeed();
             return;
         }
-        // Simulate what the server does for a ridden horse: getDeltaMovement() stays zero while the
-        // horse still visibly moves (position updates come from elsewhere in that codepath).
         horse.setDeltaMovement(Vec3.ZERO);
         horse.setPos(nextX, horse.getY(), horse.getZ());
         helper.runAfterDelay(1, () -> stepAndCheck(helper, horse, data, ticksLeft - 1, nextX + 0.35D, sawCharge));

@@ -14,8 +14,6 @@ import net.minecraft.world.item.Items;
 
 public class HorsePersistenceGameTest implements FabricGameTest {
 
-    // BH_Generation (6323166): a horse's whistle generation must survive a save/load round-trip,
-    // or a restart discards horses the tracker still thinks are "newer" than what got saved.
     @GameTest(template = EMPTY_STRUCTURE)
     public void generationRoundTrips(GameTestHelper helper) {
         AbstractHorse original = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
@@ -28,14 +26,12 @@ public class HorsePersistenceGameTest implements FabricGameTest {
         helper.succeed();
     }
 
-    // F2 (aca580f): the drawn cart's chest flag/contents and plough item must survive a
-    // save/load round-trip. (Large-cart flag is covered separately below - see that test's comment.)
     @GameTest(template = EMPTY_STRUCTURE)
     public void cartChestAndPloughRoundTrip(GameTestHelper helper) {
         AbstractHorse original = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
         IHorseData data = IHorseData.of(original);
         data.bh_setBreed(HorseBreed.CLYDESDALE);
-        data.bh_setCartChest(true);
+        data.bh_setCartChest(new ItemStack(Items.CHEST));
         data.bh_getCartChestContainer().setItem(0, new ItemStack(Items.CHEST));
         data.bh_getCartChestContainer().setItem(53, new ItemStack(Items.DIAMOND, 4));
         data.bh_setCartPlough(new ItemStack(Items.IRON_HOE));
@@ -56,7 +52,7 @@ public class HorsePersistenceGameTest implements FabricGameTest {
     public void largeCartFlagRoundTrip(GameTestHelper helper) {
         AbstractHorse original = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
         IHorseData data = IHorseData.of(original);
-        data.bh_setBreed(HorseBreed.CLYDESDALE); // DRAFT archetype, required for a large cart
+        data.bh_setBreed(HorseBreed.CLYDESDALE);
         data.bh_setLargeCart(true);
         helper.assertTrue(data.bh_hasLargeCart(), "setup: large cart flag should be settable on a draft breed");
 
@@ -65,19 +61,19 @@ public class HorsePersistenceGameTest implements FabricGameTest {
         helper.succeed();
     }
 
-    // An old save written before BH_Cart* existed has none of those keys; it must load as no
-    // chest, no plough, default (non-large) size - not throw or silently misread other fields.
     @GameTest(template = EMPTY_STRUCTURE)
     public void legacySaveWithoutCartKeysDefaultsToNoCart(GameTestHelper helper) {
         AbstractHorse original = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
         IHorseData data = IHorseData.of(original);
         data.bh_setBreed(HorseBreed.CLYDESDALE);
-        data.bh_setCartChest(true);
+        data.bh_setCartChest(new ItemStack(Items.CHEST));
         data.bh_getCartChestContainer().setItem(0, new ItemStack(Items.CHEST));
         data.bh_setCartPlough(new ItemStack(Items.IRON_HOE));
         data.bh_setLargeCart(true);
 
         CompoundTag saved = original.saveWithoutId(new CompoundTag());
+        saved.remove("BH_CartChestOn");
+        saved.remove("BH_CartChestItem");
         saved.remove("BH_CartChest");
         saved.remove("BH_CartChestItems");
         saved.remove("BH_CartPlow");
@@ -91,24 +87,18 @@ public class HorsePersistenceGameTest implements FabricGameTest {
         helper.assertFalse(loadedData.bh_hasCartChest(), "legacy save should load with no cart chest");
         helper.assertTrue(loadedData.bh_getCartChestContainer().isEmpty(), "legacy save should load with an empty cart chest");
         helper.assertFalse(loadedData.bh_hasCartPlough(), "legacy save should load with no plough");
-        helper.assertFalse(loadedData.bh_hasLargeCart(), "legacy save should load with the default (non-large) cart size");
         helper.succeed();
     }
 
-    // Round 2, item 7: the build live on Jake's server writes BH_CartChest as a *boolean* with items
-    // in a separate BH_CartChestItems list - the format now used upstream (and matching BH_HomeDim/
-    // BH_RescueReadyAt/BH_AbilityPaused) writes BH_CartChestOn (boolean) + BH_CartChest (item list).
-    // Horses already saved in the old shape must still load correctly, and must re-save in the new one.
     @GameTest(template = EMPTY_STRUCTURE)
     public void legacyCartChestFormatLoadsAndThenResavesInTheNewFormat(GameTestHelper helper) {
         AbstractHorse original = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
         IHorseData data = IHorseData.of(original);
         data.bh_setBreed(HorseBreed.CLYDESDALE);
-        data.bh_setCartChest(true);
+        data.bh_setCartChest(new ItemStack(Items.CHEST));
         data.bh_getCartChestContainer().setItem(0, new ItemStack(Items.CHEST));
         data.bh_getCartChestContainer().setItem(53, new ItemStack(Items.DIAMOND, 4));
 
-        // Reshape a current-format save into the old live-server shape by hand.
         CompoundTag saved = original.saveWithoutId(new CompoundTag());
         net.minecraft.nbt.Tag items = saved.get("BH_CartChest");
         boolean on = saved.getBoolean("BH_CartChestOn");

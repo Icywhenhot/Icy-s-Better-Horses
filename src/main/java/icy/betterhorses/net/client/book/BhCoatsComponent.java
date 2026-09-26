@@ -96,13 +96,13 @@ public class BhCoatsComponent implements ICustomComponent {
         PageEntity.renderEntity(gfx, this.horse,
                 this.x + BOX_WIDTH / 2.0F, this.y + MODEL_Y, rotation(), scale, 0.0F);
 
-        int total = this.horse.bhCoats().count();
+        int total = this.horse.bhCoatSet().count();
         if (total > 1) {
             arrow(gfx, context, font, "<", this.x, mouseX, mouseY);
             arrow(gfx, context, font, ">", this.x + BOX_WIDTH - ARROW_W, mouseX, mouseY);
         }
 
-        Component name = this.horse.bhCoats().displayName(this.coat);
+        Component name = this.horse.bhCoatSet().displayName(this.coat);
         gfx.drawString(font, name,
                 this.x + (BOX_WIDTH - font.width(name)) / 2, this.y + NAME_Y, INK, false);
 
@@ -123,7 +123,6 @@ public class BhCoatsComponent implements ICustomComponent {
                 lit ? 0xFF8A6A3A : INK, false);
     }
 
-    // Patchouli draws the book translated, so raw mouse coords need its own hit test.
     private boolean hovered(IComponentRenderContext context, int left, int mouseX, int mouseY) {
         return context.isAreaHovered(mouseX, mouseY, left, this.y + ARROW_Y, ARROW_W, ARROW_H);
     }
@@ -133,7 +132,7 @@ public class BhCoatsComponent implements ICustomComponent {
         if (this.horse == null) {
             return false;
         }
-        int total = this.horse.bhCoats().count();
+        int total = this.horse.bhCoatSet().count();
         if (total <= 1) {
             return false;
         }

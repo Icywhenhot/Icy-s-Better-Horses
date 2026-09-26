@@ -86,34 +86,42 @@ public final class FriesianHorseGeometry {
                 "front_right_leg",
                 CubeListBuilder.create()
                         .texOffs(64, 54).addBox(-2.0F, -14.0F, -2.0F, 4.0F, 15.0F, 4.0F)
-                        .mirror().texOffs(82, 79).addBox(-2.5000F, -2.0F, -2.6000F, 5.0F, 3.0F, 5.0F, new CubeDeformation(0.0100F))
-                        .mirror(false).texOffs(62, 88).addBox(-0.0F, -9.0F, 1.4000F, 0.0F, 10.0F, 5.0F),
+                        .texOffs(62, 88).addBox(-0.0F, -9.0F, 0.4000F, 0.0F, 10.0F, 5.0F)
+                        .texOffs(24, 100).addBox(-2.5000F, -9.5000F, -2.5000F, 5.0F, 11.0F, 5.0F, new CubeDeformation(-0.4000F))
+                        .texOffs(88, 118).addBox(2.0F, -6.0F, 1.9000F, 0.0F, 7.0F, 3.0F, new CubeDeformation(0.0900F))
+                        .texOffs(88, 118).addBox(-2.0F, -6.0F, 1.9000F, 0.0F, 7.0F, 3.0F, new CubeDeformation(0.0900F)),
                 PartPose.offset(-3.0F, 23.0F, -8.9000F));
 
         PartDefinition p_front_left_leg = root.addOrReplaceChild(
                 "front_left_leg",
                 CubeListBuilder.create()
+                        .texOffs(88, 118).addBox(-2.0F, -6.0F, 1.9000F, 0.0F, 7.0F, 3.0F, new CubeDeformation(0.0900F))
                         .texOffs(46, 64).addBox(-2.0F, -14.0F, -2.0F, 4.0F, 15.0F, 4.0F)
-                        .texOffs(82, 79).addBox(-2.5000F, -2.0F, -2.6000F, 5.0F, 3.0F, 5.0F, new CubeDeformation(0.0100F))
-                        .texOffs(72, 88).addBox(-0.0F, -9.0F, 1.4000F, 0.0F, 10.0F, 5.0F),
+                        .texOffs(72, 88).addBox(-0.0F, -9.0F, 1.4000F, 0.0F, 10.0F, 5.0F)
+                        .texOffs(24, 100).addBox(-2.5000F, -9.5000F, -2.5000F, 5.0F, 11.0F, 5.0F, new CubeDeformation(-0.4000F))
+                        .texOffs(88, 118).addBox(2.0F, -6.0F, 2.1000F, 0.0F, 7.0F, 3.0F, new CubeDeformation(0.0900F)),
                 PartPose.offset(3.0F, 23.0F, -8.9000F));
 
         PartDefinition p_back_right_leg = root.addOrReplaceChild(
                 "back_right_leg",
                 CubeListBuilder.create()
                         .texOffs(22, 77).addBox(-2.0F, -17.0F, -4.0F, 4.0F, 9.0F, 6.0F, new CubeDeformation(0.0100F))
-                        .mirror().texOffs(82, 79).addBox(-2.5000F, -2.0F, -2.5000F, 5.0F, 3.0F, 5.0F, new CubeDeformation(0.0100F))
-                        .mirror(false).texOffs(82, 87).addBox(-0.0F, -9.0F, 1.5000F, 0.0F, 10.0F, 5.0F)
-                        .texOffs(80, 58).addBox(-2.0F, -8.0F, -2.0F, 4.0F, 9.0F, 4.0F),
+                        .texOffs(82, 87).addBox(-0.0F, -9.0F, 1.5000F, 0.0F, 10.0F, 5.0F)
+                        .texOffs(80, 58).addBox(-2.0F, -8.0F, -2.0F, 4.0F, 9.0F, 4.0F)
+                        .texOffs(24, 100).addBox(-2.5000F, -9.5000F, -2.5000F, 5.0F, 11.0F, 5.0F, new CubeDeformation(-0.4000F))
+                        .texOffs(88, 118).addBox(2.0F, -6.0F, 2.2000F, 0.0F, 7.0F, 3.0F, new CubeDeformation(0.0900F))
+                        .texOffs(88, 118).addBox(-2.0F, -6.0F, 2.2000F, 0.0F, 7.0F, 3.0F, new CubeDeformation(0.0900F)),
                 PartPose.offset(-3.0F, 23.0F, 10.0F));
 
         PartDefinition p_back_left_leg = root.addOrReplaceChild(
                 "back_left_leg",
                 CubeListBuilder.create()
                         .texOffs(62, 73).addBox(-2.0F, -17.0F, -4.0F, 4.0F, 9.0F, 6.0F, new CubeDeformation(0.0100F))
-                        .texOffs(82, 79).addBox(-2.5000F, -2.0F, -2.5000F, 5.0F, 3.0F, 5.0F, new CubeDeformation(0.0100F))
                         .texOffs(88, 11).addBox(-0.0F, -9.0F, 1.5000F, 0.0F, 10.0F, 5.0F)
-                        .texOffs(80, 45).addBox(-2.0F, -8.0F, -2.0F, 4.0F, 9.0F, 4.0F),
+                        .texOffs(80, 45).addBox(-2.0F, -8.0F, -2.0F, 4.0F, 9.0F, 4.0F)
+                        .texOffs(24, 100).addBox(-2.5000F, -9.5000F, -2.5000F, 5.0F, 11.0F, 5.0F, new CubeDeformation(-0.4000F))
+                        .texOffs(88, 118).addBox(2.0F, -6.0F, 2.2000F, 0.0F, 7.0F, 3.0F, new CubeDeformation(0.0900F))
+                        .texOffs(88, 118).addBox(-2.0F, -6.0F, 2.2000F, 0.0F, 7.0F, 3.0F, new CubeDeformation(0.0900F)),
                 PartPose.offset(3.0F, 23.0F, 10.0F));
 
         PartDefinition p_tail = root.addOrReplaceChild(

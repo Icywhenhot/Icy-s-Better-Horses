@@ -99,7 +99,6 @@ public class BhCartModelsComponent implements ICustomComponent {
                 lit ? 0xFF8A6A3A : INK, false);
     }
 
-    // Patchouli draws the book translated, so raw mouse coords need its own hit test.
     private boolean hovered(IComponentRenderContext context, int left, int mouseX, int mouseY) {
         return context.isAreaHovered(mouseX, mouseY, left, this.y + ARROW_Y, ARROW_W, ARROW_H);
     }

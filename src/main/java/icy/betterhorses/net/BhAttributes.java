@@ -6,10 +6,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 
-/**
- * Stand-ins for Forge's step height and swim speed attributes, which Fabric doesn't have.
- * Same defaults and ranges as Forge. Synced so client movement prediction matches the server.
- */
 public final class BhAttributes {
 
     public static final Attribute STEP_HEIGHT_ADDITION = register("step_height_addition",

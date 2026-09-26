@@ -11,10 +11,6 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 
-/**
- * Adds horse spawns to biomes tagged {@code spawns_horses}, replacing the Forge biome modifier.
- * Biomes that already spawn horses are skipped, and spawn chance is only ever raised.
- */
 public final class BhBiomeSpawns {
 
     private static final TagKey<Biome> SPAWNS = TagKey.create(Registries.BIOME,

@@ -1,5 +1,9 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.registry.AbilityType;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.BreedType;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 
 public final class BhSurge {
@@ -12,6 +16,8 @@ public final class BhSurge {
 
     public static final int PULSE_TICKS = 40;
     public static final int HIDDEN = -1;
+
+    public static final int ABILITY_SLOTS = 4;
 
     private static final int TICK_MAX = 511;
     private static final int PERCENT_MAX = 127;
@@ -81,6 +87,39 @@ public final class BhSurge {
             return;
         }
         data.bh_setPerkSurge(step(packed));
+    }
+
+    public static int slotOf(IHorseData data, ResourceKey<AbilityType> ability) {
+        ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
+        if (breedKey == null) {
+            return -1;
+        }
+        BreedType type = BhRegistries.breedTypeRegistry().get(breedKey.location());
+        if (type == null) {
+            return -1;
+        }
+        int slot = type.abilities().indexOf(ability);
+        return slot < ABILITY_SLOTS ? slot : -1;
+    }
+
+    public static void set(IHorseData data, ResourceKey<AbilityType> ability, int packed) {
+        int slot = slotOf(data, ability);
+        if (slot >= 0) {
+            data.bh_setAbilitySurge(slot, packed);
+        }
+    }
+
+    public static void pulse(IHorseData data, ResourceKey<AbilityType> ability, int percent) {
+        set(data, ability, pack(PULSE, PULSE_TICKS, PULSE_TICKS, percent));
+    }
+
+    public static void decayAbilities(IHorseData data) {
+        for (int slot = 0; slot < ABILITY_SLOTS; slot++) {
+            int packed = data.bh_getAbilitySurge(slot);
+            if (phase(packed) == PULSE) {
+                data.bh_setAbilitySurge(slot, step(packed));
+            }
+        }
     }
 
     private static int step(int packed) {

@@ -19,9 +19,6 @@ import net.minecraft.world.level.block.Blocks;
 
 import java.lang.reflect.Field;
 
-// Round 2, item 8: the saddle can't be picked up while cart gear is fitted. The screen mixin only
-// stops a well-behaved client from sending the click; a modified client can send it directly, so
-// the menu's own saddle slot must refuse the pickup server-side too.
 public class SaddleSlotLockGameTest implements FabricGameTest {
 
     private static final int SADDLE_SLOT = 0;
@@ -51,8 +48,6 @@ public class SaddleSlotLockGameTest implements FabricGameTest {
         helper.succeed();
     }
 
-    // No network connection needed for this - go straight at the same constructor
-    // openCustomInventoryScreen() would use, skipping the open-screen packet.
     private static HorseInventoryMenu openMenuBypassingConnection(AbstractHorse horse, Player player) {
         try {
             Field inventoryField = AbstractHorse.class.getDeclaredField("inventory");

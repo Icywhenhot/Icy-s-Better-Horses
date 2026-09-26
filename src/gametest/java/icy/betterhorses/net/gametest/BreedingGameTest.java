@@ -1,7 +1,10 @@
 package icy.betterhorses.net.gametest;
 
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.BhBreeds;
+import icy.betterhorses.net.registry.GenderType;
+import net.minecraft.resources.ResourceKey;
 import icy.betterhorses.net.HorseBreed;
-import icy.betterhorses.net.HorseGender;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModEntities;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
@@ -16,14 +19,11 @@ import net.minecraft.world.phys.AABB;
 import java.util.List;
 import java.util.UUID;
 
-// Round 2, item 6: breeding two mod breeds - foal breed/gender/mixed flags sane, same-gender
-// breeding blocked when gender_breeding is on, parents' love resets (cooldown), and what actually
-// happens to foal ownership (the mod never sets it explicitly - see the last test below).
 public class BreedingGameTest implements FabricGameTest {
 
-    private static AbstractHorse ownedTamedHorse(GameTestHelper helper, HorseBreed breed, HorseGender gender,
+    private static AbstractHorse ownedTamedHorse(GameTestHelper helper, HorseBreed breed, ResourceKey<GenderType> gender,
                                                   int x, int z) {
-        AbstractHorse horse = helper.spawn(ModEntities.forBreed(breed), x, 2, z);
+        AbstractHorse horse = helper.spawn(ModEntities.forBreed(BhBreeds.keyOf(breed)), x, 2, z);
         IHorseData data = IHorseData.of(horse);
         data.bh_setBreed(breed);
         data.bh_setGender(gender);
@@ -37,8 +37,8 @@ public class BreedingGameTest implements FabricGameTest {
     public void differentBreedsOppositeGenderProduceMixedFoal(GameTestHelper helper) {
         floor(helper);
         ServerLevel level = helper.getLevel();
-        AbstractHorse mother = ownedTamedHorse(helper, HorseBreed.CLYDESDALE, HorseGender.FEMALE, 2, 2);
-        AbstractHorse father = ownedTamedHorse(helper, HorseBreed.SHIRE, HorseGender.MALE, 3, 2);
+        AbstractHorse mother = ownedTamedHorse(helper, HorseBreed.CLYDESDALE, BhContent.FEMALE.key(), 2, 2);
+        AbstractHorse father = ownedTamedHorse(helper, HorseBreed.SHIRE, BhContent.MALE.key(), 3, 2);
         AABB nearby = mother.getBoundingBox().inflate(4);
 
         mother.spawnChildFromBreeding(level, father);
@@ -52,7 +52,7 @@ public class BreedingGameTest implements FabricGameTest {
         helper.assertTrue(foalData.bh_getBreed() == HorseBreed.CLYDESDALE || foalData.bh_getBreed() == HorseBreed.SHIRE,
                 "foal breed should be one of the two parent breeds, was " + foalData.bh_getBreed());
         helper.assertTrue(foalData.bh_isMixedBreed(), "foal of two different real breeds should be flagged mixed");
-        helper.assertTrue(foalData.bh_getGender() == HorseGender.MALE || foalData.bh_getGender() == HorseGender.FEMALE,
+        helper.assertTrue(foalData.bh_getGender() == BhContent.MALE.key() || foalData.bh_getGender() == BhContent.FEMALE.key(),
                 "foal gender should be a sane value");
         helper.assertTrue(foal.getHealth() > 0 && foal.getHealth() <= foal.getMaxHealth(),
                 "foal health should be positive and not exceed its max health");
@@ -63,8 +63,8 @@ public class BreedingGameTest implements FabricGameTest {
     public void sameBreedParentsProduceUnmixedFoal(GameTestHelper helper) {
         floor(helper);
         ServerLevel level = helper.getLevel();
-        AbstractHorse mother = ownedTamedHorse(helper, HorseBreed.ARABIAN, HorseGender.FEMALE, 2, 2);
-        AbstractHorse father = ownedTamedHorse(helper, HorseBreed.ARABIAN, HorseGender.MALE, 3, 2);
+        AbstractHorse mother = ownedTamedHorse(helper, HorseBreed.ARABIAN, BhContent.FEMALE.key(), 2, 2);
+        AbstractHorse father = ownedTamedHorse(helper, HorseBreed.ARABIAN, BhContent.MALE.key(), 3, 2);
         AABB nearby = mother.getBoundingBox().inflate(4);
 
         mother.spawnChildFromBreeding(level, father);
@@ -83,11 +83,9 @@ public class BreedingGameTest implements FabricGameTest {
         floor(helper);
         helper.assertTrue(icy.betterhorses.net.BhFeature.GENDER_BREEDING.on(),
                 "setup: gender_breeding should be on by default for this test");
-        AbstractHorse a = ownedTamedHorse(helper, HorseBreed.MUSTANG, HorseGender.MALE, 2, 2);
-        AbstractHorse b = ownedTamedHorse(helper, HorseBreed.MUSTANG, HorseGender.MALE, 3, 2);
-        AbstractHorse c = ownedTamedHorse(helper, HorseBreed.MUSTANG, HorseGender.FEMALE, 4, 2);
-        // canMate also requires both sides to be "in love" - feed them all so gender is the only
-        // variable under test.
+        AbstractHorse a = ownedTamedHorse(helper, HorseBreed.MUSTANG, BhContent.MALE.key(), 2, 2);
+        AbstractHorse b = ownedTamedHorse(helper, HorseBreed.MUSTANG, BhContent.MALE.key(), 3, 2);
+        AbstractHorse c = ownedTamedHorse(helper, HorseBreed.MUSTANG, BhContent.FEMALE.key(), 4, 2);
         ServerPlayer feeder = helper.makeMockServerPlayerInLevel();
         for (AbstractHorse horse : List.of(a, b, c)) {
             horse.setInLove(feeder);
@@ -102,8 +100,8 @@ public class BreedingGameTest implements FabricGameTest {
     public void breedingResetsParentsLoveCooldown(GameTestHelper helper) {
         floor(helper);
         ServerLevel level = helper.getLevel();
-        AbstractHorse mother = ownedTamedHorse(helper, HorseBreed.MORGAN, HorseGender.FEMALE, 2, 2);
-        AbstractHorse father = ownedTamedHorse(helper, HorseBreed.MORGAN, HorseGender.MALE, 3, 2);
+        AbstractHorse mother = ownedTamedHorse(helper, HorseBreed.MORGAN, BhContent.FEMALE.key(), 2, 2);
+        AbstractHorse father = ownedTamedHorse(helper, HorseBreed.MORGAN, BhContent.MALE.key(), 3, 2);
         ServerPlayer feeder = helper.makeMockServerPlayerInLevel();
         mother.setInLove(feeder);
         father.setInLove(feeder);

@@ -1,7 +1,7 @@
 package icy.betterhorses.net.gametest;
 
+import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.HorseBreed;
-import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.HorseManageAction;
 import icy.betterhorses.net.HorseManagement;
 import icy.betterhorses.net.HorseTracker;
@@ -24,9 +24,6 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
 
-// Round 2, item 1: owner vs stranger vs trusted for every C2S handler, plus bogus/gone/far horse
-// ids not throwing. Drives IcysBetterHorses.handle*/HorseManagement directly with real ServerPlayers
-// (FakePlayer), the way the network receiver would after decoding a payload.
 public class HandlerSecurityGameTest implements FabricGameTest {
 
     private static AbstractHorse ownedHorse(GameTestHelper helper, UUID owner) {
@@ -39,17 +36,15 @@ public class HandlerSecurityGameTest implements FabricGameTest {
         return horse;
     }
 
-    // --- radial command (RadialCommandPayload -> handleRadialCommand) ---
-
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void radialCommandOwnerChangesState(GameTestHelper helper) {
         UUID ownerId = UUID.randomUUID();
         AbstractHorse horse = ownedHorse(helper, ownerId);
         ServerPlayer owner = BhTestPlayers.owner(helper, new Vec3(2, 2, 3), ownerId);
 
-        IcysBetterHorses.handleRadialCommand(owner, horse.getId(), HorseCommand.WANDER);
+        IcysBetterHorses.handleRadialCommand(owner, horse.getId(), BhContent.COMMAND_WANDER.key());
 
-        helper.assertTrue(IHorseData.of(horse).bh_getCommand() == HorseCommand.WANDER,
+        helper.assertTrue(IHorseData.of(horse).bh_getCommand() == BhContent.COMMAND_WANDER.key(),
                 "owner's radial command should change the horse's command");
         helper.succeed();
     }
@@ -58,29 +53,28 @@ public class HandlerSecurityGameTest implements FabricGameTest {
     public void radialCommandStrangerLeavesStateUnchanged(GameTestHelper helper) {
         UUID ownerId = UUID.randomUUID();
         AbstractHorse horse = ownedHorse(helper, ownerId);
-        IHorseData.of(horse).bh_setCommand(HorseCommand.FOLLOW);
+        IHorseData.of(horse).bh_setCommand(BhContent.COMMAND_FOLLOW.key());
         ServerPlayer stranger = BhTestPlayers.at(helper, new Vec3(2, 2, 3));
 
-        IcysBetterHorses.handleRadialCommand(stranger, horse.getId(), HorseCommand.WANDER);
+        IcysBetterHorses.handleRadialCommand(stranger, horse.getId(), BhContent.COMMAND_WANDER.key());
 
-        helper.assertTrue(IHorseData.of(horse).bh_getCommand() == HorseCommand.FOLLOW,
+        helper.assertTrue(IHorseData.of(horse).bh_getCommand() == BhContent.COMMAND_FOLLOW.key(),
                 "a stranger's radial command must not change the horse's command");
         helper.succeed();
     }
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void radialCommandTrustedPlayerAllowed(GameTestHelper helper) {
-        // Trust covers commanding the owner's horses too (findCommandHorse checks bh_mayHandle).
         UUID ownerId = UUID.randomUUID();
         UUID trustedId = UUID.randomUUID();
         AbstractHorse horse = ownedHorse(helper, ownerId);
-        IHorseData.of(horse).bh_setCommand(HorseCommand.FOLLOW);
+        IHorseData.of(horse).bh_setCommand(BhContent.COMMAND_FOLLOW.key());
         HorseTracker.trust(ownerId, trustedId, "trusted-friend");
         ServerPlayer trusted = BhTestPlayers.owner(helper, new Vec3(2, 2, 3), trustedId);
 
-        IcysBetterHorses.handleRadialCommand(trusted, horse.getId(), HorseCommand.WANDER);
+        IcysBetterHorses.handleRadialCommand(trusted, horse.getId(), BhContent.COMMAND_WANDER.key());
 
-        helper.assertTrue(IHorseData.of(horse).bh_getCommand() == HorseCommand.WANDER,
+        helper.assertTrue(IHorseData.of(horse).bh_getCommand() == BhContent.COMMAND_WANDER.key(),
                 "a trusted player should be able to issue radial commands");
         helper.succeed();
     }
@@ -89,12 +83,12 @@ public class HandlerSecurityGameTest implements FabricGameTest {
     public void radialCommandFarAwayIgnored(GameTestHelper helper) {
         UUID ownerId = UUID.randomUUID();
         AbstractHorse horse = ownedHorse(helper, ownerId);
-        IHorseData.of(horse).bh_setCommand(HorseCommand.FOLLOW);
+        IHorseData.of(horse).bh_setCommand(BhContent.COMMAND_FOLLOW.key());
         ServerPlayer owner = BhTestPlayers.owner(helper, new Vec3(2, 2, 40), ownerId);
 
-        IcysBetterHorses.handleRadialCommand(owner, horse.getId(), HorseCommand.WANDER);
+        IcysBetterHorses.handleRadialCommand(owner, horse.getId(), BhContent.COMMAND_WANDER.key());
 
-        helper.assertTrue(IHorseData.of(horse).bh_getCommand() == HorseCommand.FOLLOW,
+        helper.assertTrue(IHorseData.of(horse).bh_getCommand() == BhContent.COMMAND_FOLLOW.key(),
                 "a radial command from far away should be ignored");
         helper.succeed();
     }
@@ -104,9 +98,9 @@ public class HandlerSecurityGameTest implements FabricGameTest {
         Horse horse = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
         ServerPlayer player = BhTestPlayers.at(helper, new Vec3(2, 2, 3));
 
-        IcysBetterHorses.handleRadialCommand(player, horse.getId(), HorseCommand.WANDER);
+        IcysBetterHorses.handleRadialCommand(player, horse.getId(), BhContent.COMMAND_WANDER.key());
 
-        helper.assertTrue(IHorseData.of(horse).bh_getCommand() != HorseCommand.WANDER,
+        helper.assertTrue(IHorseData.of(horse).bh_getCommand() != BhContent.COMMAND_WANDER.key(),
                 "an untamed horse should ignore radial commands");
         helper.succeed();
     }
@@ -114,7 +108,7 @@ public class HandlerSecurityGameTest implements FabricGameTest {
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void radialCommandBogusEntityIdDoesNotThrow(GameTestHelper helper) {
         ServerPlayer player = BhTestPlayers.at(helper, new Vec3(2, 2, 2));
-        IcysBetterHorses.handleRadialCommand(player, 987654, HorseCommand.STAY);
+        IcysBetterHorses.handleRadialCommand(player, 987654, BhContent.COMMAND_STAY.key());
         IcysBetterHorses.handleRear(player, 987654);
         IcysBetterHorses.handleGearShift(player, 987654, 1, 1);
         IcysBetterHorses.handleFreeLook(player, 987654, true);
@@ -130,20 +124,16 @@ public class HandlerSecurityGameTest implements FabricGameTest {
         horse.discard();
         ServerPlayer owner = BhTestPlayers.owner(helper, new Vec3(2, 2, 3), ownerId);
 
-        IcysBetterHorses.handleRadialCommand(owner, id, HorseCommand.WANDER);
+        IcysBetterHorses.handleRadialCommand(owner, id, BhContent.COMMAND_WANDER.key());
         helper.succeed();
     }
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void fromIdClampsOutOfRangeOrdinals(GameTestHelper helper) {
-        helper.assertTrue(HorseCommand.fromId(-5) == HorseCommand.FOLLOW, "negative command id should clamp low");
-        helper.assertTrue(HorseCommand.fromId(9999) == HorseCommand.ABILITY, "huge command id should clamp high");
         helper.assertTrue(HorseManageAction.fromId(-5) == HorseManageAction.WHISTLE, "negative action id should clamp low");
         helper.assertTrue(HorseManageAction.fromId(9999) == HorseManageAction.SET_ACTIVE, "huge action id should clamp high");
         helper.succeed();
     }
-
-    // --- rear (BhRearPayload -> handleRear) ---
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void rearOwnerNotRidingStillWorks(GameTestHelper helper) {
@@ -151,10 +141,11 @@ public class HandlerSecurityGameTest implements FabricGameTest {
         AbstractHorse horse = ownedHorse(helper, ownerId);
         ServerPlayer owner = BhTestPlayers.owner(helper, new Vec3(2, 2, 3), ownerId);
 
-        IcysBetterHorses.handleRear(owner, horse.getId());
-
-        helper.assertTrue(horse.isStanding(), "owner should be able to make an unridden owned horse rear");
-        helper.succeed();
+        helper.runAfterDelay(10, () -> {
+            IcysBetterHorses.handleRear(owner, horse.getId());
+            helper.assertTrue(horse.isStanding(), "owner should be able to make an unridden owned horse rear");
+            helper.succeed();
+        });
     }
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
@@ -169,15 +160,11 @@ public class HandlerSecurityGameTest implements FabricGameTest {
         helper.succeed();
     }
 
-    // FakePlayer can't mount (ServerPlayer#startRiding teleports via its connection, which
-    // FakePlayer's fake one doesn't support), so the actual riding half uses GameTestHelper's own
-    // mock server player instead - fine here since these handlers only check reference identity
-    // against getControllingPassenger(), never the rider's UUID.
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void rearBlockedWhileSomeoneElseRides(GameTestHelper helper) {
         UUID ownerId = UUID.randomUUID();
         AbstractHorse horse = ownedHorse(helper, ownerId);
-        horse.equipSaddle(null); // getControllingPassenger() only returns a rider once saddled
+        horse.equipSaddle(null);
         ServerPlayer owner = BhTestPlayers.owner(helper, new Vec3(2, 2, 3), ownerId);
         ServerPlayer rider = helper.makeMockServerPlayerInLevel();
         boolean mounted = rider.startRiding(horse, true);
@@ -191,12 +178,10 @@ public class HandlerSecurityGameTest implements FabricGameTest {
         helper.succeed();
     }
 
-    // --- gear shift / free look (HorseGearPayload / BhFreeLookPayload) ---
-
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void gearShiftOnlyControllingPassenger(GameTestHelper helper) {
         AbstractHorse horse = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
-        horse.equipSaddle(null); // getControllingPassenger() only returns a rider once saddled
+        horse.equipSaddle(null);
         ServerPlayer rider = helper.makeMockServerPlayerInLevel();
         ServerPlayer bystander = helper.makeMockServerPlayerInLevel();
 
@@ -229,8 +214,6 @@ public class HandlerSecurityGameTest implements FabricGameTest {
                 "the controlling passenger should be able to toggle free look");
         helper.succeed();
     }
-
-    // --- cart size (CartSizePayload -> handleCartSize) ---
 
     private static AbstractHorse ownedCartHorse(GameTestHelper helper, UUID owner) {
         AbstractHorse horse = ownedHorse(helper, owner);
@@ -297,8 +280,6 @@ public class HandlerSecurityGameTest implements FabricGameTest {
                 "a cart size change from out of reach should be ignored");
         helper.succeed();
     }
-
-    // --- management actions (HorseManagePayload -> handleManageAction / HorseManagement) ---
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void manageWhistleOwnerOnly(GameTestHelper helper) {
@@ -383,9 +364,6 @@ public class HandlerSecurityGameTest implements FabricGameTest {
         HorseTracker.register(horse);
         ServerLevel nether = helper.getLevel().getServer().getLevel(Level.NETHER);
         helper.assertTrue(nether != null, "setup: nether level should exist");
-        // A player whose ServerPlayer object lives in a different level than the loaded horse -
-        // exercises the same "loaded.level() != player.level()" branch a real cross-dimension
-        // whistle would hit.
         ServerPlayer owner = BhTestPlayers.atLevel(nether, ownerId,
                 new Vec3(nether.getSharedSpawnPos().getX(), nether.getSharedSpawnPos().getY(),
                         nether.getSharedSpawnPos().getZ()));
@@ -395,8 +373,6 @@ public class HandlerSecurityGameTest implements FabricGameTest {
         helper.assertFalse(result.ok(), "whistling a horse loaded in a different dimension should fail, not throw");
         helper.succeed();
     }
-
-    // --- call horse / recall / roster (no horse-id argument at all - implicit to the caller) ---
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void callHorseWithNoHorsesDoesNotThrow(GameTestHelper helper) {
@@ -443,7 +419,6 @@ public class HandlerSecurityGameTest implements FabricGameTest {
 
         helper.assertTrue(roster.size() == 1, "roster should contain exactly the caller's own horse");
         helper.assertTrue(roster.get(0).horseId().equals(mine.getUUID()), "roster entry should be the owner's horse");
-        // Also exercise the network path end-to-end (sendRoster), just for the "does not throw" guarantee.
         IcysBetterHorses.sendRoster(owner);
         helper.succeed();
     }

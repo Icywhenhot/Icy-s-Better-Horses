@@ -13,14 +13,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
-// Finding 8: riders must be seated apart every tick, not only while the horse rears.
 public class RiderSeatingGameTest implements FabricGameTest {
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 100)
     public void ridersOffsetApartFlatAndWhileRearing(GameTestHelper helper) {
         helper.setBlock(2, 1, 2, Blocks.STONE);
         AbstractHorse horse = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
-        horse.setTamed(true); // untamed horses buck riders off at random
+        horse.setTamed(true);
 
         Player rider1 = helper.makeMockPlayer();
         Player rider2 = helper.makeMockPlayer();
@@ -51,7 +50,7 @@ public class RiderSeatingGameTest implements FabricGameTest {
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 100)
     public void cartBenchRidersOffsetApartWhileFlat(GameTestHelper helper) {
         AbstractHorse horse = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
-        horse.setTamed(true); // untamed horses buck riders off at random
+        horse.setTamed(true);
         IHorseData.of(horse).bh_getGearContainer()
                 .setItem(GearSlot.STABILIZER.ordinal(), new ItemStack(ModItems.HORSE_CART));
 

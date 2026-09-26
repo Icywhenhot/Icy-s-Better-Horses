@@ -1,10 +1,10 @@
 package icy.betterhorses.net.client.render;
 
+import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.BhGears;
-import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedHorse;
-import icy.betterhorses.net.BreedArchetype;
+import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.entity.FriesianHorse;
 import icy.betterhorses.net.entity.IcelandicHorse;
 import net.minecraft.client.model.EntityModel;
@@ -12,6 +12,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import org.joml.Vector3f;
 import java.util.List;
 import java.util.Map;
 
@@ -101,18 +102,22 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
         saved.rider = BhRiderMotion.get(state.entityId);
     }
 
-    private final float[] legLever;
+    private float[] legLever;
 
-    private final float frameScale;
+    private float frameScale;
 
-    private final float grazeNeck;
-    private final float grazeHeadRel;
+    private float grazeNeck;
+    private float grazeHeadRel;
+
+    private BhJumpRig jumpRig;
+    private final float[] clipPose = new float[BhJumpClips.POSE_SIZE];
+    private final float[] clipFrom = new float[BhJumpClips.POSE_SIZE];
 
     private static float bhHeadDrop(BhBreedHorse horse) {
         if (horse instanceof IcelandicHorse || horse instanceof FriesianHorse) {
             return 0.0F;
         }
-        return horse.bhFixedBreed().archetype() == BreedArchetype.DRAFT
+        return BhBreedData.of(horse.bhFixedBreed()).archetype() == BhContent.DRAFT.value()
                 ? 20.0F * Mth.DEG_TO_RAD
                 : 25.0F * Mth.DEG_TO_RAD;
     }
@@ -152,6 +157,16 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
         }
         float u = (p - CANTER_DUTY) / (1.0F - CANTER_DUTY);
         return 1.0F - 2.0F * (u * u * (3.0F - 2.0F * u));
+    }
+
+    private static float measureBottom(ModelPart part, float fallback) {
+        final float[] low = {-Float.MAX_VALUE};
+        part.visit(new PoseStack(), (pose, path, index, cube) -> {
+            if (path.isEmpty()) {
+                low[0] = Math.max(low[0], cube.maxY);
+            }
+        });
+        return low[0] == -Float.MAX_VALUE ? fallback : low[0];
     }
 
     private static float measureLegLever(ModelPart part, float fallback) {
@@ -197,6 +212,9 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
             this.legLever[i] = measureLegLever(legs[i], i < 2 ? 12.0F : 15.0F);
         }
         this.frameScale = this.legLever[0] / 12.0F;
+        this.jumpRig = new BhJumpRig(this.frameScale, measureBottom(this.body, 5.0F),
+                this.bodyRest, this.neckRest, this.headRest, this.leftEarRest, this.rightEarRest,
+                this.tailRest, this.legRest, this.legLever);
 
         final float snoutReach = measureSnoutReach(this.snout, this.snoutRest.z(), 10.0F);
         final float grazeDrop = GRAZE_DROP_PIXELS * this.frameScale;
@@ -215,6 +233,14 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
         this.grazeHeadRel = Mth.PI / 2.0F - this.grazeNeck;
     }
 
+    void matchFrame(BhHorseModel horse) {
+        this.legLever = horse.legLever;
+        this.frameScale = horse.frameScale;
+        this.grazeNeck = horse.grazeNeck;
+        this.grazeHeadRel = horse.grazeHeadRel;
+        this.jumpRig = horse.jumpRig;
+    }
+
     @Override
     public ModelPart bh_getBody() {
         return this.body;
@@ -231,15 +257,27 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
         rootPart.render(poseStack, consumer, packedLight, packedOverlay, red, green, blue, alpha);
     }
 
-    public float bhBodyRestY() {
-        return bodyRest.y();
+    public void bhHoofBottoms(PoseStack poseStack, Vector3f[] out) {
+        for (int i = 0; i < legs.length; i++) {
+            Vector3f hoof = out[i].set(0.0F, Float.MAX_VALUE, 0.0F);
+            poseStack.pushPose();
+            rootPart.translateAndRotate(poseStack);
+            legs[i].visit(poseStack, (pose, path, index, cube) -> {
+                Vector3f p = pose.pose().transformPosition((cube.minX + cube.maxX) / 32.0F,
+                        cube.maxY / 16.0F, (cube.minZ + cube.maxZ) / 32.0F, new Vector3f());
+                if (p.y < hoof.y) hoof.set(p);
+            });
+            poseStack.popPose();
+        }
+    }
+
+    Rest bhBodyRest() {
+        return bodyRest;
     }
 
     private static final float BANK_ROLL = 11.0F * Mth.DEG_TO_RAD;
 
     private static final float GROUND_Y = 24.0F;
-
-    private static final float ARC_PIVOT_Y = 11.0F;
 
     private static final float NECK_REST_TILT = 12.0F * Mth.DEG_TO_RAD;
 
@@ -264,7 +302,14 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
 
     private static final float[] LEG_DIAGONAL = {1.0F, -1.0F, -1.0F, 1.0F};
 
-    private static final float[] LEG_TUCK_BIAS = {0.07F, -0.07F, -0.05F, 0.05F};
+    private static final float FLAIL_FRONT_DEG = 5.0F;
+    private static final float FLAIL_BACK_DEG = 7.0F;
+
+    private static final float RIDER_JUMP_FOLLOW = 0.3F;
+
+    private static final float PANIC_HZ = 2.1F;
+    private static final float PANIC_STROKE = 1.3F;
+    private static final float[] PANIC_LEG_PHASE = {0.0F, Mth.PI, Mth.PI * 0.5F, -Mth.PI * 0.5F};
 
     private static final float[] PIVOT_LEG_PHASE =
             {0.0F, Mth.PI, Mth.PI * 0.5F, Mth.PI * 1.5F};
@@ -301,14 +346,14 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
                 : 1.0F;
         state.phaseOffset = (entity.getId() * 0.6180339887F % 1.0F) * Mth.TWO_PI;
         state.riddenHeadDrop = bhHeadDrop(entity);
-        state.commandedToStay = IHorseData.of(entity).bh_getCommand() == HorseCommand.STAY;
+        state.commandedToStay = IHorseData.of(entity).bh_getCommand().equals(BhContent.COMMAND_STAY.key());
         state.entityId = BhHorseRenderState.renderId(entity.getId());
         if (entity instanceof IcelandicHorse) {
             state.gaitedBlend = 1.0F;
             IHorseData data = IHorseData.of(entity);
             state.toltRequest = state.isRidden
                     ? (data.bh_getGaitGear() == BhGears.TOLT_GEAR ? 1.0F : 0.0F)
-                    : (data.bh_isOwned() && data.bh_getCommand() == HorseCommand.FOLLOW ? 1.0F : 0.0F);
+                    : (data.bh_isOwned() && data.bh_getCommand().equals(BhContent.COMMAND_FOLLOW.key()) ? 1.0F : 0.0F);
         }
         BhEquineGait.advanceFor(entity, state);
         setupState(state);
@@ -358,19 +403,13 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
         final float alive = state.idleEnergy;
         final float landT = state.landPhase;
 
-        final float jGather = state.jumpGather;
-        final float jThrust = state.jumpThrust;
-        final float jFlight = state.jumpFlight;
-        final float jRise = state.jumpRise;
-        final float jReach = state.jumpReach;
         final float jHit = state.jumpImpact;
         final float jHit2 = state.jumpImpactSecond;
         final float jAny = state.jumpActive;
         final float lead = state.jumpLeadSign;
-
-        final float airWobble = Math.max(jFlight, jReach)
-              * Math.max(0.0F, 1.0F - Mth.clamp(jHit, 0.0F, 1.0F))
-              * Math.max(0.0F, 1.0F - Mth.clamp(jThrust, 0.0F, 1.0F));
+        final float panic = state.panicWeight;
+        final float panicT = phase + age / 20.0F * Mth.TWO_PI * PANIC_HZ
+              + Mth.sin(phase + age / 7.3F) * 0.8F;
 
         final float land = state.landWeight * (1.0F - jAny);
         final float shake = 0.5F - 0.5F * Mth.cos(
@@ -439,7 +478,6 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
               + GRAZE_DROP_PIXELS * graze * frameScale
               + 1.0F * skid
               + 0.8F * Math.abs(limpNod)
-              + (3.3F * jGather + 3.4F * jHit) * frameScale
               + (0.9F * kickCoil - 2.1F * kickSnap) * frameScale
               + (0.7F * stompLift - 0.5F * stompDrive) * frameScale;
 
@@ -455,12 +493,8 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
               + (10.0F * Mth.cos(landT * 3.0F)) * Mth.DEG_TO_RAD * land
               - 0.22F * skid
               + GRAZE_PITCH * graze
-              + (6.0F * Mth.DEG_TO_RAD) * jGather
-              + (5.0F * Mth.DEG_TO_RAD) * jHit
-              + (-5.0F * kickCoil + 16.0F * kickSnap) * Mth.DEG_TO_RAD;
-
-        final float arcPitch = state.arcPitch;
-        final float arcWhip = state.arcWhip;
+              + (-5.0F * kickCoil + 16.0F * kickSnap) * Mth.DEG_TO_RAD
+              + (-6.0F * Mth.DEG_TO_RAD) * panic;
 
         final float swimSink = (state.isRidden ? 4.0F : 8.0F) * swim;
 
@@ -476,15 +510,15 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
               + (5.0F * Mth.DEG_TO_RAD) * pivotDir * pivot
               + (4.0F * Mth.DEG_TO_RAD) * soreSign * limp
               + (5.5F * Mth.DEG_TO_RAD) * soreSign * limpStand
-              + (3.0F * Mth.DEG_TO_RAD) * Mth.cos(rearT25) * rear;
+              + (3.0F * Mth.DEG_TO_RAD) * Mth.cos(rearT25) * rear
+              + (4.0F * Mth.DEG_TO_RAD) * Mth.sin(panicT * 0.5F) * panic;
 
-        final float bankAngle = BANK_ROLL * bank;
+        final float bankAngle = -BANK_ROLL * bank;
         rootPart.zRot = rootRest.zRot() + bankAngle;
-        rootPart.xRot = rootRest.xRot() + arcPitch;
+        rootPart.xRot = rootRest.xRot();
         rootPart.x = rootRest.x() + GROUND_Y * Mth.sin(bankAngle);
-        rootPart.y = rootRest.y() + GROUND_Y * (1.0F - Mth.cos(bankAngle))
-              + ARC_PIVOT_Y * (1.0F - Mth.cos(arcPitch));
-        rootPart.z = rootRest.z() - ARC_PIVOT_Y * Mth.sin(arcPitch);
+        rootPart.y = rootRest.y() + GROUND_Y * (1.0F - Mth.cos(bankAngle));
+        rootPart.z = rootRest.z();
 
         final float viewDuck = state.riddenHeadDrop * state.riddenWeight
               * (1.0F - graze) * (1.0F - rear);
@@ -511,16 +545,9 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
               - (14.0F * Mth.DEG_TO_RAD) * flinch
               - (16.0F * Mth.DEG_TO_RAD) * skid
               - (16.0F * Mth.DEG_TO_RAD) * limpNod
-              + (20.0F * Mth.DEG_TO_RAD) * jGather
-              + (-24.0F * Mth.DEG_TO_RAD) * jThrust
-              + (-14.0F * Mth.DEG_TO_RAD) * jRise
-              + (7.0F * Mth.DEG_TO_RAD) * jReach
-              + (17.0F * Mth.DEG_TO_RAD) * jHit
-              - (12.0F * Mth.DEG_TO_RAD) * jHit2
-              - 0.3F * arcPitch
-              - 0.45F * arcWhip;
+              + (-22.0F + 7.0F * Mth.sin(panicT * 1.3F + 0.7F)) * Mth.DEG_TO_RAD * panic;
 
-        float neckYaw = (7.0F * Mth.DEG_TO_RAD) * bank
+        float neckYaw = (16.0F * Mth.DEG_TO_RAD) * bank
               + (14.0F * Mth.DEG_TO_RAD) * pivotDir * pivot
               + Mth.clamp(state.yRot * Mth.DEG_TO_RAD, -0.6F, 0.6F) * 0.35F
               + (3.0F * Mth.DEG_TO_RAD)
@@ -553,21 +580,18 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
               - (10.0F * Mth.DEG_TO_RAD) * feed
               - (18.0F * Mth.DEG_TO_RAD) * flinch
               - (8.0F * Mth.DEG_TO_RAD) * skid
-              + (-9.0F * Mth.DEG_TO_RAD) * jGather
-              + (11.0F * Mth.DEG_TO_RAD) * jThrust
-              + (8.0F * Mth.DEG_TO_RAD) * jRise
-              - (4.0F * Mth.DEG_TO_RAD) * jReach
-              - (15.0F * Mth.DEG_TO_RAD) * jHit
-              - 0.30F * arcWhip;
+              + (-6.0F + 6.0F * Mth.sin(panicT * 1.7F + 2.1F)) * Mth.DEG_TO_RAD * panic;
 
         float headYaw = Mth.clamp(state.yRot * Mth.DEG_TO_RAD, -0.6F, 0.6F) * 0.5F
+              + (10.0F * Mth.DEG_TO_RAD) * bank
               + (5.0F * Mth.DEG_TO_RAD)
                 * Mth.cos(Mth.clamp(0.5F - Mth.sin(idleT) * 1.5F, 0.0F, 1.0F) * Mth.PI) * alive
-              + (-Mth.sin(shakeT) / 3.0F + Mth.cos(shakeT) / 8.0F) * shake;
+              + (-Mth.sin(shakeT) / 3.0F + Mth.cos(shakeT) / 8.0F) * shake
+              + (10.0F * Mth.DEG_TO_RAD) * Mth.sin(panicT * 0.9F) * panic;
 
         head.yRot = headRest.yRot() + headYaw;
         head.zRot = headRest.zRot()
-              - BANK_ROLL * 0.45F * bank
+              + BANK_ROLL * 0.45F * bank
               + (2.0F * Mth.DEG_TO_RAD)
                 * Mth.cos(Mth.clamp(0.5F - Mth.sin(idleT) * 1.5F, 0.0F, 1.0F) * Mth.PI)
                 * alive * (1.0F - graze)
@@ -590,18 +614,14 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
               + Mth.sin(stride) / 3.0F * speed * run) * (1.0F - rear);
         final float earLand = (-40.0F * Mth.cos(landT * 8.0F)) * Mth.DEG_TO_RAD * land;
         final float earChew = (3.0F * Mth.sin(chewT)) * Mth.DEG_TO_RAD * graze;
-        final float earJump = (-14.0F * jGather - 22.0F * jThrust - 10.0F * jRise
-              - 6.0F * jReach + 18.0F * jHit) * Mth.DEG_TO_RAD;
-        final float earFixed = (-12.0F * Mth.DEG_TO_RAD) * skid + earJump;
-        final float earJumpSplit = (5.0F * Mth.DEG_TO_RAD) * lead * (jThrust + jHit);
-        final float earYawSplit = (7.0F * Mth.DEG_TO_RAD) * lead * (jThrust + 0.6F * jRise);
+        final float earFixed = (-12.0F * Mth.DEG_TO_RAD) * skid + (-30.0F * Mth.DEG_TO_RAD) * panic;
 
         leftEar.xRot = leftEarRest.xRot()
               + (10.0F - 40.0F * Mth.cos(age * 1.5F) * flickL * (1.0F - shake) * walk)
                 * Mth.DEG_TO_RAD
               + earGait
               - Mth.sin(rearT) / 6.0F * rear
-              + earChew + earLand + earFixed + earJumpSplit
+              + earChew + earLand + earFixed
               + (14.0F * Mth.DEG_TO_RAD) * stay
               - (10.0F * Mth.DEG_TO_RAD) * feed;
         rightEar.xRot = rightEarRest.xRot()
@@ -609,14 +629,14 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
                 * Mth.DEG_TO_RAD
               + earGait
               - Mth.sin(Mth.PI / 6.0F + rearT) / 6.0F * rear
-              + earChew + earLand + earFixed - earJumpSplit
+              + earChew + earLand + earFixed
               + (14.0F * Mth.DEG_TO_RAD) * stay
               - (10.0F * Mth.DEG_TO_RAD) * feed;
 
-        leftEar.yRot = leftEarRest.yRot() + earYawSplit
+        leftEar.yRot = leftEarRest.yRot()
               + (70.0F * Mth.cos(Mth.PI / 6.0F + age * 1.5F) * flickL * (1.0F - shake) * walk
                  - 50.0F * graze - 25.0F * shake) * Mth.DEG_TO_RAD;
-        rightEar.yRot = rightEarRest.yRot() + earYawSplit
+        rightEar.yRot = rightEarRest.yRot()
               + (-70.0F * Mth.sin(Mth.PI / 6.0F + age * 1.5F) * flickR * (1.0F - shake) * walk
                  + 50.0F * graze + 25.0F * shake) * Mth.DEG_TO_RAD;
 
@@ -634,9 +654,10 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
         final float maneFly = Mth.sin(phase + age * 1.7F) * 0.6F
               + Mth.sin(phase + age * 0.71F) * 0.4F;
 
-        final float hairDrive = Math.min(1.5F, jFlight + 0.8F * jThrust + 0.6F * jHit);
+        final float hairDrive = Math.min(1.5F,
+                state.jumpAir + 0.8F * state.jumpPush + 0.6F * jHit + 0.8F * panic);
         final float maneWhip = Mth.sin(phase + age * 3.1F)
-              * Math.min(1.4F, jThrust + 0.7F * jHit);
+              * Math.min(1.4F, state.jumpPush + 0.7F * jHit + 0.5F * panic);
 
         final float maneGait = Mth.sin(stride * 2.0F - Mth.PI / 4.0F) / 12.0F * move * walk
               + Mth.sin(stride * 2.0F - Mth.PI / 5.0F) / 10.0F * trot
@@ -666,13 +687,12 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
               + (30.0F * Mth.sin(landT * 5.0F)) * Mth.DEG_TO_RAD * land
               + (15.0F + 25.0F * Mth.sin(age / 1.5F)) * Mth.DEG_TO_RAD * swish
               + (12.0F * Mth.DEG_TO_RAD) * skid
-              + (12.0F * jGather + 34.0F * jThrust + 26.0F * jRise + 12.0F * jReach
-                 - 20.0F * jHit + 15.0F * jHit2) * Mth.DEG_TO_RAD
-              - 0.75F * arcWhip;
+              - (18.0F * Mth.DEG_TO_RAD) * panic;
         tail.yRot = tailRest.yRot() + Mth.sin(stride - Mth.PI / 3.0F) / 8.0F * move * walk
               + Mth.sin(stride - Mth.PI / 3.0F) / 6.0F * speed * run
               + (5.0F * Mth.DEG_TO_RAD) * Mth.sin(-Mth.PI / 4.0F + rearT15) * rear
-              + maneFly * (0.09F * hairDrive + 0.11F * maneWind) + maneWhip * 0.06F;
+              + maneFly * (0.09F * hairDrive + 0.11F * maneWind) + maneWhip * 0.06F
+              + 0.3F * Mth.sin(panicT * 1.9F) * panic;
         tail.zRot = tailRest.zRot() + (40.0F * Mth.sin(age / 3.0F)) * Mth.DEG_TO_RAD * swish;
         tail.yScale = 1.0F - (0.4F - 1.3F * Mth.sin(Mth.PI / 4.0F + age / 3.0F)) / 20.0F * swish;
 
@@ -832,10 +852,17 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
                         -4.0F, 0.0F);
             }
 
-            final float airborneDamp = 1.0F - 0.80F * jFlight;
-            rot *= airborneDamp;
-            reach *= airborneDamp;
-            lift *= airborneDamp;
+            final float calm = 1.0F - Math.max(state.fallDamp, panic);
+            rot *= calm;
+            reach *= calm;
+            lift *= calm;
+            if (panic > 0.0F) {
+                final float u = panicT + PANIC_LEG_PHASE[i];
+                final float knee = Mth.clamp(-Mth.sin(u) / 3.0F, 0.0F, NINTH_PI);
+                rot += (-Mth.cos(u) / 2.0F + (front ? knee : -knee)) * PANIC_STROKE * panic;
+                reach += -Mth.cos(u) * 6.0F * PANIC_STROKE * panic;
+                lift += Mth.clamp(-2.0F + Mth.sin(u) * 1.5F, -4.0F, 0.0F) * panic;
+            }
 
             final float gait = gaitScale(front);
             if (gait != 1.0F) {
@@ -866,28 +893,6 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
             rot += (10.0F * Mth.DEG_TO_RAD) * sore;
 
             rot += front ? skidFront : skidBack;
-
-            final float legShift =
-                    -LEG_LAG_SECONDS[i] * 0.5F * (1.0F - lead * LEG_DIAGONAL[i]);
-            final float jThrustLeg = BhEquineGait.thrustShifted(state, legShift);
-            final float jHitLeg = BhEquineGait.impactShifted(state, legShift);
-            final float jHit2Leg = BhEquineGait.impactSecondShifted(state, legShift);
-
-            final float flailT = phase + age * 1.4F + i * 1.7F;
-            final float flail = (Mth.sin(flailT) * 0.65F + Mth.sin(flailT * 0.43F + i) * 0.35F)
-                  * (front ? 3.5F : 5.0F) * Mth.DEG_TO_RAD * airWobble;
-
-            final float tuck = 1.0F + LEG_TUCK_BIAS[i] * lead;
-
-            final float jumpAngle = front
-                    ? (-2.0F * jGather
-                     - 52.0F * jThrustLeg
-                     - (44.0F * jRise * (1.0F - jThrustLeg) + 26.0F * jReach) * tuck
-                     - 12.0F * jHitLeg) * Mth.DEG_TO_RAD + flail
-                    : (-23.0F * jGather
-                     + 46.0F * jThrustLeg
-                     + (34.0F * jRise * (1.0F - jThrustLeg) + 6.0F * jReach) * tuck
-                     - 15.0F * jHit2Leg) * Mth.DEG_TO_RAD + flail;
 
             final float rearSide = (i == 0 || i == 2) ? 1.0F : -1.0F;
             float rearRot = 0.0F;
@@ -933,7 +938,7 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
                     : 0.0F;
 
             final float lever = legLever[i];
-            final float legSwing = jumpAngle + soreFold + grazeFold + kickFold + stompFold;
+            final float legSwing = soreFold + grazeFold + kickFold + stompFold;
             rot += legSwing;
             reach += lever * Mth.sin(legSwing);
             lift += -lever * (1.0F - Mth.cos(legSwing));
@@ -953,14 +958,82 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
             leg.x = rest.x() - legLever[i] * Mth.sin(lateral) + rearLateral;
         }
 
-        publishRiderMotion(state, bodyDrop + swimSink, bodyPitch, arcPitch, bankAngle);
+        float clipPitch = 0.0F;
+        final float w = state.jumpWeight;
+        if (w > 0.0F && BhJumpClips.ready()) {
+            BhJumpClips.sample(state.jumpClip, state.jumpClipTime, clipPose);
+            if (state.jumpFade < 1.0F) {
+                BhJumpClips.sample(state.jumpFromClip, state.jumpFromTime, clipFrom);
+                BhJumpClips.mix(clipPose, clipFrom, 1.0F - state.jumpFade);
+            }
+            jumpRig.solve(clipPose, state.jumpPitchScale);
+            final float[] o = jumpRig.out;
+            clipPitch = o[BhJumpClips.BODY * 6 + BhJumpRig.XROT] - bodyRest.xRot();
+            blend(body, bodyRest, o, BhJumpClips.BODY, w);
+            blend(neck, neckRest, o, BhJumpClips.NECK, w);
+            blend(head, headRest, o, BhJumpClips.HEAD, w);
+            blend(leftEar, leftEarRest, o, BhJumpClips.LEFT_EAR, w);
+            blend(rightEar, rightEarRest, o, BhJumpClips.RIGHT_EAR, w);
+            blend(tail, tailRest, o, BhJumpClips.TAIL, w);
+            for (int i = 0; i < legs.length; i++) {
+                blend(legs[i], legRest[i], o, BhJumpClips.FRONT_LEFT + i, state.jumpLegWeight);
+            }
+            neck.xRot += viewDuck * w;
+            head.xRot -= viewDuck * w;
+        }
+
+        final float whip = state.jumpWhip;
+        body.y += 3.4F * jHit * frameScale;
+        body.xRot += (5.0F * Mth.DEG_TO_RAD) * jHit;
+        neck.xRot += (17.0F * jHit - 12.0F * jHit2) * Mth.DEG_TO_RAD - 0.45F * whip;
+        head.xRot += (-15.0F * Mth.DEG_TO_RAD) * jHit - 0.30F * whip;
+        leftEar.xRot += (18.0F + 5.0F * lead) * Mth.DEG_TO_RAD * jHit;
+        rightEar.xRot += (18.0F - 5.0F * lead) * Mth.DEG_TO_RAD * jHit;
+        tail.xRot += (-20.0F * jHit + 15.0F * jHit2) * Mth.DEG_TO_RAD - 0.75F * whip;
+
+        for (int i = 0; i < legs.length; i++) {
+            final boolean front = i < 2;
+            final float legShift =
+                    -LEG_LAG_SECONDS[i] * 0.5F * (1.0F - lead * LEG_DIAGONAL[i]);
+            final float hit = front
+                    ? -12.0F * BhEquineGait.impactShifted(state, legShift)
+                    : -15.0F * BhEquineGait.impactSecondShifted(state, legShift);
+            final float flailT = phase + age * 1.4F + i * 1.7F;
+            final float flail = (Mth.sin(flailT) * 0.65F + Mth.sin(flailT * 0.43F + i) * 0.35F)
+                  * (front ? FLAIL_FRONT_DEG : FLAIL_BACK_DEG) * state.jumpFlail;
+            swingLeg(legs[i], legLever[i], (hit + flail) * Mth.DEG_TO_RAD);
+        }
+
+        final float bodyPitchNow = body.xRot - bodyRest.xRot();
+        publishRiderMotion(state, body.y - bodyRest.y(), bodyPitchNow,
+                bodyPitchNow - clipPitch * w * (1.0F - RIDER_JUMP_FOLLOW), bankAngle);
         savePose(state);
     }
 
     private static final float SADDLE_BODY_Y = -5.0F;
 
+    private static void blend(ModelPart part, Rest rest, float[] pose, int bone, float k) {
+        final int at = bone * 6;
+        part.x += (pose[at + BhJumpRig.X] - part.x) * k;
+        part.y += (pose[at + BhJumpRig.Y] - part.y) * k;
+        part.z += (pose[at + BhJumpRig.Z] - part.z) * k;
+        part.xRot += (pose[at + BhJumpRig.XROT] - part.xRot) * k;
+        part.yRot += (pose[at + BhJumpRig.YROT] - rest.yRot()) * k;
+        part.zRot += (pose[at + BhJumpRig.ZROT] - rest.zRot()) * k;
+    }
+
+    private static void swingLeg(ModelPart leg, float lever, float a) {
+        if (a == 0.0F) {
+            return;
+        }
+        final float to = leg.xRot + a;
+        leg.y += lever * (Mth.cos(to) - Mth.cos(leg.xRot));
+        leg.z += lever * (Mth.sin(to) - Mth.sin(leg.xRot));
+        leg.xRot = to;
+    }
+
     private void publishRiderMotion(BhHorseRenderState state, float bodyY, float bodyPitch,
-                                    float arcPitch, float bankAngle) {
+                                    float riderPitch, float bankAngle) {
         final float bodyRoll = body.zRot - bodyRest.zRot();
 
         float mx = -SADDLE_BODY_Y * Mth.sin(bodyRoll);
@@ -969,11 +1042,8 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
         float mz = (body.z - bodyRest.z()) + SADDLE_BODY_Y * Mth.sin(bodyPitch);
 
         final float saddleRootY = bodyRest.y() + SADDLE_BODY_Y;
-        final float arcArm = saddleRootY - ARC_PIVOT_Y;
         final float bankArm = saddleRootY - GROUND_Y;
 
-        my += arcArm * (Mth.cos(arcPitch) - 1.0F);
-        mz += arcArm * Mth.sin(arcPitch);
         mx += -bankArm * Mth.sin(bankAngle);
         my += bankArm * (Mth.cos(bankAngle) - 1.0F);
 
@@ -981,7 +1051,7 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
                 -mx / 16.0F,
                 -my / 16.0F,
                 -mz / 16.0F,
-                arcPitch + bodyPitch,
+                riderPitch,
                 bankAngle + bodyRoll));
     }
 }

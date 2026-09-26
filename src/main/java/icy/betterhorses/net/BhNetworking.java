@@ -7,6 +7,7 @@ import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.CartSizePayload;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
+import icy.betterhorses.net.network.HorseJumpPayload;
 import icy.betterhorses.net.network.HorseGearPayload;
 import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
@@ -17,10 +18,16 @@ import icy.betterhorses.net.network.RadialCommandPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.CommandType;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,10 +35,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-/**
- * Replaces the Forge SimpleChannel, with one channel per payload type.
- * Receivers run off the game thread, so every handler hops back to it before touching game state.
- */
 public final class BhNetworking {
 
     private static final Map<Class<?>, ResourceLocation> CHANNELS = new HashMap<>();
@@ -50,7 +53,6 @@ public final class BhNetworking {
     }
 
     static {
-        // Server-bound (client -> server)
         channel(RadialCommandPayload.class, "radial_command", RadialCommandPayload::encode);
         channel(CallHorsePayload.class, "call_horse", CallHorsePayload::encode);
         channel(HorseRecallPayload.class, "horse_recall", HorseRecallPayload::encode);
@@ -61,11 +63,11 @@ public final class BhNetworking {
         channel(BhRearPayload.class, "rear", BhRearPayload::encode);
         channel(CartSizePayload.class, "cart_size", CartSizePayload::encode);
 
-        // Client-bound (server -> client)
         channel(HorseRosterSyncPayload.class, "horse_roster_sync", HorseRosterSyncPayload::encode);
         channel(HorseManageResultPayload.class, "horse_manage_result", HorseManageResultPayload::encode);
         channel(TrustSyncPayload.class, "trust_sync", TrustSyncPayload::encode);
         channel(HorseChargeShakePayload.class, "charge_shake", HorseChargeShakePayload::encode);
+        channel(HorseJumpPayload.class, "horse_jump", HorseJumpPayload::encode);
         channel(ConfigSyncPayload.class, "config_sync", ConfigSyncPayload::encode);
         channel(BreedDataPayload.class, "breed_data", BreedDataPayload::encode);
     }
@@ -73,7 +75,7 @@ public final class BhNetworking {
     public static void registerServer() {
         toServer(RadialCommandPayload.class, RadialCommandPayload::decode,
                 (payload, player) -> IcysBetterHorses.handleRadialCommand(
-                        player, payload.horseId(), HorseCommand.fromId(payload.commandOrdinal())));
+                        player, payload.horseId(), bh_parseCommand(payload.commandId()), payload.abilityId()));
         toServer(CallHorsePayload.class, CallHorsePayload::decode,
                 (payload, player) -> IcysBetterHorses.handleCallHorse(player));
         toServer(HorseRecallPayload.class, HorseRecallPayload::decode,
@@ -104,6 +106,8 @@ public final class BhNetworking {
                 IcysBetterHorsesClient::receiveTrust);
         toClient(HorseChargeShakePayload.class, HorseChargeShakePayload::decode,
                 IcysBetterHorsesClient::receiveChargeShake);
+        toClient(HorseJumpPayload.class, HorseJumpPayload::decode,
+                IcysBetterHorsesClient::receiveJump);
         toClient(ConfigSyncPayload.class, ConfigSyncPayload::decode,
                 IcysBetterHorsesClient::receiveConfig);
         toClient(BreedDataPayload.class, BreedDataPayload::decode,
@@ -138,14 +142,17 @@ public final class BhNetworking {
         }
     }
 
+    private static @Nullable ResourceKey<CommandType> bh_parseCommand(String raw) {
+        ResourceLocation loc = ResourceLocation.tryParse(raw);
+        return loc != null
+                ? ResourceKey.create(BhRegistries.COMMAND_TYPES, loc)
+                : null;
+    }
+
     public static void sendToServer(Object payload) {
         ClientPlayNetworking.send(channelOf(payload), write(payload));
     }
 
-    /**
-     * Sends a payload, skipping clients without the mod's channel (e.g. vanilla clients).
-     * Fabric has no login version check like Forge's, so mismatched clients aren't kicked.
-     */
     public static void sendToPlayer(ServerPlayer player, Object payload) {
         ResourceLocation channel = channelOf(payload);
         if (!ServerPlayNetworking.canSend(player, channel)) {
@@ -155,6 +162,12 @@ public final class BhNetworking {
             return;
         }
         ServerPlayNetworking.send(player, channel, write(payload));
+    }
+
+    public static void sendToTracking(Entity entity, Object payload) {
+        for (ServerPlayer player : PlayerLookup.tracking(entity)) {
+            sendToPlayer(player, payload);
+        }
     }
 
     private static ResourceLocation channelOf(Object payload) {

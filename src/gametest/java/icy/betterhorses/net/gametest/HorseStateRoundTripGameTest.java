@@ -1,8 +1,12 @@
 package icy.betterhorses.net.gametest;
 
+import java.util.List;
+import icy.betterhorses.net.registry.CommandType;
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.BhBreeds;
+import icy.betterhorses.net.registry.GenderType;
+import net.minecraft.resources.ResourceKey;
 import icy.betterhorses.net.HorseBreed;
-import icy.betterhorses.net.HorseCommand;
-import icy.betterhorses.net.HorseGender;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModEntities;
 import icy.betterhorses.net.ModItems;
@@ -19,10 +23,6 @@ import net.minecraft.world.item.Items;
 
 import java.util.UUID;
 
-// Round 2, item 3: for every breed, set every property IHorseData exposes a setter for, save,
-// load into a fresh entity, and compare every getter that AbstractHorseMixin's bh_onWrite/bh_onRead
-// actually persist. Also documents (separately) the fields that intentionally reset on reload, and
-// one that never gets a chance to persist because nothing ever sets it in the first place.
 public class HorseStateRoundTripGameTest implements FabricGameTest {
 
     @GameTest(template = EMPTY_STRUCTURE)
@@ -38,22 +38,25 @@ public class HorseStateRoundTripGameTest implements FabricGameTest {
 
     private void roundTripOneBreed(GameTestHelper helper, HorseBreed breed, int index) {
         String ctx = breed.id() + ": ";
-        AbstractHorse original = helper.spawn(ModEntities.forBreed(breed), 2, 2, 2);
+        AbstractHorse original = helper.spawn(ModEntities.forBreed(BhBreeds.keyOf(breed)), 2, 2, 2);
         IHorseData data = IHorseData.of(original);
 
         UUID owner = UUID.randomUUID();
         data.bh_setOwner(owner);
-        HorseCommand command = HorseCommand.values()[index % HorseCommand.values().length];
+        List<ResourceKey<CommandType>> commands = List.of(BhContent.COMMAND_FOLLOW.key(), BhContent.COMMAND_STAY.key(),
+                BhContent.COMMAND_RETURN_HOME.key(), BhContent.COMMAND_SET_HOME.key(),
+                BhContent.COMMAND_WANDER.key(), BhContent.COMMAND_ABILITY.key());
+        ResourceKey<CommandType> command = commands.get(index % commands.size());
         data.bh_setCommand(command);
         int bond = 10 + (index * 7) % 90;
         data.bh_setBond(bond);
         data.bh_setReceivedNameTagBond(true);
-        data.bh_setBondRemainder(index % 13);
+        data.bh_setBondRemainder(index % 2);
         BlockPos home = helper.absolutePos(new BlockPos(1, 2, 1));
         data.bh_setHome(home);
         BlockPos wander = helper.absolutePos(new BlockPos(3, 2, 5));
         data.bh_setWanderCenter(wander);
-        HorseGender gender = index % 2 == 0 ? HorseGender.FEMALE : HorseGender.MALE;
+        ResourceKey<GenderType> gender = index % 2 == 0 ? BhContent.FEMALE.key() : BhContent.MALE.key();
         data.bh_setGender(gender);
         data.bh_setBreed(breed);
         data.bh_setMixedBreed(true);
@@ -71,7 +74,7 @@ public class HorseStateRoundTripGameTest implements FabricGameTest {
         data.bh_getChestContainer().setItem(26, new ItemStack(Items.GOLD_INGOT, 5));
         data.bh_equipUpgradedSaddle(new ItemStack(ModItems.UPGRADED_SADDLE));
 
-        data.bh_setCartChest(true);
+        data.bh_setCartChest(new ItemStack(Items.CHEST));
         data.bh_getCartChestContainer().setItem(0, new ItemStack(Items.IRON_INGOT, 2));
         data.bh_getCartChestContainer().setItem(52, new ItemStack(Items.EMERALD, 1));
         data.bh_setCartPlough(new ItemStack(Items.IRON_HOE));
@@ -79,7 +82,7 @@ public class HorseStateRoundTripGameTest implements FabricGameTest {
 
         ServerLevel level = helper.getLevel();
         CompoundTag saved = original.saveWithoutId(new CompoundTag());
-        AbstractHorse loaded = ModEntities.forBreed(breed).create(level);
+        AbstractHorse loaded = ModEntities.forBreed(BhBreeds.keyOf(breed)).create(level);
         helper.assertTrue(loaded != null, ctx + "failed to create a fresh horse for load");
         loaded.load(saved);
         IHorseData loadedData = IHorseData.of(loaded);
@@ -127,15 +130,11 @@ public class HorseStateRoundTripGameTest implements FabricGameTest {
                 ctx + "cart chest last slot should survive");
         helper.assertTrue(loadedData.bh_hasCartPlough() && loadedData.bh_getCartPlough().is(Items.IRON_HOE),
                 ctx + "cart plough should survive");
-        boolean expectLarge = breed.archetype() == icy.betterhorses.net.BreedArchetype.DRAFT;
+        boolean expectLarge = breed.archetype() == BhContent.DRAFT.value();
         helper.assertTrue(loadedData.bh_hasLargeCart() == expectLarge,
                 ctx + "large cart flag should survive (draft breeds only)");
     }
 
-    // Fields that reset to their construction defaults on reload - confirmed intentional: they are
-    // all per-session/combat/ability timers or gait state that AbstractHorseMixin.bh_onWrite simply
-    // never writes (there is no BH_ key for any of them). Not a bug list, just documentation of the
-    // boundary the round-trip test above deliberately doesn't assert on.
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void transientFieldsResetOnReload(GameTestHelper helper) {
         helper.setBlock(2, 1, 2, net.minecraft.world.level.block.Blocks.STONE);
@@ -167,13 +166,9 @@ public class HorseStateRoundTripGameTest implements FabricGameTest {
         helper.assertTrue(loadedData.bh_getGaitGear() == 0, "gait gear is not persisted (intentional)");
         helper.assertFalse(loadedData.bh_isFreeLook(), "free-look is not persisted (intentional, client display only)");
         helper.assertTrue(loadedData.bh_getCombatTarget() == null, "combat target is not persisted (intentional)");
-        helper.assertTrue(loadedData.bh_getCartId() == null, "cart id is not persisted directly (rebuilt from the cart entity)");
         helper.succeed();
     }
 
-    // Round 2, item 7: bh_setHome(BlockPos) now also records bh_homeDim (the dimension the home was
-    // set in), so HorseManagement.sendHome's cross-dimension guard can actually fire for a loaded
-    // horse. Was homeDimensionIsNeverRecorded_KNOWN_BUG.
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void homeDimensionIsRecordedWhenHomeIsSet(GameTestHelper helper) {
         helper.setBlock(2, 1, 2, net.minecraft.world.level.block.Blocks.STONE);

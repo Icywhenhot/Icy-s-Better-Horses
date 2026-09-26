@@ -1,14 +1,19 @@
 package icy.betterhorses.net.client;
 
 import icy.betterhorses.net.BhSurge;
-import icy.betterhorses.net.HorseBreed;
+import icy.betterhorses.net.HorseStabilizerState;
+import icy.betterhorses.net.inventory.GearSlot;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.IcysBetterHorses;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.BreedType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -18,11 +23,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Iterator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -59,21 +65,21 @@ public final class BhAbilityBadges {
     private static final Map<String, Boolean> found = new HashMap<>();
 
     private static final Map<String, ItemStack> STOCK_ICONS = Map.ofEntries(
-            Map.entry("belgian", new ItemStack(Items.BRICK)),
-            Map.entry("percheron", new ItemStack(Items.COBWEB)),
-            Map.entry("icelandic_2", new ItemStack(Items.COBWEB)),
-            Map.entry("shire", new ItemStack(Items.SHIELD)),
-            Map.entry("shire_1", new ItemStack(Items.BRICK)),
-            Map.entry("appaloosa", new ItemStack(Items.WHEAT)),
-            Map.entry("appaloosa_1", new ItemStack(Items.CARROT)),
-            Map.entry("appaloosa_2", new ItemStack(Items.GOLDEN_CARROT)),
-            Map.entry("friesian_1", new ItemStack(Items.POPPY)),
-            Map.entry("andalusian_1", new ItemStack(Items.IRON_CHESTPLATE)),
-            Map.entry("mustang_1", new ItemStack(Items.GLISTERING_MELON_SLICE)),
-            Map.entry("clydesdale", new ItemStack(Items.IRON_HORSE_ARMOR)),
-            Map.entry("clydesdale_1", new ItemStack(Items.ARROW)),
+            Map.entry("brick_break", new ItemStack(Items.BRICK)),
+            Map.entry("slow_block_immunity", new ItemStack(Items.COBWEB)),
+            Map.entry("hardy_northern_2", new ItemStack(Items.COBWEB)),
+            Map.entry("intimidation", new ItemStack(Items.SHIELD)),
+            Map.entry("intimidation_1", new ItemStack(Items.BRICK)),
+            Map.entry("stock_horse", new ItemStack(Items.WHEAT)),
+            Map.entry("stock_horse_1", new ItemStack(Items.CARROT)),
+            Map.entry("stock_horse_2", new ItemStack(Items.GOLDEN_CARROT)),
+            Map.entry("friesian_presence_1", new ItemStack(Items.POPPY)),
+            Map.entry("second_chance_1", new ItemStack(Items.IRON_CHESTPLATE)),
+            Map.entry("wild_instincts_1", new ItemStack(Items.GLISTERING_MELON_SLICE)),
+            Map.entry("ironclad", new ItemStack(Items.IRON_HORSE_ARMOR)),
+            Map.entry("ironclad_1", new ItemStack(Items.ARROW)),
             Map.entry("american_paint", new ItemStack(Items.COMPASS)),
-            Map.entry("haflinger_1", new ItemStack(ModItems.HORSE_CART)),
+            Map.entry("hearthlight_1", new ItemStack(ModItems.HORSE_CART)),
             Map.entry("perk_1", new ItemStack(Items.GOLDEN_APPLE)),
             Map.entry("perk_2", new ItemStack(Items.POWDER_SNOW_BUCKET)),
             Map.entry("perk_3", new ItemStack(Items.FEATHER)));
@@ -86,6 +92,8 @@ public final class BhAbilityBadges {
     private static final int HOTBAR_GAP = 4;
     private static final int OFFHAND_WIDTH = 29;
     private static final int HOTBAR_HEIGHT = 22;
+    private static final long HARNESS_LINGER = 30L;
+    private static long harnessSeen = Long.MIN_VALUE / 2;
 
     private static final ResourceLocation[] BASH = new ResourceLocation[BASH_FRAMES + 1];
 
@@ -111,16 +119,27 @@ public final class BhAbilityBadges {
     public static void render(GuiGraphics gfx, Font font, int screenW, int screenH,
                               AbstractHorse horse) {
         IHorseData data = IHorseData.of(horse);
-        HorseBreed breed = data.bh_getBreed();
-        if (!breed.isRealBreed()) {
+        harness(gfx, screenW, screenH, horse, data);
+        ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
+        if (breedKey == null) {
             return;
         }
+        BreedType type = BhRegistries.breedTypeRegistry().get(breedKey.location());
+        if (type == null) {
+            return;
+        }
+        ResourceLocation basis = type.abilities().isEmpty() ? breedKey.location() : type.abilities().get(0).location();
+
+        List<Badge> badges = new ArrayList<>();
+        badges.add(read(basis, data.bh_getSurge(), false));
+        for (int slot = 1; slot < Math.min(type.abilities().size(), BhSurge.ABILITY_SLOTS); slot++) {
+            badges.add(read(type.abilities().get(slot).location(), data.bh_getAbilitySurge(slot), false));
+        }
+        badges.add(read(basis, data.bh_getPulse(), false));
+        badges.add(read(basis, data.bh_getPerkSurge(), true));
 
         Set<String> live = new HashSet<>();
-        for (Badge badge : new Badge[]{
-                read(breed, data.bh_getSurge(), false),
-                read(breed, data.bh_getPulse(), false),
-                read(breed, data.bh_getPerkSurge(), true)}) {
+        for (Badge badge : badges) {
             if (badge != null) {
                 shown.put(badge.key, badge);
                 live.add(badge.key);
@@ -155,16 +174,26 @@ public final class BhAbilityBadges {
         shield(gfx, screenW, screenH, data.bh_getCharge());
     }
 
-    private static @Nullable Badge read(HorseBreed breed, int packed, boolean road) {
+    private static @Nullable Badge read(ResourceLocation basis, int packed, boolean road) {
         int phase = BhSurge.phase(packed);
         if (phase == BhSurge.IDLE) {
             return null;
         }
         int variant = BhSurge.variant(packed);
-        String key = road
-                ? (variant == 0 ? ROAD_SLOT : "perk_" + variant)
-                : breed.name().toLowerCase(Locale.ROOT) + (variant == 0 ? "" : "_" + variant);
-        Component label = Component.translatable("hud.icys-better-horses.ability." + key);
+        String namespace;
+        String path;
+        if (road) {
+            namespace = IcysBetterHorses.RESOURCE_NAMESPACE;
+            path = variant == 0 ? ROAD_SLOT : "perk_" + variant;
+        } else {
+            namespace = basis.getNamespace().equals(IcysBetterHorses.MOD_ID)
+                    ? IcysBetterHorses.RESOURCE_NAMESPACE
+                    : basis.getNamespace();
+            path = basis.getPath() + (variant == 0 ? "" : "_" + variant);
+        }
+        String key = namespace.equals(IcysBetterHorses.RESOURCE_NAMESPACE) ? path : namespace + "_" + path;
+        ResourceLocation icon = new ResourceLocation(namespace, "textures/gui/hud/icon_" + path + ".png");
+        Component label = Component.translatable("hud." + namespace + ".ability." + path);
         int percent = BhSurge.percent(packed);
         Component value = switch (phase) {
             case BhSurge.COOLING -> Component.translatable("hud.icys-better-horses.ability.cooling");
@@ -175,7 +204,7 @@ public final class BhAbilityBadges {
         };
         boolean metered = (phase == BhSurge.ACTIVE || phase == BhSurge.COOLING)
                 && BhSurge.span(packed) > 0;
-        return new Badge(key, label, value, metered ? BhSurge.fill(packed) : -1.0F,
+        return new Badge(key, icon, label, value, metered ? BhSurge.fill(packed) : -1.0F,
                 phase == BhSurge.COOLING);
     }
 
@@ -194,7 +223,7 @@ public final class BhAbilityBadges {
         tint(gfx, tint);
         gfx.blit(plate.tex(), left, y, 0.0F, 0.0F, plate.width(), HEIGHT, plate.width(), HEIGHT);
 
-        ResourceLocation own = iconId(badge.key);
+        ResourceLocation own = badge.icon();
         if (present(own)) {
             gfx.blit(own, left + plate.iconX(), y + ICON_Y, 0.0F, 0.0F, ICON, ICON, ICON, ICON);
         } else {
@@ -258,14 +287,38 @@ public final class BhAbilityBadges {
         return BASH[Mth.clamp(Math.round(percent * BASH_FRAMES / 100.0F), 0, BASH_FRAMES)];
     }
 
-    private static ResourceLocation iconId(String key) {
-        return new ResourceLocation(
-                "icys-better-horses", "textures/gui/hud/icon_" + key + ".png");
-    }
-
     private static boolean present(ResourceLocation id) {
         return found.computeIfAbsent(id.toString(), k -> Minecraft.getInstance()
                 .getResourceManager().getResource(id).isPresent());
+    }
+
+    private static void harness(GuiGraphics gfx, int screenW, int screenH, AbstractHorse horse, IHorseData data) {
+        if (!data.bh_hasGear(GearSlot.STABILIZER) || data.bh_hasCartGear()) {
+            return;
+        }
+        long now = horse.level().getGameTime();
+        HorseStabilizerState state = data.bh_getStabilizerState();
+        if (state == HorseStabilizerState.OPEN || state == HorseStabilizerState.HALF_OPEN) {
+            harnessSeen = now;
+        }
+        if (now - harnessSeen > HARNESS_LINGER || now < harnessSeen) {
+            return;
+        }
+
+        boolean lefty = Minecraft.getInstance().options.mainHand().get() == HumanoidArm.LEFT;
+        int x = screenW / 2 - HOTBAR_HALF - HOTBAR_GAP - BASH_SIZE - (lefty ? 0 : OFFHAND_WIDTH);
+        int y = screenH - HOTBAR_HEIGHT + (HOTBAR_HEIGHT - BASH_SIZE) / 2;
+        gfx.renderItem(new ItemStack(ModItems.HORSE_STABILIZER), x, y);
+
+        float charge = data.bh_getStabilizerCharge();
+        int barX = x - 5;
+        gfx.fill(barX - 1, y - 1, barX + 4, y + BASH_SIZE + 1, 0xFF000000);
+        boolean blink = charge < 0.2F && (System.currentTimeMillis() / 250L) % 2L == 0L;
+        int filled = Math.round(BASH_SIZE * charge);
+        if (filled > 0 && !blink) {
+            gfx.fill(barX, y + BASH_SIZE - filled, barX + 3, y + BASH_SIZE,
+                    0xFF000000 | Mth.hsvToRgb(charge / 3.0F, 1.0F, 1.0F));
+        }
     }
 
     private static void shield(GuiGraphics gfx, int screenW, int screenH, int charge) {
@@ -277,8 +330,11 @@ public final class BhAbilityBadges {
         int y = screenH - HOTBAR_HEIGHT + (HOTBAR_HEIGHT - BASH_SIZE) / 2;
         int frame = Mth.clamp(Math.round(charge * BASH_FRAMES / 100.0F), 0, BASH_FRAMES);
 
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
         gfx.blit(BASH[frame], x, y,
                 0.0F, 0.0F, BASH_SIZE, BASH_SIZE, BASH_SIZE, BASH_SIZE);
+        RenderSystem.disableBlend();
     }
 
     private static void tint(GuiGraphics gfx, int color) {
@@ -289,7 +345,7 @@ public final class BhAbilityBadges {
                 ((color >>> 24) & 255) / 255f);
     }
 
-    private record Badge(String key, Component label, Component value, float fill, boolean cooling) {}
+    private record Badge(String key, ResourceLocation icon, Component label, Component value, float fill, boolean cooling) {}
 
     private record Plate(ResourceLocation tex, int width, int iconX, int textX, int textW) {}
 

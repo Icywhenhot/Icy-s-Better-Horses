@@ -14,9 +14,6 @@ import java.util.UUID;
 
 public class HorseTrackerGameTest implements FabricGameTest {
 
-    // F5 (aa6659d): a stale copy of a horse (lower generation than the tracker knows about) must
-    // be discarded before a pending disown is even considered, and the pending disown must still
-    // land on the live copy once it joins.
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 60)
     public void staleCopyDiscardedPendingDisownAppliesToLiveCopy(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -32,7 +29,6 @@ public class HorseTrackerGameTest implements FabricGameTest {
         stale.setUUID(horseId);
         stale.setTamed(true);
         IHorseData.of(stale).bh_setOwner(ownerId);
-        // bh_generation defaults to 0, below the tracked generation of 5, so this copy is stale.
         level.addFreshEntity(stale);
 
         helper.runAfterDelay(10, () -> {

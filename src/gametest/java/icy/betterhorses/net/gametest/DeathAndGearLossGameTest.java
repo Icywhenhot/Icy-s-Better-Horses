@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-// Round 2, item 4: no dupes / no loss of items on death or gear removal. Counts ItemEntities near
-// the horse and compares against what it was carrying - nothing lost, nothing doubled.
 public class DeathAndGearLossGameTest implements FabricGameTest {
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 40)
@@ -38,10 +36,6 @@ public class DeathAndGearLossGameTest implements FabricGameTest {
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
         horse.equipArmor(player, new ItemStack(Items.IRON_HORSE_ARMOR));
 
-        // Medkit deliberately excluded here: it auto-consumes-and-heals on any near-fatal hit
-        // (LivingEntityMixin.bh_useHorseMedkit, triggered by the same actuallyHurt() that
-        // LivingEntity#kill() routes lethal damage through), so it's legitimately gone rather
-        // than dropped - covered separately below (deathByLethalHitConsumesEquippedMedkit).
         data.bh_getGearContainer().setItem(GearSlot.HOOVES.ordinal(), new ItemStack(ModItems.HORSE_HOOVES));
         data.bh_getGearContainer().setItem(GearSlot.STABILIZER.ordinal(), new ItemStack(ModItems.HORSE_STABILIZER));
         data.bh_getGearContainer().setItem(GearSlot.CHEST.ordinal(), new ItemStack(Items.CHEST));
@@ -68,8 +62,6 @@ public class DeathAndGearLossGameTest implements FabricGameTest {
                                 + " dropped on death, found " + count);
             }
             for (Map.Entry<Item, Integer> entry : found.entrySet()) {
-                // Round 2, item 3: horses now use the vanilla horse loot table too, which drops 0-2
-                // leather at random - not part of gear/chest loss, so it's not an "unexpected extra".
                 if (entry.getKey() == Items.LEATHER) continue;
                 helper.assertTrue(expected.containsKey(entry.getKey()),
                         "unexpected extra item dropped on death: " + entry.getValue() + "x " + entry.getKey());
@@ -78,10 +70,6 @@ public class DeathAndGearLossGameTest implements FabricGameTest {
         });
     }
 
-    // Not a loss bug: the medkit is a single-use "last ditch" item that auto-triggers (heal +
-    // buffs) on any hit that would take the horse below 50% health, consuming itself in the
-    // process - whether or not that particular hit is lethal. Confirms it ends up consumed
-    // (empty slot), not silently duplicated back into the gear slot or dropped as an item too.
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 40)
     public void deathByLethalHitConsumesEquippedMedkit(GameTestHelper helper) {
         helper.setBlock(2, 1, 2, Blocks.STONE);
@@ -109,11 +97,10 @@ public class DeathAndGearLossGameTest implements FabricGameTest {
         data.bh_setBreed(HorseBreed.CLYDESDALE);
         data.bh_getGearContainer().setItem(GearSlot.STABILIZER.ordinal(), new ItemStack(ModItems.HORSE_CART));
         helper.assertTrue(data.bh_hasCartGear(), "setup: cart gear should be equipped");
-        data.bh_setCartChest(true);
+        data.bh_setCartChest(new ItemStack(Items.CHEST));
         data.bh_getCartChestContainer().setItem(0, new ItemStack(Items.IRON_INGOT, 4));
         data.bh_setCartPlough(new ItemStack(Items.IRON_HOE));
 
-        // Remove the cart item the way a player taking it out of the gear slot would.
         data.bh_getGearContainer().setItem(GearSlot.STABILIZER.ordinal(), ItemStack.EMPTY);
         helper.assertFalse(data.bh_hasCartGear(), "setup: cart gear should now be unequipped");
 
@@ -158,11 +145,6 @@ public class DeathAndGearLossGameTest implements FabricGameTest {
         helper.succeed();
     }
 
-    // Round 2, item 14: the cart's actual storage (chest contents, plough) lives on the horse's
-    // IHorseData, not on the drawn HorseCartEntity. AbstractHorseMixin's death hook now calls
-    // bh_dropCartChest()/bh_dropCartPlough() directly (matching upstream), instead of leaving that
-    // to CartRig.tick's next pass - which is not guaranteed to run before the horse is gone.
-    // Was deathWithCartLosesChestAndPloughContents_KNOWN_BUG.
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 40)
     public void deathWithCartDropsChestAndPloughContents(GameTestHelper helper) {
         helper.setBlock(2, 1, 2, Blocks.STONE);
@@ -172,15 +154,12 @@ public class DeathAndGearLossGameTest implements FabricGameTest {
         data.bh_setOwner(UUID.randomUUID());
         horse.setTamed(true);
         data.bh_getGearContainer().setItem(GearSlot.STABILIZER.ordinal(), new ItemStack(ModItems.HORSE_CART));
-        data.bh_setCartChest(true);
+        data.bh_setCartChest(new ItemStack(Items.CHEST));
         data.bh_getCartChestContainer().setItem(0, new ItemStack(Items.DIAMOND, 7));
         data.bh_setCartPlough(new ItemStack(Items.IRON_HOE));
 
         horse.kill();
 
-        // Checked in the same tick as kill(), deliberately with no delay: CartRig.tick's next pass
-        // would eventually clean this up too (once the gear slot itself is cleared), which would
-        // mask the actual bug - dropEquipment must drop the cart's contents itself, right away.
         Map<Item, Integer> found = countDrops(helper, horse);
         helper.assertTrue(found.getOrDefault(Items.DIAMOND, 0) == 7,
                 "expected the cart chest's 7 diamonds to drop on death, found "

@@ -22,10 +22,6 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-// Round 2, item 11: vanilla registers its spawn-egg dispense behaviour in DispenserBlock's static
-// init, which runs before our SpawnEggItem instances exist, so dispensers used to no-op on our eggs.
-// This drives the exact behaviour DispenserBlock.registerBehavior stored for a breed egg, rather
-// than fighting redstone/world-placement timing to trigger a real dispenser block.
 public class SpawnEggDispenserGameTest implements FabricGameTest {
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)

@@ -10,12 +10,6 @@ import net.minecraft.world.phys.Vec3;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// Real ServerPlayers (via Fabric's FakePlayer) for driving server-side C2S handlers directly, the
-// way the network receiver would. GameTestHelper's own makeMockPlayer() is NOT a real ServerPlayer
-// and can't stand in for handler methods that require one (player.server, player.getUUID() owner
-// checks, etc). Each call gets a fresh random UUID/name so distinct "players" never alias each
-// other, and so FakePlayer's own (world, profile) instance cache never hands back a stale player
-// left over from an earlier test on the same world.
 public final class BhTestPlayers {
 
     private static final AtomicInteger COUNTER = new AtomicInteger();
@@ -30,8 +24,6 @@ public final class BhTestPlayers {
         return at(helper, relativePos, ownerUuid);
     }
 
-    // A player whose FakePlayer lives directly in the given level (e.g. a different dimension
-    // than the horse under test), at an absolute position in that level.
     public static ServerPlayer atLevel(ServerLevel level, UUID uuid, Vec3 absolutePos) {
         GameProfile profile = new GameProfile(uuid, "bh-test-" + COUNTER.incrementAndGet());
         ServerPlayer player = FakePlayer.get(level, profile);
