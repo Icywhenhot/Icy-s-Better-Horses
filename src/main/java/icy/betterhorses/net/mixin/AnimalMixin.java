@@ -117,6 +117,11 @@ public abstract class AnimalMixin {
                 ((HorseAccessor) childHorseEntity).bh_setVariantAndMarkings(coat.color(), coat.markings());
             }
         }
+
+        BhCriteria.fire(breeder, BhCriteria.FOAL);
+        if (childData.bh_isMixedBreed()) {
+            BhCriteria.fire(breeder, BhCriteria.MIXED_FOAL);
+        }
     }
 
     private static final double VANILLA_MAX_HEALTH = 30.0D;

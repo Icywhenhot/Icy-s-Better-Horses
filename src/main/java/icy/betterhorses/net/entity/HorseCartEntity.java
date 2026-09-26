@@ -1,5 +1,7 @@
 package icy.betterhorses.net.entity;
 
+import icy.betterhorses.net.BhRiderSeat;
+
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.BhHorseSteering;
@@ -284,7 +286,10 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         if (boundHorse == null && this.horseUuid != null) {
             this.closeChestViewers();
             if (this.horse != null && this.horse.getRemovalReason() != null
-                    && this.horse.getRemovalReason().shouldDestroy()) this.discard();
+                    && (this.horse.getRemovalReason().shouldDestroy()
+                            || this.horse.getRemovalReason() == Entity.RemovalReason.CHANGED_DIMENSION)) {
+                this.discard();
+            }
             return;
         }
         if (boundHorse == null || !boundHorse.isAlive() || boundHorse.isRemoved()
@@ -512,7 +517,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         }
         int seatIndex = Math.max(0, this.getPassengers().indexOf(passenger));
         Vec3 seat = this.carriageSeatOffset(seatIndex, this.getYRot());
-        move.accept(passenger, this.getX() + seat.x, this.getY() + seat.y, this.getZ() + seat.z);
+        move.accept(passenger, this.getX() + seat.x,
+                this.getY() + seat.y - BhRiderSeat.seatDrop(passenger),
+                this.getZ() + seat.z);
     }
 
     private boolean canCarry(Entity candidate) {

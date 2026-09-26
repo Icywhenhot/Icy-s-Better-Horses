@@ -15,12 +15,25 @@ public final class BhRiderSeat {
 
     private static final double LARGE_SEAT_LIFT = 0.25D;
 
+    private static final double PLAYER_SEAT_DROP = 0.6D;
+
+    // How much of the rear shift the rider's body follows, tuned in game against the breed models.
+    public static final double REAR_BODY_FOLLOW_BACK = -0.55D;
+    public static final double REAR_BODY_FOLLOW_UP = 1.11D;
+
+    // Players on breed horses sit this far forward so their hands reach the reins.
+    public static final double BREED_SEAT_FORWARD = 0.03D;
+
     private static final Map<Integer, Vec3> APPLIED = new ConcurrentHashMap<>();
 
     private BhRiderSeat() {}
 
     public static double seatLift(AbstractHorse horse) {
         return horse instanceof PercheronHorse ? LARGE_SEAT_LIFT : 0.0D;
+    }
+
+    public static double seatDrop(net.minecraft.world.entity.Entity passenger) {
+        return passenger instanceof net.minecraft.world.entity.player.Player ? PLAYER_SEAT_DROP : 0.0D;
     }
 
     public static void publish(int horseId, Vec3 shift) {

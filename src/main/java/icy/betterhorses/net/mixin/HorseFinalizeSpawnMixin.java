@@ -80,7 +80,7 @@ public abstract class HorseFinalizeSpawnMixin {
                 .unwrapKey()
                 .map(key -> key.location().toString())
                 .orElse("<unregistered>");
-        BH_LOGGER.info("[HORSE_SPAWN] reason={} pos={} biome={} breed={} coat={}",
+        BH_LOGGER.debug("[HORSE_SPAWN] reason={} pos={} biome={} breed={} coat={}",
                 reason, self.blockPosition(), biomeId, breed, coat);
 
         cir.setReturnValue(new BhHorseGroupData(breed, cir.getReturnValue()));

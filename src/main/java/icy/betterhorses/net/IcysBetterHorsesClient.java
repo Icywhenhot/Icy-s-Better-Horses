@@ -189,7 +189,7 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
             return;
         }
         UUID owner = ((IHorseData) horse).bh_getOwner();
-        if (owner != null && !owner.equals(player.getUUID())) {
+        if (owner != null && !owner.equals(player.getUUID()) && !ClientTrustCache.isTrustedBy(owner)) {
             return;
         }
         client.setScreen(new RadialMenuScreen(horse.getId()));

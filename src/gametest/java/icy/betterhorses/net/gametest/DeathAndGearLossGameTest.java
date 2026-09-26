@@ -68,6 +68,9 @@ public class DeathAndGearLossGameTest implements FabricGameTest {
                                 + " dropped on death, found " + count);
             }
             for (Map.Entry<Item, Integer> entry : found.entrySet()) {
+                // Round 2, item 3: horses now use the vanilla horse loot table too, which drops 0-2
+                // leather at random - not part of gear/chest loss, so it's not an "unexpected extra".
+                if (entry.getKey() == Items.LEATHER) continue;
                 helper.assertTrue(expected.containsKey(entry.getKey()),
                         "unexpected extra item dropped on death: " + entry.getValue() + "x " + entry.getKey());
             }
@@ -98,8 +101,38 @@ public class DeathAndGearLossGameTest implements FabricGameTest {
         });
     }
 
-    // removingCartGearDropsChestAndPloughContents lives in PR2: it needs the cart-plough drop
-    // wiring from the cart persistence fix (bh_dropCartPlough() has no caller in the port).
+    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 40)
+    public void removingCartGearDropsChestAndPloughContents(GameTestHelper helper) {
+        helper.setBlock(2, 1, 2, Blocks.STONE);
+        AbstractHorse horse = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
+        IHorseData data = IHorseData.of(horse);
+        data.bh_setBreed(HorseBreed.CLYDESDALE);
+        data.bh_getGearContainer().setItem(GearSlot.STABILIZER.ordinal(), new ItemStack(ModItems.HORSE_CART));
+        helper.assertTrue(data.bh_hasCartGear(), "setup: cart gear should be equipped");
+        data.bh_setCartChest(true);
+        data.bh_getCartChestContainer().setItem(0, new ItemStack(Items.IRON_INGOT, 4));
+        data.bh_setCartPlough(new ItemStack(Items.IRON_HOE));
+
+        // Remove the cart item the way a player taking it out of the gear slot would.
+        data.bh_getGearContainer().setItem(GearSlot.STABILIZER.ordinal(), ItemStack.EMPTY);
+        helper.assertFalse(data.bh_hasCartGear(), "setup: cart gear should now be unequipped");
+
+        helper.runAfterDelay(5, () -> {
+            helper.assertFalse(data.bh_hasCartChest(), "cart chest flag should clear once cart gear is removed");
+            helper.assertTrue(data.bh_getCartChestContainer().isEmpty(), "cart chest container should be emptied");
+            helper.assertFalse(data.bh_hasCartPlough(), "cart plough flag should clear once cart gear is removed");
+
+            Map<Item, Integer> found = countDrops(helper, horse);
+            helper.assertTrue(found.getOrDefault(Items.IRON_INGOT, 0) == 4,
+                    "expected the cart chest's 4 iron ingots to drop, found "
+                            + found.getOrDefault(Items.IRON_INGOT, 0));
+            helper.assertTrue(found.getOrDefault(Items.IRON_HOE, 0) == 1,
+                    "expected the cart plough to drop, found " + found.getOrDefault(Items.IRON_HOE, 0));
+            helper.assertTrue(found.getOrDefault(ModItems.HORSE_CART, 0) == 0,
+                    "the cart item itself was emptied directly (not dropped), should not also appear on the ground");
+            helper.succeed();
+        });
+    }
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void removingChestGearWithItemsInsideDropsContents(GameTestHelper helper) {
@@ -122,6 +155,39 @@ public class DeathAndGearLossGameTest implements FabricGameTest {
         helper.assertTrue(found.getOrDefault(Items.NETHERITE_INGOT, 0) == 1,
                 "expected the netherite ingot to drop when chest gear was removed, found "
                         + found.getOrDefault(Items.NETHERITE_INGOT, 0));
+        helper.succeed();
+    }
+
+    // Round 2, item 14: the cart's actual storage (chest contents, plough) lives on the horse's
+    // IHorseData, not on the drawn HorseCartEntity. AbstractHorseMixin's death hook now calls
+    // bh_dropCartChest()/bh_dropCartPlough() directly (matching upstream), instead of leaving that
+    // to CartRig.tick's next pass - which is not guaranteed to run before the horse is gone.
+    // Was deathWithCartLosesChestAndPloughContents_KNOWN_BUG.
+    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 40)
+    public void deathWithCartDropsChestAndPloughContents(GameTestHelper helper) {
+        helper.setBlock(2, 1, 2, Blocks.STONE);
+        AbstractHorse horse = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
+        IHorseData data = IHorseData.of(horse);
+        data.bh_setBreed(HorseBreed.CLYDESDALE);
+        data.bh_setOwner(UUID.randomUUID());
+        horse.setTamed(true);
+        data.bh_getGearContainer().setItem(GearSlot.STABILIZER.ordinal(), new ItemStack(ModItems.HORSE_CART));
+        data.bh_setCartChest(true);
+        data.bh_getCartChestContainer().setItem(0, new ItemStack(Items.DIAMOND, 7));
+        data.bh_setCartPlough(new ItemStack(Items.IRON_HOE));
+
+        horse.kill();
+
+        // Checked in the same tick as kill(), deliberately with no delay: CartRig.tick's next pass
+        // would eventually clean this up too (once the gear slot itself is cleared), which would
+        // mask the actual bug - dropEquipment must drop the cart's contents itself, right away.
+        Map<Item, Integer> found = countDrops(helper, horse);
+        helper.assertTrue(found.getOrDefault(Items.DIAMOND, 0) == 7,
+                "expected the cart chest's 7 diamonds to drop on death, found "
+                        + found.getOrDefault(Items.DIAMOND, 0));
+        helper.assertTrue(found.getOrDefault(Items.IRON_HOE, 0) == 1,
+                "expected the cart plough to drop on death, found "
+                        + found.getOrDefault(Items.IRON_HOE, 0));
         helper.succeed();
     }
 

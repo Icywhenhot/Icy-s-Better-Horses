@@ -136,10 +136,10 @@ public final class IcysBetterHorses implements ModInitializer {
             return;
         }
         if (entity instanceof AbstractHorse horse && ((IHorseData) horse).bh_isOwned()) {
-            if (HorseTracker.consumePendingDisown(horse.getUUID())) {
-                pendingReleases.add(horse);
-            } else if (HorseTracker.isStale(horse)) {
+            if (HorseTracker.isStale(horse)) {
                 staleHorses.add(horse);
+            } else if (HorseTracker.consumePendingDisown(horse.getUUID())) {
+                pendingReleases.add(horse);
             } else {
                 HorseTracker.register(horse);
             }
@@ -514,15 +514,15 @@ public final class IcysBetterHorses implements ModInitializer {
 
     private static AbstractHorse findCommandHorse(ServerPlayer player, int horseId, double radius) {
         ServerLevel serverLevel = (ServerLevel) player.level();
-        if (!(serverLevel.getEntity(horseId) instanceof AbstractHorse horse) || !horse.isTamed()) {
+        if (!(serverLevel.getEntity(horseId) instanceof AbstractHorse horse)
+                || !BhHorseKind.managed(horse) || !horse.isTamed()) {
             return null;
         }
         if (horse.distanceToSqr(player) > radius * radius) {
             return null;
         }
 
-        UUID owner = ((IHorseData) horse).bh_getOwner();
-        if (owner != null && !owner.equals(player.getUUID())) {
+        if (!((IHorseData) horse).bh_mayHandle(player.getUUID())) {
             return null;
         }
         return horse;

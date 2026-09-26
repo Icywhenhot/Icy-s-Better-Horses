@@ -2,6 +2,9 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhAttributes;
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhCriteria;
+import icy.betterhorses.net.BhHorseInteraction;
+import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhHorseSteering;
 import icy.betterhorses.net.BhRiderSeat;
 import icy.betterhorses.net.BhGears;
@@ -46,6 +49,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -86,7 +90,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -108,6 +111,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Shadow
     protected int standCounter;
 
+    @Shadow
+    private float standAnimO;
+
     @Unique private static final int BH_CART_CHEST_SIZE = 54;
 
     @Unique private @Nullable UUID bh_owner = null;
@@ -120,6 +126,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private long bh_rescueReadyAt = 0L;
     @Unique private int bh_gear = 0;
     @Unique private int bh_spookTicks = 0;
+    @Unique private @Nullable Vec3 bh_lastPos = null;
+    @Unique private Vec3 bh_moved = Vec3.ZERO;
     @Unique private @Nullable UUID bh_combatTarget = null;
     @Unique private @Nullable UUID bh_cartId = null;
     @Unique private @Nullable ResourceKey<Level> bh_homeDim = null;
@@ -329,6 +337,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public void bh_setHome(@Nullable BlockPos pos) {
         this.bh_home = pos;
+        this.bh_homeDim = pos == null ? null : ((AbstractHorse) (Object) this).level().dimension();
     }
 
     @Override
@@ -358,9 +367,23 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Override
     public void bh_setBond(int level) {
+        int previous = this.bh_syncState().bond;
         this.bh_syncState().bond = Math.max(0, Math.min(100, level));
         this.bh_syncHorseData();
         bh_applyBondAttributes();
+        if (previous < 100 && this.bh_syncState().bond >= 100) {
+            bh_awardOwner(BhCriteria.BOND_MAX);
+        }
+    }
+
+    @Unique
+    private void bh_awardOwner(String key) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.level().isClientSide()) return;
+        UUID owner = this.bh_getOwner();
+        MinecraftServer server = self.level().getServer();
+        if (owner == null || server == null) return;
+        BhCriteria.fire(server.getPlayerList().getPlayer(owner), key);
     }
 
     @Override
@@ -475,13 +498,25 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         output.putInt("BH_Bond", this.bh_getBond());
         output.putInt("BH_NameTagBondGiven", bh_nameTagBondReceived ? 1 : 0);
         output.putInt("BH_BondRemainder", bh_bondRemainder);
+        output.putInt("BH_AbilityPaused", bh_abilityPaused ? 1 : 0);
+        output.putLong("BH_RescueReadyAt", bh_rescueReadyAt);
         bh_writeBlockPos(output, "BH_Home", bh_home);
+        if (bh_homeDim != null) {
+            output.putString("BH_HomeDim", bh_homeDim.location().toString());
+        }
         bh_writeBlockPos(output, "BH_WanderCenter", bh_wanderCenter);
         output.put("BH_Gear", bh_writeContainer(bh_gearContainer));
         output.put("BH_Chest", bh_writeContainer(bh_chestContainer));
         output.putInt("BH_Gender", this.bh_getGender().ordinal());
         output.putInt("BH_Breed", this.bh_getBreed().ordinal());
         output.putBoolean("BH_BreedMixed", this.bh_isMixedBreed());
+        output.putInt("BH_Generation", this.bh_generation);
+        output.putBoolean("BH_CartChestOn", bh_hasCartChest());
+        output.put("BH_CartChest", bh_writeContainer(bh_getCartChestContainer()));
+        if (!this.bh_cartPlow.isEmpty()) {
+            output.put("BH_CartPlow", this.bh_cartPlow.save(new CompoundTag()));
+        }
+        output.putBoolean("BH_CartLarge", this.bh_hasLargeCart());
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
@@ -496,10 +531,18 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         this.bh_syncState().bond = Math.max(0, Math.min(100, input.contains("BH_Bond") ? input.getInt("BH_Bond") : 0));
         bh_nameTagBondReceived = (input.contains("BH_NameTagBondGiven") ? input.getInt("BH_NameTagBondGiven") : (this.bh_syncState().bond > 0 ? 1 : 0)) != 0;
         bh_bondRemainder = input.getInt("BH_BondRemainder");
+        bh_abilityPaused = input.getInt("BH_AbilityPaused") != 0;
+        bh_rescueReadyAt = input.getLong("BH_RescueReadyAt");
         bh_home = bh_readBlockPos(input, "BH_Home");
         bh_wanderCenter = bh_readBlockPos(input, "BH_WanderCenter");
         if (bh_home == null) bh_home = bh_readLegacyBlockPos(input, "BH_Home");
         if (bh_wanderCenter == null) bh_wanderCenter = bh_readLegacyBlockPos(input, "BH_WanderCenter");
+        bh_homeDim = input.contains("BH_HomeDim", Tag.TAG_STRING)
+                ? ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, ResourceLocation.tryParse(input.getString("BH_HomeDim")))
+                : null;
+        if (bh_home != null && bh_homeDim == null) {
+            bh_homeDim = ((AbstractHorse) (Object) this).level().dimension();
+        }
         bh_applyBondAttributes();
         bh_readContainer(input, "BH_Gear", bh_gearContainer);
         bh_readContainer(input, "BH_Chest", bh_chestContainer);
@@ -517,7 +560,23 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         } else {
             bh_assignBreedPreservingCoat();
         }
+        // LEGACY READ: horses saved before this fix have BH_CartChest as a boolean, with items in
+        // BH_CartChestItems. The current format is BH_CartChestOn (boolean) + BH_CartChest (the
+        // item list), matching upstream. Always write the current format.
+        if (input.contains("BH_CartChest", Tag.TAG_LIST)) {
+            bh_setCartChest(input.getBoolean("BH_CartChestOn"));
+            bh_readContainer(input, "BH_CartChest", bh_getCartChestContainer());
+        } else {
+            bh_setCartChest(input.getBoolean("BH_CartChest"));
+            bh_readContainer(input, "BH_CartChestItems", bh_getCartChestContainer());
+        }
+        bh_setCartPlough(input.contains("BH_CartPlow", Tag.TAG_COMPOUND)
+                ? ItemStack.of(input.getCompound("BH_CartPlow"))
+                : ItemStack.EMPTY);
+        this.bh_generation = input.getInt("BH_Generation");
         this.bh_syncHorseData();
+        // After the sync, so the draft-breed check sees the loaded breed.
+        bh_setLargeCart(input.getBoolean("BH_CartLarge"));
         AbstractHorse loaded = (AbstractHorse) (Object) this;
         for (HorseFeature feature : this.bh_features()) {
             feature.onLoad(loaded, this);
@@ -650,6 +709,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (BhVanillaHorseSwap.trySwap(self)) {
             return;
         }
+        Vec3 now = self.position();
+        this.bh_moved = this.bh_lastPos == null ? Vec3.ZERO : now.subtract(this.bh_lastPos);
+        this.bh_lastPos = now;
         for (HorseFeature feature : this.bh_features()) {
             feature.tick(self, this);
         }
@@ -714,8 +776,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (self.level().isClientSide() || !BhConfig.horseExclusivityEnabled()) return;
         UUID owner = this.bh_getOwner();
-        if (owner == null || owner.equals(player.getUUID())) return;
-        if (bh_ownerIsPrimaryPassenger(self, owner)) return;
+        if (owner == null || this.bh_maySaddleUp(player.getUUID())) return;
+        if (bh_ownerIsPrimaryPassenger(self, owner) || BhHorseInteraction.riderMayLeadPillion(self, this)) return;
         self.playSound(net.minecraft.sounds.SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
         if (player instanceof ServerPlayer serverPlayer) {
             serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_owner"));
@@ -724,19 +786,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             player.stopRiding();
         }
         ci.cancel();
-    }
-
-    @Inject(method = "doPlayerRide", at = @At("TAIL"))
-    private void bh_trackLastRidden(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
-        AbstractHorse self = (AbstractHorse) (Object) this;
-        if (self.level().isClientSide() || player.getVehicle() != self) {
-            return;
-        }
-        UUID owner = this.bh_getOwner();
-        if (owner == null || !owner.equals(player.getUUID())) {
-            return;
-        }
-        HorseTracker.setLastRidden(owner, self);
     }
 
     @Inject(
@@ -752,8 +801,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         UUID owner = this.bh_getOwner();
         if (BhConfig.horseExclusivityEnabled()
                 && owner != null
-                && !owner.equals(player.getUUID())
-                && !bh_ownerIsPrimaryPassenger(self, owner)) {
+                && !this.bh_maySaddleUp(player.getUUID())
+                && !bh_ownerIsPrimaryPassenger(self, owner)
+                && !BhHorseInteraction.riderMayLeadPillion(self, this)) {
             ci.cancel();
             return;
         }
@@ -762,7 +812,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         self.setYHeadRot(player.getYHeadRot());
         self.setXRot(player.getXRot());
 
+        // HEAD-cancelling doPlayerRide skips vanilla's own clears of these on mount
+        self.setEating(false);
+        self.setStanding(false);
         player.startRiding(self);
+        // Moved here from a TAIL inject: this method itself can cancel doPlayerRide above, which
+        // used to skip the TAIL inject and never record the ride at all.
+        if (player.getVehicle() == self && owner != null && owner.equals(player.getUUID())
+                && BhHorseKind.managed(self)) {
+            HorseTracker.setLastRidden(owner, self);
+        }
 
         player.setYRot(self.getYRot());
         player.yRotO = self.yRotO;
@@ -773,7 +832,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Inject(method = "tameWithName", at = @At("RETURN"))
     private void bh_claimHorseOnTame(net.minecraft.world.entity.player.Player player, CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (!cir.getReturnValueZ() || self.level().isClientSide() || player.getUUID().equals(this.bh_getOwner())) {
+        if (!cir.getReturnValueZ() || self.level().isClientSide() || player.getUUID().equals(this.bh_getOwner())
+                || !BhHorseKind.managed(self)) {
             return;
         }
 
@@ -793,7 +853,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         }
 
         UUID owner = this.bh_getOwner();
-        if (owner == null || owner.equals(player.getUUID())) {
+        if (owner == null || this.bh_mayHandle(player.getUUID())) {
             return;
         }
 
@@ -928,6 +988,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private void bh_dropGearAndChest(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!(self.level() instanceof ServerLevel level)) return;
+        bh_dropCartChest();
+        bh_dropCartPlough();
         bh_dropContainerContents(self, level, bh_gearContainer);
         bh_dropContainerContents(self, level, bh_chestContainer);
         bh_syncGearFlags();
@@ -944,13 +1006,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         goalSelector.addGoal(2, new DefendOwnerGoal(self));
     }
 
-    @Redirect(
+    @Inject(
             method = "positionRider(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/Entity$MoveFunction;)V",
-            at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/world/entity/Entity$MoveFunction;accept(Lnet/minecraft/world/entity/Entity;DDD)V"))
-    private void bh_offsetSecondPassenger(
-            net.minecraft.world.entity.Entity.MoveFunction moveFunction,
-            Entity passenger, double x, double y, double z) {
+            at = @At("TAIL"))
+    private void bh_offsetSecondPassenger(Entity passenger, Entity.MoveFunction moveFunction, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (this.bh_hasCartGear()) {
             if (self.level().isClientSide()) {
@@ -958,18 +1017,34 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             }
             Vec3 bench = HorseCartEntity.benchSeatOffset(
                     self, BhHorseSteering.benchSeatIndex(self, passenger), self.yBodyRot);
-            moveFunction.accept(passenger, self.getX() + bench.x, self.getY() + bench.y, self.getZ() + bench.z);
+            moveFunction.accept(passenger, self.getX() + bench.x,
+                    self.getY() + bench.y - BhRiderSeat.seatDrop(passenger),
+                    self.getZ() + bench.z);
             return;
         }
 
-        double lift = BhRiderSeat.seatLift(self);
+        // Camera follows part of the rear; the renderer draws the body back by the published shift.
+        float yaw = self.yBodyRot * Mth.DEG_TO_RAD;
+        double rear = 0.7D * this.standAnimO * BhRiderSeat.REAR_CAMERA_FOLLOW;
+        Vec3 shift = new Vec3(rear * Mth.sin(yaw),
+                0.15D * this.standAnimO * BhRiderSeat.REAR_CAMERA_FOLLOW + BhRiderSeat.seatLift(self),
+                -rear * Mth.cos(yaw));
         if (self.level().isClientSide()) {
-            BhRiderSeat.publish(self.getId(), new Vec3(0.0D, lift, 0.0D));
+            double lift = BhRiderSeat.seatLift(self);
+            BhRiderSeat.publish(self.getId(), new Vec3(
+                    shift.x * (1.0D - BhRiderSeat.REAR_BODY_FOLLOW_BACK),
+                    lift + (shift.y - lift) * (1.0D - BhRiderSeat.REAR_BODY_FOLLOW_UP),
+                    shift.z * (1.0D - BhRiderSeat.REAR_BODY_FOLLOW_BACK)));
         }
-        y += lift;
 
-        if (self instanceof BhBreedHorse) {
-            y -= passenger.getMyRidingOffset();
+        double x = self.getX() + shift.x;
+        double y = self.getY() + shift.y + self.getPassengersRidingOffset();
+        double z = self.getZ() + shift.z;
+        // Breed models sit players lower than vanilla (Icy's upstream seat drop).
+        y += self instanceof BhBreedHorse ? -BhRiderSeat.seatDrop(passenger) : passenger.getMyRidingOffset();
+        if (self instanceof BhBreedHorse && passenger instanceof net.minecraft.world.entity.player.Player) {
+            x -= BhRiderSeat.BREED_SEAT_FORWARD * Mth.sin(yaw);
+            z += BhRiderSeat.BREED_SEAT_FORWARD * Mth.cos(yaw);
         }
 
         Vec3 offset = BhHorseSteering.multiRiderOffset(self, passenger);
@@ -1155,6 +1230,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     public void bh_setGear(int gear) {
         this.bh_gear = Mth.clamp(gear, 0, BhGears.TOP_GEAR);
         bh_push(BH_GEAR, this.bh_gear);
+    }
+
+    @Override
+    public Vec3 bh_getKnownMovement() {
+        return this.bh_moved;
     }
 
     @Override

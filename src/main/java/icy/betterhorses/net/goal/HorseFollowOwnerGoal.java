@@ -34,7 +34,7 @@ public class HorseFollowOwnerGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        if (owner == null || !owner.isAlive()) return false;
+        if (owner == null || !owner.isAlive() || owner.level() != horse.level()) return false;
         IHorseData data = IHorseData.of(horse);
         return data.bh_getCommand() == HorseCommand.FOLLOW
                 && horse.distanceToSqr(owner) > STOP_DIST_SQ;

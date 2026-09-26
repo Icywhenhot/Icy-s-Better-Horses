@@ -41,7 +41,7 @@ public final class HorseTracker {
     }
 
     public static void register(AbstractHorse horse) {
-        if (isStale(horse)) return;
+        if (isStale(horse) || !BhHorseKind.managed(horse)) return;
         ownedHorses.put(horse.getUUID(), horse);
         HorseTrackerState state = state();
         if (state != null && IHorseData.of(horse).bh_isOwned()) {
@@ -92,6 +92,7 @@ public final class HorseTracker {
     }
 
     public static void setLastRidden(UUID playerId, AbstractHorse horse) {
+        if (!BhHorseKind.managed(horse)) return;
         HorseTrackerState state = state();
         if (state != null) {
             state.setLastRidden(playerId, horse.getUUID());
