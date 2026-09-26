@@ -66,8 +66,21 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final int BH_STATS_LINE_SPACING = 10;
     @Unique private static final int BH_TEXT_COLOR = 0xFF404040;
     @Unique private static final float BH_LOCK_FLASH_ALPHA = 0.65F;
+    @Unique private static final Identifier BH_BOND_BRONZE =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/bond/bronze.png");
+    @Unique private static final Identifier BH_BOND_SILVER =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/bond/silver.png");
+    @Unique private static final Identifier BH_BOND_GOLD =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/bond/gold.png");
+    @Unique private static final int BH_STAR_SIZE = 16;
+    @Unique private static final int BH_STAR_GAP = 2;
+    @Unique private static final int BH_STAR_HOVER_REACH = 40;
+    @Unique private static final float BH_STAR_GROW = 0.1F;
+    @Unique private static final float BH_STAR_TAU = 0.07F;
 
     @Unique private @Nullable EffectsInInventory bh_effects;
+    @Unique private float bh_starHover;
+    @Unique private long bh_starLastMs = -1L;
 
     protected HorseInventoryScreenMixin(AbstractMountInventoryMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -179,7 +192,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
             return;
         }
         this.bh_drawStatsLines(gfx, horse);
-        this.bh_drawBondLabel(gfx, horse);
+        this.bh_drawBondStar(gfx, horse, mouseX, mouseY);
     }
 
     @Unique
@@ -206,14 +219,50 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     }
 
     @Unique
-    private void bh_drawBondLabel(GuiGraphicsExtractor gfx, AbstractHorse horse) {
-        String text = "Bond: " + IHorseData.of(horse).bh_getBond();
+    private void bh_drawBondStar(GuiGraphicsExtractor gfx, AbstractHorse horse, int mouseX, int mouseY) {
+        int bond = IHorseData.of(horse).bh_getBond();
+        Identifier star = bond >= 100 ? BH_BOND_GOLD : bond >= 40 ? BH_BOND_SILVER : BH_BOND_BRONZE;
+        int textColor = bond >= 100 ? 0xFFFFD75A : bond >= 40 ? 0xFFC9D6EE : 0xFFE08A45;
+        String text = String.valueOf(bond);
         int textWidth = this.font.width(text);
-        gfx.text(this.font, text,
-                this.leftPos + this.imageWidth - textWidth - 8,
-                this.topPos + 6,
-                BH_TEXT_COLOR,
-                false);
+
+        int right = this.leftPos - BH_STAR_GAP;
+        int starX = right - BH_STAR_SIZE;
+        int starY = this.topPos + 4;
+
+        boolean near = mouseX >= right - BH_STAR_SIZE - BH_STAR_HOVER_REACH
+                && mouseX <= right + 12
+                && mouseY >= starY - 10
+                && mouseY <= starY + BH_STAR_SIZE + 10;
+
+        long now = System.currentTimeMillis();
+        float dt = this.bh_starLastMs < 0L ? 0.016F : Math.min((now - this.bh_starLastMs) / 1000.0F, 0.05F);
+        this.bh_starLastMs = now;
+        float step = 1.0F - (float) Math.exp(-dt / BH_STAR_TAU);
+        this.bh_starHover += ((near ? 1.0F : 0.0F) - this.bh_starHover) * step;
+        float p = BhAnim.easeOutCubic(this.bh_starHover);
+
+        float slide = (textWidth + 4) * p;
+        float scale = 1.0F + BH_STAR_GROW * p;
+        float cx = starX + BH_STAR_SIZE / 2.0F - slide;
+        float cy = starY + BH_STAR_SIZE / 2.0F;
+
+        gfx.pose().pushMatrix();
+        gfx.pose().translate(cx, cy);
+        gfx.pose().scale(scale, scale);
+        gfx.pose().translate(-BH_STAR_SIZE / 2.0F, -BH_STAR_SIZE / 2.0F);
+        gfx.blit(RenderPipelines.GUI_TEXTURED, star, 0, 0, 0.0F, 0.0F,
+                BH_STAR_SIZE, BH_STAR_SIZE, BH_STAR_SIZE, BH_STAR_SIZE);
+        gfx.pose().popMatrix();
+
+        float textAlpha = BhAnim.clamp01((this.bh_starHover - 0.35F) / 0.65F);
+        if (textAlpha > 0.05F) {
+            gfx.text(this.font, text,
+                    right - textWidth,
+                    starY + (BH_STAR_SIZE - this.font.lineHeight) / 2 + 1,
+                    BhAnim.fade(textColor, textAlpha),
+                    true);
+        }
     }
 
     @Unique
