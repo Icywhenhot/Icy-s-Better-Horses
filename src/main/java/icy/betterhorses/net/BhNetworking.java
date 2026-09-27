@@ -5,6 +5,8 @@ import icy.betterhorses.net.network.BhRearPayload;
 import icy.betterhorses.net.network.BreedDataPayload;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.CartSizePayload;
+import icy.betterhorses.net.network.BhChargePayload;
+import icy.betterhorses.net.feature.HorseCombat;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
 import icy.betterhorses.net.network.HorseJumpPayload;
@@ -62,6 +64,7 @@ public final class BhNetworking {
         channel(BhFreeLookPayload.class, "free_look", BhFreeLookPayload::encode);
         channel(BhRearPayload.class, "rear", BhRearPayload::encode);
         channel(CartSizePayload.class, "cart_size", CartSizePayload::encode);
+        channel(BhChargePayload.class, "charge_toggle", BhChargePayload::encode);
 
         channel(HorseRosterSyncPayload.class, "horse_roster_sync", HorseRosterSyncPayload::encode);
         channel(HorseManageResultPayload.class, "horse_manage_result", HorseManageResultPayload::encode);
@@ -95,6 +98,8 @@ public final class BhNetworking {
                 (payload, player) -> IcysBetterHorses.handleRear(player, payload.horseId()));
         toServer(CartSizePayload.class, CartSizePayload::decode,
                 (payload, player) -> IcysBetterHorses.handleCartSize(player, payload.targetId()));
+        toServer(BhChargePayload.class, BhChargePayload::decode,
+                (payload, player) -> HorseCombat.riderCharge(player.getUUID(), payload.on()));
     }
 
     public static void registerClient() {

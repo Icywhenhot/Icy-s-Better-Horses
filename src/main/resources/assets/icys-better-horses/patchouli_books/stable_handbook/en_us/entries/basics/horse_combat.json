@@ -75,6 +75,15 @@
     {
       "type": "icys-better-horses:padded_text_plain",
       "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.spook.text2"
+    },
+    {
+      "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.storm.title",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.storm.text"
+    },
+    {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.storm.text2"
     }
   ]
 }

@@ -20,6 +20,15 @@
     },
     {
       "type": "icys-better-horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.looting.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.looting.text"
+    },
+    {
+      "type": "icys-better-horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.looting.text2"
+    },
+    {
+      "type": "icys-better-horses:padded_text",
       "title": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.spawns.title",
       "text": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.spawns.text"
     },

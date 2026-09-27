@@ -30,6 +30,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.item.Item;
@@ -140,6 +141,10 @@ public final class IcysBetterHorses implements ModInitializer {
 
     private void onEntityJoinLevel(Entity entity, Level level) {
         if (level.isClientSide()) {
+            return;
+        }
+        if (entity instanceof LightningBolt bolt && level instanceof ServerLevel serverLevel) {
+            BhHorseCombatAlert.startle(serverLevel, bolt.position());
             return;
         }
         if (entity instanceof AbstractHorse horse && ((IHorseData) horse).bh_isOwned()) {

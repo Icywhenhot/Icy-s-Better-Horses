@@ -26,6 +26,8 @@
 		"LivingEntityMixin",
 		"LivingEntitySwimSpeedMixin",
 		"MapItemMixin",
+		"EnchantmentHelperMixin",
+		"CreeperMixin",
 		"MobCartPassengerMixin",
 		"MobNameTagBondMixin",
 		"MoveControlStepMixin",

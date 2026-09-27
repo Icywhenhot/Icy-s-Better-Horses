@@ -41,6 +41,7 @@ import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
+import icy.betterhorses.net.network.BhChargePayload;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -129,6 +130,12 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
             GLFW.GLFW_KEY_LEFT_ALT,
             KEY_CATEGORY);
 
+    public static final KeyMapping CHARGE_KEY = new KeyMapping(
+            "key.icys-better-horses.charge",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_B,
+            KEY_CATEGORY);
+
     @Override
     public void onInitializeClient() {
         BhNetworking.registerClient();
@@ -138,6 +145,7 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         MenuScreens.register(ModMenus.CART_CHEST, CartChestScreen::new);
         registerItemColors();
         ClientTickEvents.END_CLIENT_TICK.register(IcysBetterHorsesClient::onClientTick);
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> sendChargeChoice());
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> onDisconnect());
         ClientEntityEvents.ENTITY_UNLOAD.register((entity, level) -> {
             BhClientHorseUnload.handle(entity.getId());
@@ -180,6 +188,7 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         KeyBindingHelper.registerKeyBinding(REAR_KEY);
         KeyBindingHelper.registerKeyBinding(FREE_LOOK_KEY);
         KeyBindingHelper.registerKeyBinding(CART_SIZE_KEY);
+        KeyBindingHelper.registerKeyBinding(CHARGE_KEY);
     }
 
     private static void registerItemColors() {
@@ -330,6 +339,30 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
 
         while (IcysBetterHorsesClient.CART_SIZE_KEY.consumeClick()) {
             trySwapCartSize(client);
+        }
+
+        while (IcysBetterHorsesClient.CHARGE_KEY.consumeClick()) {
+            toggleCharge(client);
+        }
+    }
+
+    private static void toggleCharge(Minecraft client) {
+        if (!BhFeature.HORSE_COMBAT.on()
+                || BhConfig.serverManaged() && !BhConfig.featureEnabled(BhFeature.HORSE_CHARGE)) {
+            client.gui.setOverlayMessage(Component.translatable("message.icys-better-horses.charge.blocked"), false);
+            return;
+        }
+        boolean on = !BhConfig.ownFeature(BhFeature.HORSE_CHARGE);
+        BhConfig.setOwnFeature(BhFeature.HORSE_CHARGE, on);
+        sendChargeChoice();
+        client.gui.setOverlayMessage(Component.translatable(on
+                ? "message.icys-better-horses.charge.on"
+                : "message.icys-better-horses.charge.off"), false);
+    }
+
+    public static void sendChargeChoice() {
+        if (Minecraft.getInstance().getConnection() != null) {
+            BhNetworking.sendToServer(new BhChargePayload(BhConfig.ownFeature(BhFeature.HORSE_CHARGE)));
         }
     }
 
