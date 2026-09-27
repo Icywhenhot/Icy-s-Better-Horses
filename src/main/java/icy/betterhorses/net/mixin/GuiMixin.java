@@ -1,5 +1,7 @@
 package icy.betterhorses.net.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
@@ -9,6 +11,9 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -47,6 +52,34 @@ public abstract class GuiMixin {
         if (this.minecraft.screen instanceof HorseInventoryScreen screen && BhInventoryEffects.fits(screen)) {
             ci.cancel();
         }
+    }
+
+    @WrapOperation(method = "renderFoodLevel", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/Gui;getVehicleMaxHearts(Lnet/minecraft/world/entity/LivingEntity;)I"))
+    private int bh_keepHungerOnHorseback(Gui gui, LivingEntity vehicle, Operation<Integer> original) {
+        return vehicle instanceof AbstractHorse ? 0 : original.call(gui, vehicle);
+    }
+
+    @Inject(method = "maybeRenderJumpMeter", at = @At("HEAD"), cancellable = true)
+    private void bh_jumpBarOnlyWhileCharging(GuiGraphics gfx, DeltaTracker deltaTracker, CallbackInfo ci) {
+        if (this.bh_xpOverJumpBar()) {
+            ci.cancel();
+        }
+    }
+
+    @WrapOperation(method = {"maybeRenderExperienceBar", "isExperienceBarVisible"}, at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/player/LocalPlayer;jumpableVehicle()Lnet/minecraft/world/entity/PlayerRideableJumping;"))
+    private PlayerRideableJumping bh_xpBarWhileRiding(LocalPlayer player, Operation<PlayerRideableJumping> original) {
+        return this.bh_xpOverJumpBar() ? null : original.call(player);
+    }
+
+    @Unique
+    private boolean bh_xpOverJumpBar() {
+        LocalPlayer player = this.minecraft.player;
+        return player != null
+                && player.jumpableVehicle() instanceof AbstractHorse
+                && !this.minecraft.options.keyJump.isDown()
+                && player.getJumpRidingScale() <= 0.0F;
     }
 
     @Unique private static final int BH_STATS_HUD_TOP = 12;

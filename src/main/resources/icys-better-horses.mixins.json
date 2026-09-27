@@ -50,6 +50,7 @@
 		"KeyboardInputMixin",
 		"LivingEntityRendererMixin",
 		"LivingEntityRendererRiderMixin",
+		"MountFacingMixin",
 		"SpyglassModListMixin"
 	],
 	"injectors": {

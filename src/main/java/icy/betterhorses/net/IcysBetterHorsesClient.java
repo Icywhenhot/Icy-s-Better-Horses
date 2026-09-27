@@ -77,6 +77,9 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+import icy.betterhorses.net.client.RiderPanel;
+import net.neoforged.neoforge.client.settings.KeyConflictContext;
+import net.neoforged.neoforge.client.settings.KeyModifier;
 
 import java.util.UUID;
 import com.klikli_dev.modonomicon.client.render.page.PageRendererRegistry;
@@ -103,6 +106,7 @@ public class IcysBetterHorsesClient {
     public static KeyMapping REAR_KEY;
     public static KeyMapping FREE_LOOK_KEY;
     public static KeyMapping CART_SIZE_KEY;
+    public static KeyMapping RIDER_PANEL_KEY;
 
     private static final double BH_ROUSE_SCAN = 32.0D;
 
@@ -122,6 +126,8 @@ public class IcysBetterHorsesClient {
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         NeoForge.EVENT_BUS.addListener(this::onDisconnect);
         NeoForge.EVENT_BUS.addListener(this::onEntityLeave);
+        NeoForge.EVENT_BUS.addListener(RiderPanel::onScreenInit);
+        NeoForge.EVENT_BUS.addListener(RiderPanel::onKey);
         if (ModList.get().isLoaded("cloth_config")) {
             modContainer.registerExtensionPoint(IConfigScreenFactory.class,
                     (container, parent) -> icy.betterhorses.net.client.BhConfigScreen.create(parent));
@@ -179,6 +185,14 @@ public class IcysBetterHorsesClient {
                 GLFW.GLFW_KEY_LEFT_ALT,
                 CATEGORY);
 
+        RIDER_PANEL_KEY = new KeyMapping(
+                "key.icys-better-horses.rider_panel",
+                KeyConflictContext.GUI,
+                KeyModifier.CONTROL,
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_E,
+                CATEGORY);
+
         event.register(CALL_KEY);
         event.register(RADIAL_KEY);
         event.register(MANAGE_KEY);
@@ -186,6 +200,7 @@ public class IcysBetterHorsesClient {
         event.register(REAR_KEY);
         event.register(FREE_LOOK_KEY);
         event.register(CART_SIZE_KEY);
+        event.register(RIDER_PANEL_KEY);
     }
 
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {

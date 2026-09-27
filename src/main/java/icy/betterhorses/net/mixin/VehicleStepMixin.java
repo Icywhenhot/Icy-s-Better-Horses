@@ -1,18 +1,29 @@
 package icy.betterhorses.net.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import icy.betterhorses.net.BhHorseKind;
 import net.minecraft.network.protocol.game.ServerboundMoveVehiclePacket;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(ServerGamePacketListenerImpl.class)
 public abstract class VehicleStepMixin {
+
+    @Shadow public ServerPlayer player;
+
+    @ModifyExpressionValue(method = "handleMoveVehicle", at = @At(value = "CONSTANT", args = "doubleValue=0.0625", ordinal = 1))
+    private double bh_horseMissTolerance(double original) {
+        return this.player.getRootVehicle() instanceof AbstractHorse ? 0.36D : original;
+    }
 
     @WrapOperation(method = "handleMoveVehicle", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/Entity;move(Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V"))

@@ -4,6 +4,7 @@ import icy.betterhorses.net.network.BhRearPayload;
 import icy.betterhorses.net.entity.CartSize;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.network.CartSizePayload;
+import icy.betterhorses.net.network.RiderPanelPayload;
 import icy.betterhorses.net.network.BhFreeLookPayload;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
@@ -131,6 +132,11 @@ public class IcysBetterHorses {
                 handleRear((ServerPlayer) context.player(), payload.horseId()));
         registrar.playToServer(CartSizePayload.TYPE, new CartSizePayload.StreamCodec(), (payload, context) ->
                 handleCartSize((ServerPlayer) context.player(), payload.targetId()));
+        registrar.playToServer(RiderPanelPayload.TYPE, new RiderPanelPayload.StreamCodec(), (payload, context) -> {
+            if (context.player().containerMenu instanceof HorseInventoryLayoutAccess access) {
+                access.bh_setRiderPanel(payload.shown());
+            }
+        });
         registrar.playToClient(HorseRosterSyncPayload.TYPE, new HorseRosterSyncPayload.StreamCodec(),
                 (payload, context) -> context.enqueueWork(() -> IcysBetterHorsesClient.receiveHorseRoster(payload)));
         registrar.playToClient(HorseManageResultPayload.TYPE, new HorseManageResultPayload.StreamCodec(),

@@ -22,6 +22,12 @@ public interface HorseInventoryLayoutAccess {
 
     List<Storage> bh_storage();
 
+    boolean bh_isRiderPanel();
+
+    void bh_setRiderPanel(boolean shown);
+
+    int bh_getRiderGearStartIndex();
+
     default boolean bh_isCartSlotLocked() {
         return false;
     }

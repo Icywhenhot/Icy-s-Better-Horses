@@ -14,6 +14,8 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
 import icy.betterhorses.net.client.render.BhHorseRenderState;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -53,6 +55,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final int BH_ROW_HEIGHT = 18;
     @Unique private static final int BH_CHEST_GAP = 7;
     @Unique private static final int BH_PLAIN_STRIP_V = 71;
+    @Unique private static final int BH_RIDER_PREVIEW_SCALE = 24;
     @Unique private static final int BH_DEFAULT_INVENTORY_LABEL_Y = BH_VANILLA_IMAGE_HEIGHT - 94;
     @Unique private static final int BH_GEAR_PANEL_X = 79;
     @Unique private static final int BH_GEAR_PANEL_Y = 17;
@@ -114,24 +117,36 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         }
 
         this.bh_applyLayoutState();
-        if (!this.bh_hasChestStorageLayout()) {
+        boolean chest = this.bh_hasChestStorageLayout();
+        boolean rider = this.bh_showsRiderPanel();
+        if (!chest && !rider) {
             return;
         }
 
         int x = this.leftPos;
         int y = this.topPos;
-        int chestHeight = this.bh_chestRows() * BH_ROW_HEIGHT;
+        int chestHeight = chest ? this.bh_chestRows() * BH_ROW_HEIGHT : 0;
+        int gap = chest ? BH_CHEST_GAP : 0;
         bh_blitGui(gfx, BH_HORSE_TEXTURE, x, y, 0, 0, this.imageWidth, BH_TOP_SECTION_HEIGHT);
-        this.bh_drawMiddlePanel(gfx, x, y + BH_TOP_SECTION_HEIGHT, this.imageWidth, chestHeight);
-        bh_blitGui(gfx, BH_HORSE_TEXTURE, x, y + BH_TOP_SECTION_HEIGHT + chestHeight,
-                0, BH_PLAIN_STRIP_V, this.imageWidth, BH_CHEST_GAP);
+        if (chest) {
+            this.bh_drawMiddlePanel(gfx, x, y + BH_TOP_SECTION_HEIGHT, this.imageWidth, chestHeight);
+            bh_blitGui(gfx, BH_HORSE_TEXTURE, x, y + BH_TOP_SECTION_HEIGHT + chestHeight,
+                    0, BH_PLAIN_STRIP_V, this.imageWidth, BH_CHEST_GAP);
+        }
         bh_blitGui(gfx, BH_HORSE_TEXTURE,
                 x,
-                y + BH_TOP_SECTION_HEIGHT + chestHeight + BH_CHEST_GAP,
+                y + BH_TOP_SECTION_HEIGHT + chestHeight + gap,
                 0,
                 BH_TOP_SECTION_HEIGHT,
                 this.imageWidth,
                 BH_VANILLA_IMAGE_HEIGHT - BH_TOP_SECTION_HEIGHT);
+
+        if (rider) {
+            this.bh_drawChestPanel(gfx);
+            this.bh_drawRiderPanel(gfx);
+            ci.cancel();
+            return;
+        }
 
         if (horse.isSaddleable()) {
             gfx.blitSprite(BH_SLOT_SPRITE, x + 7, y + 17, 18, 18);
@@ -190,7 +205,9 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         if (horse == null || !this.bh_hasUpgradedSaddleInMenu()) {
             return;
         }
-        this.bh_drawStatsLines(gfx, horse);
+        if (!this.bh_showsRiderPanel()) {
+            this.bh_drawStatsLines(gfx, horse);
+        }
         this.bh_drawBondStar(gfx, horse, mouseX, mouseY);
     }
 
@@ -319,6 +336,36 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int slotY = this.topPos + slot.y;
         gfx.fill(slotX, slotY, slotX + 16, slotY + 16, BH_SLOT_OVERLAY_Z,
                 BhAnim.fade(BhScreenDraw.BTN_ERROR, intensity * BH_LOCK_FLASH_ALPHA));
+    }
+
+    @Unique
+    private void bh_drawRiderPanel(GuiGraphics gfx) {
+        HorseInventoryLayoutAccess layoutAccess = this.bh_getLayoutAccessOrNull();
+        for (int i = layoutAccess.bh_getRiderGearStartIndex(); i < this.menu.slots.size(); i++) {
+            Slot slot = this.menu.slots.get(i);
+            gfx.blitSprite(BH_SLOT_SPRITE, this.leftPos + slot.x - 1, this.topPos + slot.y - 1, 18, 18);
+        }
+        LocalPlayer player = this.minecraft.player;
+        Entity vehicle = player.getVehicle();
+        ((EntityAccessor) player).bh_setVehicle(null);
+        InventoryScreen.renderEntityInInventoryFollowsMouse(
+                gfx,
+                this.leftPos + 26,
+                this.topPos + 18,
+                this.leftPos + 78,
+                this.topPos + 70,
+                BH_RIDER_PREVIEW_SCALE,
+                0.0625F,
+                this.xMouse,
+                this.yMouse,
+                player);
+        ((EntityAccessor) player).bh_setVehicle(vehicle);
+    }
+
+    @Unique
+    private boolean bh_showsRiderPanel() {
+        HorseInventoryLayoutAccess layoutAccess = this.bh_getLayoutAccessOrNull();
+        return layoutAccess != null && layoutAccess.bh_isRiderPanel();
     }
 
     @Unique
