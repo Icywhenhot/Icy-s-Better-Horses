@@ -9,6 +9,8 @@
 		"AbstractChestedHorseCreativeTamingMixin",
 		"AbstractMountInventoryMenuMixin",
 		"EntityMixin",
+		"TrottingWagonsHitchMixin",
+		"TrottingWagonsFloatMixin",
 		"EntityTypeMixin",
 		"VehicleStepMixin",
 		"AnvilMenuMixin",

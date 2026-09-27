@@ -141,6 +141,8 @@ public interface IHorseData {
 
     @Nullable HorseCartEntity bh_getCartEntity();
 
+    void bh_bindCartEntity(HorseCartEntity cart);
+
     @Nullable UUID bh_getCartId();
 
     void bh_setCartId(@Nullable UUID id);

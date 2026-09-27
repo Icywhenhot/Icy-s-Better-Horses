@@ -2,6 +2,7 @@ package icy.betterhorses.net.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -30,7 +31,11 @@ public final class BhCartReins {
         float bodyYaw = Mth.rotLerp(partialTick, horse.yBodyRotO, horse.yBodyRot);
         float radians = -bodyYaw * ((float) Math.PI / 180.0F);
         Vec3 horsePos = horse.getPosition(partialTick);
-        Vec3 driverPos = horsePos.add(HorseCartEntity.benchSeatOffset(horse, 0, bodyYaw));
+        HorseCartEntity cart = IHorseData.of(horse).bh_getCartEntity();
+        Vec3 driverPos = horsePos.add(cart != null && !cart.isRemoved()
+                ? HorseCartEntity.benchSeatOffset(horse, 0, cart.gluedRenderYaw(partialTick),
+                        cart.renderTilt(partialTick), cart.renderLift(partialTick))
+                : HorseCartEntity.benchSeatOffset(horse, 0, bodyYaw, 0.0F, 0.0F));
         Level level = horse.level();
 
         VertexConsumer consumer = buffer.getBuffer(RenderType.leash());

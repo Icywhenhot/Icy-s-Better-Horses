@@ -84,6 +84,9 @@ public final class BhHorseSteering {
     }
 
     public static boolean canAddPassenger(AbstractHorse horse, IHorseData data, Entity passenger) {
+        if (passenger instanceof Player && BhWagonHitch.hitched(horse)) {
+            return false;
+        }
         List<Entity> passengers = horse.getPassengers();
         boolean multiRidingEnabled = BhConfig.multiRidingEnabled() || data.bh_hasCartGear();
         boolean horseExclusivityEnabled = BhConfig.horseExclusivityEnabled();
