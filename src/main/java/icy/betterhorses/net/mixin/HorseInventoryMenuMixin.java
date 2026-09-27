@@ -25,6 +25,8 @@ import icy.betterhorses.net.ModItems;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.animal.horse.Horse;
 import org.jetbrains.annotations.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Mixin(HorseInventoryMenu.class)
 public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu implements HorseInventoryLayoutAccess {
@@ -36,6 +38,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Unique private static final int BH_ENDER_SLOT_COUNT = 27;
     @Unique private static final int BH_MAX_CHEST_ROWS = 6;
     @Unique private static final int BH_ROW_HEIGHT = 18;
+    @Unique private static final int BH_CHEST_GAP = 7;
 
     @Unique private int bh_gearStartIndex = -1;
     @Unique private int bh_chestStartIndex = -1;
@@ -220,7 +223,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             return;
         }
 
-        int wanted = this.bh_hasChestStorageLayout() ? this.bh_chestRows * BH_ROW_HEIGHT : 0;
+        int wanted = this.bh_hasChestStorageLayout() ? this.bh_chestRows * BH_ROW_HEIGHT + BH_CHEST_GAP : 0;
         if (wanted == this.bh_appliedShift) {
             return;
         }
@@ -273,6 +276,19 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             rows = Math.min(rows, BH_ENDER_SLOT_COUNT / 9);
         }
         return rows;
+    }
+
+    @Override
+    public List<Storage> bh_storage() {
+        List<Storage> out = new ArrayList<>();
+        if (this.bh_hasChestStorageLayout()) {
+            out.add(new Storage(this.slots.get(this.bh_chestStartIndex).container, 0, this.bh_getChestRows() * 9));
+        }
+        Container inv = this.slots.get(0).container;
+        if (inv.getContainerSize() > AbstractHorse.INV_BASE_COUNT) {
+            out.add(new Storage(inv, AbstractHorse.INV_BASE_COUNT, inv.getContainerSize()));
+        }
+        return out;
     }
 
     @Override

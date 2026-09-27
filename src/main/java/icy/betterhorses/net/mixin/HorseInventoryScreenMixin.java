@@ -51,6 +51,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final int BH_VANILLA_IMAGE_HEIGHT = 166;
     @Unique private static final int BH_TOP_SECTION_HEIGHT = 77;
     @Unique private static final int BH_ROW_HEIGHT = 18;
+    @Unique private static final int BH_CHEST_GAP = 7;
+    @Unique private static final int BH_PLAIN_STRIP_V = 71;
     @Unique private static final int BH_DEFAULT_INVENTORY_LABEL_Y = BH_VANILLA_IMAGE_HEIGHT - 94;
     @Unique private static final int BH_GEAR_PANEL_X = 79;
     @Unique private static final int BH_GEAR_PANEL_Y = 17;
@@ -97,7 +99,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         HorseInventoryLayoutAccess layoutAccess = (HorseInventoryLayoutAccess) menu;
         ((AbstractContainerScreenAccessor) (Object) this).bh_setImageHeight(
                 layoutAccess.bh_hasChestStorageLayout()
-                        ? BH_VANILLA_IMAGE_HEIGHT + layoutAccess.bh_getChestRows() * BH_ROW_HEIGHT
+                        ? BH_VANILLA_IMAGE_HEIGHT + layoutAccess.bh_getChestRows() * BH_ROW_HEIGHT + BH_CHEST_GAP
                         : BH_VANILLA_IMAGE_HEIGHT);
         this.inventoryLabelY = layoutAccess.bh_hasUpgradedSaddleLayout()
                 ? this.imageHeight + 1000
@@ -121,9 +123,11 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int chestHeight = this.bh_chestRows() * BH_ROW_HEIGHT;
         bh_blitGui(gfx, BH_HORSE_TEXTURE, x, y, 0, 0, this.imageWidth, BH_TOP_SECTION_HEIGHT);
         this.bh_drawMiddlePanel(gfx, x, y + BH_TOP_SECTION_HEIGHT, this.imageWidth, chestHeight);
+        bh_blitGui(gfx, BH_HORSE_TEXTURE, x, y + BH_TOP_SECTION_HEIGHT + chestHeight,
+                0, BH_PLAIN_STRIP_V, this.imageWidth, BH_CHEST_GAP);
         bh_blitGui(gfx, BH_HORSE_TEXTURE,
                 x,
-                y + BH_TOP_SECTION_HEIGHT + chestHeight,
+                y + BH_TOP_SECTION_HEIGHT + chestHeight + BH_CHEST_GAP,
                 0,
                 BH_TOP_SECTION_HEIGHT,
                 this.imageWidth,
@@ -201,13 +205,14 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         boolean chestLayout = layoutAccess.bh_hasChestStorageLayout();
         boolean upgradedSaddleLayout = layoutAccess.bh_hasUpgradedSaddleLayout();
         int desiredImageHeight = chestLayout
-                ? BH_VANILLA_IMAGE_HEIGHT + this.bh_chestRows() * BH_ROW_HEIGHT
+                ? BH_VANILLA_IMAGE_HEIGHT + this.bh_chestRows() * BH_ROW_HEIGHT + BH_CHEST_GAP
                 : BH_VANILLA_IMAGE_HEIGHT;
 
         if (this.imageHeight != desiredImageHeight) {
             ((AbstractContainerScreenAccessor) (Object) this).bh_setImageHeight(desiredImageHeight);
             this.topPos = (this.height - this.imageHeight) / 2;
             this.leftPos = (this.width - this.imageWidth) / 2;
+            this.rebuildWidgets();
         }
 
         this.inventoryLabelY = upgradedSaddleLayout ? this.imageHeight + 1000 : BH_DEFAULT_INVENTORY_LABEL_Y;

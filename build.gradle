@@ -136,6 +136,9 @@ dependencies {
 
     localRuntime "maven.modrinth:trotting-wagons:mpGWRAjg"
     localRuntime "maven.modrinth:farmers-delight:XTVZDOol"
+    localRuntime "maven.modrinth:quark:8uDGRJCr"
+    localRuntime "maven.modrinth:zeta:9GjNW2Gf"
+    localRuntime "maven.modrinth:biolith:EAjbdreT"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
