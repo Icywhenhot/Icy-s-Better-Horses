@@ -5,18 +5,22 @@ public class BhHorseRenderState {
     private static final java.util.Map<Integer, BhHorseRenderState> ACTIVE = new java.util.HashMap<>();
 
     private static final int PREVIEW_BASE = Integer.MIN_VALUE;
-    private static boolean previewing;
+    private static int levelDepth;
 
-    public static void beginPreview() {
-        previewing = true;
+    public static void enterLevel() {
+        levelDepth++;
     }
 
-    public static void endPreview() {
-        previewing = false;
+    public static void leaveLevel() {
+        levelDepth = Math.max(0, levelDepth - 1);
+    }
+
+    public static void newFrame() {
+        levelDepth = 0;
     }
 
     public static int renderId(int entityId) {
-        return previewing ? PREVIEW_BASE + entityId : entityId;
+        return levelDepth > 0 ? entityId : PREVIEW_BASE + entityId;
     }
 
     public static int previewId(int entityId) {
