@@ -29,23 +29,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Locale;
 import icy.betterhorses.net.client.BhAbilityBadges;
 import icy.betterhorses.net.client.BhInventoryEffects;
-import icy.betterhorses.net.client.render.BhHorseRenderState;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
 
 @Mixin(Gui.class)
 public abstract class GuiMixin {
 
     @Shadow @Final private Minecraft minecraft;
-
-    @Inject(method = "render", at = @At("HEAD"))
-    private void bh_beginHudPreview(GuiGraphics gfx, DeltaTracker deltaTracker, CallbackInfo ci) {
-        BhHorseRenderState.beginPreview();
-    }
-
-    @Inject(method = "render", at = @At("RETURN"))
-    private void bh_endHudPreview(GuiGraphics gfx, DeltaTracker deltaTracker, CallbackInfo ci) {
-        BhHorseRenderState.endPreview();
-    }
 
     @Inject(method = "renderEffects", at = @At("HEAD"), cancellable = true)
     private void bh_hideEffectsBehindHorseScreen(GuiGraphics gfx, DeltaTracker deltaTracker, CallbackInfo ci) {
