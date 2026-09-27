@@ -27,6 +27,7 @@
 		"HorseSaddleSlotMixin",
 		"LeafPassthroughMixin",
 		"MapItemMixin",
+		"EnchantmentHelperMixin",
 		"LivingEntityMixin",
 		"MobCartPassengerMixin",
 		"MobNameTagBondMixin",
