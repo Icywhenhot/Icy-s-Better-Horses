@@ -12,7 +12,6 @@ import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
-import icy.betterhorses.net.client.render.BhHorseRenderState;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -166,16 +165,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         }
 
         this.bh_drawGearPanel(gfx);
-    }
-
-    @Inject(method = "render", at = @At("HEAD"))
-    private void bh_beginHorsePreview(GuiGraphics gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
-        BhHorseRenderState.beginPreview();
-    }
-
-    @Inject(method = "render", at = @At("RETURN"))
-    private void bh_endHorsePreview(GuiGraphics gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
-        BhHorseRenderState.endPreview();
     }
 
     @Inject(method = "render", at = @At("TAIL"))
