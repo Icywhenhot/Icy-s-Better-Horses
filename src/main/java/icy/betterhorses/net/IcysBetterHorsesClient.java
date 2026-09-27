@@ -40,6 +40,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.registries.RegistryObject;
 import icy.betterhorses.net.network.BreedDataPayload;
 import icy.betterhorses.net.network.ConfigSyncPayload;
+import icy.betterhorses.net.network.BhChargePayload;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -106,6 +107,12 @@ public final class IcysBetterHorsesClient {
             GLFW.GLFW_KEY_LEFT_ALT,
             KEY_CATEGORY);
 
+    public static final KeyMapping CHARGE_KEY = new KeyMapping(
+            "key.icys-better-horses.charge",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_B,
+            KEY_CATEGORY);
+
     private IcysBetterHorsesClient() {}
 
     @SubscribeEvent
@@ -117,6 +124,7 @@ public final class IcysBetterHorsesClient {
         event.register(REAR_KEY);
         event.register(FREE_LOOK_KEY);
         event.register(CART_SIZE_KEY);
+        event.register(CHARGE_KEY);
     }
 
     public static void bh_tryOpenRadial(Minecraft client) {
@@ -253,6 +261,12 @@ public final class IcysBetterHorsesClient {
     public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
         for (RegistryObject<Item> egg : ModItems.BREED_SPAWN_EGGS) {
             event.register((stack, layer) -> -1, egg.get());
+        }
+    }
+
+    public static void sendChargeChoice() {
+        if (Minecraft.getInstance().getConnection() != null) {
+            BhNetworking.sendToServer(new BhChargePayload(BhConfig.ownFeature(BhFeature.HORSE_CHARGE)));
         }
     }
 

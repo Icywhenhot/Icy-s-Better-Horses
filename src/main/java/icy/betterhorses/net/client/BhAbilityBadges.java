@@ -1,5 +1,7 @@
 package icy.betterhorses.net.client;
 
+import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhFeature;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.inventory.GearSlot;
@@ -88,8 +90,8 @@ public final class BhAbilityBadges {
 
     private static final int BASH_SIZE = 16;
     private static final int BASH_FRAMES = 10;
+    private static final int BASH_PAD = 2;
     private static final int HOTBAR_HALF = 91;
-    private static final int HOTBAR_GAP = 4;
     private static final int OFFHAND_WIDTH = 29;
     private static final int HOTBAR_HEIGHT = 22;
     private static final long HARNESS_LINGER = 30L;
@@ -305,13 +307,14 @@ public final class BhAbilityBadges {
             return;
         }
 
-        boolean lefty = Minecraft.getInstance().options.mainHand().get() == HumanoidArm.LEFT;
-        int x = screenW / 2 - HOTBAR_HALF - HOTBAR_GAP - BASH_SIZE - (lefty ? 0 : OFFHAND_WIDTH);
+        BhConfig.Spot spot = BhConfig.harnessGauge();
+        boolean left = spot.side() == BhConfig.Side.LEFT;
+        int x = besideHotbar(screenW, spot.side(), spot.gap() + BASH_PAD);
         int y = screenH - HOTBAR_HEIGHT + (HOTBAR_HEIGHT - BASH_SIZE) / 2;
         gfx.renderItem(new ItemStack(ModItems.HORSE_STABILIZER.get()), x, y);
 
         float charge = data.bh_getStabilizerCharge();
-        int barX = x - 5;
+        int barX = left ? x - 5 : x + BASH_SIZE + 2;
         gfx.fill(barX - 1, y - 1, barX + 4, y + BASH_SIZE + 1, 0xFF000000);
         boolean blink = charge < 0.2F && (System.currentTimeMillis() / 250L) % 2L == 0L;
         int filled = Math.round(BASH_SIZE * charge);
@@ -322,11 +325,11 @@ public final class BhAbilityBadges {
     }
 
     private static void shield(GuiGraphics gfx, int screenW, int screenH, int charge) {
-        if (charge < 0) {
+        if (charge < 0 || !BhFeature.HORSE_CHARGE.on() || !BhConfig.ownFeature(BhFeature.HORSE_CHARGE)) {
             return;
         }
-        boolean lefty = Minecraft.getInstance().options.mainHand().get() == HumanoidArm.LEFT;
-        int x = screenW / 2 + HOTBAR_HALF + HOTBAR_GAP + (lefty ? OFFHAND_WIDTH : 0);
+        BhConfig.Spot spot = BhConfig.chargeMeter();
+        int x = besideHotbar(screenW, spot.side(), spot.gap());
         int y = screenH - HOTBAR_HEIGHT + (HOTBAR_HEIGHT - BASH_SIZE) / 2;
         int frame = Mth.clamp(Math.round(charge * BASH_FRAMES / 100.0F), 0, BASH_FRAMES);
 
@@ -335,6 +338,16 @@ public final class BhAbilityBadges {
         gfx.blit(BASH[frame], x, y,
                 0.0F, 0.0F, BASH_SIZE, BASH_SIZE, BASH_SIZE, BASH_SIZE);
         RenderSystem.disableBlend();
+    }
+
+    private static int besideHotbar(int screenW, BhConfig.Side side, int gap) {
+        Minecraft mc = Minecraft.getInstance();
+        boolean lefty = mc.options.mainHand().get() == HumanoidArm.LEFT;
+        int offhand = mc.player.getOffhandItem().isEmpty() ? 0 : OFFHAND_WIDTH;
+        if (side == BhConfig.Side.LEFT) {
+            return screenW / 2 - HOTBAR_HALF - gap - BASH_SIZE - (lefty ? 0 : offhand);
+        }
+        return screenW / 2 + HOTBAR_HALF + gap + (lefty ? offhand : 0);
     }
 
     private static void tint(GuiGraphics gfx, int color) {

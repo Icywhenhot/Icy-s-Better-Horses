@@ -1,6 +1,8 @@
 package icy.betterhorses.net;
 
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.living.LootingLevelEvent;
+import net.minecraftforge.event.level.ExplosionEvent;
 import net.minecraftforge.event.AnvilUpdateEvent;
 import net.minecraft.world.item.ItemStack;
 import icy.betterhorses.net.entity.CartSize;
@@ -20,9 +22,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.monster.Creeper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -169,6 +174,11 @@ public final class IcysBetterHorses {
         if (event.getLevel().isClientSide()) {
             return;
         }
+        if (event.getEntity() instanceof LightningBolt bolt && !event.loadedFromDisk()
+                && event.getLevel() instanceof ServerLevel level) {
+            BhHorseCombatAlert.startle(level, bolt.position());
+            return;
+        }
         if (event.getEntity() instanceof AbstractHorse horse && ((IHorseData) horse).bh_isOwned()) {
             if (HorseTracker.consumePendingDisown(horse.getUUID())) {
                 pendingReleases.add(horse);
@@ -178,6 +188,27 @@ public final class IcysBetterHorses {
                 HorseTracker.register(horse);
             }
         }
+    }
+
+    @SubscribeEvent
+    public void onDetonate(ExplosionEvent.Detonate event) {
+        if (event.getLevel() instanceof ServerLevel level
+                && event.getExplosion().getDirectSourceEntity() instanceof Creeper) {
+            BhHorseCombatAlert.startle(level, event.getExplosion().getPosition());
+        }
+    }
+
+    @SubscribeEvent
+    public void onLootingLevel(LootingLevelEvent event) {
+        if (event.getDamageSource() == null || !(event.getDamageSource().getEntity() instanceof Player player)
+                || !(player.getVehicle() instanceof AbstractHorse horse) || !BhHorseKind.managed(horse)) {
+            return;
+        }
+        IHorseData d = IHorseData.of(horse);
+        if (!Objects.equals(d.bh_getBreedKey(), BhContent.AMERICAN_PAINT.getKey()) || !BhAbility.PAINT_LOOTING.on()) {
+            return;
+        }
+        event.setLootingLevel(Math.max(event.getLootingLevel(), BhHorseTraits.bondTier(d.bh_getBond()) + 1));
     }
 
     @SubscribeEvent

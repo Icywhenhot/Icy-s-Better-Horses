@@ -98,6 +98,24 @@ public final class IcysBetterHorsesClientForgeEvents {
         while (IcysBetterHorsesClient.CART_SIZE_KEY.consumeClick()) {
             trySwapCartSize(client);
         }
+
+        while (IcysBetterHorsesClient.CHARGE_KEY.consumeClick()) {
+            toggleCharge(client);
+        }
+    }
+
+    private static void toggleCharge(Minecraft client) {
+        if (!BhFeature.HORSE_COMBAT.on()
+                || BhConfig.serverManaged() && !BhConfig.featureEnabled(BhFeature.HORSE_CHARGE)) {
+            client.gui.setOverlayMessage(Component.translatable("message.icys-better-horses.charge.blocked"), false);
+            return;
+        }
+        boolean on = !BhConfig.ownFeature(BhFeature.HORSE_CHARGE);
+        BhConfig.setOwnFeature(BhFeature.HORSE_CHARGE, on);
+        IcysBetterHorsesClient.sendChargeChoice();
+        client.gui.setOverlayMessage(Component.translatable(on
+                ? "message.icys-better-horses.charge.on"
+                : "message.icys-better-horses.charge.off"), false);
     }
 
     @SubscribeEvent
@@ -125,6 +143,11 @@ public final class IcysBetterHorsesClientForgeEvents {
     @SubscribeEvent
     public static void onRenderGui(RenderGuiEvent.Post event) {
         BhHorseHud.render(event.getGuiGraphics());
+    }
+
+    @SubscribeEvent
+    public static void onLogin(ClientPlayerNetworkEvent.LoggingIn event) {
+        IcysBetterHorsesClient.sendChargeChoice();
     }
 
     @SubscribeEvent

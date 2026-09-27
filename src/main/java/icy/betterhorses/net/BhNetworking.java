@@ -5,6 +5,8 @@ import icy.betterhorses.net.network.BhRearPayload;
 import icy.betterhorses.net.network.BreedDataPayload;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.CartSizePayload;
+import icy.betterhorses.net.network.BhChargePayload;
+import icy.betterhorses.net.feature.HorseCombat;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
 import icy.betterhorses.net.network.HorseJumpPayload;
@@ -37,7 +39,7 @@ import java.util.function.Supplier;
 
 public final class BhNetworking {
 
-    private static final String PROTOCOL_VERSION = "4";
+    private static final String PROTOCOL_VERSION = "5";
     private static final ResourceLocation CHANNEL_ID =
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "main");
     private static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
@@ -89,6 +91,8 @@ public final class BhNetworking {
                 payload -> () -> IcysBetterHorsesClient.receiveConfig(payload));
         toClient(BreedDataPayload.class, BreedDataPayload::encode, BreedDataPayload::decode,
                 payload -> () -> IcysBetterHorsesClient.receiveBreeds(payload));
+        toServer(BhChargePayload.class, BhChargePayload::encode, BhChargePayload::decode,
+                (payload, player) -> HorseCombat.riderCharge(player.getUUID(), payload.on()));
     }
 
     private static @Nullable ResourceKey<CommandType> bh_parseCommand(String raw) {
