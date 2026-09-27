@@ -35,6 +35,24 @@ public final class BhConfig {
     private static final String KEY_GROUP_MIN = "spawn_group_min";
     private static final String KEY_GROUP_MAX = "spawn_group_max";
     private static final String KEY_SPAWN_FLOOR = "spawn_probability_floor";
+    private static final String KEY_HUD = "hud";
+    private static final String KEY_METER_SIDE = "charge_meter_side";
+    private static final String KEY_METER_GAP = "charge_meter_gap";
+    private static final String KEY_HARNESS_SIDE = "harness_gauge_side";
+    private static final String KEY_HARNESS_GAP = "harness_gauge_gap";
+
+    public static final int MAX_HUD_GAP = 100;
+
+    public enum Side { LEFT, RIGHT }
+
+    public record Spot(Side side, int gap) {
+        public Spot clamped() {
+            return new Spot(side, Math.clamp(gap, 0, MAX_HUD_GAP));
+        }
+    }
+
+    public static final Spot DEFAULT_METER = new Spot(Side.RIGHT, 4);
+    public static final Spot DEFAULT_HARNESS = new Spot(Side.LEFT, 4);
 
     private static final Path CONFIG_PATH = FMLPaths.CONFIGDIR.get()
             .resolve(IcysBetterHorses.RESOURCE_NAMESPACE + ".json");
@@ -48,6 +66,8 @@ public final class BhConfig {
     private static BhTuning tuning = BhTuning.defaults();
     private static boolean classMaster = true;
     private static boolean breedMaster = true;
+    private static Spot meter = DEFAULT_METER;
+    private static Spot harness = DEFAULT_HARNESS;
 
     private static @Nullable EnumMap<BhFeature, Boolean> ownFeatures;
     private static @Nullable EnumMap<BhAbility, Boolean> ownAbilities;
@@ -71,6 +91,8 @@ public final class BhConfig {
         tuning = BhTuning.defaults();
         classMaster = true;
         breedMaster = true;
+        meter = DEFAULT_METER;
+        harness = DEFAULT_HARNESS;
     }
 
     public static boolean featureEnabled(BhFeature feature) {
@@ -206,6 +228,20 @@ public final class BhConfig {
         save();
     }
 
+    public static Spot chargeMeter() {
+        return meter;
+    }
+
+    public static Spot harnessGauge() {
+        return harness;
+    }
+
+    public static synchronized void applyHud(Spot meterSpot, Spot harnessSpot) {
+        meter = meterSpot.clamped();
+        harness = harnessSpot.clamped();
+        save();
+    }
+
     public static synchronized void load() {
         if (!Files.exists(CONFIG_PATH)) {
             reset();
@@ -253,6 +289,13 @@ public final class BhConfig {
                         readInt(numbers, KEY_GROUP_MIN, fallback.groupMin()),
                         readInt(numbers, KEY_GROUP_MAX, fallback.groupMax()),
                         readDouble(numbers, KEY_SPAWN_FLOOR, fallback.spawnFloor())).clamped();
+            }
+
+            needsRewrite |= !root.has(KEY_HUD);
+            JsonObject hud = root.getAsJsonObject(KEY_HUD);
+            if (hud != null) {
+                meter = readSpot(hud, KEY_METER_SIDE, KEY_METER_GAP, DEFAULT_METER);
+                harness = readSpot(hud, KEY_HARNESS_SIDE, KEY_HARNESS_GAP, DEFAULT_HARNESS);
             }
         } catch (Exception exception) {
             reset();
@@ -367,6 +410,23 @@ public final class BhConfig {
         return element.getAsDouble();
     }
 
+    private static Spot readSpot(JsonObject root, String sideKey, String gapKey, Spot defaultValue) {
+        Side side = defaultValue.side();
+        JsonElement element = root.get(sideKey);
+        if (element != null && element.isJsonPrimitive()) {
+            side = switch (element.getAsString().trim().toLowerCase(Locale.ROOT)) {
+                case "left" -> Side.LEFT;
+                case "right" -> Side.RIGHT;
+                default -> {
+                    IcysBetterHorses.LOGGER.warn("Config key '{}' must be left or right. Using default {}.",
+                            sideKey, defaultValue.side().name().toLowerCase(Locale.ROOT));
+                    yield defaultValue.side();
+                }
+            };
+        }
+        return new Spot(side, readInt(root, gapKey, defaultValue.gap())).clamped();
+    }
+
     private static synchronized void save() {
         Map<BhFeature, Boolean> mineFeatures = ownFeatures != null ? ownFeatures : features;
         Map<BhAbility, Boolean> mineAbilities = ownAbilities != null ? ownAbilities : abilities;
@@ -400,6 +460,13 @@ public final class BhConfig {
         numbers.addProperty(KEY_GROUP_MAX, mineTuning.groupMax());
         numbers.addProperty(KEY_SPAWN_FLOOR, mineTuning.spawnFloor());
         root.add(KEY_TUNING, numbers);
+
+        JsonObject hud = new JsonObject();
+        hud.addProperty(KEY_METER_SIDE, meter.side().name().toLowerCase(Locale.ROOT));
+        hud.addProperty(KEY_METER_GAP, meter.gap());
+        hud.addProperty(KEY_HARNESS_SIDE, harness.side().name().toLowerCase(Locale.ROOT));
+        hud.addProperty(KEY_HARNESS_GAP, harness.gap());
+        root.add(KEY_HUD, hud);
 
         try {
             Files.createDirectories(CONFIG_PATH.getParent());

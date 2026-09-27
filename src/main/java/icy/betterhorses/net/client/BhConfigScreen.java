@@ -108,6 +108,16 @@ public final class BhConfigScreen {
                     .build());
         }
 
+        BhConfig.Side[] sides = {BhConfig.chargeMeter().side(), BhConfig.harnessGauge().side()};
+        int[] gaps = {BhConfig.chargeMeter().gap(), BhConfig.harnessGauge().gap()};
+
+        ConfigCategory hud = builder.getOrCreateCategory(
+                Component.translatable("config.icys-better-horses.category.hud"));
+        hud.addEntry(bh_side(eb, "charge_meter_side", sides, 0, BhConfig.DEFAULT_METER));
+        hud.addEntry(bh_gap(eb, "charge_meter_gap", gaps, 0, BhConfig.DEFAULT_METER));
+        hud.addEntry(bh_side(eb, "harness_gauge_side", sides, 1, BhConfig.DEFAULT_HARNESS));
+        hud.addEntry(bh_gap(eb, "harness_gauge_gap", gaps, 1, BhConfig.DEFAULT_HARNESS));
+
         ConfigCategory keybinds = builder.getOrCreateCategory(
                 Component.translatable("config.icys-better-horses.category.keybinds"));
         keybinds.addEntry(eb.fillKeybindingField(
@@ -144,6 +154,7 @@ public final class BhConfigScreen {
         builder.setSavingRunnable(() -> {
             BhConfig.apply(picks, new BhTuning(nums[0], nums[1], nums[2], nums[3], nums[4], floor[0]));
             BhConfig.applyAbilities(masters[0], masters[1], abilityPicks);
+            BhConfig.applyHud(new BhConfig.Spot(sides[0], gaps[0]), new BhConfig.Spot(sides[1], gaps[1]));
             KeyMapping.resetMapping();
             Minecraft.getInstance().options.save();
         });
@@ -176,6 +187,28 @@ public final class BhConfigScreen {
                 .setDefaultValue(true)
                 .setTooltip(Component.translatable(base + ".tooltip"))
                 .setSaveConsumer(value -> picks.put(feature, value))
+                .build();
+    }
+
+    private static AbstractConfigListEntry<BhConfig.Side> bh_side(
+            ConfigEntryBuilder eb, String key, BhConfig.Side[] sides, int index, BhConfig.Spot fallback) {
+        String base = "config.icys-better-horses." + key;
+        return eb.startEnumSelector(Component.translatable(base), BhConfig.Side.class, sides[index])
+                .setDefaultValue(fallback.side())
+                .setEnumNameProvider(value -> Component.translatable(
+                        "config.icys-better-horses.side." + value.name().toLowerCase(Locale.ROOT)))
+                .setTooltip(Component.translatable(base + ".tooltip"))
+                .setSaveConsumer(value -> sides[index] = value)
+                .build();
+    }
+
+    private static AbstractConfigListEntry<Integer> bh_gap(
+            ConfigEntryBuilder eb, String key, int[] gaps, int index, BhConfig.Spot fallback) {
+        String base = "config.icys-better-horses." + key;
+        return eb.startIntSlider(Component.translatable(base), gaps[index], 0, BhConfig.MAX_HUD_GAP)
+                .setDefaultValue(fallback.gap())
+                .setTooltip(Component.translatable(base + ".tooltip"))
+                .setSaveConsumer(value -> gaps[index] = value)
                 .build();
     }
 
