@@ -3,6 +3,7 @@ package icy.betterhorses.net.entity;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.BhHorseSteering;
+import icy.betterhorses.net.BhWaterline;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModEntities;
 import icy.betterhorses.net.ModItems;
@@ -44,12 +45,15 @@ import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -75,6 +79,18 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     private static final double FOLLOW_OFFSET = 0.0D;
     private static final float YAW_OFFSET = 0.0F;
+
+    private static final float SLACK_CATCHUP = 0.3F;
+    private static final float MAX_SLACK = 8.0F;
+    private static final float MAX_TILT = 25.0F;
+    private static final float TILT_EASE = 0.3F;
+    private static final float MAX_TILT_STEP = 3.0F;
+    private static final double WHEEL_SIDE = 1.16D;
+    private static final double PROBE_UP = 1.0D;
+    private static final double PROBE_DOWN = 3.0D;
+    private static final double FLOAT_DRAFT = 0.6D;
+    private static final float FLOAT_EASE = 0.25F;
+    private static final double MAX_FLOAT_SPEED = 0.15D;
 
     private static final double BED_HALF_WIDTH = 0.95D;
     private static final double BED_FLOOR_HEIGHT = 0.8125D;
@@ -141,6 +157,14 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     private double prevX;
     private double prevZ;
+
+    private boolean settled;
+    private float slackYaw;
+    private float slackYawO;
+    private float tilt;
+    private float tiltO;
+    private float lift;
+    private float liftO;
 
     private double smoothedSpeed;
     private double coastFromSpeed;
@@ -318,6 +342,13 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     private void settleOnGround() {
+        double surface = BhWaterline.surface(this.level(), this.getX(), this.getY(), this.getZ());
+        if (!Double.isNaN(surface)) {
+            double rise = Mth.clamp((surface - FLOAT_DRAFT - this.getY()) * FLOAT_EASE, -MAX_FLOAT_SPEED, MAX_FLOAT_SPEED);
+            this.setDeltaMovement(0.0D, rise, 0.0D);
+            this.move(MoverType.SELF, this.getDeltaMovement());
+            return;
+        }
         if (this.onGround()) {
             this.setDeltaMovement(Vec3.ZERO);
             return;
@@ -419,14 +450,61 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     private void followHorse(AbstractHorse boundHorse) {
-        float yaw = boundHorse.yBodyRot + YAW_OFFSET;
-        this.setYRot(yaw);
-        this.setYBodyRot(yaw);
-        this.setYHeadRot(yaw);
-
         Vec3 target = cartPosFor(boundHorse.getX(), boundHorse.getY(), boundHorse.getZ(), boundHorse.yBodyRot);
-        this.setPos(target.x, target.y, target.z);
+        this.settle(boundHorse, target);
+        this.setYRot(this.slackYaw);
+        this.setYBodyRot(this.slackYaw);
+        this.setYHeadRot(this.slackYaw);
+
+        this.setPos(target.x, target.y + this.lift, target.z);
         this.setDeltaMovement(Vec3.ZERO);
+    }
+
+    private void settle(AbstractHorse boundHorse, Vec3 hitch) {
+        float horseYaw = boundHorse.yBodyRot + YAW_OFFSET;
+        if (!this.settled) {
+            this.settled = true;
+            this.slackYaw = horseYaw;
+            this.tilt = 0.0F;
+            this.lift = 0.0F;
+        }
+        this.slackYawO = this.slackYaw;
+        this.tiltO = this.tilt;
+        this.liftO = this.lift;
+
+        this.slackYaw += Mth.wrapDegrees(horseYaw - this.slackYaw) * SLACK_CATCHUP;
+        float lag = Mth.wrapDegrees(horseYaw - this.slackYaw);
+        if (Math.abs(lag) > MAX_SLACK) {
+            this.slackYaw = horseYaw - Math.copySign(MAX_SLACK, lag);
+        }
+
+        boolean swimming = boundHorse.isInWater() && !boundHorse.onGround();
+        double surface = swimming ? BhWaterline.surface(this.level(), hitch.x, hitch.y, hitch.z) : Double.NaN;
+        float floatTarget = Double.isNaN(surface) ? 0.0F : (float) Math.max(0.0D, surface - FLOAT_DRAFT - hitch.y);
+        this.lift += (floatTarget - this.lift) * FLOAT_EASE;
+
+        if (swimming || boundHorse.onGround()) {
+            float target = swimming ? 0.0F : this.groundTilt(hitch);
+            this.tilt += Mth.clamp((target - this.tilt) * TILT_EASE, -MAX_TILT_STEP, MAX_TILT_STEP);
+        }
+    }
+
+    private float groundTilt(Vec3 hitch) {
+        double behind = this.size().axleBehind();
+        float rad = -this.slackYaw * Mth.DEG_TO_RAD;
+        double ground = Math.max(
+                this.groundBelow(hitch.add(new Vec3(-WHEEL_SIDE, 0.0D, -behind).yRot(rad))),
+                this.groundBelow(hitch.add(new Vec3(WHEEL_SIDE, 0.0D, -behind).yRot(rad))));
+        float angle = (float) Math.toDegrees(Math.atan2(hitch.y - ground, behind));
+        return Mth.clamp(angle, -MAX_TILT, MAX_TILT);
+    }
+
+    private double groundBelow(Vec3 wheel) {
+        Vec3 top = new Vec3(wheel.x, wheel.y + PROBE_UP, wheel.z);
+        Vec3 bottom = new Vec3(wheel.x, wheel.y - PROBE_DOWN, wheel.z);
+        BlockHitResult hit = this.level().clip(new ClipContext(top, bottom,
+                ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+        return hit.getType() == HitResult.Type.MISS ? bottom.y : hit.getLocation().y;
     }
 
     private void glueToHorse(AbstractHorse boundHorse) {
@@ -436,12 +514,13 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         }
 
         this.followHorse(boundHorse);
+        IHorseData.of(boundHorse).bh_bindCartEntity(this);
 
         Vec3 previous = cartPosFor(boundHorse.xo, boundHorse.yo, boundHorse.zo, boundHorse.yBodyRotO);
         this.xo = previous.x;
-        this.yo = previous.y;
+        this.yo = previous.y + this.liftO;
         this.zo = previous.z;
-        this.yRotO = boundHorse.yBodyRotO + YAW_OFFSET;
+        this.yRotO = this.slackYawO;
     }
 
     private static Vec3 cartPosFor(double horseX, double horseY, double horseZ, float horseYaw) {
@@ -458,12 +537,20 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             return null;
         }
         Vec3 horsePos = boundHorse.getPosition(partialTick);
-        return cartPosFor(horsePos.x, horsePos.y, horsePos.z, renderBodyYaw(boundHorse, partialTick));
+        return cartPosFor(horsePos.x, horsePos.y + this.renderLift(partialTick), horsePos.z,
+                renderBodyYaw(boundHorse, partialTick));
     }
 
     public float gluedRenderYaw(float partialTick) {
-        AbstractHorse boundHorse = this.clientHorse();
-        return boundHorse == null ? this.getYRot() : renderBodyYaw(boundHorse, partialTick) + YAW_OFFSET;
+        return this.settled ? Mth.rotLerp(partialTick, this.slackYawO, this.slackYaw) : this.getYRot();
+    }
+
+    public float renderTilt(float partialTick) {
+        return Mth.lerp(partialTick, this.tiltO, this.tilt);
+    }
+
+    public float renderLift(float partialTick) {
+        return Mth.lerp(partialTick, this.liftO, this.lift);
     }
 
     private static float renderBodyYaw(AbstractHorse boundHorse, float partialTick) {
@@ -494,11 +581,21 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         return this.level().isClientSide() ? this.clientHorse() : this.horse;
     }
 
-    public static Vec3 benchSeatOffset(AbstractHorse boundHorse, int seatIndex, float horseYaw) {
+    public static Vec3 benchSeatOffset(AbstractHorse boundHorse, int seatIndex) {
+        HorseCartEntity cart = IHorseData.of(boundHorse).bh_getCartEntity();
+        return cart != null && cart.settled && !cart.isRemoved()
+                ? benchSeatOffset(boundHorse, seatIndex, cart.slackYaw, cart.tilt, cart.lift)
+                : benchSeatOffset(boundHorse, seatIndex, boundHorse.yBodyRot, 0.0F, 0.0F);
+    }
+
+    public static Vec3 benchSeatOffset(AbstractHorse boundHorse, int seatIndex, float cartYaw, float cartTilt,
+                                       float cartLift) {
         double side = benchShared(boundHorse) ? (seatIndex <= 0 ? -SEAT_SIDE : SEAT_SIDE) : 0.0D;
         double up = CartSize.byLarge(IHorseData.of(boundHorse).bh_hasLargeCart()).benchHeight();
         return new Vec3(side, up, FOLLOW_OFFSET - SEAT_BEHIND)
-                .yRot(-horseYaw * ((float) Math.PI / 180.0F));
+                .xRot(cartTilt * Mth.DEG_TO_RAD)
+                .yRot(-cartYaw * ((float) Math.PI / 180.0F))
+                .add(0.0D, cartLift, 0.0D);
     }
 
     private static boolean benchShared(AbstractHorse boundHorse) {
@@ -511,6 +608,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         double side = seatIndex % 2 == 0 ? -REAR_SEAT_SIDE : REAR_SEAT_SIDE;
         double rowShift = seatIndex < 2 ? -size.rearRowSpacing() : size.rearRowSpacing();
         return new Vec3(side, REAR_SEAT_HEIGHT, -(size.rearSeatBehind() + rowShift))
+                .xRot(this.tilt * Mth.DEG_TO_RAD)
                 .yRot(-cartYaw * ((float) Math.PI / 180.0F));
     }
 

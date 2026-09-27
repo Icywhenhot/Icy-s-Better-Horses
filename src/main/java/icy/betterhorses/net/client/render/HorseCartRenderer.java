@@ -1,5 +1,7 @@
 package icy.betterhorses.net.client.render;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import icy.betterhorses.net.entity.CartSize;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -22,6 +24,8 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, 
             DataTicket.create("bh_cart_is_placed", Boolean.class);
     private static final DataTicket<Boolean> IS_LARGE =
             DataTicket.create("bh_cart_is_large", Boolean.class);
+    private static final DataTicket<Float> TILT =
+            DataTicket.create("bh_cart_tilt", Float.class);
 
     private static final String PLOW_BONE = "plow";
     private static final String PROP_BONE = "bone3";
@@ -53,6 +57,12 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, 
     }
 
     @Override
+    protected void applyRotations(RenderPassInfo<EntityRenderState> pass, PoseStack poseStack, float nativeScale) {
+        super.applyRotations(pass, poseStack, nativeScale);
+        poseStack.mulPose(Axis.XP.rotationDegrees(pass.getOrDefaultGeckolibData(TILT, 0.0F)));
+    }
+
+    @Override
     public void extractRenderState(HorseCartEntity entity, EntityRenderState state, float partialTick) {
         super.extractRenderState(entity, state, partialTick);
 
@@ -60,6 +70,7 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, 
         state.addGeckolibData(HAS_PLOW, entity.hasPlough());
         state.addGeckolibData(IS_PLACED, entity.isPlaced());
         state.addGeckolibData(IS_LARGE, entity.size().isLarge());
+        state.addGeckolibData(TILT, entity.renderTilt(partialTick));
 
         Vec3 glued = entity.gluedRenderPosition(partialTick);
         if (glued != null) {

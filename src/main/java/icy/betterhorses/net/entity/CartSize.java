@@ -11,11 +11,11 @@ public enum CartSize {
 
     NORMAL("horse_cart", "chest",
             "wheel moving2", "chest", "chest close", "stand alone", "till land",
-            2.2D, 1.15D, 1.15D, 2.55D, 0.0D, 2, 0, 54),
+            2.2D, 1.15D, 1.15D, 2.55D, 0.0D, 2, 0, 54, 2.375D),
 
     LARGE("horse_cart_large", "chest",
             "wheel moving", "chest open", "chest close", "idle", null,
-            2.875D, 1.8125D, 1.525D, 3.4D, 0.75D, 4, 2, CartChestMenu.SLOTS);
+            2.875D, 1.8125D, 1.525D, 3.4D, 0.75D, 4, 2, CartChestMenu.SLOTS, 3.9375D);
 
     private final Identifier model;
     private final Identifier texture;
@@ -36,13 +36,14 @@ public enum CartSize {
     private final int rearSeatCount;
     private final int rearSeatsWithChest;
     private final int chestSlots;
+    private final double axleBehind;
 
     CartSize(String asset, String chestBone,
              String wheelAnim, String chestOpenAnim, String chestCloseAnim, String standAnim,
              @Nullable String tillAnim,
              double bedCenterBehind, double bedHalfLength, double benchHeight,
              double rearSeatBehind, double rearRowSpacing,
-             int rearSeatCount, int rearSeatsWithChest, int chestSlots) {
+             int rearSeatCount, int rearSeatsWithChest, int chestSlots, double axleBehind) {
         this.model = id(asset);
         this.texture = id("textures/entity/" + asset + ".png");
         this.animation = id(asset);
@@ -60,6 +61,7 @@ public enum CartSize {
         this.rearSeatCount = rearSeatCount;
         this.rearSeatsWithChest = rearSeatsWithChest;
         this.chestSlots = chestSlots;
+        this.axleBehind = axleBehind;
     }
 
     private static Identifier id(String path) {
@@ -112,6 +114,10 @@ public enum CartSize {
 
     public boolean takesPlough() {
         return this.tilling != null;
+    }
+
+    public double axleBehind() {
+        return this.axleBehind;
     }
 
     public double bedCenterBehind() {

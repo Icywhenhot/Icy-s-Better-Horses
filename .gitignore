@@ -2,6 +2,7 @@
 .idea/
 build/
 run/
+logs/
 out/
 *.iml
 
