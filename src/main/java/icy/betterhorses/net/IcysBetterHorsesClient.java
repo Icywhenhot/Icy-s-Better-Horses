@@ -200,6 +200,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents.ENTITY_UNLOAD.register((entity, level) -> {
             icy.betterhorses.net.client.render.BhEquineGait.remove(entity.getId());
             icy.betterhorses.net.client.render.BhRiderMotion.remove(entity.getId());
+            icy.betterhorses.net.client.render.BhRiderMotion.remove(icy.betterhorses.net.client.render.BhEquineGait.previewId(entity.getId()));
             if (entity instanceof net.minecraft.world.entity.animal.equine.AbstractHorse horse) {
                 icy.betterhorses.net.client.render.HorseStabilizerAnimatable.remove(horse);
             }

@@ -131,6 +131,8 @@ public final class BhEquineGait {
 
 
     private static final Map<Integer, BhEquineGait> ACTIVE = new HashMap<>();
+    private static final int PREVIEW_BASE = Integer.MIN_VALUE;
+    private static int levelDepth;
 
 
 
@@ -271,9 +273,9 @@ public final class BhEquineGait {
         state.firstPersonRider =
                 ((IBhEquineStabilizerState) (Object) state).bh_isRiddenByPlayerInFirstPerson();
 
-        BhEquineGait gait = ACTIVE.computeIfAbsent(entity.getId(), BhEquineGait::new);
+        BhEquineGait gait = ACTIVE.computeIfAbsent(state.entityId, key -> new BhEquineGait(entity.getId()));
         state.hoofLifted = gait.hoofLifted;
-        state.kicksDust = entity.getId() >= 0 && !entity.isInWater()
+        state.kicksDust = state.entityId == entity.getId() && entity.getId() >= 0 && !entity.isInWater()
                 && entity.level().getEntity(entity.getId()) == entity;
         gait.sense(entity, state);
         gait.advance(state, state.ageInTicks);
@@ -334,6 +336,27 @@ public final class BhEquineGait {
 
     public static void remove(int id) {
         ACTIVE.remove(id);
+        ACTIVE.remove(previewId(id));
+    }
+
+    public static void enterLevel() {
+        levelDepth++;
+    }
+
+    public static void leaveLevel() {
+        levelDepth = Math.max(0, levelDepth - 1);
+    }
+
+    public static void newFrame() {
+        levelDepth = 0;
+    }
+
+    public static int renderId(int entityId) {
+        return levelDepth > 0 ? entityId : previewId(entityId);
+    }
+
+    public static int previewId(int entityId) {
+        return PREVIEW_BASE + entityId;
     }
 
     public void advance(BhHorseRenderState state, float ageInTicks) {

@@ -69,7 +69,7 @@ public class PercheronHorseRenderer
         state.commandedToStay =
                 IHorseData.of(entity).bh_getCommand().equals(BhContent.COMMAND_STAY.key());
 
-        state.entityId = entity.getId();
+        state.entityId = BhEquineGait.renderId(entity.getId());
 
         BhEquineGait.advanceFor(entity, state);
     }
