@@ -36,6 +36,13 @@
     },
     {
       "type": "modonomicon:text",
+      "id": "looting",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.looting.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.looting.text"
+    },
+    {
+      "type": "modonomicon:text",
       "id": "spawns",
       "title": "book.icys-better-horses.stable_handbook.classes.breed_american_paint.spawns.title",
       "show_title_separator": true,

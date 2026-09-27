@@ -1,6 +1,8 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.network.BhRearPayload;
+import icy.betterhorses.net.network.BhChargePayload;
+import icy.betterhorses.net.feature.HorseCombat;
 import icy.betterhorses.net.entity.CartSize;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.network.CartSizePayload;
@@ -35,6 +37,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,6 +98,7 @@ public class IcysBetterHorses implements ModInitializer {
         PayloadTypeRegistry.serverboundPlay().register(BhFreeLookPayload.TYPE, new BhFreeLookPayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(BhRearPayload.TYPE, new BhRearPayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(CartSizePayload.TYPE, new CartSizePayload.StreamCodec());
+        PayloadTypeRegistry.serverboundPlay().register(BhChargePayload.TYPE, new BhChargePayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(HorseRosterSyncPayload.TYPE, new HorseRosterSyncPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(HorseManageResultPayload.TYPE, new HorseManageResultPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(TrustSyncPayload.TYPE, new TrustSyncPayload.StreamCodec());
@@ -152,6 +156,11 @@ public class IcysBetterHorses implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(CartSizePayload.TYPE, (payload, context) -> {
             ServerPlayer player = context.player();
             context.server().execute(() -> handleCartSize(player, payload.targetId()));
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(BhChargePayload.TYPE, (payload, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() -> HorseCombat.riderCharge(player.getUUID(), payload.on()));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(OpenHorseRosterPayload.TYPE, (payload, context) -> {
@@ -315,6 +324,10 @@ public class IcysBetterHorses implements ModInitializer {
 
     private void registerEntityTracking() {
         ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
+            if (entity instanceof LightningBolt bolt) {
+                BhHorseCombatAlert.startle(world, bolt.position());
+                return;
+            }
             if (entity instanceof AbstractHorse horse && IHorseData.of(horse).bh_isOwned()) {
                 if (HorseTracker.consumePendingDisown(horse.getUUID())) {
                     pendingReleases.add(horse);

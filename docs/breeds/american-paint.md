@@ -33,6 +33,18 @@ A map filled from the saddle of a Paint covers more ground than normal.
 
 Structure marking reads the game's own structure registry, so anything another mod adds is included. Stack that on the Western road bonus and it is the horse for filling in a world map.
 
+## Breed ability: Spoils
+
+Anything you kill while riding a Paint drops as if your weapon had Looting.
+
+| Bond | Effect |
+|:---|:---|
+| 0 | Looting I |
+| 40 | Looting II |
+| 100 | Looting III |
+
+It works for anything you kill from the saddle: sword, bow, or a [charge](../combat). It doesn't stack with a Looting weapon. You get whichever level is higher, so a Looting III sword on a bond 0 Paint is still Looting III. Anyone riding the Paint gets it, including a second rider. Servers can switch it off with `paint_looting` in the [config](../configuration).
+
 ## Coats
 
 3 coats, each its own texture — these breeds don't use vanilla's coat and marking system.

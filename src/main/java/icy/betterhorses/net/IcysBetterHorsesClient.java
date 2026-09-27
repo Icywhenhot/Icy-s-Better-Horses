@@ -27,6 +27,7 @@ import icy.betterhorses.net.ModMenus;
 import icy.betterhorses.net.client.CartChestScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
 import icy.betterhorses.net.network.BhRearPayload;
+import icy.betterhorses.net.network.BhChargePayload;
 import icy.betterhorses.net.network.CartSizePayload;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
@@ -86,6 +87,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
     public static KeyMapping REAR_KEY;
     public static KeyMapping FREE_LOOK_KEY;
     public static KeyMapping CART_SIZE_KEY;
+    public static KeyMapping CHARGE_KEY;
 
     private static final double BH_ROUSE_SCAN = 32.0D;
 
@@ -132,6 +134,12 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                 "key.icys-better-horses.cart_size",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_LEFT_ALT,
+                CATEGORY));
+
+        CHARGE_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.icys-better-horses.charge",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_B,
                 CATEGORY));
 
         EntityRendererRegistry.register(ModEntities.HORSE_CART, HorseCartRenderer::new);
@@ -261,6 +269,8 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                     tookServerBreeds = true;
                 }));
 
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> sendChargeChoice());
+
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             BhConfig.dropServer();
             if (tookServerBreeds) {
@@ -309,6 +319,31 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
 
         while (CART_SIZE_KEY.consumeClick()) {
             bh_trySwapCartSize(client);
+        }
+
+        while (CHARGE_KEY.consumeClick()) {
+            bh_toggleCharge(client);
+        }
+    }
+
+    private static void bh_toggleCharge(Minecraft client) {
+        if (!BhFeature.HORSE_COMBAT.on()
+                || BhConfig.serverManaged() && !BhConfig.featureEnabled(BhFeature.HORSE_CHARGE)) {
+            client.gui.chatListener().handleOverlay(
+                    Component.translatable("message.icys-better-horses.charge.blocked"));
+            return;
+        }
+        boolean on = !BhConfig.ownFeature(BhFeature.HORSE_CHARGE);
+        BhConfig.setOwnFeature(BhFeature.HORSE_CHARGE, on);
+        sendChargeChoice();
+        client.gui.chatListener().handleOverlay(Component.translatable(on
+                ? "message.icys-better-horses.charge.on"
+                : "message.icys-better-horses.charge.off"));
+    }
+
+    public static void sendChargeChoice() {
+        if (ClientPlayNetworking.canSend(BhChargePayload.TYPE)) {
+            ClientPlayNetworking.send(new BhChargePayload(BhConfig.ownFeature(BhFeature.HORSE_CHARGE)));
         }
     }
 

@@ -60,7 +60,7 @@ Draft horses are the slowest and by far the toughest, and they are the only clas
 | [Mustang](mustang) | War | Wild Instincts | 3 | Own textures | Plains, Savanna, Windswept Hills… |
 | [Haflinger](haflinger) | Pony | Packhorse | 3 | None | Snowy Slopes, Grove, Meadow… |
 | [Morgan](morgan) | Western | Easy Keeper | 5 | None | Plains, Sunflower Plains, Forest… |
-| [American Paint](american-paint) | Western | Trail Blazer | 3 | Own textures | Plains, Sunflower Plains, Savanna… |
+| [American Paint](american-paint) | Western | Trail Blazer, Spoils | 3 | Own textures | Plains, Sunflower Plains, Savanna… |
 | [Appaloosa](appaloosa) | Western | Stock Horse | 4 | Own textures | Plains, Wooded Badlands, Savanna Plateau… |
 
 ---

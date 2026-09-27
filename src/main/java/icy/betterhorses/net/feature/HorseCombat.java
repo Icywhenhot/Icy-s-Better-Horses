@@ -2,6 +2,7 @@ package icy.betterhorses.net.feature;
 
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhFeature;
 import icy.betterhorses.net.BhGears;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhHorseTraits;
@@ -33,7 +34,9 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class HorseCombat implements HorseFeature {
 
@@ -63,6 +66,8 @@ public final class HorseCombat implements HorseFeature {
     private static final double WIND_FLOOR = 0.7D;
     private static final double WIND_GAIN = 1.05D;
     private static final double TURN_TOLERANCE = 6.0D;
+
+    private static final Set<UUID> chargeOff = ConcurrentHashMap.newKeySet();
 
     private int cooldown;
     private int straight;
@@ -113,7 +118,7 @@ public final class HorseCombat implements HorseFeature {
         if (breedKey == null || !horse.onGround()) {
             return;
         }
-        if (!(horse.getControllingPassenger() instanceof Player rider)) {
+        if (!(horse.getControllingPassenger() instanceof Player rider) || !charging(rider)) {
             return;
         }
         if (!galloping(data, flat.length()) || straight < MIN_WIND) {
@@ -157,7 +162,8 @@ public final class HorseCombat implements HorseFeature {
     }
 
     private void publishCharge(AbstractHorse horse, IHorseData data, double speed) {
-        if (!galloping(data, speed) || !(horse.getControllingPassenger() instanceof Player)) {
+        if (!galloping(data, speed) || !(horse.getControllingPassenger() instanceof Player rider)
+                || !charging(rider)) {
             data.bh_setCharge(BhSurge.HIDDEN);
             return;
         }
@@ -165,6 +171,18 @@ public final class HorseCombat implements HorseFeature {
                 ? 1.0D - (double) cooldown / COOLDOWN
                 : (double) straight / MIN_WIND;
         data.bh_setCharge((int) Math.round(Mth.clamp(ready, 0.0D, 1.0D) * 100.0D));
+    }
+
+    public static void riderCharge(UUID player, boolean on) {
+        if (on) {
+            chargeOff.remove(player);
+        } else {
+            chargeOff.add(player);
+        }
+    }
+
+    private static boolean charging(Player rider) {
+        return BhFeature.HORSE_CHARGE.on() && !chargeOff.contains(rider.getUUID());
     }
 
     private static boolean galloping(IHorseData data, double speed) {
@@ -254,7 +272,7 @@ public final class HorseCombat implements HorseFeature {
     }
 
     public void onHurt(AbstractHorse horse, IHorseData data, DamageSource source) {
-        if (!(horse.level() instanceof ServerLevel level)) {
+        if (!(horse.level() instanceof ServerLevel level) || !BhFeature.HORSE_KICK.on()) {
             return;
         }
         if (data.bh_getBreedKey() == null || !(source.getEntity() instanceof LivingEntity attacker)) {
