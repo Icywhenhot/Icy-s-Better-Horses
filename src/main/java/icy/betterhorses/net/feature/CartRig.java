@@ -38,6 +38,10 @@ public final class CartRig implements HorseFeature {
         return cart;
     }
 
+    public void bind(HorseCartEntity seen) {
+        cart = seen;
+    }
+
     @Override
     public void tick(AbstractHorse horse, IHorseData data) {
         syncCartEntity(horse, data);

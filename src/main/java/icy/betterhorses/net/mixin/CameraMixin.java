@@ -8,6 +8,7 @@ import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.level.BlockGetter;
@@ -29,6 +30,8 @@ public abstract class CameraMixin {
 
     @Shadow public abstract Entity getEntity();
 
+    @Shadow public abstract boolean isDetached();
+
     @ModifyArg(method = "setup", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/Camera;setPosition(DDD)V"), index = 1)
     private double bh_raiseSmallCartView(double y) {
@@ -42,6 +45,9 @@ public abstract class CameraMixin {
         } else if (vehicle instanceof HorseCartEntity cart) {
             if (cart.size().isLarge()) return y;
             horse = cart.boundHorse();
+        } else if (vehicle != null && !isDetached()
+                && BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.getType()).getNamespace().equals("trotting_wagons")) {
+            return y + 0.5D;
         } else {
             return y;
         }

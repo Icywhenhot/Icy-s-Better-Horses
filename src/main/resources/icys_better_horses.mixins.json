@@ -11,6 +11,8 @@
 		"AnimalMixin",
 		"EntityAccessor",
 		"EntityMixin",
+		"TrottingWagonsHitchMixin",
+		"TrottingWagonsFloatMixin",
 		"EntityTypeMixin",
 		"EntitySlowBlockMixin",
 		"EquineBreedingMixin",

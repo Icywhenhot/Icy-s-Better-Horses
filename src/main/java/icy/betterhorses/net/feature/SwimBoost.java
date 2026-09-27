@@ -1,6 +1,9 @@
 package icy.betterhorses.net.feature;
 
+import icy.betterhorses.net.BhWagonHitch;
+import icy.betterhorses.net.BhWaterline;
 import icy.betterhorses.net.IHorseData;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -21,6 +24,11 @@ public final class SwimBoost implements HorseFeature {
 
     private static final double STEP_RISE = 0.15D;
 
+    private static final double HITCHED_DRAFT = 0.6D;
+    private static final double HITCHED_EASE = 0.25D;
+    private static final double HITCHED_MAX_RISE = 0.15D;
+    private static final double WAGON_GRAVITY = 0.04D;
+
     @Override
     public void tick(AbstractHorse horse, IHorseData data) {
         if (!horse.isInWater()) {
@@ -38,6 +46,18 @@ public final class SwimBoost implements HorseFeature {
         }
 
         Vec3 motion = horse.getDeltaMovement();
+
+        if (BhWagonHitch.hitched(horse)) {
+            double surface = BhWaterline.surface(horse.level(), horse.getX(), horse.getY(), horse.getZ());
+            if (!Double.isNaN(surface)) {
+                double rise = Mth.clamp((surface - HITCHED_DRAFT - horse.getY()) * HITCHED_EASE,
+                        -HITCHED_MAX_RISE, HITCHED_MAX_RISE);
+                horse.setDeltaMovement(motion.x, rise + WAGON_GRAVITY, motion.z);
+                horse.resetFallDistance();
+                horse.setOnGround(true);
+            }
+            return;
+        }
 
         if (horse.horizontalCollision) {
             horse.setDeltaMovement(motion.x, Math.max(motion.y, STEP_RISE), motion.z);

@@ -133,6 +133,9 @@ dependencies {
     implementation fg.deobf("maven.modrinth:patchouli:${patchouli_version}")
     implementation fg.deobf("maven.modrinth:cloth-config:${cloth_config_version}")
 
+    runtimeOnly fg.deobf("maven.modrinth:trotting-wagons:nLF9Zc6I")
+    runtimeOnly fg.deobf("maven.modrinth:farmers-delight:SiIpcZzM")
+
     compileOnly "org.jetbrains:annotations:26.0.2"
     runtimeOnly "org.jetbrains:annotations:26.0.2"
     implementation "com.google.code.gson:gson:2.10.1"
