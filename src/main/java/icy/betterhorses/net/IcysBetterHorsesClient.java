@@ -32,6 +32,7 @@ import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.BreedDataPayload;
 import icy.betterhorses.net.network.ConfigSyncPayload;
+import icy.betterhorses.net.network.BhChargePayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
@@ -107,6 +108,7 @@ public class IcysBetterHorsesClient {
     public static KeyMapping FREE_LOOK_KEY;
     public static KeyMapping CART_SIZE_KEY;
     public static KeyMapping RIDER_PANEL_KEY;
+    public static KeyMapping CHARGE_KEY;
 
     private static final double BH_ROUSE_SCAN = 32.0D;
 
@@ -125,6 +127,7 @@ public class IcysBetterHorsesClient {
         NeoForge.EVENT_BUS.addListener(this::onItemTooltip);
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         NeoForge.EVENT_BUS.addListener(this::onDisconnect);
+        NeoForge.EVENT_BUS.addListener(this::onLogin);
         NeoForge.EVENT_BUS.addListener(this::onEntityLeave);
         NeoForge.EVENT_BUS.addListener(RiderPanel::onScreenInit);
         NeoForge.EVENT_BUS.addListener(RiderPanel::onKey);
@@ -193,6 +196,12 @@ public class IcysBetterHorsesClient {
                 GLFW.GLFW_KEY_E,
                 CATEGORY);
 
+        CHARGE_KEY = new KeyMapping(
+                "key.icys-better-horses.charge",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_B,
+                CATEGORY);
+
         event.register(CALL_KEY);
         event.register(RADIAL_KEY);
         event.register(MANAGE_KEY);
@@ -201,6 +210,7 @@ public class IcysBetterHorsesClient {
         event.register(FREE_LOOK_KEY);
         event.register(CART_SIZE_KEY);
         event.register(RIDER_PANEL_KEY);
+        event.register(CHARGE_KEY);
     }
 
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -392,6 +402,34 @@ public class IcysBetterHorsesClient {
         while (CART_SIZE_KEY.consumeClick()) {
             bh_trySwapCartSize(client);
         }
+
+        while (CHARGE_KEY.consumeClick()) {
+            bh_toggleCharge(client);
+        }
+    }
+
+    private static void bh_toggleCharge(Minecraft client) {
+        if (!BhFeature.HORSE_COMBAT.on()
+                || BhConfig.serverManaged() && !BhConfig.featureEnabled(BhFeature.HORSE_CHARGE)) {
+            client.gui.setOverlayMessage(Component.translatable("message.icys-better-horses.charge.blocked"), false);
+            return;
+        }
+        boolean on = !BhConfig.ownFeature(BhFeature.HORSE_CHARGE);
+        BhConfig.setOwnFeature(BhFeature.HORSE_CHARGE, on);
+        sendChargeChoice();
+        client.gui.setOverlayMessage(Component.translatable(on
+                ? "message.icys-better-horses.charge.on"
+                : "message.icys-better-horses.charge.off"), false);
+    }
+
+    public static void sendChargeChoice() {
+        if (Minecraft.getInstance().getConnection() != null) {
+            PacketDistributor.sendToServer(new BhChargePayload(BhConfig.ownFeature(BhFeature.HORSE_CHARGE)));
+        }
+    }
+
+    private void onLogin(ClientPlayerNetworkEvent.LoggingIn event) {
+        sendChargeChoice();
     }
 
     private static void bh_shiftGear(Minecraft client) {

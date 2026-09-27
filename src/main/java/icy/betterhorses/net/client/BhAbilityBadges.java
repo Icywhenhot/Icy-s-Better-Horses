@@ -1,6 +1,7 @@
 package icy.betterhorses.net.client;
 
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhFeature;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.inventory.GearSlot;
@@ -317,7 +318,7 @@ public final class BhAbilityBadges {
     }
 
     private static void shield(GuiGraphics gfx, int screenW, int screenH, int charge) {
-        if (charge < 0) {
+        if (charge < 0 || !BhFeature.HORSE_CHARGE.on() || !BhConfig.ownFeature(BhFeature.HORSE_CHARGE)) {
             return;
         }
         BhConfig.Spot spot = BhConfig.chargeMeter();

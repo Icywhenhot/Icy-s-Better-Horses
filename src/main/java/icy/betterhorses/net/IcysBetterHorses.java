@@ -1,6 +1,8 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.network.BhRearPayload;
+import icy.betterhorses.net.network.BhChargePayload;
+import icy.betterhorses.net.feature.HorseCombat;
 import icy.betterhorses.net.entity.CartSize;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.network.CartSizePayload;
@@ -32,7 +34,9 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnPlacementTypes;
+import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -44,6 +48,7 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
@@ -99,6 +104,7 @@ public class IcysBetterHorses {
         NeoForge.EVENT_BUS.addListener(this::onDatapackSync);
         NeoForge.EVENT_BUS.addListener(this::onEntityJoin);
         NeoForge.EVENT_BUS.addListener(this::onEntityLeave);
+        NeoForge.EVENT_BUS.addListener(this::onDetonate);
         NeoForge.EVENT_BUS.addListener(this::onServerTick);
         NeoForge.EVENT_BUS.addListener(this::onServerStarted);
         NeoForge.EVENT_BUS.addListener(this::onServerStopping);
@@ -132,6 +138,8 @@ public class IcysBetterHorses {
                 handleRear((ServerPlayer) context.player(), payload.horseId()));
         registrar.playToServer(CartSizePayload.TYPE, new CartSizePayload.StreamCodec(), (payload, context) ->
                 handleCartSize((ServerPlayer) context.player(), payload.targetId()));
+        registrar.playToServer(BhChargePayload.TYPE, new BhChargePayload.StreamCodec(), (payload, context) ->
+                HorseCombat.riderCharge(context.player().getUUID(), payload.on()));
         registrar.playToServer(RiderPanelPayload.TYPE, new RiderPanelPayload.StreamCodec(), (payload, context) -> {
             if (context.player().containerMenu instanceof HorseInventoryLayoutAccess access) {
                 access.bh_setRiderPanel(payload.shown());
@@ -326,6 +334,11 @@ public class IcysBetterHorses {
 
     private void onEntityJoin(EntityJoinLevelEvent event) {
         if (event.getLevel().isClientSide()) return;
+        if (event.getEntity() instanceof LightningBolt bolt && !event.loadedFromDisk()
+                && event.getLevel() instanceof ServerLevel level) {
+            BhHorseCombatAlert.startle(level, bolt.position());
+            return;
+        }
         if (event.getEntity() instanceof AbstractHorse horse && IHorseData.of(horse).bh_isOwned()) {
             if (HorseTracker.consumePendingDisown(horse.getUUID())) {
                 pendingReleases.add(horse);
@@ -334,6 +347,13 @@ public class IcysBetterHorses {
             } else {
                 HorseTracker.register(horse);
             }
+        }
+    }
+
+    private void onDetonate(ExplosionEvent.Detonate event) {
+        if (event.getLevel() instanceof ServerLevel level
+                && event.getExplosion().getDirectSourceEntity() instanceof Creeper) {
+            BhHorseCombatAlert.startle(level, event.getExplosion().center());
         }
     }
 

@@ -212,6 +212,15 @@ public final class BhConfig {
         return Map.copyOf(ownFeatures != null ? ownFeatures : features);
     }
 
+    public static boolean ownFeature(BhFeature feature) {
+        return (ownFeatures != null ? ownFeatures : features).getOrDefault(feature, true);
+    }
+
+    public static synchronized void setOwnFeature(BhFeature feature, boolean on) {
+        (ownFeatures != null ? ownFeatures : features).put(feature, on);
+        save();
+    }
+
     public static BhTuning tuningView() {
         return ownTuning != null ? ownTuning : tuning;
     }

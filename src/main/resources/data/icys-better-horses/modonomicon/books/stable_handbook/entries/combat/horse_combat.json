@@ -75,6 +75,13 @@
       "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.spook.title",
       "show_title_separator": true,
       "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.spook.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "storm",
+      "title": "book.icys-better-horses.stable_handbook.combat.horse_combat.storm.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.combat.horse_combat.storm.text"
     }
   ]
 }
