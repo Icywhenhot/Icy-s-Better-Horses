@@ -603,6 +603,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         return this.bh_cartRig.cart();
     }
 
+    @Override
+    public void bh_bindCartEntity(HorseCartEntity cart) {
+        this.bh_cartRig.bind(cart);
+    }
+
     @Unique private @Nullable UUID bh_cartId;
     @Unique private int bh_bondRemainder;
     @Unique private long bh_rescueReadyAt;
@@ -1504,7 +1509,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (this.bh_hasCartGear()) {
             BhRiderSeat.publish(self.getId(), Vec3.ZERO);
             Vec3 seat = HorseCartEntity.benchSeatOffset(
-                    self, BhHorseSteering.benchSeatIndex(self, passenger), self.yBodyRot);
+                    self, BhHorseSteering.benchSeatIndex(self, passenger));
             move.accept(passenger, self.getX() + seat.x,
                     self.getY() + seat.y - BhRiderSeat.seatDrop(passenger),
                     self.getZ() + seat.z);

@@ -2,6 +2,7 @@ package icy.betterhorses.net.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -38,6 +39,7 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity> 
     protected void applyRotations(HorseCartEntity cart, PoseStack pose, float ageInTicks, float rotationYaw,
                                   float partialTick) {
         super.applyRotations(cart, pose, ageInTicks, cart.gluedRenderYaw(partialTick), partialTick);
+        pose.mulPose(Axis.XP.rotationDegrees(cart.renderTilt(partialTick)));
     }
 
     @Override

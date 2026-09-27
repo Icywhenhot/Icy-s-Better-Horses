@@ -160,6 +160,8 @@ public interface IHorseData {
 
     @Nullable HorseCartEntity bh_getCartEntity();
 
+    void bh_bindCartEntity(HorseCartEntity cart);
+
     default boolean bh_mayUseLargeCart() {
         ResourceKey<BreedType> breedKey = bh_getBreedKey();
         return breedKey != null && BhBreedData.of(breedKey).archetype().allowsLargeCart();
