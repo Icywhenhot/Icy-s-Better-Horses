@@ -4,7 +4,9 @@ import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
+import icy.betterhorses.net.inventory.RiderGearSlot;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
@@ -79,11 +81,14 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
         if (index < mountSlotEnd || index >= gearStartIndex) {
             moved = this.moveItemStackTo(sourceStack, playerInventoryStart, hotbarEnd, true);
         } else {
-            moved = this.getSlot(1).mayPlace(sourceStack)
-                    && !this.getSlot(1).hasItem()
-                    && this.moveItemStackTo(sourceStack, 1, 2, false);
+            boolean riderPanel = layoutAccess.bh_isRiderPanel();
+            moved = riderPanel
+                    ? this.bh_moveIntoRiderGear(player, sourceStack, layoutAccess.bh_getRiderGearStartIndex())
+                    : this.getSlot(1).mayPlace(sourceStack)
+                            && !this.getSlot(1).hasItem()
+                            && this.moveItemStackTo(sourceStack, 1, 2, false);
 
-            if (!moved) {
+            if (!moved && !riderPanel) {
                 moved = this.getSlot(0).mayPlace(sourceStack)
                         && !this.getSlot(0).hasItem()
                         && this.moveItemStackTo(sourceStack, 0, 1, false);
@@ -97,7 +102,7 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
                 }
             }
 
-            if (!moved && mountSlotEnd > 2) {
+            if (!moved && !riderPanel && mountSlotEnd > 2) {
                 moved = this.moveItemStackTo(sourceStack, 2, mountSlotEnd, false);
             }
 
@@ -125,6 +130,21 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
 
         sourceSlot.onTake(player, copiedStack);
         cir.setReturnValue(copiedStack);
+    }
+
+    @Unique
+    private boolean bh_moveIntoRiderGear(Player player, ItemStack stack, int start) {
+        EquipmentSlot wanted = player.getEquipmentSlotForItem(stack);
+        for (int i = start; i < this.slots.size(); i++) {
+            if (this.slots.get(i) instanceof RiderGearSlot slot
+                    && slot.type() == wanted
+                    && !slot.hasItem()
+                    && slot.mayPlace(stack)
+                    && this.moveItemStackTo(stack, i, i + 1, false)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Unique

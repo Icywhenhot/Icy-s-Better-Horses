@@ -45,6 +45,7 @@ import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import icy.betterhorses.net.client.RiderPanel;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.ChatFormatting;
@@ -141,6 +142,8 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_B,
                 CATEGORY));
+
+        RiderPanel.register();
 
         EntityRendererRegistry.register(ModEntities.HORSE_CART, HorseCartRenderer::new);
         MenuScreens.register(ModMenus.CART_CHEST, CartChestScreen::new);

@@ -6,6 +6,7 @@ import icy.betterhorses.net.feature.HorseCombat;
 import icy.betterhorses.net.entity.CartSize;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.network.CartSizePayload;
+import icy.betterhorses.net.network.RiderPanelPayload;
 import icy.betterhorses.net.network.BhFreeLookPayload;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
@@ -99,6 +100,7 @@ public class IcysBetterHorses implements ModInitializer {
         PayloadTypeRegistry.serverboundPlay().register(BhRearPayload.TYPE, new BhRearPayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(CartSizePayload.TYPE, new CartSizePayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(BhChargePayload.TYPE, new BhChargePayload.StreamCodec());
+        PayloadTypeRegistry.serverboundPlay().register(RiderPanelPayload.TYPE, new RiderPanelPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(HorseRosterSyncPayload.TYPE, new HorseRosterSyncPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(HorseManageResultPayload.TYPE, new HorseManageResultPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(TrustSyncPayload.TYPE, new TrustSyncPayload.StreamCodec());
@@ -161,6 +163,14 @@ public class IcysBetterHorses implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(BhChargePayload.TYPE, (payload, context) -> {
             ServerPlayer player = context.player();
             context.server().execute(() -> HorseCombat.riderCharge(player.getUUID(), payload.on()));
+        });
+        ServerPlayNetworking.registerGlobalReceiver(RiderPanelPayload.TYPE, (payload, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() -> {
+                if (player.containerMenu instanceof HorseInventoryLayoutAccess access) {
+                    access.bh_setRiderPanel(payload.shown());
+                }
+            });
         });
 
         ServerPlayNetworking.registerGlobalReceiver(OpenHorseRosterPayload.TYPE, (payload, context) -> {
