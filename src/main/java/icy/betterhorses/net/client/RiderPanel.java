@@ -1,0 +1,153 @@
+package icy.betterhorses.net.client;
+
+import com.mojang.blaze3d.platform.InputConstants;
+import icy.betterhorses.net.BhNetworking;
+import icy.betterhorses.net.HorseInventoryLayoutAccess;
+import icy.betterhorses.net.IcysBetterHorsesClient;
+import icy.betterhorses.net.network.RiderPanelPayload;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHandler;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.fml.ModList;
+import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.GLFW;
+
+import java.util.function.BooleanSupplier;
+
+public final class RiderPanel {
+
+    private static final int TAB_X = -22;
+    private static final int TAB_Y = 28;
+    private static final int TAB_SIZE = 20;
+    private static final int CURIOS_X = 26;
+    private static final int CURIOS_Y = 18;
+    private static final boolean CURIOS = ModList.get().isLoaded("curios");
+
+    private static double @Nullable [] cursor;
+
+    private RiderPanel() {}
+
+    public static void onScreenInit(ScreenEvent.Init.Post event) {
+        Screen screen = event.getScreen();
+        if (screen instanceof HorseInventoryScreen horse) {
+            restoreCursor();
+            AbstractWidget curios = CURIOS
+                    ? CuriosLink.button(horse.getGuiLeft() + CURIOS_X, horse.getGuiTop() + CURIOS_Y)
+                    : null;
+            event.addListener(new Tab(horse.getGuiLeft() + TAB_X, horse.getGuiTop() + TAB_Y,
+                    () -> shown(horse), b -> toggle(horse), curios));
+            if (curios != null) {
+                event.addListener(curios);
+            }
+        } else if (CURIOS && CuriosLink.isCuriosScreen(screen)) {
+            restoreCursor();
+            if (mountedOnHorse()) {
+                AbstractContainerScreen<?> gui = (AbstractContainerScreen<?>) screen;
+                event.addListener(new Tab(gui.getGuiLeft() - CuriosLink.panelWidth(screen) + TAB_X,
+                        gui.getGuiTop() + TAB_Y, () -> true, b -> backToHorse(), null));
+            }
+        }
+    }
+
+    public static void onKey(ScreenEvent.KeyPressed.Pre event) {
+        if (!IcysBetterHorsesClient.RIDER_PANEL_KEY.isActiveAndMatches(
+                InputConstants.getKey(event.getKeyCode(), event.getScanCode()))) {
+            return;
+        }
+        Screen screen = event.getScreen();
+        if (screen instanceof HorseInventoryScreen horse) {
+            toggle(horse);
+        } else if (CURIOS && CuriosLink.isCuriosScreen(screen) && mountedOnHorse()) {
+            backToHorse();
+        } else {
+            return;
+        }
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        event.setCanceled(true);
+    }
+
+    public static boolean shown(HorseInventoryScreen screen) {
+        return ((HorseInventoryLayoutAccess) screen.getMenu()).bh_isRiderPanel();
+    }
+
+    static void rememberCursor() {
+        MouseHandler mouse = Minecraft.getInstance().mouseHandler;
+        cursor = new double[]{mouse.xpos(), mouse.ypos()};
+    }
+
+    private static void restoreCursor() {
+        if (cursor != null) {
+            GLFW.glfwSetCursorPos(Minecraft.getInstance().getWindow().getWindow(), cursor[0], cursor[1]);
+            cursor = null;
+        }
+    }
+
+    private static boolean mountedOnHorse() {
+        return Minecraft.getInstance().player.getVehicle() instanceof AbstractHorse horse && horse.isTamed();
+    }
+
+    private static void toggle(HorseInventoryScreen screen) {
+        boolean shown = !shown(screen);
+        ((HorseInventoryLayoutAccess) screen.getMenu()).bh_setRiderPanel(shown);
+        BhNetworking.sendToServer(new RiderPanelPayload(shown));
+    }
+
+    private static void backToHorse() {
+        rememberCursor();
+        Minecraft.getInstance().player.sendOpenInventory();
+    }
+
+    private static final class Tab extends Button {
+
+        private final BooleanSupplier riderShown;
+        private final @Nullable AbstractWidget curios;
+        private final ItemStack face;
+        private final ItemStack saddle = new ItemStack(Items.SADDLE);
+        private boolean showing;
+
+        Tab(int x, int y, BooleanSupplier riderShown, OnPress press, @Nullable AbstractWidget curios) {
+            super(x, y, TAB_SIZE, TAB_SIZE, Component.empty(), press, DEFAULT_NARRATION);
+            this.riderShown = riderShown;
+            this.curios = curios;
+            this.face = new ItemStack(Items.PLAYER_HEAD);
+            this.face.getOrCreateTag().put("SkullOwner",
+                    NbtUtils.writeGameProfile(new CompoundTag(), Minecraft.getInstance().player.getGameProfile()));
+            this.retip();
+        }
+
+        private void retip() {
+            this.showing = this.riderShown.getAsBoolean();
+            if (this.curios != null) {
+                this.curios.visible = this.showing;
+            }
+            Component key = IcysBetterHorsesClient.RIDER_PANEL_KEY.getTranslatedKeyMessage();
+            this.setTooltip(Tooltip.create(Component.translatable(this.showing
+                    ? "gui.icys-better-horses.rider_panel.to_horse"
+                    : "gui.icys-better-horses.rider_panel.to_rider", key)));
+        }
+
+        @Override
+        protected void renderWidget(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
+            if (this.showing != this.riderShown.getAsBoolean()) {
+                this.retip();
+            }
+            super.renderWidget(gfx, mouseX, mouseY, partialTick);
+            gfx.renderItem(this.showing ? this.saddle : this.face, this.getX() + 2, this.getY() + 2);
+        }
+    }
+}

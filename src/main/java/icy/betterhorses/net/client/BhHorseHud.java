@@ -5,7 +5,10 @@ import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.registry.BreedType;
 import icy.betterhorses.net.registry.GenderType;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -27,6 +30,39 @@ public final class BhHorseHud {
     private static final double JUMP_DISPLAY = 6.0D;
 
     private BhHorseHud() {}
+
+    public static void hungerOnHorseback(GuiGraphics gfx, int width, int height) {
+        Minecraft client = Minecraft.getInstance();
+        if (!(client.player.getVehicle() instanceof AbstractHorse horse) || !horse.showVehicleHealth()
+                || client.options.hideGui || !(client.gui instanceof ForgeGui gui) || !gui.shouldDrawSurvivalElements()) {
+            return;
+        }
+        gui.setupOverlayRenderState(true, false);
+        gui.renderFood(width, height, gfx);
+    }
+
+    public static boolean xpOverJumpBar() {
+        Minecraft client = Minecraft.getInstance();
+        LocalPlayer player = client.player;
+        return player != null
+                && player.jumpableVehicle() instanceof AbstractHorse
+                && client.gameMode.hasExperience()
+                && !client.options.keyJump.isDown()
+                && player.getJumpRidingScale() <= 0.0F;
+    }
+
+    public static void experience(GuiGraphics gfx, int width) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.options.hideGui || !(client.gui instanceof ForgeGui gui)) {
+            return;
+        }
+        gui.setupOverlayRenderState(true, false);
+        gfx.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.disableBlend();
+        gui.renderExperienceBar(gfx, width / 2 - 91);
+        RenderSystem.enableBlend();
+        gfx.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+    }
 
     public static void render(GuiGraphics gfx) {
         Minecraft client = Minecraft.getInstance();

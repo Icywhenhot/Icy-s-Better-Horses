@@ -13,6 +13,10 @@
 		"EntityMixin",
 		"TrottingWagonsHitchMixin",
 		"TrottingWagonsFloatMixin",
+		"QuarkSortMixin",
+		"QuarkDepositMixin",
+		"QuarkButtonsMixin",
+		"VehicleStepMixin",
 		"EntityTypeMixin",
 		"EntitySlowBlockMixin",
 		"EquineBreedingMixin",
@@ -46,6 +50,7 @@
 		"GameRendererMixin",
 		"LivingEntityRendererMixin",
 		"LivingEntityRendererRiderMixin",
+		"MountFacingMixin",
 		"SpyglassModListMixin"
 	],
 	"injectors": {

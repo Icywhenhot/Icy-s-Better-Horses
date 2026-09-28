@@ -53,6 +53,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.client.settings.KeyConflictContext;
+import net.minecraftforge.client.settings.KeyModifier;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.UUID;
@@ -113,6 +115,14 @@ public final class IcysBetterHorsesClient {
             GLFW.GLFW_KEY_B,
             KEY_CATEGORY);
 
+    public static final KeyMapping RIDER_PANEL_KEY = new KeyMapping(
+            "key.icys-better-horses.rider_panel",
+            KeyConflictContext.GUI,
+            KeyModifier.CONTROL,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_E,
+            KEY_CATEGORY);
+
     private IcysBetterHorsesClient() {}
 
     @SubscribeEvent
@@ -125,6 +135,7 @@ public final class IcysBetterHorsesClient {
         event.register(FREE_LOOK_KEY);
         event.register(CART_SIZE_KEY);
         event.register(CHARGE_KEY);
+        event.register(RIDER_PANEL_KEY);
     }
 
     public static void bh_tryOpenRadial(Minecraft client) {

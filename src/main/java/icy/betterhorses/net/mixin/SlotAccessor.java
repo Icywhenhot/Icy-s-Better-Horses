@@ -8,6 +8,10 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(Slot.class)
 public interface SlotAccessor {
     @Mutable
+    @Accessor("x")
+    void bh_setX(int x);
+
+    @Mutable
     @Accessor("y")
     void bh_setY(int y);
 }

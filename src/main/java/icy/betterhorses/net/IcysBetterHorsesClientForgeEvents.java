@@ -11,6 +11,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import java.util.List;
 import icy.betterhorses.net.client.BhHorseHud;
+import icy.betterhorses.net.client.RiderPanel;
+import net.minecraftforge.client.event.ScreenEvent;
 import icy.betterhorses.net.client.HorseGearController;
 import icy.betterhorses.net.client.HorseInfoScreen;
 import icy.betterhorses.net.client.HorseRosterScreen;
@@ -138,6 +140,23 @@ public final class IcysBetterHorsesClientForgeEvents {
                 && BhInventoryEffects.fits(screen)) {
             event.setCanceled(true);
         }
+        int width = event.getWindow().getGuiScaledWidth();
+        if (event.getOverlay() == VanillaGuiOverlay.FOOD_LEVEL.type()) {
+            BhHorseHud.hungerOnHorseback(event.getGuiGraphics(), width, event.getWindow().getGuiScaledHeight());
+        } else if (event.getOverlay() == VanillaGuiOverlay.JUMP_BAR.type() && BhHorseHud.xpOverJumpBar()) {
+            BhHorseHud.experience(event.getGuiGraphics(), width);
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onScreenInit(ScreenEvent.Init.Post event) {
+        RiderPanel.onScreenInit(event);
+    }
+
+    @SubscribeEvent
+    public static void onScreenKey(ScreenEvent.KeyPressed.Pre event) {
+        RiderPanel.onKey(event);
     }
 
     @SubscribeEvent
