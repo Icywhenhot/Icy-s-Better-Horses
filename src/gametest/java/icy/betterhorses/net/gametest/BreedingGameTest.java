@@ -39,12 +39,7 @@ public class BreedingGameTest implements FabricGameTest {
         ServerLevel level = helper.getLevel();
         AbstractHorse mother = ownedTamedHorse(helper, HorseBreed.CLYDESDALE, BhContent.FEMALE.key(), 2, 2);
         AbstractHorse father = ownedTamedHorse(helper, HorseBreed.SHIRE, BhContent.MALE.key(), 3, 2);
-        AABB nearby = mother.getBoundingBox().inflate(4);
-
-        mother.spawnChildFromBreeding(level, father);
-
-        List<AbstractHorse> foals = level.getEntitiesOfClass(AbstractHorse.class, nearby,
-                h -> h != mother && h != father);
+        List<AbstractHorse> foals = newHorsesFrom(level, mother, () -> mother.spawnChildFromBreeding(level, father));
         helper.assertTrue(foals.size() == 1, "expected exactly one foal, found " + foals.size());
         AbstractHorse foal = foals.get(0);
         IHorseData foalData = IHorseData.of(foal);
@@ -65,12 +60,7 @@ public class BreedingGameTest implements FabricGameTest {
         ServerLevel level = helper.getLevel();
         AbstractHorse mother = ownedTamedHorse(helper, HorseBreed.ARABIAN, BhContent.FEMALE.key(), 2, 2);
         AbstractHorse father = ownedTamedHorse(helper, HorseBreed.ARABIAN, BhContent.MALE.key(), 3, 2);
-        AABB nearby = mother.getBoundingBox().inflate(4);
-
-        mother.spawnChildFromBreeding(level, father);
-
-        List<AbstractHorse> foals = level.getEntitiesOfClass(AbstractHorse.class, nearby,
-                h -> h != mother && h != father);
+        List<AbstractHorse> foals = newHorsesFrom(level, mother, () -> mother.spawnChildFromBreeding(level, father));
         helper.assertTrue(foals.size() == 1, "expected exactly one foal, found " + foals.size());
         IHorseData foalData = IHorseData.of(foals.get(0));
         helper.assertTrue(foalData.bh_getBreed() == HorseBreed.ARABIAN, "foal of two Arabians should be an Arabian");
@@ -112,6 +102,14 @@ public class BreedingGameTest implements FabricGameTest {
         helper.assertFalse(mother.isInLove(), "breeding should reset the mother's love/cooldown state");
         helper.assertFalse(father.isInLove(), "breeding should reset the father's love/cooldown state");
         helper.succeed();
+    }
+
+    // only horses that appeared during the action, so a neighbouring test's horses can't be counted
+    static List<AbstractHorse> newHorsesFrom(ServerLevel level, AbstractHorse near, Runnable action) {
+        AABB box = near.getBoundingBox().inflate(4);
+        java.util.Set<AbstractHorse> before = new java.util.HashSet<>(level.getEntitiesOfClass(AbstractHorse.class, box));
+        action.run();
+        return level.getEntitiesOfClass(AbstractHorse.class, box, h -> !before.contains(h));
     }
 
     private static void floor(GameTestHelper helper) {
