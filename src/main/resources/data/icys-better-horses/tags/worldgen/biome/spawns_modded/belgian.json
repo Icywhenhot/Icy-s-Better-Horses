@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    { "id": "#c:taiga", "required": false },
+    { "id": "#c:forest", "required": false }
+  ]
+}

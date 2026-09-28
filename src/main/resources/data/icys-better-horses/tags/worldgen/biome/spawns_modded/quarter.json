@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    { "id": "#c:plains", "required": false },
+    { "id": "#c:savanna", "required": false }
+  ]
+}

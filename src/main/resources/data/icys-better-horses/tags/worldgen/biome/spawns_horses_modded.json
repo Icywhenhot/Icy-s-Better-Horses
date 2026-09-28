@@ -1,0 +1,20 @@
+{
+  "replace": false,
+  "values": [
+    "#icys-better-horses:spawns_modded/american_paint",
+    "#icys-better-horses:spawns_modded/andalusian",
+    "#icys-better-horses:spawns_modded/appaloosa",
+    "#icys-better-horses:spawns_modded/arabian",
+    "#icys-better-horses:spawns_modded/belgian",
+    "#icys-better-horses:spawns_modded/clydesdale",
+    "#icys-better-horses:spawns_modded/friesian",
+    "#icys-better-horses:spawns_modded/haflinger",
+    "#icys-better-horses:spawns_modded/icelandic",
+    "#icys-better-horses:spawns_modded/morgan",
+    "#icys-better-horses:spawns_modded/mustang",
+    "#icys-better-horses:spawns_modded/percheron",
+    "#icys-better-horses:spawns_modded/quarter",
+    "#icys-better-horses:spawns_modded/shire",
+    "#icys-better-horses:spawns_modded/thoroughbred"
+  ]
+}

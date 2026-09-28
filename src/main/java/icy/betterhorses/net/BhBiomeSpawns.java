@@ -1,6 +1,7 @@
 package icy.betterhorses.net;
 
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
+import net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.fabricmc.fabric.api.biome.v1.ModificationPhase;
 import net.minecraft.core.registries.Registries;
@@ -11,17 +12,24 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 
+import java.util.function.Predicate;
+
 public final class BhBiomeSpawns {
 
     private static final TagKey<Biome> SPAWNS = TagKey.create(Registries.BIOME,
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "spawns_horses"));
+    private static final TagKey<Biome> MODDED_SPAWNS = TagKey.create(Registries.BIOME,
+            new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "spawns_horses_modded"));
 
     private BhBiomeSpawns() {}
 
     public static void register() {
+        Predicate<BiomeSelectionContext> modded = BiomeSelectors.foundInOverworld()
+                .and(BiomeSelectors.vanilla().negate())
+                .and(BiomeSelectors.tag(MODDED_SPAWNS));
         BiomeModifications
                 .create(new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "horse_biome_spawns"))
-                .add(ModificationPhase.ADDITIONS, BiomeSelectors.tag(SPAWNS), (selection, modification) -> {
+                .add(ModificationPhase.ADDITIONS, BiomeSelectors.tag(SPAWNS).or(modded), (selection, modification) -> {
                     BhTuning tuning = BhConfig.tuning();
                     if (tuning.spawnWeight() <= 0) {
                         return;

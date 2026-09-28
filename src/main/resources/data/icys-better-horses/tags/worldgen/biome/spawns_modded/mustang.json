@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    { "id": "#c:plains", "required": false },
+    { "id": "#c:savanna", "required": false },
+    { "id": "#c:badlands", "required": false },
+    { "id": "#c:windswept", "required": false }
+  ]
+}

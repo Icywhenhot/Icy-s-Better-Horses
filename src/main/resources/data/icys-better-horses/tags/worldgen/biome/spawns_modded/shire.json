@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    { "id": "#c:forest", "required": false },
+    { "id": "#c:birch_forest", "required": false }
+  ]
+}
