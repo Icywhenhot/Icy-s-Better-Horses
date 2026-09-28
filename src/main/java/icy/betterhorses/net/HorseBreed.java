@@ -72,6 +72,8 @@ public enum HorseBreed {
 
     private final TagKey<Biome> biomeTag = TagKey.create(Registries.BIOME,
             Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "spawns/" + name().toLowerCase(java.util.Locale.ROOT)));
+    private final TagKey<Biome> moddedTag = TagKey.create(Registries.BIOME,
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "spawns_modded/" + name().toLowerCase(java.util.Locale.ROOT)));
     private final BreedArchetype archetype;
     private final @Nullable Supplier<BreedAbility> ability;
 
@@ -165,6 +167,11 @@ public enum HorseBreed {
             if (!breed.isRealBreed()) continue;
             if (biome.is(breed.biomeTag())) {
                 matches.add(breed);
+            }
+        }
+        if (matches.isEmpty()) {
+            for (HorseBreed breed : VALUES) {
+                if (breed.isRealBreed() && biome.is(breed.moddedTag)) matches.add(breed);
             }
         }
         return matches;

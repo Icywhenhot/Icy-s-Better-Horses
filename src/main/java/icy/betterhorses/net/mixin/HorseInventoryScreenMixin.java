@@ -255,7 +255,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         boolean near = mouseX >= right - BH_STAR_SIZE - BH_STAR_HOVER_REACH
                 && mouseX <= right + 12
                 && mouseY >= starY - 10
-                && mouseY <= starY + BH_STAR_SIZE + 10;
+                && mouseY <= starY + BH_STAR_SIZE + 3;
 
         long now = System.currentTimeMillis();
         float dt = this.bh_starLastMs < 0L ? 0.016F : Math.min((now - this.bh_starLastMs) / 1000.0F, 0.05F);
