@@ -129,6 +129,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Shadow
     protected abstract void doPlayerRide(Player player);
 
+    @Shadow
+    private @Nullable Vec3 getDismountLocationInDirection(Vec3 direction, LivingEntity passenger) {
+        return null;
+    }
 
     @Unique private volatile @Nullable UUID bh_owner = null;
     @Unique private ResourceKey<CommandType> bh_command = BhContent.COMMAND_FOLLOW.key();
@@ -1333,6 +1337,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private void bh_rotateHorseInsteadOfPlayer(Player player, CallbackInfo ci) {
         if (BhHorseInteraction.rotateHorseInsteadOfPlayer((AbstractHorse) (Object) this, this, player)) {
             ci.cancel();
+        }
+    }
+
+    @Inject(method = "getDismountLocationForPassenger", at = @At("HEAD"), cancellable = true)
+    private void bh_dismountWhereRiderLooks(LivingEntity passenger, CallbackInfoReturnable<Vec3> cir) {
+        Vec3 spot = this.getDismountLocationInDirection(
+                getCollisionHorizontalEscapeVector(this.getBbWidth(), passenger.getBbWidth(), passenger.getYRot()),
+                passenger);
+        if (spot != null) {
+            cir.setReturnValue(spot);
         }
     }
 

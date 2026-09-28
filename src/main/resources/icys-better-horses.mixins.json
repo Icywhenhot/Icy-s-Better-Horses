@@ -38,7 +38,8 @@
 		"ProjectileImpactMixin",
 		"RepairItemRecipeMixin",
 		"SlotAccessor",
-		"SpawnPlacementsAccessor"
+		"SpawnPlacementsAccessor",
+		"VehicleStepMixin"
 	],
 	"client": [
 		"AbstractContainerScreenAccessor",
@@ -53,7 +54,8 @@
 		"LevelRendererMixin",
 		"GameRendererMixin",
 		"LivingEntityRendererMixin",
-		"LivingEntityRendererRiderMixin"
+		"LivingEntityRendererRiderMixin",
+		"MountFacingMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

@@ -50,6 +50,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import icy.betterhorses.net.client.RiderPanel;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
@@ -154,6 +155,7 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
             }
         });
         HudRenderCallback.EVENT.register((gfx, delta) -> BhHorseHud.render(gfx));
+        RiderPanel.register();
         ItemTooltipCallback.EVENT.register((stack, context, lines) -> {
             ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
             if (!id.getNamespace().equals(IcysBetterHorses.RESOURCE_NAMESPACE) || lines.isEmpty()) {

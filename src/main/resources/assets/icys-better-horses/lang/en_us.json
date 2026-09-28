@@ -7,6 +7,8 @@
   "key.icys-better-horses.rear": "Rear Horse",
   "key.icys-better-horses.free_look": "Free Look (hold while riding)",
   "key.icys-better-horses.cart_size": "Swap Cart Size",
+  "gui.icys-better-horses.rider_panel.to_rider": "Show your gear (%s)",
+  "gui.icys-better-horses.rider_panel.to_horse": "Show horse gear (%s)",
   "key.icys-better-horses.charge": "Toggle Horse Charge",
   "message.icys-better-horses.cart_size_passengers": "Remove the extra passengers before you switch the cart.",
   "message.icys-better-horses.cart_size_blocked": "Not enough room here to switch the cart.",
