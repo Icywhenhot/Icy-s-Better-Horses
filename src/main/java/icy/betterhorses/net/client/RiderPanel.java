@@ -1,6 +1,7 @@
 package icy.betterhorses.net.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.systems.RenderSystem;
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.IcysBetterHorsesClient;
 import icy.betterhorses.net.network.RiderPanelPayload;
@@ -9,18 +10,16 @@ import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.ResolvableProfile;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -31,9 +30,15 @@ import java.util.function.BooleanSupplier;
 
 public final class RiderPanel {
 
-    private static final int TAB_X = -22;
-    private static final int TAB_Y = 28;
-    private static final int TAB_SIZE = 20;
+    private static final ResourceLocation HORSE_ICON =
+            ResourceLocation.fromNamespaceAndPath("icys-better-horses", "textures/gui/switcher/horse.png");
+    private static final int ICON_X = -18;
+    private static final int ICON_Y = 24;
+    private static final int ICON_W = 16;
+    private static final int ICON_H = 21;
+    private static final int FACE_SIZE = 16;
+    private static final long POP_MS = 220L;
+    private static final float POP_FROM = 0.4F;
     private static final int CURIOS_X = 24;
     private static final int CURIOS_Y = 16;
     private static final boolean CURIOS = ModList.get().isLoaded("curios");
@@ -49,7 +54,7 @@ public final class RiderPanel {
             AbstractWidget curios = CURIOS
                     ? CuriosLink.button(horse.getGuiLeft() + CURIOS_X, horse.getGuiTop() + CURIOS_Y)
                     : null;
-            event.addListener(new Tab(horse.getGuiLeft() + TAB_X, horse.getGuiTop() + TAB_Y,
+            event.addListener(new Tab(horse.getGuiLeft() + ICON_X, horse.getGuiTop() + ICON_Y,
                     () -> shown(horse), b -> toggle(horse), curios));
             if (curios != null) {
                 event.addListener(curios);
@@ -58,8 +63,8 @@ public final class RiderPanel {
             restoreCursor();
             if (mountedOnHorse()) {
                 AbstractContainerScreen<?> gui = (AbstractContainerScreen<?>) screen;
-                event.addListener(new Tab(gui.getGuiLeft() - CuriosLink.panelWidth(screen) + TAB_X,
-                        gui.getGuiTop() + TAB_Y, () -> true, b -> backToHorse(), null));
+                event.addListener(new Tab(gui.getGuiLeft() - CuriosLink.panelWidth(screen) + ICON_X,
+                        gui.getGuiTop() + ICON_Y, () -> true, b -> backToHorse(), null));
             }
         }
     }
@@ -116,16 +121,13 @@ public final class RiderPanel {
 
         private final BooleanSupplier riderShown;
         private final @Nullable AbstractWidget curios;
-        private final ItemStack face;
-        private final ItemStack saddle = new ItemStack(Items.SADDLE);
         private boolean showing;
+        private long popAt = -1L;
 
         Tab(int x, int y, BooleanSupplier riderShown, OnPress press, @Nullable AbstractWidget curios) {
-            super(x, y, TAB_SIZE, TAB_SIZE, Component.empty(), press, DEFAULT_NARRATION);
+            super(x, y, ICON_W, ICON_H, Component.empty(), press, DEFAULT_NARRATION);
             this.riderShown = riderShown;
             this.curios = curios;
-            this.face = new ItemStack(Items.PLAYER_HEAD);
-            this.face.set(DataComponents.PROFILE, new ResolvableProfile(Minecraft.getInstance().player.getGameProfile()));
             this.retip();
         }
 
@@ -144,9 +146,25 @@ public final class RiderPanel {
         protected void renderWidget(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
             if (this.showing != this.riderShown.getAsBoolean()) {
                 this.retip();
+                this.popAt = System.currentTimeMillis();
             }
-            super.renderWidget(gfx, mouseX, mouseY, partialTick);
-            gfx.renderItem(this.showing ? this.saddle : this.face, this.getX() + 2, this.getY() + 2);
+            float t = this.popAt < 0L ? 1.0F : (System.currentTimeMillis() - this.popAt) / (float) POP_MS;
+            float scale = t >= 1.0F ? 1.0F : POP_FROM + (1.0F - POP_FROM) * BhAnim.easeOutBack(t);
+
+            gfx.pose().pushPose();
+            gfx.pose().translate(this.getX() + ICON_W / 2.0F, this.getY() + ICON_H / 2.0F, 0.0F);
+            gfx.pose().scale(scale, scale, 1.0F);
+            gfx.pose().translate(-ICON_W / 2.0F, -ICON_H / 2.0F, 0.0F);
+            if (this.showing) {
+                PlayerFaceRenderer.draw(gfx, Minecraft.getInstance().player.getSkin(),
+                        0, (ICON_H - FACE_SIZE) / 2, FACE_SIZE);
+            } else {
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+                gfx.blit(HORSE_ICON, 0, 0, 0.0F, 0.0F, ICON_W, ICON_H, ICON_W, ICON_H);
+                RenderSystem.disableBlend();
+            }
+            gfx.pose().popPose();
         }
     }
 }
