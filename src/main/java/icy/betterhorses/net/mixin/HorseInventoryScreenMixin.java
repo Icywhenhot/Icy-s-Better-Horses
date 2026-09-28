@@ -17,6 +17,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -163,14 +164,21 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
         this.bh_drawGearPanel(gfx);
         this.bh_drawChestPanel(gfx);
+        float feet = y + 44 + 17 * (horse.getBbHeight() / horse.getScale() / 2.0F + 0.25F);
+        int feetY = Mth.floor(feet);
+        gfx.enableScissor(x + 26, y + 18, x + 78, y + 70);
+        gfx.pose().pushPose();
+        gfx.pose().translate(0.0F, feet - feetY, 0.0F);
         InventoryScreen.renderEntityInInventoryFollowsMouse(
                 gfx,
                 x + 52,
-                y + 70,
+                feetY,
                 17,
                 (float) (x + 52) - this.xMouse,
                 (float) (y + 44) - this.yMouse,
                 horse);
+        gfx.pose().popPose();
+        gfx.disableScissor();
         ci.cancel();
     }
 
@@ -242,7 +250,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         boolean near = mouseX >= right - BH_STAR_SIZE - BH_STAR_HOVER_REACH
                 && mouseX <= right + 12
                 && mouseY >= starY - 10
-                && mouseY <= starY + BH_STAR_SIZE + 10;
+                && mouseY <= starY + BH_STAR_SIZE + 3;
 
         long now = System.currentTimeMillis();
         float dt = this.bh_starLastMs < 0L ? 0.016F : Math.min((now - this.bh_starLastMs) / 1000.0F, 0.05F);

@@ -1,5 +1,6 @@
 package icy.betterhorses.net.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import icy.betterhorses.net.BhNetworking;
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.mixin.AbstractContainerScreenAccessor;
@@ -9,22 +10,26 @@ import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 public final class RiderPanel {
 
-    private static final int TAB_X = -22;
-    private static final int TAB_Y = 28;
-    private static final int TAB_SIZE = 20;
+    private static final ResourceLocation HORSE_ICON =
+            new ResourceLocation("icys-better-horses", "textures/gui/switcher/horse.png");
+    private static final int ICON_X = -18;
+    private static final int ICON_Y = 24;
+    private static final int ICON_W = 16;
+    private static final int ICON_H = 21;
+    private static final int FACE_SIZE = 16;
+    private static final long POP_MS = 220L;
+    private static final float POP_FROM = 0.4F;
 
     private RiderPanel() {}
 
@@ -59,18 +64,14 @@ public final class RiderPanel {
     private static final class Tab extends Button {
 
         private final HorseInventoryScreen screen;
-        private final ItemStack face;
-        private final ItemStack saddle = new ItemStack(Items.SADDLE);
         private boolean showing;
+        private long popAt = -1L;
 
         Tab(HorseInventoryScreen screen) {
-            super(((AbstractContainerScreenAccessor) screen).bh_leftPos() + TAB_X,
-                    ((AbstractContainerScreenAccessor) screen).bh_topPos() + TAB_Y, TAB_SIZE, TAB_SIZE,
+            super(((AbstractContainerScreenAccessor) screen).bh_leftPos() + ICON_X,
+                    ((AbstractContainerScreenAccessor) screen).bh_topPos() + ICON_Y, ICON_W, ICON_H,
                     Component.empty(), b -> toggle(screen), DEFAULT_NARRATION);
             this.screen = screen;
-            this.face = new ItemStack(Items.PLAYER_HEAD);
-            this.face.getOrCreateTag().put("SkullOwner",
-                    NbtUtils.writeGameProfile(new CompoundTag(), Minecraft.getInstance().player.getGameProfile()));
             this.retip();
         }
 
@@ -87,9 +88,25 @@ public final class RiderPanel {
         protected void renderWidget(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
             if (this.showing != shown(this.screen)) {
                 this.retip();
+                this.popAt = System.currentTimeMillis();
             }
-            super.renderWidget(gfx, mouseX, mouseY, partialTick);
-            gfx.renderItem(this.showing ? this.saddle : this.face, this.getX() + 2, this.getY() + 2);
+            float t = this.popAt < 0L ? 1.0F : (System.currentTimeMillis() - this.popAt) / (float) POP_MS;
+            float scale = t >= 1.0F ? 1.0F : POP_FROM + (1.0F - POP_FROM) * BhAnim.easeOutBack(t);
+
+            gfx.pose().pushPose();
+            gfx.pose().translate(this.getX() + ICON_W / 2.0F, this.getY() + ICON_H / 2.0F, 0.0F);
+            gfx.pose().scale(scale, scale, 1.0F);
+            gfx.pose().translate(-ICON_W / 2.0F, -ICON_H / 2.0F, 0.0F);
+            if (this.showing) {
+                PlayerFaceRenderer.draw(gfx, Minecraft.getInstance().player.getSkinTextureLocation(),
+                        0, (ICON_H - FACE_SIZE) / 2, FACE_SIZE);
+            } else {
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+                gfx.blit(HORSE_ICON, 0, 0, 0.0F, 0.0F, ICON_W, ICON_H, ICON_W, ICON_H);
+                RenderSystem.disableBlend();
+            }
+            gfx.pose().popPose();
         }
     }
 }
