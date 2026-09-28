@@ -33,11 +33,8 @@ import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraft.world.item.Item;
 import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.registries.RegistryObject;
 import icy.betterhorses.net.network.BreedDataPayload;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.BhChargePayload;
@@ -266,13 +263,6 @@ public final class IcysBetterHorsesClient {
             BhNamedCoats.clearCache();
             BhJumpClips.load(manager);
         });
-    }
-
-    @SubscribeEvent
-    public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
-        for (RegistryObject<Item> egg : ModItems.BREED_SPAWN_EGGS) {
-            event.register((stack, layer) -> -1, egg.get());
-        }
     }
 
     public static void sendChargeChoice() {
