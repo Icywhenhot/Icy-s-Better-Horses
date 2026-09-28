@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -19,6 +20,8 @@ public final class BhBiomeSpawns {
 
     private static final TagKey<Biome> SPAWNS = TagKey.create(Registries.BIOME,
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "spawns_horses"));
+    private static final TagKey<Biome> MODDED_SPAWNS = TagKey.create(Registries.BIOME,
+            new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "spawns_horses_modded"));
 
     private static final DeferredRegister<Codec<? extends BiomeModifier>> SERIALIZERS =
             DeferredRegister.create(ForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS,
@@ -29,6 +32,12 @@ public final class BhBiomeSpawns {
     }
 
     private BhBiomeSpawns() {}
+
+    private static boolean moddedSpawn(Holder<Biome> biome) {
+        return biome.is(MODDED_SPAWNS)
+                && biome.is(BiomeTags.IS_OVERWORLD)
+                && biome.unwrapKey().filter(key -> !key.location().getNamespace().equals("minecraft")).isPresent();
+    }
 
     public static void register(IEventBus bus) {
         SERIALIZERS.register(bus);
@@ -41,7 +50,7 @@ public final class BhBiomeSpawns {
 
         @Override
         public void modify(Holder<Biome> biome, Phase phase, ModifiableBiomeInfo.BiomeInfo.Builder builder) {
-            if (phase != Phase.ADD || !biome.is(SPAWNS)) return;
+            if (phase != Phase.ADD || !(biome.is(SPAWNS) || moddedSpawn(biome))) return;
 
             BhTuning tuning = BhConfig.tuning();
             if (tuning.spawnWeight() <= 0) return;

@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    { "id": "#minecraft:is_taiga", "required": false },
+    { "id": "#minecraft:is_forest", "required": false }
+  ]
+}

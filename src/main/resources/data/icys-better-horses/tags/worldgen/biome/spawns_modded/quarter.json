@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    { "id": "#forge:is_plains", "required": false },
+    { "id": "#minecraft:is_savanna", "required": false }
+  ]
+}

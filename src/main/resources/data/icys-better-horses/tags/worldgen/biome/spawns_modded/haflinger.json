@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    { "id": "#forge:is_mountain", "required": false },
+    { "id": "#minecraft:is_mountain", "required": false }
+  ]
+}

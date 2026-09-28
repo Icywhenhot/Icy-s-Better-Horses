@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    { "id": "#forge:is_plains", "required": false },
+    { "id": "#minecraft:is_savanna", "required": false },
+    { "id": "#minecraft:is_badlands", "required": false },
+    { "id": "#minecraft:is_hill", "required": false }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "replace": false,
+  "values": [
+    { "id": "#forge:is_snowy", "required": false }
+  ]
+}
