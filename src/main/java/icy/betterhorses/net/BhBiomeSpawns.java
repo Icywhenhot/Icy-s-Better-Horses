@@ -9,6 +9,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.world.BiomeModifier;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
@@ -18,8 +19,16 @@ public final class BhBiomeSpawns {
 
     private static final TagKey<Biome> SPAWNS = TagKey.create(Registries.BIOME,
             ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "spawns_horses"));
+    private static final TagKey<Biome> MODDED_SPAWNS = TagKey.create(Registries.BIOME,
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "spawns_horses_modded"));
 
     private BhBiomeSpawns() {}
+
+    private static boolean moddedSpawn(Holder<Biome> biome) {
+        return biome.is(MODDED_SPAWNS)
+                && biome.is(Tags.Biomes.IS_OVERWORLD)
+                && biome.unwrapKey().filter(key -> !key.location().getNamespace().equals("minecraft")).isPresent();
+    }
 
     public static void register(RegisterEvent event) {
         event.register(
@@ -35,7 +44,7 @@ public final class BhBiomeSpawns {
 
         @Override
         public void modify(Holder<Biome> biome, Phase phase, ModifiableBiomeInfo.BiomeInfo.Builder builder) {
-            if (phase != Phase.ADD || !biome.is(SPAWNS)) return;
+            if (phase != Phase.ADD || !(biome.is(SPAWNS) || moddedSpawn(biome))) return;
 
             BhTuning tuning = BhConfig.tuning();
             if (tuning.spawnWeight() <= 0) return;
