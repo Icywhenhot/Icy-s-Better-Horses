@@ -350,7 +350,9 @@ public final class IcysBetterHorses implements ModInitializer {
             BhCriteria.fire(player, BhCriteria.OWN_HORSE);
             BhCriteria.fire(player, BhCriteria.HORSE_COUNT, roster.size());
             for (HorseRosterEntry entry : roster) {
-                BhCriteria.fireBreed(player, HorseBreed.byId(entry.breedId()));
+                // Roster ids are namespaced, HorseBreed ids aren't.
+                String id = entry.breedId();
+                BhCriteria.fireBreed(player, HorseBreed.byId(id.substring(id.indexOf(':') + 1)));
             }
         }
     }
