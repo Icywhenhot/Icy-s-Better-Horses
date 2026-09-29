@@ -66,7 +66,7 @@ public abstract class MobCartPassengerMixin {
     @Inject(method = "isSunBurnTick", at = @At("HEAD"), cancellable = true)
     private void bh_shadedInWagon(CallbackInfoReturnable<Boolean> cir) {
         HorseCartEntity cart = this.bh_carryingCart();
-        if (cart != null && cart.size().isLarge()) {
+        if (cart != null && cart.shaded()) {
             cir.setReturnValue(false);
         }
     }

@@ -36,7 +36,7 @@ public final class BhHorseAttachments {
     public static final AttachmentType<Integer> COMBAT = integer(0);
     public static final AttachmentType<Integer> KICK = integer(0);
     public static final AttachmentType<Boolean> FREE_LOOK = bool(false);
-    public static final AttachmentType<Boolean> CART_LARGE = bool(false);
+    public static final AttachmentType<Integer> CART_TYPE = integer(0);
     public static final AttachmentType<Integer> STOMP = integer(0);
     public static final AttachmentType<Integer> SURGE = integer(0);
     public static final AttachmentType<Integer> SURGE_1 = integer(0);
@@ -69,7 +69,7 @@ public final class BhHorseAttachments {
         register(event, "combat", COMBAT);
         register(event, "kick", KICK);
         register(event, "free_look", FREE_LOOK);
-        register(event, "cart_large", CART_LARGE);
+        register(event, "cart_type", CART_TYPE);
         register(event, "stomp", STOMP);
         register(event, "surge", SURGE);
         register(event, "surge_1", SURGE_1);

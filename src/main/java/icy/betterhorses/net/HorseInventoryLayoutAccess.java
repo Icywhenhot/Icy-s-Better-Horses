@@ -1,7 +1,9 @@
 package icy.betterhorses.net;
 
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -37,5 +39,9 @@ public interface HorseInventoryLayoutAccess {
     }
 
     default void bh_onMenuRemoved(Player player) {
+    }
+
+    default @Nullable AbstractHorse bh_mount() {
+        return null;
     }
 }

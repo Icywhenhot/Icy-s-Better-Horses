@@ -3,6 +3,7 @@ package icy.betterhorses.net.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -22,9 +23,32 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity> 
                           float partialTick, int packedLight, int packedOverlay, int color) {
         super.preRender(poseStack, cart, model, bufferSource, buffer, isReRender, partialTick,
                 packedLight, packedOverlay, color);
-        showBone(model, cart.size().chestBone(), cart.hasChest());
+        CartType type = cart.type();
+        showBone(model, type.chestBone(), cart.hasChest());
         showBone(model, "plow", cart.hasPlough());
         showBone(model, "bone3", cart.isPlaced());
+        for (int i = 0; i < type.parts().size(); i++) {
+            showBone(model, type.parts().get(i).bone(), !cart.partHidden(i));
+        }
+    }
+
+    @Override
+    public void postRender(PoseStack poseStack, HorseCartEntity cart, BakedGeoModel model,
+                           MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender,
+                           float partialTick, int packedLight, int packedOverlay, int colour) {
+        super.postRender(poseStack, cart, model, bufferSource, buffer, isReRender, partialTick,
+                packedLight, packedOverlay, colour);
+        if (isReRender) {
+            return;
+        }
+        float bounce = model.getBone("cart").map(bone -> bone.getPosY()).orElse(0.0F);
+        float rock = 0.0F;
+        var bed = model.getBone(cart.type().bedBone());
+        if (bed.isPresent()) {
+            bounce += bed.get().getPosY();
+            rock = bed.get().getRotX();
+        }
+        cart.recordBed(bounce / 16.0F, (float) Math.toDegrees(rock));
     }
 
     private static void showBone(BakedGeoModel model, String name, boolean show) {

@@ -4,7 +4,7 @@ import com.klikli_dev.modonomicon.client.gui.book.entry.BookEntryScreen;
 import com.klikli_dev.modonomicon.client.render.page.BookPageRenderer;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.book.BhCartModelsPage;
-import icy.betterhorses.net.entity.CartSize;
+import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -83,15 +83,10 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
 
         renderCart(guiGraphics, mouseX, mouseY);
 
-        centeredFitted(guiGraphics, Component.translatable(nameKey()).getString(),
+        centeredFitted(guiGraphics, CartType.values()[index].displayName().getString(),
                 NAME_Y, NAME_MAX_WIDTH);
-        centeredFitted(guiGraphics, (index + 1) + " / " + CartSize.values().length,
+        centeredFitted(guiGraphics, (index + 1) + " / " + CartType.values().length,
                 COUNT_Y, BookEntryScreen.PAGE_WIDTH);
-    }
-
-    private String nameKey() {
-        return "book.icys-better-horses.carts."
-                + (CartSize.values()[index].isLarge() ? "large" : "small");
     }
 
     private void centeredFitted(GuiGraphics guiGraphics, String text, int y, int maxWidth) {
@@ -129,7 +124,7 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
         Quaternionf pitch = new Quaternionf().rotateX(lean * SPIN_RANGE * DEG);
         flip.mul(pitch);
 
-        CartSize size = CartSize.values()[index];
+        CartType size = CartType.values()[index];
         float yaw = BASE_YAW + spin * SPIN_RANGE;
         cart.setYRot(yaw);
         cart.setYBodyRot(yaw);
@@ -189,8 +184,8 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
         if (cart == null) {
             return;
         }
-        index = Math.floorMod(index + direction, CartSize.values().length);
-        cart.setSize(CartSize.values()[index]);
+        index = Math.floorMod(index + direction, CartType.values().length);
+        cart = HorseCartEntity.preview(cart.level(), CartType.values()[index], true);
     }
 
     private void loadCart() {
@@ -204,7 +199,7 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
         }
 
         try {
-            cart = HorseCartEntity.preview(minecraft.level, CartSize.values()[index]);
+            cart = HorseCartEntity.preview(minecraft.level, CartType.values()[index], true);
         } catch (Exception exception) {
             errored = true;
             IcysBetterHorses.LOGGER.warn("[handbook] could not build the cart preview", exception);

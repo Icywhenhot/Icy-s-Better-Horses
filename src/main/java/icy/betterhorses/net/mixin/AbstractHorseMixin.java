@@ -42,8 +42,8 @@ import icy.betterhorses.net.feature.SpeedRecord;
 import icy.betterhorses.net.feature.SaddleWatch;
 import icy.betterhorses.net.feature.SwimBoost;
 import icy.betterhorses.net.ModItems;
-import icy.betterhorses.net.entity.CartSize;
-import icy.betterhorses.net.inventory.CartChestMenu;
+import icy.betterhorses.net.entity.CartType;
+import icy.betterhorses.net.item.HorseCartItem;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.goal.HorseFollowOwnerGoal;
 import icy.betterhorses.net.goal.HorseReturnHomeGoal;
@@ -151,7 +151,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     };
     @Unique private static final int BH_CHEST_MAX_SLOTS = 54;
     @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(BH_CHEST_MAX_SLOTS);
-    @Unique private static final int BH_CART_CHEST_SIZE = CartChestMenu.SLOTS;
+    @Unique private static final int BH_CART_CHEST_SIZE = CartType.CHEST_SLOTS;
     @Unique private @Nullable SimpleContainer bh_cartChestContainer;
     @Unique private ItemStack bh_cartPlow = ItemStack.EMPTY;
     @Unique private ItemStack bh_cartChestItem = ItemStack.EMPTY;
@@ -515,13 +515,28 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     }
 
     @Override
-    public boolean bh_hasLargeCart() {
-        return ((AbstractHorse) (Object) this).getData(BhHorseAttachments.CART_LARGE);
+    public CartType bh_getCartType() {
+        return CartType.byOrdinal(((AbstractHorse) (Object) this).getData(BhHorseAttachments.CART_TYPE));
     }
 
     @Override
-    public void bh_setLargeCart(boolean large) {
-        ((AbstractHorse) (Object) this).setData(BhHorseAttachments.CART_LARGE, large && this.bh_mayUseLargeCart());
+    public void bh_syncCartType() {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.level().isClientSide()) {
+            return;
+        }
+        CartType stored = HorseCartItem.storedType(this.bh_gearContainer.getItem(GearSlot.STABILIZER.ordinal()));
+        boolean large = this.bh_mayUseLargeCart();
+        CartType type = stored == null ? CartType.defaultFor(large)
+                : stored.isLarge() && !large ? CartType.BUGGY : stored;
+        if (self.getData(BhHorseAttachments.CART_TYPE) != type.ordinal()) {
+            self.setData(BhHorseAttachments.CART_TYPE, type.ordinal());
+        }
+    }
+
+    @Override
+    public ItemStack bh_getCartChestItem() {
+        return bh_cartChestItem;
     }
 
     @Override
@@ -637,7 +652,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (!bh_cartChestItem.isEmpty()) {
             output.put("BH_CartChestItem", bh_cartChestItem.save(self.registryAccess()));
         }
-        output.putBoolean("BH_CartLarge", ((AbstractHorse) (Object) this).getData(BhHorseAttachments.CART_LARGE));
+        output.putBoolean("BH_CartChestWide", true);
         if (bh_cartId != null) output.putUUID("BH_CartId", bh_cartId);
         if (bh_cartChestContainer != null) {
             BhHorseStorage.writeContainer(output, "BH_CartChest", bh_cartChestContainer, self.registryAccess());
@@ -730,7 +745,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             ((AbstractHorse) (Object) this).setData(BhHorseAttachments.SPECIES, bh_legacySpeciesKey(input.getInt("BH_Species")).location().toString());
         }
 
-        bh_setLargeCart(input.contains("BH_CartLarge") ? input.getBoolean("BH_CartLarge") : this.bh_mayUseLargeCart());
+        boolean legacyLarge = input.contains("BH_CartLarge") ? input.getBoolean("BH_CartLarge") : this.bh_mayUseLargeCart();
+        ItemStack cartGear = bh_gearContainer.getItem(GearSlot.STABILIZER.ordinal());
+        if (input.contains("BH_CartLarge") && cartGear.is(ModItems.HORSE_CART)
+                && HorseCartItem.storedType(cartGear) == null) {
+            HorseCartItem.setType(cartGear, CartType.defaultFor(legacyLarge));
+        }
+        if (bh_hasCartChest() && !input.getBoolean("BH_CartChestWide") && !legacyLarge) {
+            CartType.widenLegacyRows(bh_getCartChestContainer());
+        }
+        bh_syncCartType();
         if (bh_ours()) bh_abilities.read(self, this, input.getCompound("BH_Abilities"));
     }
 
@@ -1500,12 +1524,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         }
 
         ((AbstractHorse) (Object) this).setData(BhHorseAttachments.GEAR_FLAGS, flags);
-        boolean hadCart = ((AbstractHorse) (Object) this).getData(BhHorseAttachments.CART);
         boolean hasCart = this.bh_gearContainer.getItem(GearSlot.STABILIZER.ordinal()).is(ModItems.HORSE_CART);
         ((AbstractHorse) (Object) this).setData(BhHorseAttachments.CART, hasCart);
-        if (hasCart && !hadCart) {
-            bh_setLargeCart(this.bh_mayUseLargeCart());
-        }
+        bh_syncCartType();
         ((AbstractHorse) (Object) this).setData(BhHorseAttachments.ENDER_CHEST,
                 this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal()).is(Items.ENDER_CHEST));
         ((AbstractHorse) (Object) this).setData(BhHorseAttachments.UPGRADED_SADDLE,

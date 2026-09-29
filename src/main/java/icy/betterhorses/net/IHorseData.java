@@ -15,7 +15,7 @@ import icy.betterhorses.net.registry.GenderType;
 import icy.betterhorses.net.registry.SpeciesType;
 
 import java.util.UUID;
-import icy.betterhorses.net.entity.CartSize;
+import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.player.Player;
@@ -162,11 +162,13 @@ public interface IHorseData {
         return breedKey != null && BhBreedData.of(breedKey).archetype().allowsLargeCart();
     }
 
-    boolean bh_hasLargeCart();
+    CartType bh_getCartType();
 
-    void bh_setLargeCart(boolean large);
+    void bh_syncCartType();
 
     boolean bh_hasCartChest();
+
+    ItemStack bh_getCartChestItem();
 
     void bh_setCartChest(ItemStack chest);
 
