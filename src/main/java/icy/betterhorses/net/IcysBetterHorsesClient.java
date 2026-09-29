@@ -24,11 +24,11 @@ import icy.betterhorses.net.client.render.MediumHorseRenderer;
 import icy.betterhorses.net.client.render.SmallHorseRenderer;
 import icy.betterhorses.net.entity.IcelandicHorse;
 import icy.betterhorses.net.ModMenus;
-import icy.betterhorses.net.client.CartChestScreen;
+import icy.betterhorses.net.client.CartScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
 import icy.betterhorses.net.network.BhRearPayload;
 import icy.betterhorses.net.network.BhChargePayload;
-import icy.betterhorses.net.network.CartSizePayload;
+import icy.betterhorses.net.network.CartMenuPayload;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
@@ -87,7 +87,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
     public static KeyMapping GEAR_KEY;
     public static KeyMapping REAR_KEY;
     public static KeyMapping FREE_LOOK_KEY;
-    public static KeyMapping CART_SIZE_KEY;
+    public static KeyMapping CART_MENU_KEY;
     public static KeyMapping CHARGE_KEY;
 
     private static final double BH_ROUSE_SCAN = 32.0D;
@@ -131,8 +131,8 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_LEFT_CONTROL,
                 CATEGORY));
 
-        CART_SIZE_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-                "key.icys-better-horses.cart_size",
+        CART_MENU_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.icys-better-horses.cart_menu",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_LEFT_ALT,
                 CATEGORY));
@@ -146,7 +146,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         RiderPanel.register();
 
         EntityRendererRegistry.register(ModEntities.HORSE_CART, HorseCartRenderer::new);
-        MenuScreens.register(ModMenus.CART_CHEST, CartChestScreen::new);
+        MenuScreens.register(ModMenus.CART, CartScreen::new);
 
         BhModelLayers.register();
         BhTackTextures.register();
@@ -320,8 +320,8 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
             bh_tryRear(client);
         }
 
-        while (CART_SIZE_KEY.consumeClick()) {
-            bh_trySwapCartSize(client);
+        while (CART_MENU_KEY.consumeClick()) {
+            bh_tryOpenCart(client);
         }
 
         while (CHARGE_KEY.consumeClick()) {
@@ -390,18 +390,22 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         ClientPlayNetworking.send(new BhRearPayload(horse.getId()));
     }
 
-    private static void bh_trySwapCartSize(Minecraft client) {
+    private static void bh_tryOpenCart(Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || client.gui.screen() != null) {
             return;
         }
 
-        Entity target = bh_lookedAtCartTarget(player);
+        Entity vehicle = player.getVehicle();
+        Entity target = vehicle instanceof HorseCartEntity
+                || vehicle instanceof AbstractHorse horse && IHorseData.of(horse).bh_hasCartGear()
+                ? vehicle
+                : bh_lookedAtCartTarget(player);
         if (target == null) {
             return;
         }
 
-        ClientPlayNetworking.send(new CartSizePayload(target.getId()));
+        ClientPlayNetworking.send(new CartMenuPayload(target.getId()));
     }
 
     private static @Nullable Entity bh_lookedAtCartTarget(LocalPlayer player) {

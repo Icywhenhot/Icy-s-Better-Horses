@@ -1,24 +1,19 @@
 package icy.betterhorses.net;
 
-import icy.betterhorses.net.inventory.CartChestMenu;
+import icy.betterhorses.net.inventory.CartMenu;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 
 public final class ModMenus {
 
-    public static final MenuType<CartChestMenu> CART_CHEST = register("cart_chest",
-            new MenuType<>(CartChestMenu::new, FeatureFlags.VANILLA_SET));
+    public static final MenuType<CartMenu> CART = Registry.register(BuiltInRegistries.MENU,
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "cart"),
+            new ExtendedMenuType<>(CartMenu::new, CartMenu.Opening.CODEC));
 
     private ModMenus() {}
-
-    private static <T extends net.minecraft.world.inventory.AbstractContainerMenu> MenuType<T> register(
-            String name, MenuType<T> type) {
-        return Registry.register(BuiltInRegistries.MENU,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, name), type);
-    }
 
     public static void init() {}
 }

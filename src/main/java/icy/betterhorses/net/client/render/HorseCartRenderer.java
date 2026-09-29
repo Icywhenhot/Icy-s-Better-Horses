@@ -2,8 +2,9 @@ package icy.betterhorses.net.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import icy.betterhorses.net.entity.CartSize;
+import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.phys.Vec3;
@@ -22,16 +23,20 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, 
             DataTicket.create("bh_cart_has_plow", Boolean.class);
     private static final DataTicket<Boolean> IS_PLACED =
             DataTicket.create("bh_cart_is_placed", Boolean.class);
-    private static final DataTicket<Boolean> IS_LARGE =
-            DataTicket.create("bh_cart_is_large", Boolean.class);
+    private static final DataTicket<Integer> TYPE =
+            DataTicket.create("bh_cart_type", Integer.class);
+    private static final DataTicket<Integer> HIDDEN =
+            DataTicket.create("bh_cart_hidden", Integer.class);
+    private static final DataTicket<Integer> CART_ID =
+            DataTicket.create("bh_cart_id", Integer.class);
     private static final DataTicket<Float> TILT =
             DataTicket.create("bh_cart_tilt", Float.class);
 
     private static final String PLOW_BONE = "plow";
     private static final String PROP_BONE = "bone3";
 
-    public static CartSize sizeOf(GeoRenderState renderState) {
-        return CartSize.byLarge(renderState.getOrDefaultGeckolibData(IS_LARGE, false));
+    public static CartType typeOf(GeoRenderState renderState) {
+        return CartType.byOrdinal(renderState.getOrDefaultGeckolibData(TYPE, 0));
     }
 
     public HorseCartRenderer(EntityRendererProvider.Context context) {
@@ -43,7 +48,7 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, 
         super.adjustModelBonesForRender(pass, snapshots);
 
         if (!pass.renderState().getOrDefaultGeckolibData(HAS_CHEST, false)) {
-            snapshots.ifPresent(sizeOf(pass.renderState()).chestBone(),
+            snapshots.ifPresent(typeOf(pass.renderState()).chestBone(),
                     snapshot -> snapshot.skipRender(true).skipChildrenRender(true));
         }
         if (!pass.renderState().getOrDefaultGeckolibData(IS_PLACED, false)) {
@@ -54,6 +59,30 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, 
             snapshots.ifPresent(PLOW_BONE,
                     snapshot -> snapshot.skipRender(true).skipChildrenRender(true));
         }
+        CartType type = typeOf(pass.renderState());
+        int hidden = pass.renderState().getOrDefaultGeckolibData(HIDDEN, 0);
+        for (int i = 0; i < type.parts().size(); i++) {
+            if ((hidden & (1 << i)) != 0) {
+                snapshots.ifPresent(type.parts().get(i).bone(),
+                        snapshot -> snapshot.skipRender(true).skipChildrenRender(true));
+            }
+        }
+        recordBed(pass.renderState().getOrDefaultGeckolibData(CART_ID, -1), type, snapshots);
+    }
+
+    private static void recordBed(int id, CartType type, BoneSnapshots snapshots) {
+        if (id < 0 || Minecraft.getInstance().level == null
+                || !(Minecraft.getInstance().level.getEntity(id) instanceof HorseCartEntity cart)) {
+            return;
+        }
+        float bounce = snapshots.get("cart").map(bone -> bone.getTranslateY()).orElse(0.0F);
+        float rock = 0.0F;
+        var bed = snapshots.get(type.bedBone());
+        if (bed.isPresent()) {
+            bounce += bed.get().getTranslateY();
+            rock = bed.get().getRotX();
+        }
+        cart.recordBed(bounce / 16.0F, (float) Math.toDegrees(rock));
     }
 
     @Override
@@ -69,7 +98,15 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, 
         state.addGeckolibData(HAS_CHEST, entity.hasChest());
         state.addGeckolibData(HAS_PLOW, entity.hasPlough());
         state.addGeckolibData(IS_PLACED, entity.isPlaced());
-        state.addGeckolibData(IS_LARGE, entity.size().isLarge());
+        state.addGeckolibData(TYPE, entity.type().ordinal());
+        int hidden = 0;
+        for (int i = 0; i < entity.type().parts().size(); i++) {
+            if (entity.partHidden(i)) {
+                hidden |= 1 << i;
+            }
+        }
+        state.addGeckolibData(HIDDEN, hidden);
+        state.addGeckolibData(CART_ID, entity.getId());
         state.addGeckolibData(TILT, entity.renderTilt(partialTick));
 
         Vec3 glued = entity.gluedRenderPosition(partialTick);

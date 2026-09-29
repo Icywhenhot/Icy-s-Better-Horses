@@ -1,6 +1,8 @@
 package icy.betterhorses.net;
 
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
+import org.jetbrains.annotations.Nullable;
 
 public interface HorseInventoryLayoutAccess {
     void bh_refreshLayout();
@@ -30,5 +32,9 @@ public interface HorseInventoryLayoutAccess {
     }
 
     default void bh_onMenuRemoved(Player player) {
+    }
+
+    default @Nullable AbstractHorse bh_mount() {
+        return null;
     }
 }

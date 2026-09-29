@@ -3,6 +3,7 @@ package icy.betterhorses.net.mixin;
 import com.mojang.blaze3d.vertex.PoseStack;
 import icy.betterhorses.net.BhRiderSeat;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.client.render.BhRiderMotion;
 import icy.betterhorses.net.client.render.IBhRiderState;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -44,6 +45,18 @@ public abstract class LivingEntityRendererRiderMixin {
         } else {
             ((IBhRiderState) state).bh_setRiddenHorse(-1, 0.0F, false);
         }
+        HorseCartEntity cart = entity.getVehicle() instanceof HorseCartEntity carrying ? carrying
+                : entity.getVehicle() instanceof AbstractHorse puller && IHorseData.of(puller).bh_hasCartGear()
+                ? IHorseData.of(puller).bh_getCartEntity() : null;
+        if (cart != null && !cart.isRemoved()) {
+            Vec3 shift = cart.renderSeat(entity, partialTick).subtract(entity.getPosition(partialTick))
+                    .add(0.0D, cart.bedBounce(), 0.0D);
+            ((IBhRiderState) state).bh_setCartSeat(shift, cart.gluedRenderYaw(partialTick),
+                    cart.renderTilt(partialTick) + cart.bedRock(),
+                    (float) entity.getVehicleAttachmentPoint(entity.getVehicle()).y);
+        } else {
+            ((IBhRiderState) state).bh_setCartSeat(null, 0.0F, 0.0F, 0.0F);
+        }
     }
 
     @Inject(
@@ -55,6 +68,20 @@ public abstract class LivingEntityRendererRiderMixin {
         if (state instanceof IBhEquineStabilizerState equine
                 && equine.bh_getOpacity() <= 0.01F) {
             BH_PUSHED.push(Boolean.FALSE);
+            return;
+        }
+
+        Vec3 cartShift = state instanceof IBhRiderState seated ? seated.bh_getCartShift() : null;
+        if (cartShift != null) {
+            IBhRiderState seated = (IBhRiderState) state;
+            float pivot = seated.bh_getCartPivot();
+            poseStack.pushPose();
+            BH_PUSHED.push(Boolean.TRUE);
+            poseStack.translate(cartShift.x, cartShift.y + pivot, cartShift.z);
+            poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - seated.bh_getCartYaw()));
+            poseStack.mulPose(Axis.XP.rotationDegrees(seated.bh_getCartPitch()));
+            poseStack.mulPose(Axis.YP.rotationDegrees(seated.bh_getCartYaw() - 180.0F));
+            poseStack.translate(0.0F, -pivot, 0.0F);
             return;
         }
 

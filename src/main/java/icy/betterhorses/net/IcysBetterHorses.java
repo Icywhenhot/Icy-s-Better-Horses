@@ -3,9 +3,8 @@ package icy.betterhorses.net;
 import icy.betterhorses.net.network.BhRearPayload;
 import icy.betterhorses.net.network.BhChargePayload;
 import icy.betterhorses.net.feature.HorseCombat;
-import icy.betterhorses.net.entity.CartSize;
 import icy.betterhorses.net.entity.HorseCartEntity;
-import icy.betterhorses.net.network.CartSizePayload;
+import icy.betterhorses.net.network.CartMenuPayload;
 import icy.betterhorses.net.network.RiderPanelPayload;
 import icy.betterhorses.net.network.BhFreeLookPayload;
 import icy.betterhorses.net.network.CallHorsePayload;
@@ -56,7 +55,7 @@ public class IcysBetterHorses implements ModInitializer {
 
     public static final String MOD_ID = "icys-better-horses";
 
-    private static final double CART_SIZE_REACH = 12.0D;
+    private static final double CART_REACH = 12.0D;
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static final float COMMAND_ANSWER_CHANCE = 0.5F;
@@ -98,7 +97,7 @@ public class IcysBetterHorses implements ModInitializer {
         PayloadTypeRegistry.serverboundPlay().register(HorseGearPayload.TYPE, new HorseGearPayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(BhFreeLookPayload.TYPE, new BhFreeLookPayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(BhRearPayload.TYPE, new BhRearPayload.StreamCodec());
-        PayloadTypeRegistry.serverboundPlay().register(CartSizePayload.TYPE, new CartSizePayload.StreamCodec());
+        PayloadTypeRegistry.serverboundPlay().register(CartMenuPayload.TYPE, new CartMenuPayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(BhChargePayload.TYPE, new BhChargePayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(RiderPanelPayload.TYPE, new RiderPanelPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(HorseRosterSyncPayload.TYPE, new HorseRosterSyncPayload.StreamCodec());
@@ -155,9 +154,9 @@ public class IcysBetterHorses implements ModInitializer {
             context.server().execute(() -> handleRear(player, payload.horseId()));
         });
 
-        ServerPlayNetworking.registerGlobalReceiver(CartSizePayload.TYPE, (payload, context) -> {
+        ServerPlayNetworking.registerGlobalReceiver(CartMenuPayload.TYPE, (payload, context) -> {
             ServerPlayer player = context.player();
-            context.server().execute(() -> handleCartSize(player, payload.targetId()));
+            context.server().execute(() -> handleOpenCart(player, payload.targetId()));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(BhChargePayload.TYPE, (payload, context) -> {
@@ -442,68 +441,18 @@ public class IcysBetterHorses implements ModInitializer {
         IHorseData.of(horse).bh_setFreeLook(freeLook);
     }
 
-    private void handleCartSize(ServerPlayer player, int targetId) {
+    private void handleOpenCart(ServerPlayer player, int targetId) {
         Entity target = player.level().getEntity(targetId);
-        if (target == null || player.distanceToSqr(target) > CART_SIZE_REACH * CART_SIZE_REACH) {
+        if (target == null || player.distanceToSqr(target) > CART_REACH * CART_REACH) {
             return;
         }
-
-        if (target instanceof HorseCartEntity placed && placed.isPlaced()) {
-            CartSize wanted = CartSize.byLarge(!placed.size().isLarge());
-            if (refuseResize(player, placed, wanted)) {
-                return;
-            }
-            placed.setSize(wanted);
-            placed.playSound(SoundEvents.ITEM_FRAME_ROTATE_ITEM, 1.0F, 1.0F);
-            return;
-        }
-
-        AbstractHorse horse = target instanceof HorseCartEntity drawn
-                ? drawn.boundHorse()
-                : target instanceof AbstractHorse mount ? mount : null;
-        if (horse == null) {
-            return;
-        }
-
-        IHorseData data = IHorseData.of(horse);
-        if (!data.bh_hasCartGear()) {
-            return;
-        }
-        if (BhConfig.horseExclusivityEnabled() && !data.bh_mayHandle(player.getUUID())) {
-            return;
-        }
-
-        CartSize wanted = CartSize.byLarge(!data.bh_hasLargeCart());
-        if (wanted.isLarge() && !data.bh_mayUseLargeCart()) {
-            player.sendSystemMessage(
-                    Component.translatable("message.icys-better-horses.cart_size_draft_only"));
-            horse.playSound(SoundEvents.VILLAGER_NO, 1.0F, 1.0F);
-            return;
-        }
-
-        HorseCartEntity cart = data.bh_getCartEntity();
+        HorseCartEntity cart = target instanceof HorseCartEntity found ? found
+                : target instanceof AbstractHorse horse && IHorseData.of(horse).bh_hasCartGear()
+                ? IHorseData.of(horse).bh_getCartEntity()
+                : null;
         if (cart != null) {
-            if (refuseResize(player, cart, wanted)) {
-                return;
-            }
-        } else if (data.bh_hasCartChest()
-                && HorseCartEntity.itemsBeyond(data.bh_getCartChestContainer(), wanted.chestSlots())) {
-            player.sendSystemMessage(
-                    Component.translatable("message.icys-better-horses.cart_size_chest_full"));
-            return;
+            cart.openMenu(player);
         }
-
-        data.bh_setLargeCart(wanted.isLarge());
-        horse.playSound(SoundEvents.ITEM_FRAME_ROTATE_ITEM, 1.0F, 1.0F);
-    }
-
-    private boolean refuseResize(ServerPlayer player, HorseCartEntity cart, CartSize wanted) {
-        Component refusal = cart.resizeRefusal(wanted);
-        if (refusal == null) {
-            return false;
-        }
-        player.sendSystemMessage(refusal);
-        return true;
     }
 
     private void handleRear(ServerPlayer player, int horseId) {

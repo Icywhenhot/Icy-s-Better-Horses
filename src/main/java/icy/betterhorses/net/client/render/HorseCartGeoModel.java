@@ -1,6 +1,6 @@
 package icy.betterhorses.net.client.render;
 
-import icy.betterhorses.net.entity.CartSize;
+import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.resources.Identifier;
 import com.geckolib.model.GeoModel;
@@ -10,16 +10,16 @@ public final class HorseCartGeoModel extends GeoModel<HorseCartEntity> {
 
     @Override
     public Identifier getModelResource(GeoRenderState renderState) {
-        return HorseCartRenderer.sizeOf(renderState).model();
+        return HorseCartRenderer.typeOf(renderState).model();
     }
 
     @Override
     public Identifier getTextureResource(GeoRenderState renderState) {
-        return HorseCartRenderer.sizeOf(renderState).texture();
+        return HorseCartRenderer.typeOf(renderState).texture();
     }
 
     @Override
     public Identifier getAnimationResource(HorseCartEntity animatable) {
-        return animatable.size().animation();
+        return animatable.type().animation();
     }
 }
