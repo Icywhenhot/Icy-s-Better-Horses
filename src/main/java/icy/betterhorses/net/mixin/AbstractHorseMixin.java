@@ -1,8 +1,10 @@
 package icy.betterhorses.net.mixin;
 
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import icy.betterhorses.net.BhAskToRide;
 import icy.betterhorses.net.BhAttributes;
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhFeature;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhGears;
 import icy.betterhorses.net.BhSurge;
@@ -736,6 +738,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public void bh_disown() {
         AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.getClass() == Horse.class && !BhFeature.CONVERT_TAMED_HORSES.on()) {
+            self.addTag(BhVanillaHorseSwap.KEEP_VANILLA_TAG);
+        }
         self.ejectPassengers();
         self.setOwnerUUID(null);
         self.setTamed(false);
@@ -1337,7 +1342,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (BhHorseInteraction.riderMayLeadPillion(self, this)) return;
         self.playSound(SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
         if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.translatable("message.icys-better-horses.not_owner"));
+            BhAskToRide.handleRefusal(serverPlayer, this.bh_getOwner());
         }
         if (player.getVehicle() == self) {
             player.stopRiding();

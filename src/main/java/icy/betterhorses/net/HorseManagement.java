@@ -4,12 +4,15 @@ import icy.betterhorses.net.network.HorseRosterEntry;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
@@ -53,6 +56,13 @@ public final class HorseManagement {
     public static final String MSG_FAILED = MSG + "failed";
     public static final String MSG_CART = MSG + "cart_attached";
     public static final String MSG_UNSAFE = MSG + "unsafe";
+    public static final String MSG_TOO_FAR = MSG + "too_far";
+
+    public static void announceComing(ServerPlayer player, AbstractHorse horse) {
+        player.displayClientMessage(
+                Component.translatable("message.icys-better-horses.call.coming", horse.getDisplayName()), true);
+        horse.addEffect(new MobEffectInstance(MobEffects.GLOWING, 100, 0, false, false)); // 5s outline, no particles/icon
+    }
 
     public static List<HorseRosterEntry> buildRoster(ServerPlayer player) {
         MinecraftServer server = ((ServerLevel) player.level()).getServer();
@@ -154,6 +164,8 @@ public final class HorseManagement {
             return summonToPlayer(loaded, player);
         }
 
+        if (!BhFeature.HORSE_TELEPORT.on()) return Outcome.fail(MSG_TOO_FAR);
+
         HorseTrackerState.KnownPosition seen = HorseTracker.getLastKnownPosition(horseId);
         IcysBetterHorses.LOGGER.info("[whistle] {} calls horse {}: no loaded body, last seen in {} at {}, respawning from snapshot",
                 player.getName().getString(), horseId,
@@ -166,6 +178,7 @@ public final class HorseManagement {
             return Outcome.fail(respawnFailureKey(player, horseId));
         }
         IHorseData.of(respawned).bh_setCommand(BhContent.COMMAND_FOLLOW.key());
+        announceComing(player, respawned);
         return Outcome.OK;
     }
 
@@ -185,6 +198,10 @@ public final class HorseManagement {
             }
 
             keepHomeChunkLoaded((ServerLevel) loaded.level(), home);
+            if (!BhFeature.HORSE_TELEPORT.on()) {
+                IHorseData.of(loaded).bh_setCommand(BhContent.COMMAND_RETURN_HOME.key());
+                return Outcome.OK;
+            }
             if (!HorsePlacement.teleport(loaded, home)) return Outcome.fail(MSG_UNSAFE);
             IHorseData.of(loaded).bh_setCommand(BhContent.COMMAND_STAY.key());
             return Outcome.OK;
@@ -204,6 +221,8 @@ public final class HorseManagement {
 
         ServerLevel homeLevel = server.getLevel(homeDim);
         if (homeLevel == null) return Outcome.fail(MSG_FAILED);
+
+        if (!BhFeature.HORSE_TELEPORT.on()) return Outcome.fail(MSG_TOO_FAR);
 
         keepHomeChunkLoaded(homeLevel, home);
         AbstractHorse respawned = respawnFromSnapshot(
@@ -280,6 +299,13 @@ public final class HorseManagement {
             return;
         }
 
+        AbstractHorse unbonded = findNearestOwnedHorse(player, playerId);
+        if (unbonded != null && unbonded.distanceToSqr(player) <= CALL_TELEPORT_DIST_SQ) {
+            player.displayClientMessage(Component.translatable(
+                    "message.icys-better-horses.call.no_bond", unbonded.getDisplayName()), true);
+            return;
+        }
+
         IcysBetterHorses.LOGGER.debug("[whistle] {} whistled: no loaded horse found, trying stored respawn",
                 player.getName().getString());
 
@@ -289,6 +315,7 @@ public final class HorseManagement {
         }
         if (horseId == null) {
             IcysBetterHorses.LOGGER.debug("[whistle] no stored horse found for {}", playerId);
+            player.displayClientMessage(Component.translatable("message.icys-better-horses.call.none"), true);
             return;
         }
         announce(player, whistle(player, horseId));
@@ -304,9 +331,10 @@ public final class HorseManagement {
         IHorseData data = IHorseData.of(horse);
         if (data.bh_hasCartGear()) return Outcome.fail(MSG_CART);
         if (data.bh_getBond() <= 0) return Outcome.fail(MSG_NO_BOND);
-        if (horse.distanceToSqr(player) > CALL_TELEPORT_DIST_SQ
+        if (BhFeature.HORSE_TELEPORT.on() && horse.distanceToSqr(player) > CALL_TELEPORT_DIST_SQ
                 && !HorsePlacement.teleport(horse, player.blockPosition())) return Outcome.fail(MSG_UNSAFE);
         data.bh_setCommand(BhContent.COMMAND_FOLLOW.key());
+        announceComing(player, horse);
         return Outcome.OK;
     }
 
@@ -324,10 +352,27 @@ public final class HorseManagement {
         if (lastRidden != null
                 && playerId.equals(IHorseData.of(lastRidden).bh_getOwner())
                 && lastRidden.level() == player.level()
-                && lastRidden.isAlive()) {
+                && lastRidden.isAlive()
+                && IHorseData.of(lastRidden).bh_getBond() > 0) {
             return lastRidden;
         }
 
+        AbstractHorse nearest = null;
+        double nearestDistSq = Double.MAX_VALUE;
+        for (AbstractHorse candidate : HorseTracker.getAll()) {
+            if (!candidate.isAlive() || candidate.level() != player.level()) continue;
+            IHorseData data = IHorseData.of(candidate);
+            if (!playerId.equals(data.bh_getOwner()) || data.bh_getBond() <= 0) continue;
+            double distSq = candidate.distanceToSqr(player);
+            if (distSq < nearestDistSq) {
+                nearestDistSq = distSq;
+                nearest = candidate;
+            }
+        }
+        return nearest;
+    }
+
+    private static @Nullable AbstractHorse findNearestOwnedHorse(ServerPlayer player, UUID playerId) {
         AbstractHorse nearest = null;
         double nearestDistSq = Double.MAX_VALUE;
         for (AbstractHorse candidate : HorseTracker.getAll()) {

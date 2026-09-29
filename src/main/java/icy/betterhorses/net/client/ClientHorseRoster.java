@@ -22,6 +22,9 @@ public final class ClientHorseRoster {
     private static @Nullable UUID successHorseId;
     private static @Nullable HorseManageAction successAction;
 
+    private static @Nullable UUID comingHorseId;
+    private static long comingExpiresAt;
+
     private ClientHorseRoster() {}
 
     public static void setEntries(List<HorseRosterEntry> newEntries) {
@@ -49,10 +52,14 @@ public final class ClientHorseRoster {
     }
 
     public static void onActionResult(UUID horseId, HorseManageAction action, boolean success, String messageKey) {
+        clearFlash();
         if (success) {
-            clearFlash();
             successHorseId = horseId;
             successAction = action;
+            if (action == HorseManageAction.WHISTLE) {
+                comingHorseId = horseId;
+                comingExpiresAt = System.currentTimeMillis() + FLASH_MS;
+            }
             return;
         }
         successHorseId = null;
@@ -68,6 +75,8 @@ public final class ClientHorseRoster {
         flashAction = null;
         flashMessageKey = "";
         flashExpiresAt = 0L;
+        comingHorseId = null;
+        comingExpiresAt = 0L;
     }
 
     public static boolean isFlashing(UUID horseId, HorseManageAction action) {
@@ -93,6 +102,16 @@ public final class ClientHorseRoster {
 
     public static long flashElapsedMs() {
         return isFlashing() ? FLASH_MS - (flashExpiresAt - System.currentTimeMillis()) : -1L;
+    }
+
+    public static @Nullable UUID comingHorseId() {
+        if (comingExpiresAt == 0L) return null;
+        if (System.currentTimeMillis() >= comingExpiresAt) {
+            comingHorseId = null;
+            comingExpiresAt = 0L;
+            return null;
+        }
+        return comingHorseId;
     }
 
     public static boolean consumeSuccess(UUID horseId, HorseManageAction action) {
