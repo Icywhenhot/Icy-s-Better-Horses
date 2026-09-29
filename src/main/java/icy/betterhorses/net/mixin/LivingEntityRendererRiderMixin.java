@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import icy.betterhorses.net.BhRiderSeat;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.client.render.BhMountedHorseVisibility;
 import icy.betterhorses.net.client.render.BhRiderMotion;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -32,6 +33,23 @@ public abstract class LivingEntityRendererRiderMixin {
     private void bh_offsetRiderToSaddle(LivingEntity entity, float yaw, float partialTicks,
                                         PoseStack poseStack, MultiBufferSource bufferSource, int packedLight,
                                         CallbackInfo ci) {
+        HorseCartEntity cart = entity.getVehicle() instanceof HorseCartEntity carrying ? carrying
+                : entity.getVehicle() instanceof AbstractHorse puller && IHorseData.of(puller).bh_hasCartGear()
+                ? IHorseData.of(puller).bh_getCartEntity() : null;
+        if (cart != null && !cart.isRemoved()) {
+            Vec3 want = cart.renderSeat(entity, partialTicks);
+            Vec3 at = entity.getPosition(partialTicks);
+            float cartYaw = cart.gluedRenderYaw(partialTicks);
+            float pivot = (float) BhRiderSeat.seatDrop(entity);
+            poseStack.pushPose();
+            BH_PUSHED.push(Boolean.TRUE);
+            poseStack.translate(want.x - at.x, want.y - at.y + pivot + cart.bedBounce(), want.z - at.z);
+            poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - cartYaw));
+            poseStack.mulPose(Axis.XP.rotationDegrees(cart.renderTilt(partialTicks) + cart.bedRock()));
+            poseStack.mulPose(Axis.YP.rotationDegrees(cartYaw - 180.0F));
+            poseStack.translate(0.0F, -pivot, 0.0F);
+            return;
+        }
         if (!(entity.getVehicle() instanceof AbstractHorse horse)
                 || BhMountedHorseVisibility.getOpacity(horse) <= 0.01F) {
             BH_PUSHED.push(Boolean.FALSE);

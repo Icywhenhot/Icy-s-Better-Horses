@@ -64,20 +64,20 @@ class PayloadCodecTest {
     }
 
     @Test
-    void cartSizePayloadRoundTrips() {
-        CartSizePayload original = new CartSizePayload(8080);
+    void cartMenuPayloadRoundTrips() {
+        CartMenuPayload original = new CartMenuPayload(8080);
         FriendlyByteBuf buf = buf();
-        CartSizePayload.encode(original, buf);
-        assertEquals(original, CartSizePayload.decode(buf));
+        CartMenuPayload.encode(original, buf);
+        assertEquals(original, CartMenuPayload.decode(buf));
         assertEquals(0, buf.readableBytes());
     }
 
     @Test
-    void cartSizePayloadRoundTripsWithNegativeValue() {
-        CartSizePayload original = new CartSizePayload(-12345);
+    void cartMenuPayloadRoundTripsWithNegativeValue() {
+        CartMenuPayload original = new CartMenuPayload(-12345);
         FriendlyByteBuf buf = buf();
-        CartSizePayload.encode(original, buf);
-        assertEquals(original, CartSizePayload.decode(buf));
+        CartMenuPayload.encode(original, buf);
+        assertEquals(original, CartMenuPayload.decode(buf));
         assertEquals(0, buf.readableBytes());
     }
 

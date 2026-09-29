@@ -1,6 +1,6 @@
 package icy.betterhorses.net.client.book;
 
-import icy.betterhorses.net.entity.CartSize;
+import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -30,7 +30,7 @@ public class BhCartModelsComponent implements ICustomComponent {
     private transient int y;
     private transient int index;
     private transient HorseCartEntity cart;
-    private transient CartSize built;
+    private transient CartType built;
 
     @Override
     public void onVariablesAvailable(UnaryOperator<IVariable> lookup) {
@@ -48,7 +48,7 @@ public class BhCartModelsComponent implements ICustomComponent {
     }
 
     private void rebuild() {
-        CartSize want = CartSize.values()[this.index];
+        CartType want = CartType.values()[this.index];
         if (this.cart != null && this.built == want) {
             return;
         }
@@ -56,7 +56,7 @@ public class BhCartModelsComponent implements ICustomComponent {
         if (level == null) {
             return;
         }
-        this.cart = HorseCartEntity.preview(level, want);
+        this.cart = HorseCartEntity.preview(level, want, true);
         this.built = want;
     }
 
@@ -69,7 +69,7 @@ public class BhCartModelsComponent implements ICustomComponent {
             return;
         }
 
-        CartSize size = CartSize.values()[this.index];
+        CartType size = CartType.values()[this.index];
         PageEntity.renderEntity(gfx, this.cart,
                 this.x + BOX_WIDTH / 2.0F, this.y + MODEL_Y, rotation(),
                 size.isLarge() ? LARGE_SCALE : SMALL_SCALE, 0.0F);
@@ -77,12 +77,11 @@ public class BhCartModelsComponent implements ICustomComponent {
         arrow(gfx, context, font, "<", this.x, mouseX, mouseY);
         arrow(gfx, context, font, ">", this.x + BOX_WIDTH - ARROW_W, mouseX, mouseY);
 
-        Component name = Component.translatable(
-                "book.icys-better-horses.carts." + (size.isLarge() ? "large" : "small"));
+        Component name = size.displayName();
         gfx.drawString(font, name,
                 this.x + (BOX_WIDTH - font.width(name)) / 2, this.y + NAME_Y, INK, false);
 
-        String count = (this.index + 1) + " / " + CartSize.values().length;
+        String count = (this.index + 1) + " / " + CartType.values().length;
         gfx.drawString(font, count,
                 this.x + (BOX_WIDTH - font.width(count)) / 2, this.y + COUNT_Y, INK, false);
     }
@@ -105,7 +104,7 @@ public class BhCartModelsComponent implements ICustomComponent {
 
     @Override
     public boolean mouseClicked(IComponentRenderContext context, double mouseX, double mouseY, int button) {
-        int total = CartSize.values().length;
+        int total = CartType.values().length;
         int mx = (int) mouseX;
         int my = (int) mouseY;
         if (hovered(context, this.x, mx, my)) {

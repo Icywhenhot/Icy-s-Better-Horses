@@ -78,7 +78,6 @@ public class HorseStateRoundTripGameTest implements FabricGameTest {
         data.bh_getCartChestContainer().setItem(0, new ItemStack(Items.IRON_INGOT, 2));
         data.bh_getCartChestContainer().setItem(52, new ItemStack(Items.EMERALD, 1));
         data.bh_setCartPlough(new ItemStack(Items.IRON_HOE));
-        data.bh_setLargeCart(true);
 
         ServerLevel level = helper.getLevel();
         CompoundTag saved = original.saveWithoutId(new CompoundTag());
@@ -131,8 +130,8 @@ public class HorseStateRoundTripGameTest implements FabricGameTest {
         helper.assertTrue(loadedData.bh_hasCartPlough() && loadedData.bh_getCartPlough().is(Items.IRON_HOE),
                 ctx + "cart plough should survive");
         boolean expectLarge = breed.archetype() == BhContent.DRAFT.value();
-        helper.assertTrue(loadedData.bh_hasLargeCart() == expectLarge,
-                ctx + "large cart flag should survive (draft breeds only)");
+        helper.assertTrue(loadedData.bh_getCartType().isLarge() == expectLarge,
+                ctx + "cart type should default by class after load (draft breeds get the wagon)");
     }
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)

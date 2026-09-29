@@ -9,6 +9,9 @@ import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.ModEntities;
 import icy.betterhorses.net.ModItems;
+import icy.betterhorses.net.entity.CartType;
+import icy.betterhorses.net.entity.HorseCartEntity;
+import icy.betterhorses.net.inventory.CartMenu;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.gametest.framework.GameTest;
@@ -23,6 +26,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class HandlerSecurityGameTest implements FabricGameTest {
 
@@ -112,7 +116,7 @@ public class HandlerSecurityGameTest implements FabricGameTest {
         IcysBetterHorses.handleRear(player, 987654);
         IcysBetterHorses.handleGearShift(player, 987654, 1, 1);
         IcysBetterHorses.handleFreeLook(player, 987654, true);
-        IcysBetterHorses.handleCartSize(player, 987654);
+        IcysBetterHorses.handleOpenCart(player, 987654);
         helper.succeed();
     }
 
@@ -222,63 +226,68 @@ public class HandlerSecurityGameTest implements FabricGameTest {
         return horse;
     }
 
+    private static void afterCartSpawns(GameTestHelper helper, AbstractHorse horse, Consumer<HorseCartEntity> check) {
+        helper.runAfterDelay(5, () -> {
+            HorseCartEntity cart = IHorseData.of(horse).bh_getCartEntity();
+            helper.assertTrue(cart != null, "setup: cart entity should have spawned");
+            check.accept(cart);
+            helper.succeed();
+        });
+    }
+
+    private static CartType other(CartType type) {
+        return type == CartType.WAGON ? CartType.BUGGY : CartType.WAGON;
+    }
+
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
-    public void cartSizeOwnerCanResize(GameTestHelper helper) {
+    public void cartSwitchOwnerCanChangeType(GameTestHelper helper) {
         UUID ownerId = UUID.randomUUID();
         AbstractHorse horse = ownedCartHorse(helper, ownerId);
         helper.assertTrue(IHorseData.of(horse).bh_hasCartGear(), "setup: horse should carry cart gear");
-        boolean before = IHorseData.of(horse).bh_hasLargeCart();
         ServerPlayer owner = BhTestPlayers.owner(helper, new Vec3(2, 2, 3), ownerId);
-
-        IcysBetterHorses.handleCartSize(owner, horse.getId());
-
-        helper.assertTrue(IHorseData.of(horse).bh_hasLargeCart() != before,
-                "owner should be able to resize their own cart");
-        helper.succeed();
+        afterCartSpawns(helper, horse, cart -> {
+            CartType before = cart.type();
+            cart.switchType(owner, other(before));
+            helper.assertTrue(cart.type() != before, "owner should be able to switch their own cart");
+            helper.assertTrue(IHorseData.of(horse).bh_getCartType() == cart.type(), "horse should follow the switch");
+        });
     }
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
-    public void cartSizeStrangerDenied(GameTestHelper helper) {
+    public void cartSwitchStrangerDenied(GameTestHelper helper) {
         UUID ownerId = UUID.randomUUID();
         AbstractHorse horse = ownedCartHorse(helper, ownerId);
-        boolean before = IHorseData.of(horse).bh_hasLargeCart();
         ServerPlayer stranger = BhTestPlayers.at(helper, new Vec3(2, 2, 3));
-
-        IcysBetterHorses.handleCartSize(stranger, horse.getId());
-
-        helper.assertTrue(IHorseData.of(horse).bh_hasLargeCart() == before,
-                "a stranger should not be able to resize someone else's cart");
-        helper.succeed();
+        afterCartSpawns(helper, horse, cart -> {
+            CartType before = cart.type();
+            cart.switchType(stranger, other(before));
+            helper.assertTrue(cart.type() == before, "a stranger should not be able to switch someone else's cart");
+        });
     }
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
-    public void cartSizeTrustedCanResize(GameTestHelper helper) {
+    public void cartSwitchTrustedCanChangeType(GameTestHelper helper) {
         UUID ownerId = UUID.randomUUID();
         UUID trustedId = UUID.randomUUID();
         AbstractHorse horse = ownedCartHorse(helper, ownerId);
-        boolean before = IHorseData.of(horse).bh_hasLargeCart();
         HorseTracker.trust(ownerId, trustedId, "trusted-friend");
         ServerPlayer trusted = BhTestPlayers.owner(helper, new Vec3(2, 2, 3), trustedId);
-
-        IcysBetterHorses.handleCartSize(trusted, horse.getId());
-
-        helper.assertTrue(IHorseData.of(horse).bh_hasLargeCart() != before,
-                "a trusted player should be able to resize the cart (trust grants handling)");
-        helper.succeed();
+        afterCartSpawns(helper, horse, cart -> {
+            CartType before = cart.type();
+            cart.switchType(trusted, other(before));
+            helper.assertTrue(cart.type() != before, "a trusted player should be able to switch the cart");
+        });
     }
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
-    public void cartSizeFarAwayIgnored(GameTestHelper helper) {
+    public void cartMenuFarAwayIgnored(GameTestHelper helper) {
         UUID ownerId = UUID.randomUUID();
         AbstractHorse horse = ownedCartHorse(helper, ownerId);
-        boolean before = IHorseData.of(horse).bh_hasLargeCart();
         ServerPlayer owner = BhTestPlayers.owner(helper, new Vec3(2, 2, 40), ownerId);
-
-        IcysBetterHorses.handleCartSize(owner, horse.getId());
-
-        helper.assertTrue(IHorseData.of(horse).bh_hasLargeCart() == before,
-                "a cart size change from out of reach should be ignored");
-        helper.succeed();
+        afterCartSpawns(helper, horse, cart -> {
+            IcysBetterHorses.handleOpenCart(owner, horse.getId());
+            helper.assertFalse(owner.containerMenu instanceof CartMenu, "a cart opened from out of reach should be ignored");
+        });
     }
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)

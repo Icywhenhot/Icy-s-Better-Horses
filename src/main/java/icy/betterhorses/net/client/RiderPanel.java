@@ -3,11 +3,16 @@ package icy.betterhorses.net.client;
 import com.mojang.blaze3d.systems.RenderSystem;
 import icy.betterhorses.net.BhNetworking;
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
+import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.IcysBetterHorsesClient;
+import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.mixin.AbstractContainerScreenAccessor;
+import icy.betterhorses.net.network.CartMenuPayload;
 import icy.betterhorses.net.network.RiderPanelPayload;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
@@ -18,6 +23,10 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.GLFW;
 
 public final class RiderPanel {
 
@@ -30,15 +39,39 @@ public final class RiderPanel {
     private static final int FACE_SIZE = 16;
     private static final long POP_MS = 220L;
     private static final float POP_FROM = 0.4F;
+    private static final int CART_TAB_GAP = 4;
+
+    private static double @Nullable [] cursor;
 
     private RiderPanel() {}
 
     public static void register() {
         ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
             if (screen instanceof HorseInventoryScreen horse) {
+                restoreCursor();
                 Screens.getButtons(screen).add(new Tab(horse));
+                AbstractHorse mount = ((HorseInventoryLayoutAccess) horse.getMenu()).bh_mount();
+                if (mount != null) {
+                    AbstractContainerScreenAccessor gui = (AbstractContainerScreenAccessor) horse;
+                    Screens.getButtons(screen).add(new CartTab(gui.bh_leftPos() + ICON_X,
+                            gui.bh_topPos() + ICON_Y + ICON_H + CART_TAB_GAP, mount));
+                }
+            } else if (screen instanceof CartScreen) {
+                restoreCursor();
             }
         });
+    }
+
+    static void rememberCursor() {
+        MouseHandler mouse = Minecraft.getInstance().mouseHandler;
+        cursor = new double[]{mouse.xpos(), mouse.ypos()};
+    }
+
+    private static void restoreCursor() {
+        if (cursor != null) {
+            GLFW.glfwSetCursorPos(Minecraft.getInstance().getWindow().getWindow(), cursor[0], cursor[1]);
+            cursor = null;
+        }
     }
 
     public static boolean onKey(Screen screen, int keyCode, int scanCode) {
@@ -59,6 +92,33 @@ public final class RiderPanel {
         boolean shown = !shown(screen);
         ((HorseInventoryLayoutAccess) screen.getMenu()).bh_setRiderPanel(shown);
         BhNetworking.sendToServer(new RiderPanelPayload(shown));
+    }
+
+    private static final class CartTab extends Button {
+
+        private final AbstractHorse mount;
+        private final ItemStack icon = new ItemStack(ModItems.HORSE_CART);
+
+        CartTab(int x, int y, AbstractHorse mount) {
+            super(x, y, ICON_W, ICON_W, Component.empty(), b -> {
+                rememberCursor();
+                BhNetworking.sendToServer(new CartMenuPayload(mount.getId()));
+            }, DEFAULT_NARRATION);
+            this.mount = mount;
+            this.setTooltip(Tooltip.create(Component.translatable("gui.icys-better-horses.cart.open",
+                    IcysBetterHorsesClient.CART_MENU_KEY.getTranslatedKeyMessage())));
+        }
+
+        @Override
+        public void render(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
+            this.visible = IHorseData.of(this.mount).bh_hasCartGear();
+            super.render(gfx, mouseX, mouseY, partialTick);
+        }
+
+        @Override
+        protected void renderWidget(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
+            gfx.renderItem(this.icon, this.getX(), this.getY());
+        }
     }
 
     private static final class Tab extends Button {

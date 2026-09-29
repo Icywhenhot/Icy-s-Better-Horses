@@ -5,7 +5,7 @@ import icy.betterhorses.net.client.render.BhNamedCoats;
 import icy.betterhorses.net.client.render.BhTackTextures;
 import com.mojang.blaze3d.platform.InputConstants;
 import icy.betterhorses.net.client.BhClientCaches;
-import icy.betterhorses.net.client.CartChestScreen;
+import icy.betterhorses.net.client.CartScreen;
 import icy.betterhorses.net.client.ChargeShakeController;
 import icy.betterhorses.net.client.ClientHorseRoster;
 import icy.betterhorses.net.client.ClientTrustCache;
@@ -33,7 +33,7 @@ import icy.betterhorses.net.entity.IcelandicHorse;
 import icy.betterhorses.net.network.BhRearPayload;
 import icy.betterhorses.net.network.BreedDataPayload;
 import icy.betterhorses.net.network.CallHorsePayload;
-import icy.betterhorses.net.network.CartSizePayload;
+import icy.betterhorses.net.network.CartMenuPayload;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
 import icy.betterhorses.net.network.HorseJumpPayload;
@@ -125,8 +125,8 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
             GLFW.GLFW_KEY_LEFT_CONTROL,
             KEY_CATEGORY);
 
-    public static final KeyMapping CART_SIZE_KEY = new KeyMapping(
-            "key.icys-better-horses.cart_size",
+    public static final KeyMapping CART_MENU_KEY = new KeyMapping(
+            "key.icys-better-horses.cart_menu",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_LEFT_ALT,
             KEY_CATEGORY);
@@ -143,7 +143,7 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         registerKeyMappings();
         registerRenderers();
         BhModelLayers.register();
-        MenuScreens.register(ModMenus.CART_CHEST, CartChestScreen::new);
+        MenuScreens.register(ModMenus.CART, CartScreen::new);
         registerItemColors();
         ClientTickEvents.END_CLIENT_TICK.register(IcysBetterHorsesClient::onClientTick);
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> sendChargeChoice());
@@ -189,7 +189,7 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         KeyBindingHelper.registerKeyBinding(GEAR_KEY);
         KeyBindingHelper.registerKeyBinding(REAR_KEY);
         KeyBindingHelper.registerKeyBinding(FREE_LOOK_KEY);
-        KeyBindingHelper.registerKeyBinding(CART_SIZE_KEY);
+        KeyBindingHelper.registerKeyBinding(CART_MENU_KEY);
         KeyBindingHelper.registerKeyBinding(CHARGE_KEY);
     }
 
@@ -339,8 +339,8 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
             tryRear(client);
         }
 
-        while (IcysBetterHorsesClient.CART_SIZE_KEY.consumeClick()) {
-            trySwapCartSize(client);
+        while (IcysBetterHorsesClient.CART_MENU_KEY.consumeClick()) {
+            tryOpenCart(client);
         }
 
         while (IcysBetterHorsesClient.CHARGE_KEY.consumeClick()) {
@@ -404,16 +404,20 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         BhNetworking.sendToServer(new BhRearPayload(horse.getId()));
     }
 
-    private static void trySwapCartSize(Minecraft client) {
+    private static void tryOpenCart(Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || client.screen != null) {
             return;
         }
-        Entity target = lookedAtCartTarget(player);
+        Entity vehicle = player.getVehicle();
+        Entity target = vehicle instanceof HorseCartEntity
+                || vehicle instanceof AbstractHorse horse && IHorseData.of(horse).bh_hasCartGear()
+                ? vehicle
+                : lookedAtCartTarget(player);
         if (target == null) {
             return;
         }
-        BhNetworking.sendToServer(new CartSizePayload(target.getId()));
+        BhNetworking.sendToServer(new CartMenuPayload(target.getId()));
     }
 
     private static @Nullable AbstractHorse lookedAtHorse(LocalPlayer player) {

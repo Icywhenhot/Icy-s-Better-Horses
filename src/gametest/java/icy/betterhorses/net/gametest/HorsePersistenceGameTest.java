@@ -3,6 +3,10 @@ package icy.betterhorses.net.gametest;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModEntities;
+import icy.betterhorses.net.ModItems;
+import icy.betterhorses.net.entity.CartType;
+import icy.betterhorses.net.inventory.GearSlot;
+import icy.betterhorses.net.item.HorseCartItem;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -49,15 +53,18 @@ public class HorsePersistenceGameTest implements FabricGameTest {
     }
 
     @GameTest(template = EMPTY_STRUCTURE)
-    public void largeCartFlagRoundTrip(GameTestHelper helper) {
+    public void cartTypeRoundTrip(GameTestHelper helper) {
         AbstractHorse original = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
         IHorseData data = IHorseData.of(original);
         data.bh_setBreed(HorseBreed.CLYDESDALE);
-        data.bh_setLargeCart(true);
-        helper.assertTrue(data.bh_hasLargeCart(), "setup: large cart flag should be settable on a draft breed");
+        ItemStack gear = new ItemStack(ModItems.HORSE_CART);
+        HorseCartItem.setType(gear, CartType.BUGGY);
+        data.bh_getGearContainer().setItem(GearSlot.STABILIZER.ordinal(), gear);
+        helper.assertTrue(data.bh_getCartType() == CartType.BUGGY, "setup: a draft should take a chosen small cart");
 
         AbstractHorse loaded = reload(helper, original);
-        helper.assertTrue(IHorseData.of(loaded).bh_hasLargeCart(), "large cart flag should survive save/load");
+        helper.assertTrue(IHorseData.of(loaded).bh_getCartType() == CartType.BUGGY,
+                "the chosen cart type should survive save/load");
         helper.succeed();
     }
 
@@ -69,7 +76,6 @@ public class HorsePersistenceGameTest implements FabricGameTest {
         data.bh_setCartChest(new ItemStack(Items.CHEST));
         data.bh_getCartChestContainer().setItem(0, new ItemStack(Items.CHEST));
         data.bh_setCartPlough(new ItemStack(Items.IRON_HOE));
-        data.bh_setLargeCart(true);
 
         CompoundTag saved = original.saveWithoutId(new CompoundTag());
         saved.remove("BH_CartChestOn");

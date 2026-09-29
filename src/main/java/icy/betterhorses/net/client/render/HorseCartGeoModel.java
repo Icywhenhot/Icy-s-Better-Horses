@@ -8,16 +8,16 @@ public final class HorseCartGeoModel extends GeoModel<HorseCartEntity> {
 
     @Override
     public ResourceLocation getModelResource(HorseCartEntity cart) {
-        return cart.size().model();
+        return cart.type().model();
     }
 
     @Override
     public ResourceLocation getTextureResource(HorseCartEntity cart) {
-        return cart.size().texture();
+        return cart.type().texture();
     }
 
     @Override
     public ResourceLocation getAnimationResource(HorseCartEntity cart) {
-        return cart.size().animation();
+        return cart.type().animation();
     }
 }
