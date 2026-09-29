@@ -4,7 +4,7 @@ import icy.betterhorses.net.network.BhFreeLookPayload;
 import icy.betterhorses.net.network.BhRearPayload;
 import icy.betterhorses.net.network.BreedDataPayload;
 import icy.betterhorses.net.network.CallHorsePayload;
-import icy.betterhorses.net.network.CartSizePayload;
+import icy.betterhorses.net.network.CartMenuPayload;
 import icy.betterhorses.net.network.BhChargePayload;
 import icy.betterhorses.net.feature.HorseCombat;
 import icy.betterhorses.net.network.ConfigSyncPayload;
@@ -40,7 +40,7 @@ import java.util.function.Supplier;
 
 public final class BhNetworking {
 
-    private static final String PROTOCOL_VERSION = "6";
+    private static final String PROTOCOL_VERSION = "7";
     private static final ResourceLocation CHANNEL_ID =
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "main");
     private static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
@@ -75,8 +75,8 @@ public final class BhNetworking {
                         player, payload.horseId(), payload.freeLook()));
         toServer(BhRearPayload.class, BhRearPayload::encode, BhRearPayload::decode,
                 (payload, player) -> IcysBetterHorses.handleRear(player, payload.horseId()));
-        toServer(CartSizePayload.class, CartSizePayload::encode, CartSizePayload::decode,
-                (payload, player) -> IcysBetterHorses.handleCartSize(player, payload.targetId()));
+        toServer(CartMenuPayload.class, CartMenuPayload::encode, CartMenuPayload::decode,
+                (payload, player) -> IcysBetterHorses.handleOpenCart(player, payload.targetId()));
 
         toClient(HorseRosterSyncPayload.class, HorseRosterSyncPayload::encode, HorseRosterSyncPayload::decode,
                 payload -> () -> IcysBetterHorsesClient.receiveHorseRoster(payload));

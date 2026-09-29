@@ -5,7 +5,6 @@ import net.minecraftforge.event.entity.living.LootingLevelEvent;
 import net.minecraftforge.event.level.ExplosionEvent;
 import net.minecraftforge.event.AnvilUpdateEvent;
 import net.minecraft.world.item.ItemStack;
-import icy.betterhorses.net.entity.CartSize;
 import icy.betterhorses.net.feature.breed.Ironclad;
 import icy.betterhorses.net.network.BreedDataPayload;
 import icy.betterhorses.net.network.ConfigSyncPayload;
@@ -20,7 +19,6 @@ import net.minecraft.resources.ResourceLocation;
 import icy.betterhorses.net.registry.BhRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.monster.Creeper;
@@ -81,7 +79,7 @@ public final class IcysBetterHorses {
 
     private static final float COMMAND_ANSWER_CHANCE = 0.5F;
     private static final int DISENGAGE_TICKS = 60;
-    private static final double CART_SIZE_REACH = 12.0D;
+    private static final double CART_REACH = 12.0D;
     private static final double DEFLECT_BOUNCE = 0.5D;
 
     private final List<AbstractHorse> staleHorses = new ArrayList<>();
@@ -469,68 +467,18 @@ public final class IcysBetterHorses {
         horse.standIfPossible();
     }
 
-    public static void handleCartSize(ServerPlayer player, int targetId) {
+    public static void handleOpenCart(ServerPlayer player, int targetId) {
         Entity target = player.level().getEntity(targetId);
-        if (target == null || player.distanceToSqr(target) > CART_SIZE_REACH * CART_SIZE_REACH) {
+        if (target == null || player.distanceToSqr(target) > CART_REACH * CART_REACH) {
             return;
         }
-
-        if (target instanceof HorseCartEntity placed && placed.isPlaced()) {
-            CartSize wanted = CartSize.byLarge(!placed.size().isLarge());
-            if (refuseResize(player, placed, wanted)) {
-                return;
-            }
-            placed.setSize(wanted);
-            placed.playSound(SoundEvents.ITEM_FRAME_ROTATE_ITEM, 1.0F, 1.0F);
-            return;
-        }
-
-        AbstractHorse horse = target instanceof HorseCartEntity drawn
-                ? drawn.boundHorse()
-                : target instanceof AbstractHorse mount ? mount : null;
-        if (horse == null) {
-            return;
-        }
-
-        IHorseData data = IHorseData.of(horse);
-        if (!data.bh_hasCartGear()) {
-            return;
-        }
-        if (BhConfig.horseExclusivityEnabled() && !data.bh_mayHandle(player.getUUID())) {
-            return;
-        }
-
-        CartSize wanted = CartSize.byLarge(!data.bh_hasLargeCart());
-        if (wanted.isLarge() && !data.bh_mayUseLargeCart()) {
-            player.sendSystemMessage(
-                    Component.translatable("message.icys-better-horses.cart_size_draft_only"));
-            horse.playSound(SoundEvents.VILLAGER_NO, 1.0F, 1.0F);
-            return;
-        }
-
-        HorseCartEntity cart = data.bh_getCartEntity();
+        HorseCartEntity cart = target instanceof HorseCartEntity found ? found
+                : target instanceof AbstractHorse horse && IHorseData.of(horse).bh_hasCartGear()
+                ? IHorseData.of(horse).bh_getCartEntity()
+                : null;
         if (cart != null) {
-            if (refuseResize(player, cart, wanted)) {
-                return;
-            }
-        } else if (data.bh_hasCartChest()
-                && HorseCartEntity.itemsBeyond(data.bh_getCartChestContainer(), wanted.chestSlots())) {
-            player.sendSystemMessage(
-                    Component.translatable("message.icys-better-horses.cart_size_chest_full"));
-            return;
+            cart.openMenu(player);
         }
-
-        data.bh_setLargeCart(wanted.isLarge());
-        horse.playSound(SoundEvents.ITEM_FRAME_ROTATE_ITEM, 1.0F, 1.0F);
-    }
-
-    private static boolean refuseResize(ServerPlayer player, HorseCartEntity cart, CartSize wanted) {
-        Component refusal = cart.resizeRefusal(wanted);
-        if (refusal == null) {
-            return false;
-        }
-        player.sendSystemMessage(refusal);
-        return true;
     }
 
     private static void playWhistle(ServerPlayer player) {

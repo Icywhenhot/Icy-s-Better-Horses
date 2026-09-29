@@ -4,7 +4,10 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import icy.betterhorses.net.BhNetworking;
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
+import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.IcysBetterHorsesClient;
+import icy.betterhorses.net.ModItems;
+import icy.betterhorses.net.network.CartMenuPayload;
 import icy.betterhorses.net.network.RiderPanelPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
@@ -21,6 +24,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.fml.ModList;
 import org.jetbrains.annotations.Nullable;
@@ -39,6 +43,7 @@ public final class RiderPanel {
     private static final int FACE_SIZE = 16;
     private static final long POP_MS = 220L;
     private static final float POP_FROM = 0.4F;
+    private static final int CART_TAB_GAP = 4;
     private static final int CURIOS_X = 26;
     private static final int CURIOS_Y = 18;
     private static final boolean CURIOS = ModList.get().isLoaded("curios");
@@ -59,6 +64,13 @@ public final class RiderPanel {
             if (curios != null) {
                 event.addListener(curios);
             }
+            AbstractHorse mount = ((HorseInventoryLayoutAccess) horse.getMenu()).bh_mount();
+            if (mount != null) {
+                event.addListener(new CartTab(horse.getGuiLeft() + ICON_X,
+                        horse.getGuiTop() + ICON_Y + ICON_H + CART_TAB_GAP, mount));
+            }
+        } else if (screen instanceof CartScreen) {
+            restoreCursor();
         } else if (CURIOS && CuriosLink.isCuriosScreen(screen)) {
             restoreCursor();
             if (mountedOnHorse()) {
@@ -115,6 +127,33 @@ public final class RiderPanel {
     private static void backToHorse() {
         rememberCursor();
         Minecraft.getInstance().player.sendOpenInventory();
+    }
+
+    private static final class CartTab extends Button {
+
+        private final AbstractHorse mount;
+        private final ItemStack icon = new ItemStack(ModItems.HORSE_CART.get());
+
+        CartTab(int x, int y, AbstractHorse mount) {
+            super(x, y, ICON_W, ICON_W, Component.empty(), b -> {
+                rememberCursor();
+                BhNetworking.sendToServer(new CartMenuPayload(mount.getId()));
+            }, DEFAULT_NARRATION);
+            this.mount = mount;
+            this.setTooltip(Tooltip.create(Component.translatable("gui.icys-better-horses.cart.open",
+                    IcysBetterHorsesClient.CART_MENU_KEY.getTranslatedKeyMessage())));
+        }
+
+        @Override
+        public void render(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
+            this.visible = IHorseData.of(this.mount).bh_hasCartGear();
+            super.render(gfx, mouseX, mouseY, partialTick);
+        }
+
+        @Override
+        protected void renderWidget(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
+            gfx.renderItem(this.icon, this.getX(), this.getY());
+        }
     }
 
     private static final class Tab extends Button {

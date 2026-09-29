@@ -43,7 +43,7 @@ public abstract class CameraMixin {
         if (vehicle instanceof AbstractHorse mount) {
             horse = mount;
         } else if (vehicle instanceof HorseCartEntity cart) {
-            if (cart.size().isLarge()) return y;
+            if (cart.type().isLarge()) return y;
             horse = cart.boundHorse();
         } else if (vehicle != null && !isDetached()
                 && BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.getType()).getNamespace().equals("trotting_wagons")) {
@@ -54,7 +54,7 @@ public abstract class CameraMixin {
         if (!BhHorseKind.managed(horse)) return y;
 
         IHorseData data = IHorseData.of(horse);
-        return data.bh_hasCartGear() && !data.bh_hasLargeCart()
+        return data.bh_hasCartGear() && !data.bh_getCartType().isLarge()
                 && BhBreedData.of(data.bh_getBreedKey()).archetype() == BhContent.DRAFT.get()
                 ? y + 0.5D : y;
     }

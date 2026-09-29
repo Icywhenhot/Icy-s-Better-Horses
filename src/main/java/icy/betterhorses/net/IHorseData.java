@@ -8,7 +8,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import icy.betterhorses.net.entity.CartSize;
+import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.inventory.GearSlot;
 import icy.betterhorses.net.registry.BreedType;
@@ -167,11 +167,13 @@ public interface IHorseData {
         return breedKey != null && BhBreedData.of(breedKey).archetype().allowsLargeCart();
     }
 
-    boolean bh_hasLargeCart();
+    CartType bh_getCartType();
 
-    void bh_setLargeCart(boolean large);
+    void bh_syncCartType();
 
     boolean bh_hasCartChest();
+
+    ItemStack bh_getCartChestItem();
 
     void bh_setCartChest(ItemStack chest);
 

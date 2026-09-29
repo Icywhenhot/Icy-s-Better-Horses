@@ -7,7 +7,7 @@ import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import com.mojang.blaze3d.platform.InputConstants;
 import icy.betterhorses.net.client.BhClientCaches;
-import icy.betterhorses.net.client.CartChestScreen;
+import icy.betterhorses.net.client.CartScreen;
 import icy.betterhorses.net.client.ChargeShakeController;
 import icy.betterhorses.net.client.ClientHorseRoster;
 import icy.betterhorses.net.client.ClientTrustCache;
@@ -100,8 +100,8 @@ public final class IcysBetterHorsesClient {
             GLFW.GLFW_KEY_LEFT_CONTROL,
             KEY_CATEGORY);
 
-    public static final KeyMapping CART_SIZE_KEY = new KeyMapping(
-            "key.icys-better-horses.cart_size",
+    public static final KeyMapping CART_MENU_KEY = new KeyMapping(
+            "key.icys-better-horses.cart_menu",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_LEFT_ALT,
             KEY_CATEGORY);
@@ -130,7 +130,7 @@ public final class IcysBetterHorsesClient {
         event.register(GEAR_KEY);
         event.register(REAR_KEY);
         event.register(FREE_LOOK_KEY);
-        event.register(CART_SIZE_KEY);
+        event.register(CART_MENU_KEY);
         event.register(CHARGE_KEY);
         event.register(RIDER_PANEL_KEY);
     }
@@ -247,7 +247,7 @@ public final class IcysBetterHorsesClient {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
-            MenuScreens.register(ModMenus.CART_CHEST.get(), CartChestScreen::new);
+            MenuScreens.register(ModMenus.CART.get(), CartScreen::new);
             if (ModList.get().isLoaded("cloth_config")) {
                 ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
                         () -> new ConfigScreenHandler.ConfigScreenFactory(

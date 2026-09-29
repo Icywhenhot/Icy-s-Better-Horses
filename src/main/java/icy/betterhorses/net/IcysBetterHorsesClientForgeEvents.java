@@ -21,7 +21,7 @@ import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.entity.IcelandicHorse;
 import icy.betterhorses.net.network.BhRearPayload;
 import icy.betterhorses.net.network.CallHorsePayload;
-import icy.betterhorses.net.network.CartSizePayload;
+import icy.betterhorses.net.network.CartMenuPayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -97,8 +97,8 @@ public final class IcysBetterHorsesClientForgeEvents {
             tryRear(client);
         }
 
-        while (IcysBetterHorsesClient.CART_SIZE_KEY.consumeClick()) {
-            trySwapCartSize(client);
+        while (IcysBetterHorsesClient.CART_MENU_KEY.consumeClick()) {
+            tryOpenCart(client);
         }
 
         while (IcysBetterHorsesClient.CHARGE_KEY.consumeClick()) {
@@ -225,16 +225,20 @@ public final class IcysBetterHorsesClientForgeEvents {
         BhNetworking.sendToServer(new BhRearPayload(horse.getId()));
     }
 
-    private static void trySwapCartSize(Minecraft client) {
+    private static void tryOpenCart(Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || client.screen != null) {
             return;
         }
-        Entity target = lookedAtCartTarget(player);
+        Entity vehicle = player.getVehicle();
+        Entity target = vehicle instanceof HorseCartEntity
+                || vehicle instanceof AbstractHorse horse && IHorseData.of(horse).bh_hasCartGear()
+                ? vehicle
+                : lookedAtCartTarget(player);
         if (target == null) {
             return;
         }
-        BhNetworking.sendToServer(new CartSizePayload(target.getId()));
+        BhNetworking.sendToServer(new CartMenuPayload(target.getId()));
     }
 
     private static @Nullable AbstractHorse lookedAtHorse(LocalPlayer player) {

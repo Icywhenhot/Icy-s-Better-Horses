@@ -283,6 +283,11 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     }
 
     @Override
+    public @Nullable AbstractHorse bh_mount() {
+        return this.bh_horse;
+    }
+
+    @Override
     public void bh_refreshLayout() {
         this.bh_chestRows = this.bh_resolveChestRows();
         if (this.bh_playerInventoryStartIndex < 0 || this.bh_playerInventoryEndIndex < 0) {
