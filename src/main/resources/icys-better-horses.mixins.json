@@ -19,6 +19,8 @@
 		"EquineBreedingMixin",
 		"GrindstoneMenuMixin",
 		"HorseAccessor",
+		"HorseArmorItemMixin",
+		"HorseArmorSlotMixin",
 		"HorseCreativeTamingMixin",
 		"HorseFinalizeSpawnMixin",
 		"HorseInventoryMenuMixin",
@@ -38,6 +40,8 @@
 		"ProjectileImpactMixin",
 		"RepairItemRecipeMixin",
 		"SlotAccessor",
+		"ShovelItemAccessor",
+		"TrottingWagonsHitchMixin",
 		"SpawnPlacementsAccessor",
 		"VehicleStepMixin"
 	],

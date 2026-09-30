@@ -17,7 +17,6 @@ import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
-import icy.betterhorses.net.network.RiderPanelPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -66,7 +65,6 @@ public final class BhNetworking {
         channel(BhRearPayload.class, "rear", BhRearPayload::encode);
         channel(CartMenuPayload.class, "cart_menu", CartMenuPayload::encode);
         channel(BhChargePayload.class, "charge_toggle", BhChargePayload::encode);
-        channel(RiderPanelPayload.class, "rider_panel", RiderPanelPayload::encode);
 
         channel(HorseRosterSyncPayload.class, "horse_roster_sync", HorseRosterSyncPayload::encode);
         channel(HorseManageResultPayload.class, "horse_manage_result", HorseManageResultPayload::encode);
@@ -102,12 +100,6 @@ public final class BhNetworking {
                 (payload, player) -> IcysBetterHorses.handleOpenCart(player, payload.targetId()));
         toServer(BhChargePayload.class, BhChargePayload::decode,
                 (payload, player) -> HorseCombat.riderCharge(player.getUUID(), payload.on()));
-        toServer(RiderPanelPayload.class, RiderPanelPayload::decode,
-                (payload, player) -> {
-                    if (player.containerMenu instanceof HorseInventoryLayoutAccess access) {
-                        access.bh_setRiderPanel(payload.shown());
-                    }
-                });
     }
 
     public static void registerClient() {

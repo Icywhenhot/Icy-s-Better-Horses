@@ -3,10 +3,6 @@ package icy.betterhorses.net.mixin;
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.inventory.GearSlot;
-import icy.betterhorses.net.inventory.RiderGearSlot;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -43,17 +39,9 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Unique private static final int BH_MAX_CHEST_ROWS = 6;
     @Unique private static final int BH_ROW_HEIGHT = 18;
     @Unique private static final int BH_CHEST_GAP = 7;
-    @Unique private static final int BH_OFFSCREEN = 10000;
-    @Unique private static final EquipmentSlot[] BH_RIDER_ARMOR = {
-            EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
-    @Unique private static final ResourceLocation[] BH_RIDER_ARMOR_ICONS = {
-            InventoryMenu.EMPTY_ARMOR_SLOT_HELMET, InventoryMenu.EMPTY_ARMOR_SLOT_CHESTPLATE,
-            InventoryMenu.EMPTY_ARMOR_SLOT_LEGGINGS, InventoryMenu.EMPTY_ARMOR_SLOT_BOOTS};
 
     @Unique private int bh_gearStartIndex = -1;
     @Unique private int bh_chestStartIndex = -1;
-    @Unique private int bh_riderGearStartIndex = -1;
-    @Unique private boolean bh_riderPanel = false;
     @Unique private int bh_playerInventoryStartIndex = -1;
     @Unique private int bh_playerInventoryEndIndex = -1;
     @Unique private int bh_appliedShift = 0;
@@ -196,7 +184,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                             && !(horse instanceof Horse)) {
                         return false;
                     }
-                    return type.accepts(stack);
+                    return this.isActive() && type.accepts(stack);
                 }
 
                 @Override public boolean mayPickup(Player player) {
@@ -204,8 +192,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                             && HorseInventoryMenuMixin.this.bh_isCartSlotLocked());
                 }
                 @Override public boolean isActive() {
-                    return !HorseInventoryMenuMixin.this.bh_riderPanel
-                            && HorseInventoryMenuMixin.this.bh_hasUpgradedSaddleInMenu();
+                    return type.enabled() && HorseInventoryMenuMixin.this.bh_hasUpgradedSaddleInMenu();
                 }
                 @Override public int getMaxStackSize() { return 1; }
 
@@ -246,40 +233,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             }
         }
 
-        this.bh_riderGearStartIndex = this.slots.size();
-        Player rider = playerInventory.player;
-        for (int i = 0; i < BH_RIDER_ARMOR.length; i++) {
-            EquipmentSlot type = BH_RIDER_ARMOR[i];
-            this.addSlot(new RiderGearSlot(rider, type, Inventory.INVENTORY_SIZE + type.getIndex(),
-                    BH_GEAR_SLOT_X + i * 18, BH_GEAR_SLOT_Y, BH_RIDER_ARMOR_ICONS[i], () -> this.bh_riderPanel));
-        }
-        this.addSlot(new RiderGearSlot(rider, EquipmentSlot.OFFHAND, Inventory.SLOT_OFFHAND,
-                8, 18, InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD, () -> this.bh_riderPanel));
-
         this.bh_refreshLayout();
-    }
-
-    @Override
-    public boolean bh_isRiderPanel() {
-        return this.bh_riderPanel;
-    }
-
-    @Override
-    public void bh_setRiderPanel(boolean shown) {
-        if (shown == this.bh_riderPanel) {
-            return;
-        }
-        this.bh_riderPanel = shown;
-        int dx = shown ? BH_OFFSCREEN : -BH_OFFSCREEN;
-        for (int i = 0; i < this.bh_playerInventoryStartIndex; i++) {
-            Slot slot = this.slots.get(i);
-            ((SlotAccessor) slot).bh_setX(slot.x + dx);
-        }
-    }
-
-    @Override
-    public int bh_getRiderGearStartIndex() {
-        return this.bh_riderGearStartIndex;
     }
 
     @Override

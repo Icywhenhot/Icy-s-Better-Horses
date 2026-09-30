@@ -13,6 +13,7 @@ import icy.betterhorses.net.ModEntities;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.CartMenu;
 import icy.betterhorses.net.item.HorseCartItem;
+import icy.betterhorses.net.mixin.ShovelItemAccessor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -875,7 +876,8 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         boolean clientSide = this.level().isClientSide();
         ItemStack held = player.getItemInHand(hand);
 
-        if (held.is(ItemTags.HOES) && !this.hasPlough() && this.type().takesPlough()) {
+        if ((held.is(ItemTags.HOES) || held.is(ItemTags.SHOVELS))
+                && !this.hasPlough() && this.type().takesPlough()) {
             if (clientSide) {
                 return InteractionResult.SUCCESS;
             }
@@ -1007,14 +1009,14 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     private void tillGround() {
-        if (!(this.level() instanceof ServerLevel level) || !this.hasPlough()) {
+        if (!(this.level() instanceof ServerLevel level) || !this.hasPlough() || !this.type().takesPlough()) {
             return;
         }
         if (this.entityData.get(DATA_ROLL_SPEED) < STILL_SPEED) {
             return;
         }
-        ItemStack hoe = this.ploughItem();
-        if (hoe.isEmpty()) {
+        ItemStack tool = this.ploughItem();
+        if (tool.isEmpty()) {
             return;
         }
 
@@ -1027,7 +1029,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             Vec3 spot = this.position().add(new Vec3(lane, 0.0D, -PLOW_BEHIND).yRot(rad));
             BlockPos furrow = BlockPos.containing(spot.x, this.getY(), spot.z).below();
             for (int lift = PLOW_LIFT; lift >= 0; lift--) {
-                if (this.turnOver(level, furrow.above(lift), driver)) {
+                if (this.turnOver(level, furrow.above(lift), driver, tool)) {
                     turned++;
                     break;
                 }
@@ -1037,28 +1039,36 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             return;
         }
 
-        this.playSound(SoundEvents.HOE_TILL, 1.0F, 1.0F);
-        if (hoe.hurt(turned, this.random, driver instanceof ServerPlayer sp ? sp : null)) {
-            hoe.shrink(1);
+        this.playSound(tool.is(ItemTags.SHOVELS) ? SoundEvents.SHOVEL_FLATTEN : SoundEvents.HOE_TILL, 1.0F, 1.0F);
+        if (tool.hurt(turned, this.random, driver instanceof ServerPlayer sp ? sp : null)) {
+            tool.shrink(1);
         }
-        if (hoe.isEmpty()) {
+        if (tool.isEmpty()) {
             this.setPlough(ItemStack.EMPTY);
             this.playSound(SoundEvents.ITEM_BREAK, 0.8F, 0.9F);
         }
     }
 
-    private boolean turnOver(ServerLevel level, BlockPos pos, @Nullable LivingEntity driver) {
+    private boolean turnOver(ServerLevel level, BlockPos pos, @Nullable LivingEntity driver, ItemStack tool) {
         BlockState ground = level.getBlockState(pos);
-        if (!tillable(ground) || !level.getBlockState(pos.above()).isAir()) {
+        if (!level.getBlockState(pos.above()).isAir()) {
             return false;
         }
         if (driver instanceof ServerPlayer sp && !level.mayInteract(sp, pos)) {
             return false;
         }
-        if (ground.is(Blocks.ROOTED_DIRT)) {
-            Block.popResource(level, pos, new ItemStack(Items.HANGING_ROOTS));
+        BlockState turned;
+        if (tool.is(ItemTags.SHOVELS)) {
+            turned = ShovelItemAccessor.bh_flattenables().get(ground.getBlock());
+            if (turned == null || turned == ground) return false;
+        } else {
+            if (!tillable(ground)) return false;
+            if (ground.is(Blocks.ROOTED_DIRT)) {
+                Block.popResource(level, pos, new ItemStack(Items.HANGING_ROOTS));
+            }
+            turned = Blocks.FARMLAND.defaultBlockState();
         }
-        level.setBlockAndUpdate(pos, Blocks.FARMLAND.defaultBlockState());
+        level.setBlockAndUpdate(pos, turned);
         return true;
     }
 

@@ -6,11 +6,7 @@ import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.IcysBetterHorsesClient;
 import icy.betterhorses.net.ModItems;
-import icy.betterhorses.net.mixin.AbstractContainerScreenAccessor;
 import icy.betterhorses.net.network.CartMenuPayload;
-import icy.betterhorses.net.network.RiderPanelPayload;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,13 +14,19 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.client.screen.v1.Screens;
+import icy.betterhorses.net.mixin.AbstractContainerScreenAccessor;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -49,7 +51,7 @@ public final class RiderPanel {
         ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
             if (screen instanceof HorseInventoryScreen horse) {
                 restoreCursor();
-                Screens.getButtons(screen).add(new Tab(horse));
+                Screens.getButtons(screen).add(new Tab(horse, ICON_X, false, b -> openPlayerInventory()));
                 AbstractHorse mount = ((HorseInventoryLayoutAccess) horse.getMenu()).bh_mount();
                 if (mount != null) {
                     AbstractContainerScreenAccessor gui = (AbstractContainerScreenAccessor) horse;
@@ -58,8 +60,28 @@ public final class RiderPanel {
                 }
             } else if (screen instanceof CartScreen) {
                 restoreCursor();
+            } else if (screen instanceof InventoryScreen || screen instanceof CreativeModeInventoryScreen) {
+                restoreCursor();
+                if (mountedOnHorse()) {
+                    Screens.getButtons(screen).add(new Tab((AbstractContainerScreen<?>) screen, ICON_X, true, b -> backToHorse()));
+                }
             }
         });
+    }
+
+    public static boolean onKey(Screen screen, int keyCode, int scanCode) {
+        if (!Screen.hasControlDown() || !Minecraft.getInstance().options.keyInventory.matches(keyCode, scanCode)) {
+            return false;
+        }
+        if (screen instanceof HorseInventoryScreen) {
+            openPlayerInventory();
+        } else if (mountedOnHorse() && (screen instanceof InventoryScreen || screen instanceof CreativeModeInventoryScreen)) {
+            backToHorse();
+        } else {
+            return false;
+        }
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        return true;
     }
 
     static void rememberCursor() {
@@ -74,24 +96,22 @@ public final class RiderPanel {
         }
     }
 
-    public static boolean onKey(Screen screen, int keyCode, int scanCode) {
-        if (!(screen instanceof HorseInventoryScreen horse) || !Screen.hasControlDown()
-                || !Minecraft.getInstance().options.keyInventory.matches(keyCode, scanCode)) {
-            return false;
-        }
-        toggle(horse);
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-        return true;
+    private static boolean mountedOnHorse() {
+        return Minecraft.getInstance().player.getVehicle() instanceof AbstractHorse horse && horse.isTamed();
     }
 
-    public static boolean shown(HorseInventoryScreen screen) {
-        return ((HorseInventoryLayoutAccess) screen.getMenu()).bh_isRiderPanel();
+    private static void openPlayerInventory() {
+        Minecraft mc = Minecraft.getInstance();
+        rememberCursor();
+        mc.player.closeContainer();
+        mc.setScreen(new InventoryScreen(mc.player));
     }
 
-    private static void toggle(HorseInventoryScreen screen) {
-        boolean shown = !shown(screen);
-        ((HorseInventoryLayoutAccess) screen.getMenu()).bh_setRiderPanel(shown);
-        BhNetworking.sendToServer(new RiderPanelPayload(shown));
+    private static void backToHorse() {
+        rememberCursor();
+        Minecraft mc = Minecraft.getInstance();
+        mc.player.closeContainer();
+        mc.player.sendOpenInventory();
     }
 
     private static final class CartTab extends Button {
@@ -123,20 +143,21 @@ public final class RiderPanel {
 
     private static final class Tab extends Button {
 
-        private final HorseInventoryScreen screen;
-        private boolean showing;
-        private long popAt = -1L;
+        private final AbstractContainerScreen<?> screen;
+        private final int offset;
+        private final boolean showing;
+        private final long popAt = System.currentTimeMillis();
 
-        Tab(HorseInventoryScreen screen) {
-            super(((AbstractContainerScreenAccessor) screen).bh_leftPos() + ICON_X,
-                    ((AbstractContainerScreenAccessor) screen).bh_topPos() + ICON_Y, ICON_W, ICON_H,
-                    Component.empty(), b -> toggle(screen), DEFAULT_NARRATION);
+        Tab(AbstractContainerScreen<?> screen, int offset, boolean showing, OnPress press) {
+            super(((AbstractContainerScreenAccessor) screen).bh_leftPos() + offset, ((AbstractContainerScreenAccessor) screen).bh_topPos() + ICON_Y,
+                    ICON_W, ICON_H, Component.empty(), press, DEFAULT_NARRATION);
             this.screen = screen;
+            this.offset = offset;
+            this.showing = showing;
             this.retip();
         }
 
         private void retip() {
-            this.showing = shown(this.screen);
             Component key = Component.literal("Ctrl + ")
                     .append(Minecraft.getInstance().options.keyInventory.getTranslatedKeyMessage());
             this.setTooltip(Tooltip.create(Component.translatable(this.showing
@@ -146,11 +167,8 @@ public final class RiderPanel {
 
         @Override
         protected void renderWidget(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
-            if (this.showing != shown(this.screen)) {
-                this.retip();
-                this.popAt = System.currentTimeMillis();
-            }
-            float t = this.popAt < 0L ? 1.0F : (System.currentTimeMillis() - this.popAt) / (float) POP_MS;
+            this.setPosition(((AbstractContainerScreenAccessor) this.screen).bh_leftPos() + this.offset, ((AbstractContainerScreenAccessor) this.screen).bh_topPos() + ICON_Y);
+            float t = (System.currentTimeMillis() - this.popAt) / (float) POP_MS;
             float scale = t >= 1.0F ? 1.0F : POP_FROM + (1.0F - POP_FROM) * BhAnim.easeOutBack(t);
 
             gfx.pose().pushPose();

@@ -241,7 +241,7 @@ public final class IcysBetterHorses implements ModInitializer {
 
     public static float bh_mountedBreakSpeed(Player player, float original) {
         if (player.getVehicle() instanceof AbstractHorse) {
-            return original * 6.0F;
+            return original * 3.75F;
         }
         return original;
     }
@@ -389,6 +389,9 @@ public final class IcysBetterHorses implements ModInitializer {
             return;
         }
         horse.standIfPossible();
+        if (horse.isStanding() && BhFeature.REAR_NEIGH.on()) {
+            horse.playSound(ModSounds.HORSE_NEIGH, 1.0F, 1.0F);
+        }
     }
 
     public static void handleOpenCart(ServerPlayer player, int targetId) {
