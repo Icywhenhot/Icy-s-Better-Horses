@@ -18,7 +18,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -55,16 +54,6 @@ public abstract class AbstractContainerScreenMixin {
         if (RiderPanel.onKey((Screen) (Object) this, event)) {
             cir.setReturnValue(true);
         }
-    }
-
-    @ModifyArg(method = "extractLabels", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V",
-            ordinal = 0), index = 1)
-    private Component bh_riderPanelTitle(Component title) {
-        if (this.getMenu() instanceof HorseInventoryLayoutAccess layoutAccess && layoutAccess.bh_isRiderPanel()) {
-            return Minecraft.getInstance().player.getName();
-        }
-        return title;
     }
 
     @Unique

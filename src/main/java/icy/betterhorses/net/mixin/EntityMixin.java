@@ -63,7 +63,7 @@ public abstract class EntityMixin {
     private static final Identifier BH_MOUNTED_BREAK_SPEED_ID =
             Identifier.fromNamespaceAndPath("icys-better-horses", "mounted_break_speed");
     @Unique private static final double BH_MOUNTED_STEP_HEIGHT_BONUS = 0.1D;
-    @Unique private static final double BH_MOUNTED_BREAK_SPEED_BONUS = 5.0D;
+    @Unique private static final double BH_MOUNTED_BREAK_SPEED_BONUS = 2.75D;
 
     @Inject(method = "deflection", at = @At("HEAD"), cancellable = true)
     private void bh_ridersDeflectProjectiles(Projectile projectile, CallbackInfoReturnable<ProjectileDeflection> cir) {
@@ -86,7 +86,7 @@ public abstract class EntityMixin {
         }
     }
 
-    @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;ZZ)Z", at = @At("TAIL"))
+    @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;ZZ)Z", at = @At("RETURN"))
     private void bh_applyMountedHorseBonuses(
             Entity vehicle,
             boolean force,

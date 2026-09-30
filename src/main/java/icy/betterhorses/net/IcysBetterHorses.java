@@ -1,11 +1,14 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.network.BhRearPayload;
+import net.fabricmc.fabric.api.item.v1.DefaultItemComponentEvents;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.enchantment.Enchantable;
+import net.minecraft.world.item.Items;
 import icy.betterhorses.net.network.BhChargePayload;
 import icy.betterhorses.net.feature.HorseCombat;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.network.CartMenuPayload;
-import icy.betterhorses.net.network.RiderPanelPayload;
 import icy.betterhorses.net.network.BhFreeLookPayload;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
@@ -69,6 +72,14 @@ public class IcysBetterHorses implements ModInitializer {
         ModBlocks.init();
         ModEntities.init();
         ModItems.init();
+        DefaultItemComponentEvents.MODIFY.register(context -> {
+            context.modify(Items.LEATHER_HORSE_ARMOR, builder -> builder.set(DataComponents.ENCHANTABLE, new Enchantable(15)));
+            context.modify(Items.COPPER_HORSE_ARMOR, builder -> builder.set(DataComponents.ENCHANTABLE, new Enchantable(8)));
+            context.modify(Items.IRON_HORSE_ARMOR, builder -> builder.set(DataComponents.ENCHANTABLE, new Enchantable(9)));
+            context.modify(Items.GOLDEN_HORSE_ARMOR, builder -> builder.set(DataComponents.ENCHANTABLE, new Enchantable(25)));
+            context.modify(Items.DIAMOND_HORSE_ARMOR, builder -> builder.set(DataComponents.ENCHANTABLE, new Enchantable(10)));
+            context.modify(Items.NETHERITE_HORSE_ARMOR, builder -> builder.set(DataComponents.ENCHANTABLE, new Enchantable(15)));
+        });
         ModSounds.init();
         ModMenus.init();
         ModTicketTypes.init();
@@ -99,7 +110,6 @@ public class IcysBetterHorses implements ModInitializer {
         PayloadTypeRegistry.serverboundPlay().register(BhRearPayload.TYPE, new BhRearPayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(CartMenuPayload.TYPE, new CartMenuPayload.StreamCodec());
         PayloadTypeRegistry.serverboundPlay().register(BhChargePayload.TYPE, new BhChargePayload.StreamCodec());
-        PayloadTypeRegistry.serverboundPlay().register(RiderPanelPayload.TYPE, new RiderPanelPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(HorseRosterSyncPayload.TYPE, new HorseRosterSyncPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(HorseManageResultPayload.TYPE, new HorseManageResultPayload.StreamCodec());
         PayloadTypeRegistry.clientboundPlay().register(TrustSyncPayload.TYPE, new TrustSyncPayload.StreamCodec());
@@ -163,15 +173,6 @@ public class IcysBetterHorses implements ModInitializer {
             ServerPlayer player = context.player();
             context.server().execute(() -> HorseCombat.riderCharge(player.getUUID(), payload.on()));
         });
-        ServerPlayNetworking.registerGlobalReceiver(RiderPanelPayload.TYPE, (payload, context) -> {
-            ServerPlayer player = context.player();
-            context.server().execute(() -> {
-                if (player.containerMenu instanceof HorseInventoryLayoutAccess access) {
-                    access.bh_setRiderPanel(payload.shown());
-                }
-            });
-        });
-
         ServerPlayNetworking.registerGlobalReceiver(OpenHorseRosterPayload.TYPE, (payload, context) -> {
             ServerPlayer player = context.player();
             context.server().execute(() -> sendRoster(player));
@@ -464,6 +465,9 @@ public class IcysBetterHorses implements ModInitializer {
             return;
         }
         horse.standIfPossible();
+        if (horse.isStanding() && BhFeature.REAR_NEIGH.on()) {
+            horse.playSound(ModSounds.HORSE_NEIGH, 1.0F, 1.0F);
+        }
     }
 
     private static AbstractHorse findCommandHorse(ServerPlayer player, int horseId, double radius) {

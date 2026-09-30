@@ -18,6 +18,7 @@ public enum BhFeature {
     CART_PICKUP("cart_pickup"),
     LEAF_PASSTHROUGH("leaf_passthrough"),
     HOOF_DUST("hoof_dust"),
+    REAR_NEIGH("rear_neigh"),
     HORSE_CHARGE("horse_charge", true),
     HORSE_KICK("horse_kick", true),
     HORSE_DEFEND("horse_defend", true),

@@ -1,6 +1,7 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.client.BhAnim;
@@ -12,8 +13,6 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractMountInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.EffectsInInventory;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -54,7 +53,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final int BH_ROW_HEIGHT = 18;
     @Unique private static final int BH_CHEST_GAP = 7;
     @Unique private static final int BH_PLAIN_STRIP_V = 71;
-    @Unique private static final int BH_RIDER_PREVIEW_SCALE = 24;
     @Unique private static final int BH_DEFAULT_INVENTORY_LABEL_Y = BH_VANILLA_IMAGE_HEIGHT - 94;
     @Unique private static final int BH_GEAR_PANEL_X = 79;
     @Unique private static final int BH_GEAR_PANEL_Y = 17;
@@ -119,36 +117,20 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         }
 
         this.bh_applyLayoutState();
-        boolean chest = this.bh_hasChestStorageLayout();
-        boolean rider = this.bh_showsRiderPanel();
-        if (!chest && !rider) {
+        if (!this.bh_hasChestStorageLayout()) {
             return;
         }
 
         int x = this.leftPos;
         int y = this.topPos;
-        int chestHeight = chest ? this.bh_chestRows() * BH_ROW_HEIGHT : 0;
-        int gap = chest ? BH_CHEST_GAP : 0;
+        int chestHeight = this.bh_chestRows() * BH_ROW_HEIGHT;
         bh_blitGui(gfx, BH_HORSE_TEXTURE, x, y, 0, 0, this.imageWidth, BH_TOP_SECTION_HEIGHT);
-        if (chest) {
-            this.bh_drawMiddlePanel(gfx, x, y + BH_TOP_SECTION_HEIGHT, this.imageWidth, chestHeight);
-            bh_blitGui(gfx, BH_HORSE_TEXTURE, x, y + BH_TOP_SECTION_HEIGHT + chestHeight,
-                    0, BH_PLAIN_STRIP_V, this.imageWidth, BH_CHEST_GAP);
-        }
+        this.bh_drawMiddlePanel(gfx, x, y + BH_TOP_SECTION_HEIGHT, this.imageWidth, chestHeight);
+        bh_blitGui(gfx, BH_HORSE_TEXTURE, x, y + BH_TOP_SECTION_HEIGHT + chestHeight,
+                0, BH_PLAIN_STRIP_V, this.imageWidth, BH_CHEST_GAP);
         bh_blitGui(gfx, BH_HORSE_TEXTURE,
-                x,
-                y + BH_TOP_SECTION_HEIGHT + chestHeight + gap,
-                0,
-                BH_TOP_SECTION_HEIGHT,
-                this.imageWidth,
-                BH_VANILLA_IMAGE_HEIGHT - BH_TOP_SECTION_HEIGHT);
-
-        if (rider) {
-            this.bh_drawChestPanel(gfx);
-            this.bh_drawRiderPanel(gfx);
-            ci.cancel();
-            return;
-        }
+                x, y + BH_TOP_SECTION_HEIGHT + chestHeight + BH_CHEST_GAP,
+                0, BH_TOP_SECTION_HEIGHT, this.imageWidth, BH_VANILLA_IMAGE_HEIGHT - BH_TOP_SECTION_HEIGHT);
 
         if (horse.canUseSlot(EquipmentSlot.SADDLE)) {
             gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SLOT_SPRITE, x + 7, y + 17, 18, 18);
@@ -210,9 +192,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         if (horse == null || !this.bh_hasUpgradedSaddleInMenu()) {
             return;
         }
-        if (!this.bh_showsRiderPanel()) {
-            this.bh_drawStatsLines(gfx, horse);
-        }
+        this.bh_drawStatsLines(gfx, horse);
         this.bh_drawBondStar(gfx, horse, mouseX, mouseY);
     }
 
@@ -311,7 +291,10 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int x = this.leftPos + BH_GEAR_PANEL_X;
         int y = this.topPos + BH_GEAR_PANEL_Y;
         for (int i = 0; i < GearSlot.COUNT; i++) {
-            gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SLOT_SPRITE, x + i * 18, y, 18, 18);
+            int slotIndex = this.bh_getGearSlotIndex(i);
+            if (slotIndex >= 0 && this.menu.getSlot(slotIndex).isActive()) {
+                gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SLOT_SPRITE, x + i * 18, y, 18, 18);
+            }
         }
         if (!this.bh_hasUpgradedSaddleInMenu()) {
             return;
@@ -319,7 +302,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         this.bh_drawGearHint(gfx, x, y, GearSlot.CHEST, Items.CHEST);
         this.bh_drawGearHint(gfx, x, y, GearSlot.HOOVES, ModItems.HORSE_HOOVES);
         this.bh_drawGearHint(gfx, x, y, GearSlot.MEDKIT, ModItems.HORSE_MEDKIT);
-        Item stabilizerSlotHint = this.bh_mountTakesStabilizer() && (System.currentTimeMillis() / 1000L) % 2L == 0L
+        Item stabilizerSlotHint = BhConfig.stabilizerEnabled()
+                && this.bh_mountTakesStabilizer() && (System.currentTimeMillis() / 1000L) % 2L == 0L
                 ? ModItems.HORSE_STABILIZER
                 : ModItems.HORSE_CART;
         this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, stabilizerSlotHint);
@@ -335,40 +319,11 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         }
 
         Slot slot = this.menu.slots.get(flashed);
+        if (!slot.isActive()) return;
         int slotX = this.leftPos + slot.x;
         int slotY = this.topPos + slot.y;
         gfx.fill(slotX, slotY, slotX + 16, slotY + 16,
                 BhAnim.fade(BhScreenDraw.BTN_ERROR, intensity * BH_LOCK_FLASH_ALPHA));
-    }
-
-    @Unique
-    private void bh_drawRiderPanel(GuiGraphicsExtractor gfx) {
-        HorseInventoryLayoutAccess layoutAccess = this.bh_getLayoutAccessOrNull();
-        for (int i = layoutAccess.bh_getRiderGearStartIndex(); i < this.menu.slots.size(); i++) {
-            Slot slot = this.menu.slots.get(i);
-            gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SLOT_SPRITE, this.leftPos + slot.x - 1, this.topPos + slot.y - 1, 18, 18);
-        }
-        LocalPlayer player = this.minecraft.player;
-        Entity vehicle = player.getVehicle();
-        ((EntityAccessor) player).bh_setVehicle(null);
-        InventoryScreen.extractEntityInInventoryFollowsMouse(
-                gfx,
-                this.leftPos + 26,
-                this.topPos + 18,
-                this.leftPos + 78,
-                this.topPos + 70,
-                BH_RIDER_PREVIEW_SCALE,
-                0.0625F,
-                this.xMouse,
-                this.yMouse,
-                player);
-        ((EntityAccessor) player).bh_setVehicle(vehicle);
-    }
-
-    @Unique
-    private boolean bh_showsRiderPanel() {
-        HorseInventoryLayoutAccess layoutAccess = this.bh_getLayoutAccessOrNull();
-        return layoutAccess != null && layoutAccess.bh_isRiderPanel();
     }
 
     @Unique
@@ -412,7 +367,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique
     private void bh_drawGearHint(GuiGraphicsExtractor gfx, int x, int y, GearSlot slot, Item item) {
         int slotIndex = this.bh_getGearSlotIndex(slot.ordinal());
-        if (slotIndex < 0 || this.menu.getSlot(slotIndex).hasItem()) {
+        if (slotIndex < 0 || !this.menu.getSlot(slotIndex).isActive() || this.menu.getSlot(slotIndex).hasItem()) {
             return;
         }
 

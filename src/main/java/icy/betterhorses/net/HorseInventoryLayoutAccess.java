@@ -17,12 +17,6 @@ public interface HorseInventoryLayoutAccess {
 
     int bh_getChestRows();
 
-    boolean bh_isRiderPanel();
-
-    void bh_setRiderPanel(boolean shown);
-
-    int bh_getRiderGearStartIndex();
-
     default boolean bh_isCartSlotLocked() {
         return false;
     }

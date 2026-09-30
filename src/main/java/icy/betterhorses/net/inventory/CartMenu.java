@@ -43,6 +43,7 @@ public class CartMenu extends AbstractContainerMenu {
     private static final Identifier EMPTY_CHEST =
             Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "container/slot/cart_chest");
     private static final Identifier EMPTY_HOE = Identifier.withDefaultNamespace("container/slot/hoe");
+    private static final Identifier EMPTY_SHOVEL = Identifier.withDefaultNamespace("container/slot/shovel");
 
     public record Opening(int cartId, int tab) {
         public static final StreamCodec<ByteBuf, Opening> CODEC = StreamCodec.composite(
@@ -278,7 +279,7 @@ public class CartMenu extends AbstractContainerMenu {
             }
             return this.kind == CartType.Attachment.CHEST
                     ? GearSlot.isStorageChest(stack) && !cart.hasChest()
-                    : stack.is(ItemTags.HOES) && !cart.hasPlough();
+                    : (stack.is(ItemTags.HOES) || stack.is(ItemTags.SHOVELS)) && !cart.hasPlough();
         }
 
         @Override
@@ -298,7 +299,8 @@ public class CartMenu extends AbstractContainerMenu {
 
         @Override
         public Identifier getNoItemIcon() {
-            return this.kind == CartType.Attachment.CHEST ? EMPTY_CHEST : EMPTY_HOE;
+            return this.kind == CartType.Attachment.CHEST ? EMPTY_CHEST
+                    : (System.currentTimeMillis() / 1000L) % 2L == 0L ? EMPTY_HOE : EMPTY_SHOVEL;
         }
     }
 }

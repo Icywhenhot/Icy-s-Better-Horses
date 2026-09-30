@@ -6,7 +6,6 @@ import icy.betterhorses.net.IcysBetterHorsesClient;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.mixin.AbstractContainerScreenAccessor;
 import icy.betterhorses.net.network.CartMenuPayload;
-import icy.betterhorses.net.network.RiderPanelPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
@@ -18,6 +17,9 @@ import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -51,7 +53,7 @@ public final class RiderPanel {
         ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
             if (screen instanceof HorseInventoryScreen horse) {
                 restoreCursor();
-                Screens.getWidgets(screen).add(new Tab(horse));
+                Screens.getWidgets(screen).add(new Tab(horse, false, b -> openPlayerInventory()));
                 AbstractHorse mount = ((HorseInventoryLayoutAccess) horse.getMenu()).bh_mount();
                 if (mount != null) {
                     AbstractContainerScreenAccessor gui = (AbstractContainerScreenAccessor) horse;
@@ -60,6 +62,11 @@ public final class RiderPanel {
                 }
             } else if (screen instanceof CartScreen) {
                 restoreCursor();
+            } else if (screen instanceof InventoryScreen || screen instanceof CreativeModeInventoryScreen) {
+                restoreCursor();
+                if (mountedOnHorse()) {
+                    Screens.getWidgets(screen).add(new Tab((AbstractContainerScreen<?>) screen, true, b -> backToHorse()));
+                }
             }
         });
     }
@@ -77,23 +84,36 @@ public final class RiderPanel {
     }
 
     public static boolean onKey(Screen screen, KeyEvent event) {
-        if (!(screen instanceof HorseInventoryScreen horse) || !event.hasControlDown()
-                || !Minecraft.getInstance().options.keyInventory.matches(event)) {
+        if (!event.hasControlDown() || !Minecraft.getInstance().options.keyInventory.matches(event)) {
             return false;
         }
-        toggle(horse);
+        if (screen instanceof HorseInventoryScreen) {
+            openPlayerInventory();
+        } else if (mountedOnHorse() && (screen instanceof InventoryScreen || screen instanceof CreativeModeInventoryScreen)) {
+            backToHorse();
+        } else {
+            return false;
+        }
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
         return true;
     }
 
-    public static boolean shown(HorseInventoryScreen screen) {
-        return ((HorseInventoryLayoutAccess) screen.getMenu()).bh_isRiderPanel();
+    private static boolean mountedOnHorse() {
+        return Minecraft.getInstance().player.getVehicle() instanceof AbstractHorse horse && horse.isTamed();
     }
 
-    private static void toggle(HorseInventoryScreen screen) {
-        boolean shown = !shown(screen);
-        ((HorseInventoryLayoutAccess) screen.getMenu()).bh_setRiderPanel(shown);
-        ClientPlayNetworking.send(new RiderPanelPayload(shown));
+    private static void openPlayerInventory() {
+        Minecraft mc = Minecraft.getInstance();
+        rememberCursor();
+        mc.player.closeContainer();
+        mc.gui.setScreen(new InventoryScreen(mc.player));
+    }
+
+    private static void backToHorse() {
+        rememberCursor();
+        Minecraft mc = Minecraft.getInstance();
+        mc.player.closeContainer();
+        mc.player.sendOpenInventory();
     }
 
     private static final class CartTab extends Button {
@@ -130,20 +150,20 @@ public final class RiderPanel {
 
     private static final class Tab extends Button {
 
-        private final HorseInventoryScreen screen;
-        private boolean showing;
-        private long popAt = -1L;
+        private final AbstractContainerScreen<?> screen;
+        private final boolean showing;
+        private final long popAt = System.currentTimeMillis();
 
-        Tab(HorseInventoryScreen screen) {
+        Tab(AbstractContainerScreen<?> screen, boolean showing, OnPress press) {
             super(((AbstractContainerScreenAccessor) screen).bh_leftPos() + ICON_X,
                     ((AbstractContainerScreenAccessor) screen).bh_topPos() + ICON_Y, ICON_W, ICON_H,
-                    Component.empty(), b -> toggle(screen), DEFAULT_NARRATION);
+                    Component.empty(), press, DEFAULT_NARRATION);
             this.screen = screen;
+            this.showing = showing;
             this.retip();
         }
 
         private void retip() {
-            this.showing = shown(this.screen);
             Component key = Component.literal("Ctrl + ")
                     .append(Minecraft.getInstance().options.keyInventory.getTranslatedKeyMessage());
             this.setTooltip(Tooltip.create(Component.translatable(this.showing
@@ -153,10 +173,8 @@ public final class RiderPanel {
 
         @Override
         protected void extractContents(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float a) {
-            if (this.showing != shown(this.screen)) {
-                this.retip();
-                this.popAt = System.currentTimeMillis();
-            }
+            this.setPosition(((AbstractContainerScreenAccessor) this.screen).bh_leftPos() + ICON_X,
+                    ((AbstractContainerScreenAccessor) this.screen).bh_topPos() + ICON_Y);
             float t = this.popAt < 0L ? 1.0F : (System.currentTimeMillis() - this.popAt) / (float) POP_MS;
             float scale = t >= 1.0F ? 1.0F : POP_FROM + (1.0F - POP_FROM) * BhAnim.easeOutBack(t);
 
