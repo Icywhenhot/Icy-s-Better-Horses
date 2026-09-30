@@ -55,7 +55,7 @@ public abstract class EntityMixin {
     private static final ResourceLocation BH_MOUNTED_BREAK_SPEED_ID =
             ResourceLocation.fromNamespaceAndPath("icys-better-horses", "mounted_break_speed");
     @Unique private static final double BH_MOUNTED_STEP_HEIGHT_BONUS = 0.1D;
-    @Unique private static final double BH_MOUNTED_BREAK_SPEED_BONUS = 5.0D;
+    @Unique private static final double BH_MOUNTED_BREAK_SPEED_BONUS = 2.75D;
 
     @Inject(method = "canCollideWith", at = @At("HEAD"), cancellable = true)
     private void bh_ignoreOwnCart(Entity entity, CallbackInfoReturnable<Boolean> cir) {
@@ -85,7 +85,7 @@ public abstract class EntityMixin {
         }
     }
 
-    @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;Z)Z", at = @At("TAIL"))
+    @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;Z)Z", at = @At("RETURN"))
     private void bh_applyMountedHorseBonuses(
             Entity vehicle,
             boolean force,

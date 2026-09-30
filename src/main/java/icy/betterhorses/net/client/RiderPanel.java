@@ -7,17 +7,17 @@ import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.IcysBetterHorsesClient;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.network.CartMenuPayload;
-import icy.betterhorses.net.network.RiderPanelPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -29,8 +29,6 @@ import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
-
-import java.util.function.BooleanSupplier;
 
 public final class RiderPanel {
 
@@ -44,8 +42,6 @@ public final class RiderPanel {
     private static final long POP_MS = 220L;
     private static final float POP_FROM = 0.4F;
     private static final int CART_TAB_GAP = 4;
-    private static final int CURIOS_X = 24;
-    private static final int CURIOS_Y = 16;
     private static final boolean CURIOS = ModList.get().isLoaded("curios");
 
     private static double @Nullable [] cursor;
@@ -56,14 +52,7 @@ public final class RiderPanel {
         Screen screen = event.getScreen();
         if (screen instanceof HorseInventoryScreen horse) {
             restoreCursor();
-            AbstractWidget curios = CURIOS
-                    ? CuriosLink.button(horse.getGuiLeft() + CURIOS_X, horse.getGuiTop() + CURIOS_Y)
-                    : null;
-            event.addListener(new Tab(horse.getGuiLeft() + ICON_X, horse.getGuiTop() + ICON_Y,
-                    () -> shown(horse), b -> toggle(horse), curios));
-            if (curios != null) {
-                event.addListener(curios);
-            }
+            event.addListener(new Tab(horse, ICON_X, false, b -> openPlayerInventory()));
             AbstractHorse mount = ((HorseInventoryLayoutAccess) horse.getMenu()).bh_mount();
             if (mount != null) {
                 event.addListener(new CartTab(horse.getGuiLeft() + ICON_X,
@@ -71,12 +60,16 @@ public final class RiderPanel {
             }
         } else if (screen instanceof CartScreen) {
             restoreCursor();
+        } else if (screen instanceof InventoryScreen || screen instanceof CreativeModeInventoryScreen) {
+            restoreCursor();
+            if (mountedOnHorse()) {
+                event.addListener(new Tab((AbstractContainerScreen<?>) screen, ICON_X, true, b -> backToHorse()));
+            }
         } else if (CURIOS && CuriosLink.isCuriosScreen(screen)) {
             restoreCursor();
             if (mountedOnHorse()) {
                 AbstractContainerScreen<?> gui = (AbstractContainerScreen<?>) screen;
-                event.addListener(new Tab(gui.getGuiLeft() - CuriosLink.panelWidth(screen) + ICON_X,
-                        gui.getGuiTop() + ICON_Y, () -> true, b -> backToHorse(), null));
+                event.addListener(new Tab(gui, ICON_X - CuriosLink.panelWidth(screen), true, b -> backToHorse()));
             }
         }
     }
@@ -87,19 +80,16 @@ public final class RiderPanel {
             return;
         }
         Screen screen = event.getScreen();
-        if (screen instanceof HorseInventoryScreen horse) {
-            toggle(horse);
-        } else if (CURIOS && CuriosLink.isCuriosScreen(screen) && mountedOnHorse()) {
+        if (screen instanceof HorseInventoryScreen) {
+            openPlayerInventory();
+        } else if (mountedOnHorse() && (screen instanceof InventoryScreen
+                || screen instanceof CreativeModeInventoryScreen || CURIOS && CuriosLink.isCuriosScreen(screen))) {
             backToHorse();
         } else {
             return;
         }
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
         event.setCanceled(true);
-    }
-
-    public static boolean shown(HorseInventoryScreen screen) {
-        return ((HorseInventoryLayoutAccess) screen.getMenu()).bh_isRiderPanel();
     }
 
     static void rememberCursor() {
@@ -118,15 +108,18 @@ public final class RiderPanel {
         return Minecraft.getInstance().player.getVehicle() instanceof AbstractHorse horse && horse.isTamed();
     }
 
-    private static void toggle(HorseInventoryScreen screen) {
-        boolean shown = !shown(screen);
-        ((HorseInventoryLayoutAccess) screen.getMenu()).bh_setRiderPanel(shown);
-        PacketDistributor.sendToServer(new RiderPanelPayload(shown));
+    private static void openPlayerInventory() {
+        Minecraft mc = Minecraft.getInstance();
+        rememberCursor();
+        mc.player.closeContainer();
+        mc.setScreen(new InventoryScreen(mc.player));
     }
 
     private static void backToHorse() {
         rememberCursor();
-        Minecraft.getInstance().player.sendOpenInventory();
+        Minecraft mc = Minecraft.getInstance();
+        mc.player.closeContainer();
+        mc.player.sendOpenInventory();
     }
 
     private static final class CartTab extends Button {
@@ -163,23 +156,21 @@ public final class RiderPanel {
 
     private static final class Tab extends Button {
 
-        private final BooleanSupplier riderShown;
-        private final @Nullable AbstractWidget curios;
-        private boolean showing;
-        private long popAt = -1L;
+        private final AbstractContainerScreen<?> screen;
+        private final int offset;
+        private final boolean showing;
+        private final long popAt = System.currentTimeMillis();
 
-        Tab(int x, int y, BooleanSupplier riderShown, OnPress press, @Nullable AbstractWidget curios) {
-            super(x, y, ICON_W, ICON_H, Component.empty(), press, DEFAULT_NARRATION);
-            this.riderShown = riderShown;
-            this.curios = curios;
+        Tab(AbstractContainerScreen<?> screen, int offset, boolean showing, OnPress press) {
+            super(screen.getGuiLeft() + offset, screen.getGuiTop() + ICON_Y,
+                    ICON_W, ICON_H, Component.empty(), press, DEFAULT_NARRATION);
+            this.screen = screen;
+            this.offset = offset;
+            this.showing = showing;
             this.retip();
         }
 
         private void retip() {
-            this.showing = this.riderShown.getAsBoolean();
-            if (this.curios != null) {
-                this.curios.visible = this.showing;
-            }
             Component key = IcysBetterHorsesClient.RIDER_PANEL_KEY.getTranslatedKeyMessage();
             this.setTooltip(Tooltip.create(Component.translatable(this.showing
                     ? "gui.icys-better-horses.rider_panel.to_horse"
@@ -188,11 +179,8 @@ public final class RiderPanel {
 
         @Override
         protected void renderWidget(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
-            if (this.showing != this.riderShown.getAsBoolean()) {
-                this.retip();
-                this.popAt = System.currentTimeMillis();
-            }
-            float t = this.popAt < 0L ? 1.0F : (System.currentTimeMillis() - this.popAt) / (float) POP_MS;
+            this.setPosition(this.screen.getGuiLeft() + this.offset, this.screen.getGuiTop() + ICON_Y);
+            float t = (System.currentTimeMillis() - this.popAt) / (float) POP_MS;
             float scale = t >= 1.0F ? 1.0F : POP_FROM + (1.0F - POP_FROM) * BhAnim.easeOutBack(t);
 
             gfx.pose().pushPose();

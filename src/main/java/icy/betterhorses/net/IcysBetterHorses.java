@@ -5,7 +5,6 @@ import icy.betterhorses.net.network.BhChargePayload;
 import icy.betterhorses.net.feature.HorseCombat;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.network.CartMenuPayload;
-import icy.betterhorses.net.network.RiderPanelPayload;
 import icy.betterhorses.net.network.BhFreeLookPayload;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
@@ -117,7 +116,7 @@ public class IcysBetterHorses {
     }
 
     private void registerPackets(RegisterPayloadHandlersEvent event) {
-        PayloadRegistrar registrar = event.registrar("4");
+        PayloadRegistrar registrar = event.registrar("5");
         registrar.playToServer(RadialCommandPayload.TYPE, new RadialCommandPayload.StreamCodec(), (payload, context) ->
                 handleRadialCommand((ServerPlayer) context.player(), payload.horseId(),
                         bh_parseCommand(payload.commandId()), payload.abilityId()));
@@ -139,11 +138,6 @@ public class IcysBetterHorses {
                 handleOpenCart((ServerPlayer) context.player(), payload.targetId()));
         registrar.playToServer(BhChargePayload.TYPE, new BhChargePayload.StreamCodec(), (payload, context) ->
                 HorseCombat.riderCharge(context.player().getUUID(), payload.on()));
-        registrar.playToServer(RiderPanelPayload.TYPE, new RiderPanelPayload.StreamCodec(), (payload, context) -> {
-            if (context.player().containerMenu instanceof HorseInventoryLayoutAccess access) {
-                access.bh_setRiderPanel(payload.shown());
-            }
-        });
         registrar.playToClient(HorseRosterSyncPayload.TYPE, new HorseRosterSyncPayload.StreamCodec(),
                 (payload, context) -> context.enqueueWork(() -> IcysBetterHorsesClient.receiveHorseRoster(payload)));
         registrar.playToClient(HorseManageResultPayload.TYPE, new HorseManageResultPayload.StreamCodec(),
@@ -471,6 +465,9 @@ public class IcysBetterHorses {
             return;
         }
         horse.standIfPossible();
+        if (horse.isStanding() && BhFeature.REAR_NEIGH.on()) {
+            horse.playSound(ModSounds.HORSE_NEIGH, 1.0F, 1.0F);
+        }
     }
 
     private static AbstractHorse findCommandHorse(ServerPlayer player, int horseId, double radius) {

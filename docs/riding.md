@@ -63,7 +63,7 @@ Two changes keep the horse from blocking your view:
 ## Step height and mining
 
 - Step height is raised **10%**, so a galloping horse doesn't trip over slabs, dirt paths, or a single block in the way.
-- Mounted block-breaking now matches your on-foot speed for most blocks. Where a penalty still applies, it's cut by **80%**.
+- Mounted block-breaking is **75%** of your on-foot speed.
 
 ---
 
@@ -110,7 +110,7 @@ Using a saddle, vanilla or [upgraded](equipment/upgraded-saddle), on a horse in 
 | Rear | <kbd>H</kbd> on the horse you ride or look at |
 | Camera | Horse fades when you look down; head drops while ridden |
 | Step height | +10% |
-| Mounted mining | Matches on-foot speed; remaining penalty cut 80% |
+| Mounted mining | 75% of on-foot speed |
 | Water | Floats, and moves faster than vanilla |
 | Leaves | No collision while riding |
 | Powder snow | Walkable with [Horse Hooves](equipment/horse-hooves) |

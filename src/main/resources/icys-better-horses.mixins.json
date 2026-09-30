@@ -5,6 +5,7 @@
 	"mixins": [
 		"AbstractHorseMixin",
 		"AnimalMixin",
+		"AnimalArmorItemMixin",
 		"EquineBreedingMixin",
 		"AbstractChestedHorseCreativeTamingMixin",
 		"AbstractMountInventoryMenuMixin",
@@ -28,6 +29,7 @@
 		"LeafPassthroughMixin",
 		"MapItemMixin",
 		"EnchantmentHelperMixin",
+		"EnchantmentMixin",
 		"LivingEntityMixin",
 		"MobCartPassengerMixin",
 		"MobNameTagBondMixin",
