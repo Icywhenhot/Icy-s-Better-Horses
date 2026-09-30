@@ -158,6 +158,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private ItemStack bh_cartPlow = ItemStack.EMPTY;
     @Unique private ItemStack bh_cartChestItem = ItemStack.EMPTY;
     @Unique private boolean bh_fedGoldenAppleThisTick = false;
+    @Unique private static final int BH_BRUSH_COOLDOWN = 6000;
+    @Unique private long bh_brushReadyAt;
     @Unique private static final float BH_HURT_NEIGH_CHANCE = 0.3F;
     @Unique private static final int BH_GRAZE_ROLL_INTERVAL = 1200;
     @Unique private static final int BH_GRAZE_HURT_COOLDOWN_TICKS = 200;
@@ -751,6 +753,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         output.putInt("BH_Bond", bh_bond);
         output.putInt("BH_BondRemainder", bh_bondRemainder);
         output.putLong("BH_RescueReadyAt", bh_rescueReadyAt);
+        output.putLong("BH_BrushReadyAt", bh_brushReadyAt);
         output.putInt("BH_Generation", bh_generation);
         output.putUUID("BH_Identity", bh_getIdentity());
         output.putInt("BH_NameTagBondGiven", bh_nameTagBondReceived ? 1 : 0);
@@ -808,6 +811,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         bh_bond = input.getInt("BH_Bond");
         bh_bondRemainder = Math.floorMod(input.getInt("BH_BondRemainder"), 2);
         bh_rescueReadyAt = input.getLong("BH_RescueReadyAt");
+        bh_brushReadyAt = input.getLong("BH_BrushReadyAt");
         bh_generation = input.getInt("BH_Generation");
         bh_identity = input.hasUUID("BH_Identity") ? input.getUUID("BH_Identity") : null;
         bh_push(BH_BOND, bh_bond);
@@ -1299,9 +1303,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         }
     }
 
-    @Inject(method = "fedFood", at = @At("HEAD"))
+    @Inject(method = "fedFood", at = @At("HEAD"), cancellable = true)
     private void bh_markGoldenAppleFeed(Player player, ItemStack stack, CallbackInfoReturnable<InteractionResult> cir) {
         if (!bh_ours()) return;
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        this.bh_fedGoldenAppleThisTick = false;
+        if (!self.level().isClientSide() && self.isTamed() && self.getAge() > 0
+                && (stack.is(Items.GOLDEN_APPLE) || stack.is(Items.ENCHANTED_GOLDEN_APPLE))) {
+            cir.setReturnValue(InteractionResult.FAIL);
+            return;
+        }
         this.bh_fedGoldenAppleThisTick = stack.is(Items.GOLDEN_APPLE);
     }
 
@@ -1383,6 +1394,19 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (BhHorseInteraction.blockNonOwnerInventoryAccess((AbstractHorse) (Object) this, this, player)) {
             ci.cancel();
         }
+    }
+
+    @Inject(method = "mobInteract", at = @At("HEAD"), cancellable = true)
+    private void bh_brushHorse(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
+        if (!bh_ours() || !player.getItemInHand(hand).is(Items.BRUSH)) return;
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (!self.isTamed()) return;
+        if (!self.level().isClientSide() && self.level().getGameTime() >= bh_brushReadyAt) {
+            BhHorseTraits.grantBond(this, 1);
+            bh_brushReadyAt = self.level().getGameTime() + BH_BRUSH_COOLDOWN;
+            self.playSound(SoundEvents.BRUSH_GENERIC, 0.4F, 1.0F);
+        }
+        cir.setReturnValue(InteractionResult.sidedSuccess(self.level().isClientSide()));
     }
 
     @Inject(method = "mobInteract", at = @At("HEAD"), cancellable = true)

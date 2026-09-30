@@ -63,7 +63,7 @@ public abstract class EntityMixin {
             UUID.fromString("4d2b1f3a-7c9e-4a51-8b6f-1c2d3e4f5a6b");
     @Unique private static final double BH_MOUNTED_STEP_HEIGHT_BONUS = 0.1D;
 
-    @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;Z)Z", at = @At("TAIL"))
+    @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;Z)Z", at = @At("RETURN"))
     private void bh_applyMountedHorseBonuses(
             Entity vehicle,
             boolean force,

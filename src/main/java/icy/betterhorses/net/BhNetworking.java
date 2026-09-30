@@ -18,7 +18,6 @@ import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.network.HorseRecallPayload;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
-import icy.betterhorses.net.network.RiderPanelPayload;
 import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.CommandType;
 import net.minecraft.resources.ResourceKey;
@@ -40,7 +39,7 @@ import java.util.function.Supplier;
 
 public final class BhNetworking {
 
-    private static final String PROTOCOL_VERSION = "7";
+    private static final String PROTOCOL_VERSION = "8";
     private static final ResourceLocation CHANNEL_ID =
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "main");
     private static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
@@ -94,12 +93,7 @@ public final class BhNetworking {
                 payload -> () -> IcysBetterHorsesClient.receiveBreeds(payload));
         toServer(BhChargePayload.class, BhChargePayload::encode, BhChargePayload::decode,
                 (payload, player) -> HorseCombat.riderCharge(player.getUUID(), payload.on()));
-        toServer(RiderPanelPayload.class, RiderPanelPayload::encode, RiderPanelPayload::decode,
-                (payload, player) -> {
-                    if (player.containerMenu instanceof HorseInventoryLayoutAccess access) {
-                        access.bh_setRiderPanel(payload.shown());
-                    }
-                });
+
     }
 
     private static @Nullable ResourceKey<CommandType> bh_parseCommand(String raw) {

@@ -318,7 +318,7 @@ public final class IcysBetterHorses {
     @SubscribeEvent
     public void onMountedBreakSpeed(PlayerEvent.BreakSpeed event) {
         if (event.getEntity().getVehicle() instanceof AbstractHorse) {
-            event.setNewSpeed(event.getNewSpeed() * 6.0F);
+            event.setNewSpeed(event.getNewSpeed() * 3.75F);
         }
     }
 
@@ -465,6 +465,9 @@ public final class IcysBetterHorses {
             return;
         }
         horse.standIfPossible();
+        if (horse.isStanding() && BhFeature.REAR_NEIGH.on()) {
+            horse.playSound(ModSounds.HORSE_NEIGH.get(), 1.0F, 1.0F);
+        }
     }
 
     public static void handleOpenCart(ServerPlayer player, int targetId) {

@@ -43,6 +43,7 @@ public class CartMenu extends AbstractContainerMenu {
     private static final ResourceLocation EMPTY_CHEST =
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "item/empty_slot_chest");
     private static final ResourceLocation EMPTY_HOE = new ResourceLocation("item/empty_slot_hoe");
+    private static final ResourceLocation EMPTY_SHOVEL = new ResourceLocation("minecraft", "item/empty_slot_shovel");
 
     private final @Nullable HorseCartEntity cart;
     private final Container chest;
@@ -271,7 +272,7 @@ public class CartMenu extends AbstractContainerMenu {
             }
             return this.kind == CartType.Attachment.CHEST
                     ? GearSlot.isStorageChest(stack) && !cart.hasChest()
-                    : stack.is(ItemTags.HOES) && !cart.hasPlough();
+                    : (stack.is(ItemTags.HOES) || stack.is(ItemTags.SHOVELS)) && !cart.hasPlough();
         }
 
         @Override
@@ -292,7 +293,8 @@ public class CartMenu extends AbstractContainerMenu {
         @Override
         public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
             return Pair.of(InventoryMenu.BLOCK_ATLAS,
-                    this.kind == CartType.Attachment.CHEST ? EMPTY_CHEST : EMPTY_HOE);
+                    this.kind == CartType.Attachment.CHEST ? EMPTY_CHEST
+                            : (System.currentTimeMillis() / 1000L) % 2L == 0L ? EMPTY_HOE : EMPTY_SHOVEL);
         }
     }
 }
