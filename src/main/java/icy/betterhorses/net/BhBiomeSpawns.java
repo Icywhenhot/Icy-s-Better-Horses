@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MobSpawnSettings;
@@ -35,21 +35,21 @@ public final class BhBiomeSpawns {
                     }
                     MobSpawnSettings mobSettings = selectionContext.getBiome().getMobSettings();
                     boolean alreadyHasHorse = mobSettings.getMobs(MobCategory.CREATURE).unwrap().stream()
-                            .anyMatch(weighted -> weighted.value().type() == EntityTypes.HORSE);
+                            .anyMatch(weighted -> weighted.value().type() == EntityType.HORSE);
                     float floor = (float) tuning.spawnFloor();
                     boolean boostedProbability = !alreadyHasHorse
                             && mobSettings.getCreatureProbability() < floor;
 
                     if (!alreadyHasHorse) {
-                        context.getMobSpawnSettings().addSpawn(
+                        context.getSpawnSettings().addSpawn(
                                 MobCategory.CREATURE,
                                 new MobSpawnSettings.SpawnerData(
-                                        EntityTypes.HORSE, tuning.groupMin(), tuning.groupMax()),
+                                        EntityType.HORSE, tuning.groupMin(), tuning.groupMax()),
                                 tuning.spawnWeight());
                     }
 
                     if (boostedProbability) {
-                        context.getMobSpawnSettings().setCreatureGenerationProbability(floor);
+                        context.getSpawnSettings().setCreatureSpawnProbability(floor);
                     }
                 });
     }

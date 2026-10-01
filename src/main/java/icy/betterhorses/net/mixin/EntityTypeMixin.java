@@ -2,7 +2,6 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhHorseBackup;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.storage.ValueInput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,7 +15,7 @@ public abstract class EntityTypeMixin {
 
     @Inject(method = "by", at = @At("RETURN"), cancellable = true)
     private static void bh_loadBreedHorse(ValueInput input, CallbackInfoReturnable<Optional<EntityType<?>>> cir) {
-        if (cir.getReturnValue().filter(type -> type == EntityTypes.HORSE).isEmpty()) {
+        if (cir.getReturnValue().filter(type -> type == EntityType.HORSE).isEmpty()) {
             return;
         }
         EntityType<?> saved = BhHorseBackup.savedType(input.getStringOr("BH_EntityId", null));

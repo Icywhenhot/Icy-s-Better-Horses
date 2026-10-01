@@ -6,7 +6,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
@@ -21,9 +20,9 @@ public final class BhHorseSpawnRules {
     private BhHorseSpawnRules() {}
 
     public static void installSpawnPlacementOverride() {
-        Object previous = SpawnPlacementsAccessor.bh_getDataByType().remove(EntityTypes.HORSE);
+        Object previous = SpawnPlacementsAccessor.bh_getDataByType().remove(EntityType.HORSE);
         SpawnPlacementsAccessor.bh_callRegister(
-                EntityTypes.HORSE,
+                EntityType.HORSE,
                 SpawnPlacementTypes.ON_GROUND,
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 BhHorseSpawnRules::checkHorseSpawnRules);

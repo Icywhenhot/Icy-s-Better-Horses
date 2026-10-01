@@ -33,7 +33,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
@@ -60,7 +59,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.component.DataComponents;
-import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import org.jetbrains.annotations.Nullable;
@@ -111,7 +110,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     private static final float CART_BREAK_DAMAGE = 40.0F;
     private static final double REAR_SEAT_SIDE = 0.45D;
     private static final double REAR_SEAT_HEIGHT = 0.75D;
-    private static final float MAX_CARGO_WIDTH = EntityTypes.OAK_BOAT.getWidth();
+    private static final float MAX_CARGO_WIDTH = EntityType.OAK_BOAT.getWidth();
     private static final double BOARD_SCAN_HEIGHT = 1.6D;
     private static final int RESTORE_BOARD_TICKS = 80;
 
@@ -1158,7 +1157,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
         int tab = this.hasChest() ? CartMenu.TAB_CARGO : CartMenu.TAB_CART;
         HorseCartEntity cart = this;
-        player.openMenu(new ExtendedMenuProvider<CartMenu.Opening>() {
+        player.openMenu(new ExtendedScreenHandlerFactory<CartMenu.Opening>() {
             @Override
             public CartMenu.Opening getScreenOpeningData(ServerPlayer opener) {
                 return new CartMenu.Opening(cart.getId(), tab);

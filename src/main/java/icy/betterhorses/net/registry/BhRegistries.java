@@ -34,7 +34,7 @@ public final class BhRegistries {
     }
 
     private static <T> MappedRegistry<T> build(ResourceKey<Registry<T>> key) {
-        return FabricRegistryBuilder.create(key).attribute(RegistryAttribute.SYNCED).buildAndRegister();
+        return FabricRegistryBuilder.createSimple(key).attribute(RegistryAttribute.SYNCED).buildAndRegister();
     }
 
     public static Registry<ArchetypeType> archetypeTypeRegistry() {
