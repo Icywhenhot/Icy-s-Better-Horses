@@ -31,10 +31,10 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.19.3",
-		"minecraft": "~26.2",
-		"java": ">=25",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
 		"fabric-api": "*",
-		"geckolib": ">=5.5.0",
+		"geckolib": ">=5.4.5",
 		"modonomicon": "*"
 	},
 	"suggests": {
