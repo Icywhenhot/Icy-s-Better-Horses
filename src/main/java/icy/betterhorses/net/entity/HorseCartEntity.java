@@ -64,14 +64,14 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import org.jetbrains.annotations.Nullable;
 
-import com.geckolib.animatable.GeoEntity;
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.animatable.manager.AnimatableManager;
-import com.geckolib.animation.AnimationController;
-import com.geckolib.animation.RawAnimation;
-import com.geckolib.animation.object.PlayState;
-import com.geckolib.animation.state.AnimationTest;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animatable.manager.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.object.PlayState;
+import software.bernie.geckolib.animation.state.AnimationTest;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -809,10 +809,10 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         if (!(candidate instanceof LivingEntity)
                 || candidate instanceof Player
                 || candidate instanceof AbstractHorse
-                || candidate.is(CARGO_BLOCKED)) {
+                || candidate.getType().is(CARGO_BLOCKED)) {
             return false;
         }
-        return candidate.is(CARGO_ALLOWED) || candidate.getBbWidth() < MAX_CARGO_WIDTH;
+        return candidate.getType().is(CARGO_ALLOWED) || candidate.getBbWidth() < MAX_CARGO_WIDTH;
     }
 
     private AABB boardScanBox() {
@@ -823,7 +823,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     private static boolean wanted(LivingEntity mob, int pickup) {
         int kind;
-        if (mob instanceof NeutralMob || mob.is(NEUTRAL)) {
+        if (mob instanceof NeutralMob || mob.getType().is(NEUTRAL)) {
             kind = PICKUP_NEUTRAL;
         } else if (mob instanceof Enemy) {
             kind = PICKUP_HOSTILE;
@@ -867,7 +867,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     @Override
-    public InteractionResult interact(Player player, InteractionHand hand, Vec3 hitLocation) {
+    public InteractionResult interact(Player player, InteractionHand hand) {
         boolean clientSide = this.level().isClientSide();
         ItemStack held = player.getItemInHand(hand);
 

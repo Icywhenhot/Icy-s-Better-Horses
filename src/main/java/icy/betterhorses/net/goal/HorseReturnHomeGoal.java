@@ -154,7 +154,7 @@ public class HorseReturnHomeGoal extends Goal {
         BlockPos home = IHorseData.of(horse).bh_getHome();
         if (home == null) return;
         if (horse.level() instanceof ServerLevel serverLevel) {
-            serverLevel.getChunkSource().addTicketWithRadius(ModTicketTypes.HORSE_TASK, ChunkPos.containing(home), 1);
+            serverLevel.getChunkSource().addTicketWithRadius(ModTicketTypes.HORSE_TASK, new ChunkPos(home), 1);
         }
         if (!icy.betterhorses.net.HorsePlacement.teleport(horse, home)) return;
         IHorseData.of(horse).bh_setCommand(BhContent.COMMAND_STAY.key());

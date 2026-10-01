@@ -12,7 +12,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityProcessor;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntitySpawnRequest;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
@@ -214,7 +213,7 @@ public final class HorseManagement {
     }
 
     private static void keepHomeChunkLoaded(ServerLevel level, BlockPos home) {
-        level.getChunkSource().addTicketWithRadius(ModTicketTypes.HORSE_TASK, ChunkPos.containing(home), 1);
+        level.getChunkSource().addTicketWithRadius(ModTicketTypes.HORSE_TASK, new ChunkPos(home), 1);
     }
 
     public static Outcome setActive(ServerPlayer player, UUID horseId) {
@@ -374,7 +373,7 @@ public final class HorseManagement {
         if (level == null) level = server.overworld();
 
         Entity entity = EntityType.loadEntityRecursive(
-                snapshot, level, new EntitySpawnRequest(EntitySpawnReason.LOAD, true), EntityProcessor.NOP);
+                snapshot, level, EntitySpawnReason.LOAD, EntityProcessor.NOP);
         if (!(entity instanceof AbstractHorse horse)) return null;
 
         horse.setId(scratchIds.decrementAndGet());
@@ -426,7 +425,7 @@ public final class HorseManagement {
         }
 
         Entity loaded = EntityType.loadEntityRecursive(
-                snapshot, level, new EntitySpawnRequest(EntitySpawnReason.LOAD, true), EntityProcessor.NOP);
+                snapshot, level, EntitySpawnReason.LOAD, EntityProcessor.NOP);
         if (!(loaded instanceof AbstractHorse horse)) {
             IcysBetterHorses.LOGGER.warn("[whistle] snapshot of horse {} did not deserialize to a horse", horseId);
             return null;

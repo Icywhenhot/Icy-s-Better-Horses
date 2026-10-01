@@ -102,6 +102,6 @@ public final class StockHorse implements BreedAbility {
     private List<Animal> nearby(AbstractHorse horse, double radius) {
         AABB box = horse.getBoundingBox().inflate(radius);
         return horse.level().getEntitiesOfClass(Animal.class, box,
-                a -> a.is(LIVESTOCK) && a.isAlive());
+                a -> a.getType().is(LIVESTOCK) && a.isAlive());
     }
 }
