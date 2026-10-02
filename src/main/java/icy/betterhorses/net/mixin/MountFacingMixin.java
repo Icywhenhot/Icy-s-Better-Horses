@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MountFacingMixin {
 
     @Inject(method = "handleSetEntityPassengersPacket", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/Hud;setOverlayMessage(Lnet/minecraft/network/chat/Component;Z)V"))
+            target = "Lnet/minecraft/client/gui/Gui;setOverlayMessage(Lnet/minecraft/network/chat/Component;Z)V"))
     private void bh_turnHorseToRider(ClientboundSetPassengersPacket packet, CallbackInfo ci) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (!(player.getVehicle() instanceof AbstractHorse horse) || horse.getControllingPassenger() != player) {

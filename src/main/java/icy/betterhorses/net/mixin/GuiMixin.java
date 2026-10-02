@@ -8,8 +8,7 @@ import icy.betterhorses.net.registry.GenderType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.state.gui.GuiRenderState;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -29,7 +28,6 @@ import icy.betterhorses.net.client.BhAbilityBadges;
 public abstract class GuiMixin {
 
     @Shadow @Final private Minecraft minecraft;
-    @Shadow @Final private GuiRenderState guiRenderState;
 
     @Unique private static final int BH_STATS_HUD_TOP = 12;
     @Unique private static final int BH_STATS_HUD_PADDING = 6;
@@ -38,9 +36,9 @@ public abstract class GuiMixin {
     @Unique private static final int BH_STATS_HUD_BACKGROUND = 0xA0101010;
     @Unique private static final int BH_STATS_HUD_ACCENT = 0xD06E5324;
 
-    @Inject(method = "extractRenderState", at = @At("TAIL"))
-    private void bh_renderHorseStatsHud(DeltaTracker deltaTracker, boolean blurEnabled, boolean renderHud, CallbackInfo ci) {
-        if (this.minecraft.player == null || this.minecraft.level == null || this.minecraft.gui.screen() != null) {
+    @Inject(method = "render", at = @At("TAIL"))
+    private void bh_renderHorseStatsHud(GuiGraphics gfx, DeltaTracker deltaTracker, CallbackInfo ci) {
+        if (this.minecraft.player == null || this.minecraft.level == null || this.minecraft.screen != null) {
             return;
         }
         if (!this.bh_isHoldingUpgradedSaddle()) {
@@ -80,23 +78,22 @@ public abstract class GuiMixin {
         int left = (scaledWidth - boxWidth) / 2;
         int top = BH_STATS_HUD_TOP;
 
-        GuiGraphicsExtractor gfx = new GuiGraphicsExtractor(this.minecraft, this.guiRenderState, scaledWidth, scaledHeight);
 
         gfx.fill(left, top, left + boxWidth, top + boxHeight, BH_STATS_HUD_BACKGROUND);
         gfx.fill(left, top, left + boxWidth, top + 2, BH_STATS_HUD_ACCENT);
 
         int textX = left + BH_STATS_HUD_PADDING;
         int textY = top + BH_STATS_HUD_PADDING;
-        gfx.text(this.minecraft.font, title, textX, textY, BH_STATS_HUD_TITLE_COLOR, false);
+        gfx.drawString(this.minecraft.font, title, textX, textY, BH_STATS_HUD_TITLE_COLOR, false);
         for (int i = 0; i < lines.length; i++) {
-            gfx.text(this.minecraft.font, lines[i], textX, textY + lineHeight * (i + 1), BH_STATS_HUD_TEXT_COLOR, false);
+            gfx.drawString(this.minecraft.font, lines[i], textX, textY + lineHeight * (i + 1), BH_STATS_HUD_TEXT_COLOR, false);
         }
     }
 
-    @Inject(method = "extractRenderState", at = @At("TAIL"))
-    private void bh_renderAbilityBadges(DeltaTracker deltaTracker, boolean blurEnabled, boolean renderHud, CallbackInfo ci) {
+    @Inject(method = "render", at = @At("TAIL"))
+    private void bh_renderAbilityBadges(GuiGraphics gfx, DeltaTracker deltaTracker, CallbackInfo ci) {
         if (this.minecraft.player == null || this.minecraft.level == null
-                || this.minecraft.gui.screen() != null) {
+                || this.minecraft.screen != null) {
             return;
         }
         if (!BhHorseKind.managed(this.minecraft.player.getVehicle())
@@ -105,8 +102,6 @@ public abstract class GuiMixin {
         }
         int scaledWidth = this.minecraft.getWindow().getGuiScaledWidth();
         int scaledHeight = this.minecraft.getWindow().getGuiScaledHeight();
-        GuiGraphicsExtractor gfx = new GuiGraphicsExtractor(
-                this.minecraft, this.guiRenderState, scaledWidth, scaledHeight);
         BhAbilityBadges.render(gfx, this.minecraft.font, scaledWidth, scaledHeight, horse);
     }
 

@@ -48,6 +48,10 @@ dependencies {
 	modImplementation "maven.modrinth:geckolib:${project.geckolib_version_id}"
 
 	modImplementation "maven.modrinth:modonomicon:${project.modonomicon_version_id}"
+	modLocalRuntime "me.zeroeightsix:fiber:0.23.0-2"
+	runtimeOnly "org.commonmark:commonmark:0.22.0"
+	runtimeOnly "org.commonmark:commonmark-ext-gfm-strikethrough:0.22.0"
+	runtimeOnly "org.commonmark:commonmark-ext-ins:0.22.0"
 
 	modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 	modImplementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {

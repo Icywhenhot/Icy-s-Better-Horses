@@ -13,7 +13,7 @@ import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedType;
 import icy.betterhorses.net.registry.GenderType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -165,8 +165,8 @@ public class HorseRosterScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(gfx, mouseX, mouseY, delta);
+    public void render(GuiGraphics gfx, int mouseX, int mouseY, float delta) {
+        super.render(gfx, mouseX, mouseY, delta);
         layout();
 
         float vis;
@@ -188,14 +188,14 @@ public class HorseRosterScreen extends Screen {
         BhAnim.enter(pose, vis, left + PANEL_WIDTH / 2f, top + PANEL_HEIGHT / 2f, 0f, ENTER_SCALE);
 
         BhScreenDraw.panelTexture(gfx, left, top, PANEL_WIDTH, PANEL_HEIGHT, BhScreenDraw.SCREEN_MANAGE_TEXTURE, vis);
-        gfx.centeredText(this.font, getTitle(), left + PANEL_WIDTH / 2, top + 7, BhScreenDraw.TEXT);
+        gfx.drawCenteredString(this.font, getTitle(), left + PANEL_WIDTH / 2, top + 7, BhScreenDraw.TEXT);
 
         int paneMouseX = confirmingDisownOf == null ? mouseX : -1;
         int paneMouseY = confirmingDisownOf == null ? mouseY : -1;
 
         List<HorseRosterEntry> entries = ClientHorseRoster.entries();
         if (entries.isEmpty()) {
-            gfx.centeredText(this.font,
+            gfx.drawCenteredString(this.font,
                     Component.translatable("screen.icys-better-horses.manage.empty"),
                     left + PADDING + ROWS_WIDTH / 2, rowsTop + ROW_HEIGHT / 2, BhScreenDraw.TEXT_MUTED);
         } else {
@@ -216,10 +216,10 @@ public class HorseRosterScreen extends Screen {
         }
     }
 
-    private void renderFooter(GuiGraphicsExtractor gfx, List<HorseRosterEntry> entries) {
+    private void renderFooter(GuiGraphics gfx, List<HorseRosterEntry> entries) {
         String flashKey = ClientHorseRoster.flashMessageKey();
         if (!flashKey.isEmpty() && !isSilentFailure(flashKey)) {
-            gfx.centeredText(this.font, Component.translatable(flashKey),
+            gfx.drawCenteredString(this.font, Component.translatable(flashKey),
                     left + PADDING + ROWS_WIDTH / 2, top + PANEL_HEIGHT - FOOTER_HEIGHT + 5, BhScreenDraw.TEXT_ERROR);
         }
     }
@@ -228,7 +228,7 @@ public class HorseRosterScreen extends Screen {
         return HorseManagement.MSG_NO_HOME.equals(flashKey);
     }
 
-    private void renderScrollArrows(GuiGraphicsExtractor gfx, List<HorseRosterEntry> entries) {
+    private void renderScrollArrows(GuiGraphics gfx, List<HorseRosterEntry> entries) {
         int centerX = left + PADDING + ROWS_WIDTH / 2;
         float pulse = 0.5F + 0.5F * (float) Math.sin(System.currentTimeMillis() / 380.0D);
         int alpha = (int) (0x55 + pulse * (0xFF - 0x55));
@@ -245,7 +245,7 @@ public class HorseRosterScreen extends Screen {
         }
     }
 
-    private void drawArrow(GuiGraphicsExtractor gfx, int centerX, int topY, boolean up, int color) {
+    private void drawArrow(GuiGraphics gfx, int centerX, int topY, boolean up, int color) {
         for (int row = 0; row < SCROLL_ARROW_HEIGHT; row++) {
             int halfWidth = up ? row : (SCROLL_ARROW_HEIGHT - 1 - row);
             int y = topY + row;
@@ -257,7 +257,7 @@ public class HorseRosterScreen extends Screen {
         return rowsTop + visibleIndex * (ROW_HEIGHT + ROW_GAP);
     }
 
-    private void renderRow(GuiGraphicsExtractor gfx, HorseRosterEntry entry, int visibleIndex, int y, int mouseX, int mouseY) {
+    private void renderRow(GuiGraphics gfx, HorseRosterEntry entry, int visibleIndex, int y, int mouseX, int mouseY) {
         int rowLeft = left + PADDING;
         boolean hovered = BhScreenDraw.inBox(mouseX, mouseY, rowLeft, y, ROWS_WIDTH, ROW_HEIGHT);
         boolean selected = entry.horseId().equals(selectedHorseId);
@@ -281,8 +281,8 @@ public class HorseRosterScreen extends Screen {
         if (entry.active()) {
             gfx.fill(rowLeft + 2, y + ROW_HEIGHT / 2 - 3, rowLeft + 4, y + ROW_HEIGHT / 2 + 3, BhScreenDraw.ACTIVE);
         }
-        gfx.text(this.font, displayName(entry), textX, y + 5, ROW_NAME_COLOR, false);
-        gfx.text(this.font, subtitle(entry), textX, y + 17, ROW_SUBTITLE_COLOR, false);
+        gfx.drawString(this.font, displayName(entry), textX, y + 5, ROW_NAME_COLOR, false);
+        gfx.drawString(this.font, subtitle(entry), textX, y + 17, ROW_SUBTITLE_COLOR, false);
 
         int btnY = y + (ROW_HEIGHT - BTN_HEIGHT) / 2;
         drawActionButton(gfx, entry, HorseManageAction.WHISTLE, BhScreenDraw.WHISTLE_BUTTON_TEXTURE,
@@ -296,7 +296,7 @@ public class HorseRosterScreen extends Screen {
         pose.popMatrix();
     }
 
-    private void drawActionButton(GuiGraphicsExtractor gfx, HorseRosterEntry entry, HorseManageAction action,
+    private void drawActionButton(GuiGraphics gfx, HorseRosterEntry entry, HorseManageAction action,
                                   Identifier texture, int x, int y, int width, Component label,
                                   int mouseX, int mouseY) {
         boolean flashing = ClientHorseRoster.isFlashing(entry.horseId(), action);
@@ -328,7 +328,7 @@ public class HorseRosterScreen extends Screen {
         pose.popMatrix();
     }
 
-    private void drawDisownPennant(GuiGraphicsExtractor gfx, HorseRosterEntry entry,
+    private void drawDisownPennant(GuiGraphics gfx, HorseRosterEntry entry,
                                    int x, int y, int mouseX, int mouseY) {
         boolean flashing = ClientHorseRoster.isFlashing(entry.horseId(), HorseManageAction.DISOWN);
         boolean hovered = BhScreenDraw.inBox(mouseX, mouseY, x, y, BTN_DISOWN_WIDTH, BTN_DISOWN_HEIGHT);
@@ -365,7 +365,7 @@ public class HorseRosterScreen extends Screen {
         return horseId + "#" + action.ordinal();
     }
 
-    private void drawSelectArrow(GuiGraphicsExtractor gfx, int baseLeftX, int centerY, int color) {
+    private void drawSelectArrow(GuiGraphics gfx, int baseLeftX, int centerY, int color) {
         for (int r = -SELECT_ARROW_HALF; r <= SELECT_ARROW_HALF; r++) {
             int len = (SELECT_ARROW_HALF - Math.abs(r)) + 1;
             gfx.fill(baseLeftX, centerY + r, baseLeftX + len, centerY + r + 1, color);
@@ -400,7 +400,7 @@ public class HorseRosterScreen extends Screen {
         return previewX() + SET_ACTIVE_LEFT_INSET;
     }
 
-    private void renderPreview(GuiGraphicsExtractor gfx, int mouseX, int mouseY) {
+    private void renderPreview(GuiGraphics gfx, int mouseX, int mouseY) {
         int x = previewX();
         int width = previewWidth();
         HorseRosterEntry selected = ClientHorseRoster.find(selectedHorseId);
@@ -459,11 +459,11 @@ public class HorseRosterScreen extends Screen {
         return entry.pos();
     }
 
-    private void inkCentered(GuiGraphicsExtractor gfx, Component text, int centerX, int y) {
-        gfx.text(this.font, text, centerX - this.font.width(text) / 2, y, PREVIEW_TEXT_COLOR, false);
+    private void inkCentered(GuiGraphics gfx, Component text, int centerX, int y) {
+        gfx.drawString(this.font, text, centerX - this.font.width(text) / 2, y, PREVIEW_TEXT_COLOR, false);
     }
 
-    private void inkCenteredFitted(GuiGraphicsExtractor gfx, Component text, int centerX, int y, int maxWidth) {
+    private void inkCenteredFitted(GuiGraphics gfx, Component text, int centerX, int y, int maxWidth) {
         int textWidth = this.font.width(text);
         if (textWidth <= maxWidth || maxWidth <= 0) {
             inkCentered(gfx, text, centerX, y);
@@ -475,11 +475,11 @@ public class HorseRosterScreen extends Screen {
         pose.pushMatrix();
         pose.translate(centerX, (float) y);
         pose.scale(scale, scale);
-        gfx.text(this.font, text, -textWidth / 2, 0, PREVIEW_TEXT_COLOR, false);
+        gfx.drawString(this.font, text, -textWidth / 2, 0, PREVIEW_TEXT_COLOR, false);
         pose.popMatrix();
     }
 
-    private void renderPreviewModel(GuiGraphicsExtractor gfx, AbstractHorse preview,
+    private void renderPreviewModel(GuiGraphics gfx, AbstractHorse preview,
                                     int x0, int y0, int x1, int y1, int mouseX, int mouseY) {
         y0 += PREVIEW_MODEL_Y_NUDGE;
         y1 += PREVIEW_MODEL_Y_NUDGE;
@@ -495,11 +495,11 @@ public class HorseRosterScreen extends Screen {
         int clampedMouseY = Math.max(verticalCenter - PREVIEW_PITCH_CLAMP,
                 Math.min(verticalCenter + PREVIEW_PITCH_CLAMP, mouseY));
 
-        InventoryScreen.extractEntityInInventoryFollowsMouse(
+        InventoryScreen.renderEntityInInventoryFollowsMouse(
                 gfx, x0, y0, x1, y1, scale, PREVIEW_FORWARD_OFFSET, mouseX, clampedMouseY, preview);
     }
 
-    private void renderSetActiveButton(GuiGraphicsExtractor gfx, HorseRosterEntry selected,
+    private void renderSetActiveButton(GuiGraphics gfx, HorseRosterEntry selected,
                                        int x, int width, int mouseX, int mouseY) {
         int btnX = setActiveButtonX();
         int btnY = setActiveButtonY();
@@ -540,7 +540,7 @@ public class HorseRosterScreen extends Screen {
         pose.popMatrix();
     }
 
-    private void renderConfirm(GuiGraphicsExtractor gfx, int mouseX, int mouseY) {
+    private void renderConfirm(GuiGraphics gfx, int mouseX, int mouseY) {
         float t = BhAnim.clamp01((System.currentTimeMillis() - bhConfirmOpenMs) / ENTER_MS);
         gfx.fill(0, 0, this.width, this.height, Math.round(0x99 * t) << 24);
 
@@ -554,9 +554,9 @@ public class HorseRosterScreen extends Screen {
 
         HorseRosterEntry entry = ClientHorseRoster.find(confirmingDisownOf);
         Component name = entry == null ? Component.literal("?") : displayName(entry);
-        gfx.centeredText(this.font, Component.translatable("screen.icys-better-horses.manage.confirm_title"),
+        gfx.drawCenteredString(this.font, Component.translatable("screen.icys-better-horses.manage.confirm_title"),
                 cx + CONFIRM_WIDTH / 2, cy + 12, BhScreenDraw.TEXT);
-        gfx.centeredText(this.font, Component.translatable("screen.icys-better-horses.manage.confirm_body", name),
+        gfx.drawCenteredString(this.font, Component.translatable("screen.icys-better-horses.manage.confirm_body", name),
                 cx + CONFIRM_WIDTH / 2, cy + 26, BhScreenDraw.TEXT_MUTED);
 
         int btnY = confirmButtonY();
@@ -571,7 +571,7 @@ public class HorseRosterScreen extends Screen {
         pose.popMatrix();
     }
 
-    private void confirmButton(GuiGraphicsExtractor gfx, Identifier texture,
+    private void confirmButton(GuiGraphics gfx, Identifier texture,
                                int x, int y, Object key, String labelKey, int textColor, boolean hovered) {
         float ly = lift.get(key, hovered, LIFT_PX);
         BhScreenDraw.textureShadow(gfx, texture, x, y, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT, ly, 1f);

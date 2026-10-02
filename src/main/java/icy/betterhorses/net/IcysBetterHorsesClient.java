@@ -44,7 +44,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import icy.betterhorses.net.client.RiderPanel;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.KeyMapping;
@@ -97,47 +97,47 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        CALL_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        CALL_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.icys-better-horses.call",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_P,
                 CATEGORY));
-        RADIAL_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        RADIAL_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.icys-better-horses.radial",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_R,
                 CATEGORY));
-        MANAGE_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        MANAGE_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.icys-better-horses.manage",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_G,
                 CATEGORY));
 
-        GEAR_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        GEAR_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.icys-better-horses.gear",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_V,
                 CATEGORY));
 
-        REAR_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        REAR_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.icys-better-horses.rear",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_H,
                 CATEGORY));
 
-        FREE_LOOK_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        FREE_LOOK_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.icys-better-horses.free_look",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_LEFT_CONTROL,
                 CATEGORY));
 
-        CART_MENU_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        CART_MENU_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.icys-better-horses.cart_menu",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_LEFT_ALT,
                 CATEGORY));
 
-        CHARGE_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        CHARGE_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.icys-better-horses.charge",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_B,
@@ -307,7 +307,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         }
 
         while (MANAGE_KEY.consumeClick()) {
-            if (client.gui.screen() == null) {
+            if (client.screen == null) {
                 client.setScreenAndShow(new HorseRosterScreen());
             }
         }
@@ -332,16 +332,16 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
     private static void bh_toggleCharge(Minecraft client) {
         if (!BhFeature.HORSE_COMBAT.on()
                 || BhConfig.serverManaged() && !BhConfig.featureEnabled(BhFeature.HORSE_CHARGE)) {
-            client.gui.chatListener().handleOverlay(
-                    Component.translatable("message.icys-better-horses.charge.blocked"));
+            client.gui.setOverlayMessage(
+                    Component.translatable("message.icys-better-horses.charge.blocked"), false);
             return;
         }
         boolean on = !BhConfig.ownFeature(BhFeature.HORSE_CHARGE);
         BhConfig.setOwnFeature(BhFeature.HORSE_CHARGE, on);
         sendChargeChoice();
-        client.gui.chatListener().handleOverlay(Component.translatable(on
+        client.gui.setOverlayMessage(Component.translatable(on
                 ? "message.icys-better-horses.charge.on"
-                : "message.icys-better-horses.charge.off"));
+                : "message.icys-better-horses.charge.off"), false);
     }
 
     public static void sendChargeChoice() {
@@ -352,7 +352,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
 
     private static void bh_shiftGear(Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.gui.screen() != null) {
+        if (player == null || client.screen != null) {
             return;
         }
         if (!BhHorseKind.managed(player.getControlledVehicle())
@@ -369,13 +369,13 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
             case BhGears.GALLOP_GEAR -> "gallop";
             default -> "halt";
         };
-        client.gui.chatListener().handleOverlay(
-                Component.translatable("message.icys-better-horses.gait." + gait));
+        client.gui.setOverlayMessage(
+                Component.translatable("message.icys-better-horses.gait." + gait), false);
     }
 
     private static void bh_tryRear(Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.gui.screen() != null) {
+        if (player == null || client.screen != null) {
             return;
         }
 
@@ -392,7 +392,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
 
     private static void bh_tryOpenCart(Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.gui.screen() != null) {
+        if (player == null || client.screen != null) {
             return;
         }
 
@@ -435,7 +435,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
 
     private static void bh_tryOpenRadial(Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.gui.screen() != null) {
+        if (player == null || client.screen != null) {
             return;
         }
         AbstractHorse horse = bh_lookedAtHorse(player);

@@ -46,7 +46,7 @@
 		"CameraMixin",
 		"EquipmentLayerRendererMixin",
 		"EquineRenderStateMixin",
-		"GuiGraphicsExtractorAccessor",
+		"GuiGraphicsAccessor",
 		"GuiMixin",
 		"HorseMarkingLayerMixin",
 		"HorseInventoryScreenMixin",

@@ -7,9 +7,9 @@ import icy.betterhorses.net.client.ChargeShakeController;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.client.Camera;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -29,7 +29,7 @@ public abstract class CameraMixin {
 
     @Shadow public abstract Entity entity();
 
-    @ModifyArg(method = "alignWithEntity", at = @At(value = "INVOKE",
+    @ModifyArg(method = "setup", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/Camera;setPosition(DDD)V"), index = 1)
     private double bh_raiseSmallCartView(double y) {
         Entity entity = entity();
@@ -53,8 +53,8 @@ public abstract class CameraMixin {
                 ? y + 0.5D : y;
     }
 
-    @Inject(method = "update", at = @At("TAIL"))
-    private void bh_applyChargeShake(DeltaTracker deltaTracker, CallbackInfo ci) {
+    @Inject(method = "setup", at = @At("TAIL"))
+    private void bh_applyChargeShake(Level level, Entity cameraEntity, boolean detached, boolean mirrored, float partialTick, CallbackInfo ci) {
         Entity entity = entity();
         if (entity == null || entity != Minecraft.getInstance().player
                 || !BhHorseKind.managed(entity.getVehicle())) return;

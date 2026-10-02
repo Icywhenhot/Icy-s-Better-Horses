@@ -2,10 +2,13 @@ package icy.betterhorses.net.client.book;
 
 import com.klikli_dev.modonomicon.client.gui.book.entry.BookEntryScreen;
 import com.klikli_dev.modonomicon.client.render.page.BookTextPageRenderer;
+import com.klikli_dev.modonomicon.book.BookTextHolder;
 import icy.betterhorses.net.book.BhChargeMeterPage;
 import icy.betterhorses.net.client.BhAbilityBadges;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Style;
+import org.jetbrains.annotations.Nullable;
 
 public class BhChargeMeterPageRenderer extends BookTextPageRenderer {
 
@@ -21,7 +24,19 @@ public class BhChargeMeterPageRenderer extends BookTextPageRenderer {
     }
 
     @Override
-    public void render(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public void renderBookTextHolder(GuiGraphics gfx, BookTextHolder text, int x, int y, int width, int height) {
+        super.renderBookTextHolder(gfx, text, x, y, width, Math.min(height, ICON_Y - y - 4));
+    }
+
+    @Override
+    protected @Nullable Style getClickedComponentStyleAtForTextHolder(
+            BookTextHolder text, int x, int y, int width, int height, double mouseX, double mouseY) {
+        int room = ICON_Y - y - 4 + this.parentScreen.getBook().getBookTextOffsetHeight();
+        return super.getClickedComponentStyleAtForTextHolder(text, x, y, width, Math.min(height, room), mouseX, mouseY);
+    }
+
+    @Override
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         super.render(guiGraphics, mouseX, mouseY, partialTicks);
 
         long step = (System.currentTimeMillis() / FRAME_MS) % (STEPS + HOLD);

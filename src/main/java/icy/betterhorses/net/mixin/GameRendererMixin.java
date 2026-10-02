@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {
 
-    @Inject(method = "extract", at = @At("HEAD"))
+    @Inject(method = "render", at = @At("HEAD"))
     private void bh_newFrame(CallbackInfo ci) {
         BhEquineGait.newFrame();
     }

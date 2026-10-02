@@ -8,7 +8,7 @@ import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BreedType;
 import icy.betterhorses.net.registry.GenderType;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -118,13 +118,13 @@ public class HorseInfoScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics gfx, int mouseX, int mouseY, float delta) {
         if (ClientHorseRoster.consumeSuccess(horse.getUUID(), HorseManageAction.DISOWN)) {
             onClose();
             return;
         }
 
-        super.extractRenderState(gfx, mouseX, mouseY, delta);
+        super.render(gfx, mouseX, mouseY, delta);
 
         int left = (this.width - PANEL_WIDTH) / 2;
         int top = (this.height - PANEL_HEIGHT) / 2;
@@ -152,7 +152,7 @@ public class HorseInfoScreen extends Screen {
 
         Font font = this.font;
         Component title = horse.hasCustomName() ? horse.getCustomName() : getTitle();
-        gfx.text(font, title, left + PANEL_WIDTH / 2 - font.width(title) / 2, top + TITLE_Y, VALUE_COLOR, false);
+        gfx.drawString(font, title, left + PANEL_WIDTH / 2 - font.width(title) / 2, top + TITLE_Y, VALUE_COLOR, false);
 
         IHorseData data = IHorseData.of(horse);
         int y = top + CONTENT_TOP;
@@ -212,10 +212,10 @@ public class HorseInfoScreen extends Screen {
         }
     }
 
-    private void renderDisownSection(GuiGraphicsExtractor gfx, Font font, int left, int top, int mouseX, int mouseY) {
+    private void renderDisownSection(GuiGraphics gfx, Font font, int left, int top, int mouseX, int mouseY) {
         String flashKey = ClientHorseRoster.flashMessageKey();
         if (!flashKey.isEmpty()) {
-            gfx.centeredText(font, Component.translatable(flashKey),
+            gfx.drawCenteredString(font, Component.translatable(flashKey),
                     left + PANEL_WIDTH / 2, disownButtonY(top) - 13, BhScreenDraw.TEXT_ERROR);
         }
 
@@ -246,7 +246,7 @@ public class HorseInfoScreen extends Screen {
         pose.popMatrix();
     }
 
-    private void renderConfirm(GuiGraphicsExtractor gfx, Font font, int mouseX, int mouseY) {
+    private void renderConfirm(GuiGraphics gfx, Font font, int mouseX, int mouseY) {
         float t = BhAnim.clamp01((System.currentTimeMillis() - bhConfirmOpenMs) / ENTER_MS);
         gfx.fill(0, 0, this.width, this.height, Math.round(0x99 * t) << 24);
 
@@ -264,9 +264,9 @@ public class HorseInfoScreen extends Screen {
                 : confirmBreedKey != null
                         ? BreedType.displayName(confirmBreedKey, confirmData.bh_isMixedBreed())
                         : confirmData.bh_getBreed().displayName(confirmData.bh_isMixedBreed());
-        gfx.centeredText(font, Component.translatable("screen.icys-better-horses.manage.confirm_title"),
+        gfx.drawCenteredString(font, Component.translatable("screen.icys-better-horses.manage.confirm_title"),
                 cx + CONFIRM_WIDTH / 2, cy + 12, BhScreenDraw.TEXT);
-        gfx.centeredText(font, Component.translatable("screen.icys-better-horses.manage.confirm_body", name),
+        gfx.drawCenteredString(font, Component.translatable("screen.icys-better-horses.manage.confirm_body", name),
                 cx + CONFIRM_WIDTH / 2, cy + 26, BhScreenDraw.TEXT_MUTED);
 
         int btnY = confirmButtonY();
@@ -281,7 +281,7 @@ public class HorseInfoScreen extends Screen {
         pose.popMatrix();
     }
 
-    private void confirmButton(GuiGraphicsExtractor gfx, Font font, Identifier texture,
+    private void confirmButton(GuiGraphics gfx, Font font, Identifier texture,
                                int x, int y, Object key, String labelKey, int textColor, boolean hovered) {
         float ly = lift.get(key, hovered, LIFT_PX);
         BhScreenDraw.textureShadow(gfx, texture, x, y, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT, ly, 1f);
@@ -378,13 +378,13 @@ public class HorseInfoScreen extends Screen {
         return Component.translatable("coat.icys-better-horses.combined", colorComponent, markingsComponent);
     }
 
-    private void drawLabel(GuiGraphicsExtractor gfx, Font font, int x, int y, Component label, Component value) {
-        gfx.text(font, label, x + LABEL_INDENT, y, LABEL_COLOR, false);
-        gfx.text(font, value, x + LABEL_WIDTH, y, VALUE_COLOR, false);
+    private void drawLabel(GuiGraphics gfx, Font font, int x, int y, Component label, Component value) {
+        gfx.drawString(font, label, x + LABEL_INDENT, y, LABEL_COLOR, false);
+        gfx.drawString(font, value, x + LABEL_WIDTH, y, VALUE_COLOR, false);
     }
 
-    private void drawStatRow(GuiGraphicsExtractor gfx, Font font, int x, int y, Component label, String value, double normalized) {
-        gfx.text(font, label, x + LABEL_INDENT, y, LABEL_COLOR, false);
+    private void drawStatRow(GuiGraphics gfx, Font font, int x, int y, Component label, String value, double normalized) {
+        gfx.drawString(font, label, x + LABEL_INDENT, y, LABEL_COLOR, false);
         int barX = x + LABEL_WIDTH;
         int barY = y + 3;
         gfx.fill(barX, barY, barX + BAR_WIDTH, barY + BAR_HEIGHT, BAR_BG_COLOR);
@@ -392,7 +392,7 @@ public class HorseInfoScreen extends Screen {
         if (fillWidth > 0) {
             gfx.fill(barX, barY, barX + fillWidth, barY + BAR_HEIGHT, BAR_FILL_COLOR);
         }
-        gfx.text(font, Component.literal(value), barX + BAR_WIDTH + BAR_VALUE_GAP, y, VALUE_COLOR, false);
+        gfx.drawString(font, Component.literal(value), barX + BAR_WIDTH + BAR_VALUE_GAP, y, VALUE_COLOR, false);
     }
 
 }

@@ -7,7 +7,7 @@ import icy.betterhorses.net.book.BhCartModelsPage;
 import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -68,7 +68,7 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
     }
 
     @Override
-    public void render(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         centeredFitted(guiGraphics,
                 Component.translatable("book.icys-better-horses.carts.title").getString(),
                 TITLE_Y, BookEntryScreen.PAGE_WIDTH);
@@ -88,11 +88,11 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
                 COUNT_Y, BookEntryScreen.PAGE_WIDTH);
     }
 
-    private void centeredFitted(GuiGraphicsExtractor guiGraphics, String text, int y, int maxWidth) {
+    private void centeredFitted(GuiGraphics guiGraphics, String text, int y, int maxWidth) {
         int width = this.font.width(text);
         int centerX = BookEntryScreen.PAGE_WIDTH / 2;
         if (width <= maxWidth) {
-            guiGraphics.text(this.font, text, centerX - width / 2, y, INK, false);
+            guiGraphics.drawString(this.font, text, centerX - width / 2, y, INK, false);
             return;
         }
 
@@ -101,12 +101,12 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
         pose.pushMatrix();
         pose.translate(centerX, (float) y);
         pose.scale(scale, scale);
-        guiGraphics.text(this.font, text, -width / 2, 0, INK, false);
+        guiGraphics.drawString(this.font, text, -width / 2, 0, INK, false);
         pose.popMatrix();
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private void renderCart(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
+    private void renderCart(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         if (errored || cart == null) {
             return;
         }
@@ -141,7 +141,7 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
                     (size.isLarge() ? LARGE_HEIGHT : SMALL_HEIGHT) / 2.0F,
                     (float) shift.z);
 
-            guiGraphics.entity(state, size.isLarge() ? LARGE_SCALE : SMALL_SCALE,
+            guiGraphics.submitEntityRenderState(state, size.isLarge() ? LARGE_SCALE : SMALL_SCALE,
                     offset, flip, pitch, x0, y0, x1, y1);
         } catch (Exception exception) {
             errored = true;

@@ -8,7 +8,7 @@ import icy.betterhorses.net.client.BhAnim;
 import icy.betterhorses.net.client.BhScreenDraw;
 import icy.betterhorses.net.client.BhSlotFlash;
 import icy.betterhorses.net.inventory.GearSlot;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractMountInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.EffectsInInventory;
@@ -109,8 +109,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
                 : BH_DEFAULT_INVENTORY_LABEL_Y;
     }
 
-    @Inject(method = "extractBackground", at = @At("HEAD"), cancellable = true)
-    private void bh_renderChestLayout(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+    @Inject(method = "renderBg", at = @At("HEAD"), cancellable = true)
+    private void bh_renderChestLayout(GuiGraphics gfx, float partialTick, int mouseX, int mouseY, CallbackInfo ci) {
         AbstractHorse horse = this.bh_getHorseOrNull();
         if (horse == null) {
             return;
@@ -142,7 +142,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
         this.bh_drawGearPanel(gfx);
         this.bh_drawChestPanel(gfx);
-        InventoryScreen.extractEntityInInventoryFollowsMouse(
+        InventoryScreen.renderEntityInInventoryFollowsMouse(
                 gfx,
                 x + 26,
                 y + 18,
@@ -156,8 +156,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         ci.cancel();
     }
 
-    @Inject(method = "extractBackground", at = @At("TAIL"))
-    private void bh_renderGearOnlyOverlay(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+    @Inject(method = "renderBg", at = @At("TAIL"))
+    private void bh_renderGearOnlyOverlay(GuiGraphics gfx, float partialTick, int mouseX, int mouseY, CallbackInfo ci) {
         if (this.bh_getHorseOrNull() == null) {
             return;
         }
@@ -168,9 +168,9 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         this.bh_drawGearPanel(gfx);
     }
 
-    @Inject(method = "extractRenderState", at = @At("HEAD"))
-    private void bh_drawEffects(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
-        this.bh_effects().extractRenderState(gfx, mouseX, mouseY);
+    @Inject(method = "render", at = @At("HEAD"))
+    private void bh_drawEffects(GuiGraphics gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+        this.bh_effects().render(gfx, mouseX, mouseY);
     }
 
     @Override
@@ -186,8 +186,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         return this.bh_effects;
     }
 
-    @Inject(method = "extractRenderState", at = @At("TAIL"))
-    private void bh_drawTextOverlay(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+    @Inject(method = "render", at = @At("TAIL"))
+    private void bh_drawTextOverlay(GuiGraphics gfx, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
         AbstractHorse horse = this.bh_getHorseOrNull();
         if (horse == null || !this.bh_hasUpgradedSaddleInMenu()) {
             return;
@@ -221,7 +221,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     }
 
     @Unique
-    private void bh_drawBondStar(GuiGraphicsExtractor gfx, AbstractHorse horse, int mouseX, int mouseY) {
+    private void bh_drawBondStar(GuiGraphics gfx, AbstractHorse horse, int mouseX, int mouseY) {
         int bond = IHorseData.of(horse).bh_getBond();
         Identifier star = bond >= 100 ? BH_BOND_GOLD : bond >= 40 ? BH_BOND_SILVER : BH_BOND_BRONZE;
         int textColor = bond >= 100 ? 0xFFFFD75A : bond >= 40 ? 0xFFC9D6EE : 0xFFE08A45;
@@ -259,7 +259,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
         float textAlpha = BhAnim.clamp01((this.bh_starHover - 0.35F) / 0.65F);
         if (textAlpha > 0.05F) {
-            gfx.text(this.font, text,
+            gfx.drawString(this.font, text,
                     right - textWidth,
                     starY + (BH_STAR_SIZE - this.font.lineHeight) / 2 + 1,
                     BhAnim.fade(textColor, textAlpha),
@@ -268,18 +268,18 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     }
 
     @Unique
-    private void bh_drawStatsLines(GuiGraphicsExtractor gfx, AbstractHorse horse) {
+    private void bh_drawStatsLines(GuiGraphics gfx, AbstractHorse horse) {
         double speedBps = horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * 43.2D;
         double jumpBlk = Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D);
         String speedText = String.format(Locale.ROOT, "Speed: %.1f blk/s", speedBps);
         String jumpText = String.format(Locale.ROOT, "Jump:  %.1f blk", jumpBlk);
 
-        gfx.text(this.font, speedText,
+        gfx.drawString(this.font, speedText,
                 this.leftPos + BH_STATS_TEXT_X,
                 this.topPos + BH_STATS_TEXT_Y,
                 BH_TEXT_COLOR,
                 false);
-        gfx.text(this.font, jumpText,
+        gfx.drawString(this.font, jumpText,
                 this.leftPos + BH_STATS_TEXT_X,
                 this.topPos + BH_STATS_TEXT_Y + BH_STATS_LINE_SPACING,
                 BH_TEXT_COLOR,
@@ -287,7 +287,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     }
 
     @Unique
-    private void bh_drawGearPanel(GuiGraphicsExtractor gfx) {
+    private void bh_drawGearPanel(GuiGraphics gfx) {
         int x = this.leftPos + BH_GEAR_PANEL_X;
         int y = this.topPos + BH_GEAR_PANEL_Y;
         for (int i = 0; i < GearSlot.COUNT; i++) {
@@ -311,7 +311,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     }
 
     @Unique
-    private void bh_drawLockedSlotFlash(GuiGraphicsExtractor gfx) {
+    private void bh_drawLockedSlotFlash(GuiGraphics gfx) {
         float intensity = BhSlotFlash.intensity();
         int flashed = BhSlotFlash.flashingSlot();
         if (intensity <= 0.0F || flashed < 0 || flashed >= this.menu.slots.size()) {
@@ -332,7 +332,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     }
 
     @Unique
-    private void bh_drawChestPanel(GuiGraphicsExtractor gfx) {
+    private void bh_drawChestPanel(GuiGraphics gfx) {
         if (!this.bh_hasUpgradedSaddleInMenu() || !this.bh_hasChestGearInMenu()) {
             return;
         }
@@ -346,7 +346,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     }
 
     @Unique
-    private void bh_drawMiddlePanel(GuiGraphicsExtractor gfx, int x, int y, int width, int height) {
+    private void bh_drawMiddlePanel(GuiGraphics gfx, int x, int y, int width, int height) {
         int innerLeft = x + BH_SIDE_BORDER_WIDTH;
         int innerRight = x + width - BH_SIDE_BORDER_WIDTH;
 
@@ -365,7 +365,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     }
 
     @Unique
-    private void bh_drawGearHint(GuiGraphicsExtractor gfx, int x, int y, GearSlot slot, Item item) {
+    private void bh_drawGearHint(GuiGraphics gfx, int x, int y, GearSlot slot, Item item) {
         int slotIndex = this.bh_getGearSlotIndex(slot.ordinal());
         if (slotIndex < 0 || !this.menu.getSlot(slotIndex).isActive() || this.menu.getSlot(slotIndex).hasItem()) {
             return;
@@ -373,12 +373,12 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
         int iconX = x + slot.ordinal() * 18 + 1;
         int iconY = y + 1;
-        gfx.item(new ItemStack(item), iconX, iconY);
+        gfx.renderItem(new ItemStack(item), iconX, iconY);
         gfx.fill(iconX, iconY, iconX + 16, iconY + 16, 0xA0B7AB99);
     }
 
     @Unique
-    private static void bh_blitGui(GuiGraphicsExtractor gfx, Identifier texture,
+    private static void bh_blitGui(GuiGraphics gfx, Identifier texture,
                                    int x, int y, int u, int v, int width, int height) {
         gfx.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, (float) u, (float) v, width, height, 256, 256);
     }

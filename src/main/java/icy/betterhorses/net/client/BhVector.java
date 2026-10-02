@@ -2,12 +2,12 @@ package icy.betterhorses.net.client;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import icy.betterhorses.net.mixin.GuiGraphicsExtractorAccessor;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import icy.betterhorses.net.mixin.GuiGraphicsAccessor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
+import net.minecraft.client.gui.render.state.GuiElementRenderState;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fc;
@@ -58,7 +58,7 @@ public final class BhVector {
         }
     }
 
-    public static void submit(GuiGraphicsExtractor gfx, Builder builder) {
+    public static void submit(GuiGraphics gfx, Builder builder) {
         if (builder.isEmpty()) return;
 
         float[] xy = new float[builder.vertices * 2];
@@ -67,8 +67,8 @@ public final class BhVector {
         System.arraycopy(builder.colors, 0, colors, 0, colors.length);
 
         Matrix3x2f pose = new Matrix3x2f(gfx.pose());
-        ((GuiGraphicsExtractorAccessor) (Object) gfx).bh_guiRenderState()
-                .addGuiElement(new MeshRenderState(xy, colors, pose, bounds(xy, pose)));
+        ((GuiGraphicsAccessor) (Object) gfx).bh_guiRenderState()
+                .submitGuiElement(new MeshRenderState(xy, colors, pose, bounds(xy, pose)));
     }
 
     private static ScreenRectangle bounds(float[] xy, Matrix3x2fc pose) {

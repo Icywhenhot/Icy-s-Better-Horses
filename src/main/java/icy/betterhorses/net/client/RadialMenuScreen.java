@@ -9,7 +9,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.registry.CommandType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
@@ -114,7 +114,7 @@ public class RadialMenuScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics gfx, int mouseX, int mouseY, float delta) {
         if (minecraft == null || minecraft.level == null || minecraft.level.getEntity(horseId) == null) {
             onClose();
             return;
@@ -171,7 +171,7 @@ public class RadialMenuScreen extends Screen {
             int ly = cy + Math.round((float) Math.sin(labelAngle) * labelRadius);
             String text = this.commands.get(i).label().getString();
             int textColor = bh_mixColor(LABEL_COLOR, LABEL_HOVER_COLOR, hoverAmount[i]);
-            gfx.centeredText(font, text, lx, ly - font.lineHeight / 2, textColor);
+            gfx.drawCenteredString(font, text, lx, ly - font.lineHeight / 2, textColor);
         }
 
         pose.popMatrix();

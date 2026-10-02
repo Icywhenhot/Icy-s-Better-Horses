@@ -12,7 +12,7 @@ import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -118,7 +118,7 @@ public final class BhAbilityBadges {
         found.clear();
     }
 
-    public static void render(GuiGraphicsExtractor gfx, Font font, int screenW, int screenH,
+    public static void render(GuiGraphics gfx, Font font, int screenW, int screenH,
                               AbstractHorse horse) {
         IHorseData data = IHorseData.of(horse);
         harness(gfx, screenW, screenH, horse, data);
@@ -208,7 +208,7 @@ public final class BhAbilityBadges {
                 phase == BhSurge.COOLING);
     }
 
-    private static void draw(GuiGraphicsExtractor gfx, Font font, int x, int y,
+    private static void draw(GuiGraphics gfx, Font font, int x, int y,
                              Badge badge, Plate plate, float in) {
         float a = BhAnim.clamp01(in);
         if (a <= 0.01F) {
@@ -228,7 +228,7 @@ public final class BhAbilityBadges {
         } else {
             ItemStack stock = STOCK_ICONS.get(badge.key);
             if (stock != null) {
-                gfx.item(stock, left + plate.iconX(), y + ICON_Y);
+                gfx.renderItem(stock, left + plate.iconX(), y + ICON_Y);
             }
         }
 
@@ -267,13 +267,13 @@ public final class BhAbilityBadges {
         return Math.max(MIN_TEXT_SCALE, Math.min(TEXT_SCALE, room / (float) w));
     }
 
-    private static void small(GuiGraphicsExtractor gfx, Font font, Component text,
+    private static void small(GuiGraphics gfx, Font font, Component text,
                               int x, int y, int color, float scale) {
         Matrix3x2fStack pose = gfx.pose();
         pose.pushMatrix();
         pose.translate(x, y);
         pose.scale(scale, scale);
-        gfx.text(font, text, 0, 0, color, false);
+        gfx.drawString(font, text, 0, 0, color, false);
         pose.popMatrix();
     }
 
@@ -286,7 +286,7 @@ public final class BhAbilityBadges {
                 .getResourceManager().getResource(id).isPresent());
     }
 
-    private static void harness(GuiGraphicsExtractor gfx, int screenW, int screenH, AbstractHorse horse, IHorseData data) {
+    private static void harness(GuiGraphics gfx, int screenW, int screenH, AbstractHorse horse, IHorseData data) {
         if (!data.bh_hasGear(GearSlot.STABILIZER) || data.bh_hasCartGear()) {
             return;
         }
@@ -303,7 +303,7 @@ public final class BhAbilityBadges {
         boolean left = spot.side() == BhConfig.Side.LEFT;
         int x = besideHotbar(screenW, spot.side(), spot.gap() + BASH_PAD);
         int y = screenH - HOTBAR_HEIGHT + (HOTBAR_HEIGHT - BASH_SIZE) / 2;
-        gfx.item(new ItemStack(ModItems.HORSE_STABILIZER), x, y);
+        gfx.renderItem(new ItemStack(ModItems.HORSE_STABILIZER), x, y);
 
         float charge = data.bh_getStabilizerCharge();
         int barX = left ? x - 5 : x + BASH_SIZE + 2;
@@ -316,7 +316,7 @@ public final class BhAbilityBadges {
         }
     }
 
-    private static void shield(GuiGraphicsExtractor gfx, int screenW, int screenH, int charge) {
+    private static void shield(GuiGraphics gfx, int screenW, int screenH, int charge) {
         if (charge < 0 || !BhFeature.HORSE_CHARGE.on() || !BhConfig.ownFeature(BhFeature.HORSE_CHARGE)) {
             return;
         }

@@ -5,7 +5,7 @@ import com.klikli_dev.modonomicon.client.render.page.BookPageRenderer;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.book.BhBreedCoatsPage;
 import icy.betterhorses.net.entity.BhBreedHorse;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -68,7 +68,7 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
     }
 
     @Override
-    public void render(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         centeredFitted(
                 guiGraphics,
                 Component.translatable("book.icys-better-horses.coats.title").getString(),
@@ -92,11 +92,11 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
                 COUNT_Y, BookEntryScreen.PAGE_WIDTH);
     }
 
-    private void centeredFitted(GuiGraphicsExtractor guiGraphics, String text, int y, int maxWidth) {
+    private void centeredFitted(GuiGraphics guiGraphics, String text, int y, int maxWidth) {
         int width = this.font.width(text);
         int centerX = BookEntryScreen.PAGE_WIDTH / 2;
         if (width <= maxWidth) {
-            guiGraphics.text(this.font, text, centerX - width / 2, y, INK, false);
+            guiGraphics.drawString(this.font, text, centerX - width / 2, y, INK, false);
             return;
         }
 
@@ -105,11 +105,11 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
         pose.pushMatrix();
         pose.translate(centerX, (float) y);
         pose.scale(scale, scale);
-        guiGraphics.text(this.font, text, -width / 2, 0, INK, false);
+        guiGraphics.drawString(this.font, text, -width / 2, 0, INK, false);
         pose.popMatrix();
     }
 
-    private void renderHorse(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
+    private void renderHorse(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         if (errored || horse == null) {
             return;
         }
@@ -128,7 +128,7 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
                 BookEntryScreen.PAGE_WIDTH * MODEL_FILL / boxWidth)));
 
         try {
-            InventoryScreen.extractEntityInInventoryFollowsMouse(
+            InventoryScreen.renderEntityInInventoryFollowsMouse(
                     guiGraphics, x0, y0, x1, y1, scale, 0.0F, mouseX, (y0 + y1) / 2f, horse);
         } catch (Exception exception) {
             errored = true;

@@ -7,7 +7,7 @@ import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.inventory.CartMenu;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
@@ -21,7 +21,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -81,7 +81,9 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
     private boolean errored;
 
     public CartScreen(CartMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, CartMenu.width(menu.type()), CartMenu.HEIGHT);
+        super(menu, inventory, title);
+        this.imageWidth = CartMenu.width(menu.type());
+        this.imageHeight = CartMenu.HEIGHT;
         this.inventory = inventory;
         this.inventoryLabelY = this.imageHeight - 94;
         this.inventoryLabelX = (this.imageWidth - 162) / 2 + 1;
@@ -237,7 +239,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
             this.menu.layout();
             if (CartMenu.width(this.menu.type()) != this.imageWidth) {
                 RiderPanel.rememberCursor();
-                this.minecraft.gui.setScreen(new CartScreen(this.menu, this.inventory, this.title));
+                this.minecraft.setScreen(new CartScreen(this.menu, this.inventory, this.title));
                 return;
             }
             this.view = this.menu.type().ordinal();
@@ -247,8 +249,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float partialTick) {
-        super.extractBackground(gfx, mouseX, mouseY, partialTick);
+    protected void renderBg(GuiGraphics gfx, float partialTick, int mouseX, int mouseY) {
         int x = this.leftPos;
         int y = this.topPos;
         int tab = this.menu.tab();
@@ -275,7 +276,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
         }
     }
 
-    private void drawPanel(GuiGraphicsExtractor gfx, int x, int y, int width, int height) {
+    private void drawPanel(GuiGraphics gfx, int x, int y, int width, int height) {
         int right = x + width;
         int bottom = y + height;
         gfx.fill(x, y, right, bottom, PANEL_FILL);
@@ -289,7 +290,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
         gfx.fill(right - 1, y, right, bottom, PANEL_OUTLINE);
     }
 
-    private void drawTab(GuiGraphicsExtractor gfx, int tab, boolean selected) {
+    private void drawTab(GuiGraphics gfx, int tab, boolean selected) {
         int x = this.leftPos + tab * TAB_STEP;
         int y = this.topPos - TAB_H;
         gfx.blitSprite(RenderPipelines.GUI_TEXTURED, Identifier.withDefaultNamespace("container/creative_inventory/tab_top_"
@@ -299,14 +300,14 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
             case CartMenu.TAB_CART -> new ItemStack(ModItems.HORSE_CART);
             default -> new ItemStack(Items.SADDLE);
         };
-        gfx.item(icon, x + 5, y + 9 + (selected ? 0 : 1));
+        gfx.renderItem(icon, x + 5, y + 9 + (selected ? 0 : 1));
         if (tab == CartMenu.TAB_CARGO && !this.hasChest()) {
             gfx.nextStratum();
             gfx.fill(x + 4, y + 8, x + 22, y + 27, 0xAA8B8B8B);
         }
     }
 
-    private void drawWell(GuiGraphicsExtractor gfx, int x, int y, int w, int h) {
+    private void drawWell(GuiGraphics gfx, int x, int y, int w, int h) {
         gfx.fill(x, y, x + w, y + h, 0xFF000000);
         gfx.fill(x, y, x + w - 1, y + 1, 0xFF373737);
         gfx.fill(x, y, x + 1, y + h - 1, 0xFF373737);
@@ -324,19 +325,19 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
             gfx.fill(x + 1, y + 1, x + w - 1, y + h - 1, 0x99000000);
             this.drawLock(gfx, x + w / 2 - 7, y + 12);
             Component note = Component.translatable("gui.icys-better-horses.cart.refuse.draft");
-            gfx.text(this.font, note, x + (w - this.font.width(note)) / 2, y + 34, GOLD, true);
+            gfx.drawString(this.font, note, x + (w - this.font.width(note)) / 2, y + 34, GOLD, true);
         }
         gfx.fill(x + 1, y + h - 13, x + w - 1, y + h - 1, 0xAA000000);
-        gfx.text(this.font, type.displayName(), x + 4, y + h - 11, 0xFFFFFFFF, true);
+        gfx.drawString(this.font, type.displayName(), x + 4, y + h - 11, 0xFFFFFFFF, true);
         Component stats = Component.translatable("gui.icys-better-horses.cart.stats", type.seats(), type.chestSlots());
-        gfx.text(this.font, stats, x + w - 4 - this.font.width(stats), y + h - 11, 0xFFAAAAAA, true);
+        gfx.drawString(this.font, stats, x + w - 4 - this.font.width(stats), y + h - 11, 0xFFAAAAAA, true);
     }
 
     private boolean lockedView() {
         return this.refusal() == HorseCartEntity.Refusal.DRAFT_ONLY;
     }
 
-    private void drawLock(GuiGraphicsExtractor gfx, int x, int y) {
+    private void drawLock(GuiGraphics gfx, int x, int y) {
         int dark = 0xFF303030;
         int gold = 0xFFE0B73A;
         gfx.fill(x + 4, y, x + 10, y + 2, dark);
@@ -369,7 +370,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
         return this.preview;
     }
 
-    private void drawCart(GuiGraphicsExtractor gfx, HorseCartEntity model, CartType type, int x0, int y0, int x1, int y1) {
+    private void drawCart(GuiGraphics gfx, HorseCartEntity model, CartType type, int x0, int y0, int x1, int y1) {
         model.setYRot(PREVIEW_YAW);
         model.setYBodyRot(PREVIEW_YAW);
         model.setYHeadRot(PREVIEW_YAW);
@@ -382,7 +383,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
             state.outlineColor = 0;
             Vec3 shift = new Vec3(0.0D, 0.0D, type.bedCenterBehind()).yRot(-PREVIEW_YAW * DEG).scale(-1.0D);
             Vector3f offset = new Vector3f((float) shift.x, (type.isLarge() ? 3.1F : 1.7F) / 2.0F, (float) shift.z);
-            gfx.entity(state, type.isLarge() ? 16.0F : 23.0F, offset, flip, pitch, x0, y0, x1, y1);
+            gfx.submitEntityRenderState(state, type.isLarge() ? 16.0F : 23.0F, offset, flip, pitch, x0, y0, x1, y1);
         } catch (Exception exception) {
             this.errored = true;
             IcysBetterHorses.LOGGER.warn("[cart] could not draw the cart preview", exception);
@@ -390,8 +391,8 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
     }
 
     @Override
-    public void extractContents(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float partialTick) {
-        super.extractContents(gfx, mouseX, mouseY, partialTick);
+    public void renderContents(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
+        super.renderContents(gfx, mouseX, mouseY, partialTick);
         gfx.nextStratum();
         if (this.menu.tab() == CartMenu.TAB_CART && this.browsing()) {
             for (int i = CartMenu.RIG_START; i < CartMenu.RIG_START + CartType.Attachment.values().length; i++) {
@@ -414,11 +415,11 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
     }
 
     @Override
-    protected void extractLabels(GuiGraphicsExtractor gfx, int mouseX, int mouseY) {
+    protected void renderLabels(GuiGraphics gfx, int mouseX, int mouseY) {
         HorseCartEntity cart = this.cart();
         Component name = cart != null && cart.hasCustomName() ? cart.getCustomName() : this.menu.type().displayName();
-        gfx.text(this.font, name, this.titleLabelX, this.titleLabelY, INK, false);
-        gfx.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, INK, false);
+        gfx.drawString(this.font, name, this.titleLabelX, this.titleLabelY, INK, false);
+        gfx.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, INK, false);
 
         CartType badgeType = this.menu.tab() == CartMenu.TAB_CART ? this.viewed() : this.menu.type();
         Component badge = Component.translatable(badgeType.isLarge()
@@ -431,7 +432,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
         gfx.fill(bx, 4, bx + 1, 14, 0xFF373737);
         gfx.fill(bx + 1, 14, bx + bw, 15, PANEL_HIGHLIGHT);
         gfx.fill(bx + bw - 1, 5, bx + bw, 15, PANEL_HIGHLIGHT);
-        gfx.text(this.font, badge, bx + 3, 6, 0xFFFFFFFF, true);
+        gfx.drawString(this.font, badge, bx + 3, 6, 0xFFFFFFFF, true);
         if (locked) {
             gfx.pose().pushMatrix();
             gfx.pose().translate(bx + bw - 9, 5);
@@ -443,10 +444,10 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
         int tab = this.menu.tab();
         if (tab == CartMenu.TAB_CART && !this.browsing()) {
             Component current = Component.translatable("gui.icys-better-horses.cart.current");
-            gfx.text(this.font, current, (this.imageWidth - this.font.width(current)) / 2, ACTION_Y + 4, MUTED, false);
+            gfx.drawString(this.font, current, (this.imageWidth - this.font.width(current)) / 2, ACTION_Y + 4, MUTED, false);
         } else if (tab == CartMenu.TAB_RIDERS) {
             boolean serverOn = BhConfig.cartPickupEnabled();
-            gfx.text(this.font, Component.translatable("gui.icys-better-horses.cart.pickup"),
+            gfx.drawString(this.font, Component.translatable("gui.icys-better-horses.cart.pickup"),
                     8, 20, serverOn ? INK : FADED, false);
             Component status;
             int color;
@@ -460,7 +461,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
                 status = Component.translatable("gui.icys-better-horses.cart.pickup.off");
                 color = DISABLED;
             }
-            gfx.text(this.font, status, 8, 31, color, false);
+            gfx.drawString(this.font, status, 8, 31, color, false);
 
             Component riders;
             if (cart != null && cart.isPlaced()) {
@@ -471,13 +472,13 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
                         : Component.translatable(n == 1 ? "gui.icys-better-horses.cart.riders.one"
                         : "gui.icys-better-horses.cart.riders.many", n);
             }
-            gfx.text(this.font, riders, (this.imageWidth - this.font.width(riders)) / 2, 96, MUTED, false);
+            gfx.drawString(this.font, riders, (this.imageWidth - this.font.width(riders)) / 2, 96, MUTED, false);
         }
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor gfx, int mouseX, int mouseY) {
-        super.extractTooltip(gfx, mouseX, mouseY);
+    protected void renderTooltip(GuiGraphics gfx, int mouseX, int mouseY) {
+        super.renderTooltip(gfx, mouseX, mouseY);
         int tab = this.hoveredTab(mouseX, mouseY);
         if (tab >= 0) {
             Component label = Component.translatable("gui.icys-better-horses.cart.tab." + switch (tab) {
@@ -524,18 +525,18 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
     }
 
     @Override
-    protected void slotClicked(Slot slot, int slotId, int mouseButton, ContainerInput input) {
+    protected void slotClicked(Slot slot, int slotId, int mouseButton, ClickType input) {
         if (slot instanceof CartMenu.RigSlot rig && rig.kind() == CartType.Attachment.CHEST
                 && rig.hasItem() && !this.menu.chestEmpty()) {
             BhSlotFlash.trigger(slotId);
-            this.minecraft.player.sendSystemMessage(
-                    Component.translatable("message.icys-better-horses.cart_chest_in_use"));
+            this.minecraft.player.displayClientMessage(
+                    Component.translatable("message.icys-better-horses.cart_chest_in_use"), false);
             return;
         }
         super.slotClicked(slot, slotId, mouseButton, input);
     }
 
-    private static void buttonSprite(GuiGraphicsExtractor gfx, boolean on, boolean lit, int x, int y, int w, int h) {
+    private static void buttonSprite(GuiGraphics gfx, boolean on, boolean lit, int x, int y, int w, int h) {
         gfx.blitSprite(RenderPipelines.GUI_TEXTURED, !on ? BUTTON_OFF : lit ? BUTTON_LIT : BUTTON, x, y, w, h);
     }
 
@@ -556,7 +557,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
         }
 
         @Override
-        protected void extractContents(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float partialTick) {
+        protected void renderContents(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
             boolean lit = this.on.getAsBoolean();
             buttonSprite(gfx, lit, this.isHoveredOrFocused(), this.getX(), this.getY(), this.width, this.height);
             int bx = this.getX() + 3;
@@ -564,7 +565,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
             gfx.fill(bx, by, bx + 7, by + 7, 0xFF373737);
             gfx.fill(bx + 1, by + 1, bx + 7, by + 7, PANEL_HIGHLIGHT);
             gfx.fill(bx + 1, by + 1, bx + 6, by + 6, lit ? 0xFF5CAA3C : 0xFF464646);
-            gfx.text(font, this.getMessage(), this.getX() + 13, this.getY() + 3,
+            gfx.drawString(font, this.getMessage(), this.getX() + 13, this.getY() + 3,
                     lit ? 0xFFFFFFFF : 0xFFA0A0A0, true);
         }
 
@@ -591,7 +592,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
         }
 
         @Override
-        protected void extractContents(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float partialTick) {
+        protected void renderContents(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
             boolean serverOn = BhConfig.cartPickupEnabled();
             boolean on = pickupOn();
             int x = this.getX();
@@ -636,7 +637,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
         }
 
         @Override
-        protected void extractContents(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float partialTick) {
+        protected void renderContents(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
             boolean live = pickupOn();
             int x = this.getX();
             int y = this.getY();
@@ -655,7 +656,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
             if (live && this.isHoveredOrFocused()) {
                 gfx.fill(x + 1, y + 1, x + 9, y + 9, 0x30FFFFFF);
             }
-            gfx.text(font, this.getMessage(), x + 14, y + 1, live ? INK : FADED, false);
+            gfx.drawString(font, this.getMessage(), x + 14, y + 1, live ? INK : FADED, false);
         }
 
         @Override
@@ -678,7 +679,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
         }
 
         @Override
-        protected void extractContents(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float partialTick) {
+        protected void renderContents(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
             gfx.blit(RenderPipelines.GUI_TEXTURED, HORSE_ICON, this.getX(), this.getY(), 0.0F, 0.0F, 16, 21, 16, 21);
         }
 
