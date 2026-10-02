@@ -3,8 +3,8 @@ package icy.betterhorses.net.client.render;
 import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.resources.Identifier;
-import com.geckolib.model.GeoModel;
-import com.geckolib.renderer.base.GeoRenderState;
+import software.bernie.geckolib.model.GeoModel;
+import software.bernie.geckolib.renderer.base.GeoRenderState;
 
 public final class HorseCartGeoModel extends GeoModel<HorseCartEntity> {
 

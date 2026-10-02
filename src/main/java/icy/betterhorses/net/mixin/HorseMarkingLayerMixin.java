@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.HorseRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -47,7 +48,7 @@ public abstract class HorseMarkingLayerMixin extends RenderLayer<HorseRenderStat
             method = "submit(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/client/renderer/entity/state/HorseRenderState;FF)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/OrderedSubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/rendertype/RenderType;IIILnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"))
+                    target = "Lnet/minecraft/client/renderer/OrderedSubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/rendertype/RenderType;IIILnet/minecraft/client/renderer/texture/TextureAtlasSprite;ILnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"))
     private void bh_applyHorseOpacityToMarkings(
             OrderedSubmitNodeCollector collector,
             Model<Object> model,
@@ -56,6 +57,8 @@ public abstract class HorseMarkingLayerMixin extends RenderLayer<HorseRenderStat
             RenderType renderType,
             int lightCoords,
             int overlayCoords,
+            int colorArgb,
+            TextureAtlasSprite sprite,
             int outlineColor,
             ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
         collector.submitModel(
@@ -65,8 +68,8 @@ public abstract class HorseMarkingLayerMixin extends RenderLayer<HorseRenderStat
                 renderType,
                 lightCoords,
                 overlayCoords,
-                BhMountedHorseVisibility.applyOpacity(-1, BhRenderContext.currentOpacity()),
-                null,
+                BhMountedHorseVisibility.applyOpacity(colorArgb, BhRenderContext.currentOpacity()),
+                sprite,
                 outlineColor,
                 crumblingOverlay);
     }

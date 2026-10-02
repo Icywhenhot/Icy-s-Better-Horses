@@ -1,16 +1,16 @@
 package icy.betterhorses.net.client.render;
 
-import com.geckolib.constant.DataTickets;
-import com.geckolib.constant.dataticket.DataTicket;
-import com.geckolib.renderer.GeoObjectRenderer;
-import com.geckolib.renderer.base.BoneSnapshots;
-import com.geckolib.renderer.base.GeoRenderState;
-import com.geckolib.renderer.base.RenderPassInfo;
+import software.bernie.geckolib.constant.DataTickets;
+import software.bernie.geckolib.constant.dataticket.DataTicket;
+import software.bernie.geckolib.renderer.GeoObjectRenderer;
+import software.bernie.geckolib.renderer.base.BoneSnapshots;
+import software.bernie.geckolib.renderer.base.GeoRenderState;
+import software.bernie.geckolib.renderer.base.RenderPassInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
-import com.geckolib.model.GeoModel;
+import software.bernie.geckolib.model.GeoModel;
 
 public final class HorseStabilizerGeoRenderer
         extends GeoObjectRenderer<HorseStabilizerAnimatable, Void, GeoRenderState.Impl> {

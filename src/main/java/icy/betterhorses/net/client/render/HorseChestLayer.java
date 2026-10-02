@@ -85,6 +85,8 @@ public final class HorseChestLayer<S extends EquineRenderState, M extends Entity
                 packedLight,
                 LivingEntityRenderer.getOverlayCoords(state, 0.0F),
                 null,
+                false,
+                false,
                 BhMountedHorseVisibility.applyOpacity(-1, opacity),
                 null,
                 state.outlineColor);

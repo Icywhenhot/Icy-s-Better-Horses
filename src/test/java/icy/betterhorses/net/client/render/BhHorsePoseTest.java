@@ -1,6 +1,9 @@
 package icy.betterhorses.net.client.render;
 
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.SharedConstants;
+import net.minecraft.server.Bootstrap;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Random;
@@ -8,6 +11,12 @@ import java.util.function.Supplier;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BhHorsePoseTest {
+    @BeforeAll
+    static void setup() {
+        SharedConstants.tryDetectVersion();
+        Bootstrap.bootStrap();
+    }
+
     @Test
     void cachedTackMatchesIndependentAnimation() throws Exception {
         List<Supplier<BhHorseModel>> models = List.of(
