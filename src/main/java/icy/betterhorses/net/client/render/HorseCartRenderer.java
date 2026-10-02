@@ -88,7 +88,7 @@ public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, 
     @Override
     protected void applyRotations(RenderPassInfo<EntityRenderState> pass, PoseStack poseStack, float nativeScale) {
         super.applyRotations(pass, poseStack, nativeScale);
-        poseStack.mulPose(Axis.XP.rotationDegrees(pass.getOrDefaultGeckolibData(TILT, 0.0F)));
+        poseStack.rotate(Axis.XP.rotationDegrees(pass.getOrDefaultGeckolibData(TILT, 0.0F)));
     }
 
     @Override

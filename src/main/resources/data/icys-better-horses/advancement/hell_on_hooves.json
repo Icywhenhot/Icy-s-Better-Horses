@@ -2,20 +2,18 @@
   "criteria": {
     "horse_in_the_nether": {
       "conditions": {
-        "player": [
-          {
-            "condition": "minecraft:entity_properties",
-            "entity": "this",
-            "predicate": {
-              "minecraft:location": {
-                "dimension": "minecraft:the_nether"
-              },
-              "minecraft:vehicle": {
-                "minecraft:entity_type": "#icys-better-horses:horses"
-              }
+        "player": {
+          "entity": "this",
+          "predicate": {
+            "minecraft:location": {
+              "dimension": "minecraft:the_nether"
+            },
+            "minecraft:vehicle": {
+              "minecraft:entity_type": "#icys-better-horses:horses"
             }
-          }
-        ]
+          },
+          "type": "minecraft:entity_properties"
+        }
       },
       "trigger": "minecraft:location"
     }

@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.HorseMarkingLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.HorseRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -47,7 +46,7 @@ public abstract class HorseMarkingLayerMixin extends RenderLayer<HorseRenderStat
             method = "submit(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/client/renderer/entity/state/HorseRenderState;FF)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/OrderedSubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/rendertype/RenderType;IIILnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"))
+                    target = "Lnet/minecraft/client/renderer/OrderedSubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/rendertype/RenderType;III)V"))
     private void bh_applyHorseOpacityToMarkings(
             OrderedSubmitNodeCollector collector,
             Model<Object> model,
@@ -56,8 +55,7 @@ public abstract class HorseMarkingLayerMixin extends RenderLayer<HorseRenderStat
             RenderType renderType,
             int lightCoords,
             int overlayCoords,
-            int outlineColor,
-            ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+            int outlineColor) {
         collector.submitModel(
                 model,
                 state,
@@ -67,7 +65,6 @@ public abstract class HorseMarkingLayerMixin extends RenderLayer<HorseRenderStat
                 overlayCoords,
                 BhMountedHorseVisibility.applyOpacity(-1, BhRenderContext.currentOpacity()),
                 null,
-                outlineColor,
-                crumblingOverlay);
+                outlineColor);
     }
 }

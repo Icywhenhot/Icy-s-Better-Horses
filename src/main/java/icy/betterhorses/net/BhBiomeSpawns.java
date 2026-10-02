@@ -38,7 +38,7 @@ public final class BhBiomeSpawns {
                     var attributes = selectionContext.getBiome().getAttributes();
                     MobSpawnSettings mobSettings = attributes.applyModifier(EnvironmentAttributes.NATURAL_MOB_SPAWNS,
                             EnvironmentAttributes.NATURAL_MOB_SPAWNS.defaultValue());
-                    boolean alreadyHasHorse = mobSettings.getMobsInCategory(MobCategory.CREATURE).unwrap().stream()
+                    boolean alreadyHasHorse = mobSettings.getMobsToSpawn(MobCategory.CREATURE).unwrap().stream()
                             .anyMatch(weighted -> weighted.value().type() == EntityTypes.HORSE);
                     float floor = (float) tuning.spawnFloor();
                     boolean boostedProbability = !alreadyHasHorse

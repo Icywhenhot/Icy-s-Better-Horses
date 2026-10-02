@@ -30,7 +30,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 public final class RiderPanel {
 
@@ -78,7 +78,7 @@ public final class RiderPanel {
 
     private static void restoreCursor() {
         if (cursor != null) {
-            GLFW.glfwSetCursorPos(Minecraft.getInstance().getWindow().handle(), cursor[0], cursor[1]);
+            InputConstants.releaseMouse(Minecraft.getInstance().getWindow(), cursor[0], cursor[1]);
             cursor = null;
         }
     }

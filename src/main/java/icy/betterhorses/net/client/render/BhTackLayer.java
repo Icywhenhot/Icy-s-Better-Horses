@@ -113,7 +113,6 @@ public class BhTackLayer<S extends BhHorseRenderState, M extends BhHorseModel>
                 LivingEntityRenderer.getOverlayCoords(state, 0.0F),
                 BhMountedHorseVisibility.applyOpacity(color, opacity),
                 null,
-                state.outlineColor,
-                null);
+                state.outlineColor);
     }
 }

@@ -78,9 +78,9 @@ public abstract class LivingEntityRendererRiderMixin {
             poseStack.pushPose();
             BH_PUSHED.push(Boolean.TRUE);
             poseStack.translate(cartShift.x, cartShift.y + pivot, cartShift.z);
-            poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - seated.bh_getCartYaw()));
-            poseStack.mulPose(Axis.XP.rotationDegrees(seated.bh_getCartPitch()));
-            poseStack.mulPose(Axis.YP.rotationDegrees(seated.bh_getCartYaw() - 180.0F));
+            poseStack.rotate(Axis.YP.rotationDegrees(180.0F - seated.bh_getCartYaw()));
+            poseStack.rotate(Axis.XP.rotationDegrees(seated.bh_getCartPitch()));
+            poseStack.rotate(Axis.YP.rotationDegrees(seated.bh_getCartYaw() - 180.0F));
             poseStack.translate(0.0F, -pivot, 0.0F);
             return;
         }
@@ -112,10 +112,10 @@ public abstract class LivingEntityRendererRiderMixin {
                 motion.up() * BH_RIDER_FOLLOW - seat.y,
                 right * -sin + forward * cos - seat.z);
 
-        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - yaw));
-        poseStack.mulPose(Axis.XP.rotation(-motion.pitch() * BH_RIDER_FOLLOW));
-        poseStack.mulPose(Axis.ZP.rotation(motion.roll() * BH_RIDER_FOLLOW));
-        poseStack.mulPose(Axis.YP.rotationDegrees(yaw - 180.0F));
+        poseStack.rotate(Axis.YP.rotationDegrees(180.0F - yaw));
+        poseStack.rotate(Axis.XP.rotation(-motion.pitch() * BH_RIDER_FOLLOW));
+        poseStack.rotate(Axis.ZP.rotation(motion.roll() * BH_RIDER_FOLLOW));
+        poseStack.rotate(Axis.YP.rotationDegrees(yaw - 180.0F));
     }
 
     @Inject(

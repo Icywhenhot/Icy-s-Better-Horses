@@ -22,7 +22,7 @@ import icy.betterhorses.net.entity.BhBreedHorse;
 import java.util.Locale;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 public class HorseInfoScreen extends Screen {
 
@@ -352,7 +352,7 @@ public class HorseInfoScreen extends Screen {
     @Override
     public boolean keyPressed(KeyEvent event) {
         if (confirmingDisown) {
-            if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
+            if (event.key() == InputConstants.KEY_ESCAPE) {
                 confirmingDisown = false;
             }
             return true;

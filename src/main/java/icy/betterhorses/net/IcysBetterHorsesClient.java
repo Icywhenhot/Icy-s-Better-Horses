@@ -63,7 +63,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
+
 
 import java.util.UUID;
 import com.klikli_dev.modonomicon.client.render.page.PageRendererRegistry;
@@ -99,48 +99,48 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
     public void onInitializeClient() {
         CALL_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.icys-better-horses.call",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_P,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_P,
                 CATEGORY));
         RADIAL_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.icys-better-horses.radial",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_R,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_R,
                 CATEGORY));
         MANAGE_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.icys-better-horses.manage",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_G,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_G,
                 CATEGORY));
 
         GEAR_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.icys-better-horses.gear",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_V,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_V,
                 CATEGORY));
 
         REAR_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.icys-better-horses.rear",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_H,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_H,
                 CATEGORY));
 
         FREE_LOOK_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.icys-better-horses.free_look",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_LEFT_CONTROL,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_LCONTROL,
                 CATEGORY));
 
         CART_MENU_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.icys-better-horses.cart_menu",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_LEFT_ALT,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_LALT,
                 CATEGORY));
 
         CHARGE_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.icys-better-horses.charge",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_B,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_B,
                 CATEGORY));
 
         RiderPanel.register();

@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -30,7 +31,7 @@ public abstract class AbstractContainerScreenMixin {
 
     @Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true)
     private void bh_refuseLockedSlot(
-            Slot slot, int slotId, int mouseButton, ContainerInput input, CallbackInfo ci) {
+            Slot slot, int slotId, MouseButtonEvent mouseButton, ContainerInput input, CallbackInfo ci) {
         if (!(this.getMenu() instanceof HorseInventoryLayoutAccess layoutAccess)) {
             return;
         }

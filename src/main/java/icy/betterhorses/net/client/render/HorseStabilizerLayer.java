@@ -123,7 +123,7 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
                 -restX / 16.0F,
                 variant.feetY() - restY / 16.0D,
                 -restZ / 16.0F + variant.zOffset());
-        poseStack.mulPose(Axis.ZP.rotationDegrees(MODEL_ROLL_DEGREES));
+        poseStack.rotate(Axis.ZP.rotationDegrees(MODEL_ROLL_DEGREES));
 
         variant.renderer().performRenderPass(
                 animatable,

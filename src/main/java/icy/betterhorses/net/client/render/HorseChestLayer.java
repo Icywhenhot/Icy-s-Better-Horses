@@ -86,7 +86,6 @@ public final class HorseChestLayer<S extends EquineRenderState, M extends Entity
                 LivingEntityRenderer.getOverlayCoords(state, 0.0F),
                 null,
                 BhMountedHorseVisibility.applyOpacity(-1, opacity),
-                null,
                 state.outlineColor);
         poseStack.popPose();
     }

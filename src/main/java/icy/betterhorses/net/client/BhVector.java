@@ -1,6 +1,6 @@
 package icy.betterhorses.net.client;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import icy.betterhorses.net.mixin.GuiGraphicsExtractorAccessor;
 import net.minecraft.client.gui.GuiGraphicsExtractor;

@@ -30,7 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.UUID;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 public class HorseRosterScreen extends Screen {
 
@@ -709,7 +709,7 @@ public class HorseRosterScreen extends Screen {
     @Override
     public boolean keyPressed(KeyEvent event) {
         if (confirmingDisownOf != null) {
-            if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
+            if (event.key() == InputConstants.KEY_ESCAPE) {
                 confirmingDisownOf = null;
             }
             return true;
