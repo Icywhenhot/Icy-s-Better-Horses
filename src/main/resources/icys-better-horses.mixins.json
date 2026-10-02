@@ -5,6 +5,7 @@
 	"mixins": [
 		"AbstractHorseMixin",
 		"AnimalMixin",
+		"BookItemNameMixin",
 		"EquineBreedingMixin",
 		"AbstractChestedHorseCreativeTamingMixin",
 		"AbstractMountInventoryMenuMixin",
