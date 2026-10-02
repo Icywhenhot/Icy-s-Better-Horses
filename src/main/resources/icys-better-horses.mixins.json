@@ -35,7 +35,6 @@
 		"SpawnPlacementsAccessor",
 		"SlotAccessor",
 		"ShovelItemAccessor",
-		"TrottingWagonsHitchMixin",
 		"VehicleStepMixin"
 	],
 	"client": [

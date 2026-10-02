@@ -1,5 +1,4 @@
 {
-  "message.icys-better-horses.wagon_cart_attached": "Unhitch the horse cart before hooking this horse to a wagon.",
   "key.category.icys-better-horses.general": "Icy's Better Horses",
   "key.icys-better-horses.call": "Horse Whistle / Info",
   "key.icys-better-horses.radial": "Horse Command Wheel",
@@ -563,6 +562,10 @@
   "entity.icys-better-horses.quarter_horse": "Quarter Horse",
   "item.icys-better-horses.quarter_horse_spawn_egg": "Quarter Horse Spawn Egg",
   "tag.item.icys-better-horses.stable_handbook_ingredients": "Stable Handbook Ingredients",
+  "tag.item.icys-better-horses.horse_armor": "Horse Armor",
+  "tag.item.icys-better-horses.frost_walker_supported": "Frost Walker Equipment",
+  "tag.item.icys-better-horses.respiration_supported": "Respiration Equipment",
+  "tag.item.icys-better-horses.gear.chest": "Horse Storage Chests",
   "death.attack.icys-better-horses.horse_bash": "%1$s was trampled",
   "death.attack.icys-better-horses.horse_bash.player": "%1$s was trampled by %2$s",
   "death.attack.icys-better-horses.horse_kick": "%1$s was kicked to death by %2$s",
