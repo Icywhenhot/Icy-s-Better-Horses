@@ -130,7 +130,7 @@ public final class CartRig implements HorseFeature {
         }
         Vec3 motion = horse.getDeltaMovement();
         horse.setDeltaMovement(0.0D, Math.min(motion.y, 0.0D), 0.0D);
-        horse.hurtMarked = true;
+        horse.syncVelocity = true;
         horse.getNavigation().stop();
         horse.xxa = 0.0F;
         horse.yya = 0.0F;

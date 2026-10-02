@@ -1,6 +1,5 @@
 package icy.betterhorses.net.item;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -14,13 +13,9 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 
 public final class HearthlightBlock extends Block {
-    public static final MapCodec<HearthlightBlock> CODEC = simpleCodec(HearthlightBlock::new);
     private static final Map<ServerLevel, Map<BlockPos, Map<UUID, Long>>> lights = new WeakHashMap<>();
 
     public HearthlightBlock(Properties properties) { super(properties); }
-
-    @Override
-    public MapCodec<HearthlightBlock> codec() { return CODEC; }
 
     @Override
     protected RenderShape getRenderShape(BlockState state) { return RenderShape.INVISIBLE; }

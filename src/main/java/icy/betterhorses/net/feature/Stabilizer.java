@@ -51,7 +51,7 @@ public final class Stabilizer implements HorseFeature {
                     smoothedY = targetSpeed;
                 }
                 horse.setDeltaMovement(motion.x, smoothedY, motion.z);
-                horse.hurtMarked = true;
+                horse.syncVelocity = true;
             }
             if (state == HorseStabilizerState.OPEN) {
                 horse.fallDistance = 0.0D;

@@ -68,7 +68,7 @@ public final class FriesianPresence implements BreedAbility {
             }
             Vec3 push = new Vec3(to.x, 0.0D, to.z).normalize().scale(DRESSAGE_PUSH);
             target.setDeltaMovement(target.getDeltaMovement().add(push.x, 0.4D, push.z));
-            target.hurtMarked = true;
+            target.syncVelocity = true;
             if (target instanceof Mob mob) {
                 mob.setTarget(null);
             }

@@ -330,6 +330,6 @@ public final class HorseCombat implements HorseFeature {
     private static void shove(LivingEntity target, Vec3 dir, double strength) {
         Vec3 push = dir.scale(strength * 0.5D);
         target.setDeltaMovement(target.getDeltaMovement().add(push.x, 0.15D, push.z));
-        target.hurtMarked = true;
+        target.syncVelocity = true;
     }
 }

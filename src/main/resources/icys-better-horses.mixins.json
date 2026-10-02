@@ -34,7 +34,6 @@
 		"PowderSnowBlockMixin",
 		"SpawnPlacementsAccessor",
 		"SlotAccessor",
-		"ShovelItemAccessor",
 		"TrottingWagonsHitchMixin",
 		"VehicleStepMixin"
 	],

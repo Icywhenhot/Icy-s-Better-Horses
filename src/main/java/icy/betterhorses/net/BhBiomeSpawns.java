@@ -7,6 +7,8 @@ import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
@@ -33,18 +35,21 @@ public final class BhBiomeSpawns {
                     if (tuning.spawnWeight() <= 0) {
                         return;
                     }
-                    MobSpawnSettings mobSettings = selectionContext.getBiome().getMobSettings();
-                    boolean alreadyHasHorse = mobSettings.getMobs(MobCategory.CREATURE).unwrap().stream()
+                    var attributes = selectionContext.getBiome().getAttributes();
+                    MobSpawnSettings mobSettings = attributes.applyModifier(EnvironmentAttributes.NATURAL_MOB_SPAWNS,
+                            EnvironmentAttributes.NATURAL_MOB_SPAWNS.defaultValue());
+                    boolean alreadyHasHorse = mobSettings.getMobsInCategory(MobCategory.CREATURE).unwrap().stream()
                             .anyMatch(weighted -> weighted.value().type() == EntityTypes.HORSE);
                     float floor = (float) tuning.spawnFloor();
                     boolean boostedProbability = !alreadyHasHorse
-                            && mobSettings.getCreatureProbability() < floor;
+                            && attributes.applyModifier(EnvironmentAttributes.CREATURE_WORLD_GEN_SPAWN_PROBABILITY,
+                                    EnvironmentAttributes.CREATURE_WORLD_GEN_SPAWN_PROBABILITY.defaultValue()) < floor;
 
                     if (!alreadyHasHorse) {
                         context.getMobSpawnSettings().addSpawn(
                                 MobCategory.CREATURE,
                                 new MobSpawnSettings.SpawnerData(
-                                        EntityTypes.HORSE, tuning.groupMin(), tuning.groupMax()),
+                                        EntityTypes.HORSE, UniformInt.of(tuning.groupMin(), tuning.groupMax())),
                                 tuning.spawnWeight());
                     }
 

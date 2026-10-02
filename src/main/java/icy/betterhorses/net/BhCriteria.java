@@ -2,14 +2,14 @@ package icy.betterhorses.net;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.advancements.predicates.ContextAwarePredicate;
 import net.minecraft.advancements.predicates.MinMaxBounds;
-import net.minecraft.advancements.predicates.entity.EntityPredicate;
 import net.minecraft.advancements.triggers.SimpleCriterionTrigger;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
@@ -67,11 +67,11 @@ public final class BhCriteria {
             this.trigger(player, instance -> instance.matches(key, value));
         }
 
-        public record TriggerInstance(Optional<ContextAwarePredicate> player, String key, MinMaxBounds.Ints value)
+        public record TriggerInstance(Optional<Holder<LootItemCondition>> player, String key, MinMaxBounds.Ints value)
                 implements SimpleCriterionTrigger.SimpleInstance {
 
             public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                    EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player),
+                    LootItemCondition.CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player),
                     Codec.STRING.fieldOf("key").forGetter(TriggerInstance::key),
                     MinMaxBounds.Ints.CODEC.optionalFieldOf("value", MinMaxBounds.Ints.ANY)
                             .forGetter(TriggerInstance::value)

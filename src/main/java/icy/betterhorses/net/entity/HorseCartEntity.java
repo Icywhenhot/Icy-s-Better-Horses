@@ -48,7 +48,7 @@ import net.minecraft.world.entity.player.Player;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import icy.betterhorses.net.mixin.ShovelItemAccessor;
+import net.minecraft.world.item.component.BlockTransformers;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -1032,7 +1032,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             return;
         }
 
-        this.playSound(tool.is(ItemTags.SHOVELS) ? SoundEvents.SHOVEL_FLATTEN : SoundEvents.HOE_TILL, 1.0F, 1.0F);
+        this.playSound((tool.is(ItemTags.SHOVELS) ? SoundEvents.SHOVEL_FLATTEN : SoundEvents.HOE_TILL).value(), 1.0F, 1.0F);
         tool.hurtAndBreak(turned, level, null, item -> {});
         if (tool.isEmpty()) {
             this.setPlough(ItemStack.EMPTY);
@@ -1050,7 +1050,13 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         }
         BlockState turned;
         if (tool.is(ItemTags.SHOVELS)) {
-            turned = ShovelItemAccessor.bh_flattenables().get(ground.getBlock());
+            turned = null;
+            var shovel = level.registryAccess().lookupOrThrow(Registries.BLOCK_TRANSFORMER)
+                    .getOrThrow(BlockTransformers.SHOVEL).value();
+            for (var transform : shovel.transforms()) {
+                turned = transform.blockStateProvider().value().getOptionalState(level, level.getRandom(), pos);
+                if (turned != null) break;
+            }
             if (turned == null || turned == ground) return false;
         } else {
             if (!tillable(ground)) return false;
