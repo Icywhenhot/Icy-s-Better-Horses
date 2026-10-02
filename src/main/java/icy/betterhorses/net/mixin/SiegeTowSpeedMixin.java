@@ -23,7 +23,7 @@ public abstract class SiegeTowSpeedMixin {
     private void bh_pullByClass(Entity rider, CallbackInfoReturnable<Double> cir) {
         if (!(rider instanceof Player)) return;
         if (((Entity) (Object) this).getFirstPassenger() instanceof AbstractHorse horse && BhHorseKind.managed(horse)) {
-            cir.setReturnValue(BhSiegeTow.pull(horse, getVelocity(horse)));
+            cir.setReturnValue(BhSiegeTow.pull(horse, BhSiegeTow.base((Entity) (Object) this, getVelocity(horse))));
         }
     }
 }

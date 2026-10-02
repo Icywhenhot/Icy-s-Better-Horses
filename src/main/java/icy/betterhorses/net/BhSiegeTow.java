@@ -25,6 +25,8 @@ public final class BhSiegeTow {
         }
     };
 
+    private static final double MANTLET_SPEED = 0.07D;
+
     private BhSiegeTow() {}
 
     public static boolean turnsItself(Class<?> renderer) {
@@ -35,6 +37,11 @@ public final class BhSiegeTow {
         return siege != null
                 && siege.getFirstPassenger() instanceof Horse
                 && BuiltInRegistries.ENTITY_TYPE.getKey(siege.getType()).getNamespace().equals("kingdomsieges");
+    }
+
+    public static double base(Entity siege, double horseSpeed) {
+        return BuiltInRegistries.ENTITY_TYPE.getKey(siege.getType()).toString().equals("kingdomsieges:mantlet")
+                ? MANTLET_SPEED : horseSpeed;
     }
 
     public static double pull(AbstractHorse horse, double base) {
