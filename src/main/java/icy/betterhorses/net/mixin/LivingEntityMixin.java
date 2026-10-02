@@ -9,6 +9,7 @@ import icy.betterhorses.net.feature.breed.HardyNorthern;
 import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
+import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.SimpleContainer;
@@ -18,6 +19,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
@@ -46,6 +48,15 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Shadow
     protected abstract float getDamageAfterMagicAbsorb(DamageSource source, float amount);
+
+    @Inject(method = "canAttack(Lnet/minecraft/world/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
+    private void bh_noNewTargetsInCart(LivingEntity target, CallbackInfoReturnable<Boolean> cir) {
+        LivingEntity self = (LivingEntity) (Object) this;
+        if (self instanceof Mob && (self.getVehicle() instanceof HorseCartEntity
+                || self.getVehicle() instanceof AbstractHorse horse && IHorseData.of(horse).bh_hasCartGear())) {
+            cir.setReturnValue(false);
+        }
+    }
 
     @Inject(method = "canBeAffected", at = @At("HEAD"), cancellable = true)
     private void bh_refuseBadEffects(MobEffectInstance effect, CallbackInfoReturnable<Boolean> cir) {

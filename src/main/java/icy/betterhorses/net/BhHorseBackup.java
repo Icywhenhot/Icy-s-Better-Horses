@@ -64,7 +64,7 @@ public final class BhHorseBackup {
     }
 
     public static @Nullable CompoundTag find(Entity entity) {
-        for (String t : entity.entityTags()) {
+        for (String t : entity.getTags()) {
             if (t.startsWith(PREFIX)) {
                 try {
                     return TagParser.parseCompoundFully(t.substring(PREFIX.length()));
@@ -78,7 +78,7 @@ public final class BhHorseBackup {
     }
 
     public static void forget(Entity entity) {
-        entity.entityTags().removeIf(t -> t.startsWith(PREFIX));
+        entity.getTags().removeIf(t -> t.startsWith(PREFIX));
     }
 
     public static @Nullable EntityType<?> typeOf(CompoundTag backup) {

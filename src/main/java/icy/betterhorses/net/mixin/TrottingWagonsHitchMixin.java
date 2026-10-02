@@ -24,8 +24,8 @@ public abstract class TrottingWagonsHitchMixin {
     private void bh_refuseCart(Player player, CallbackInfoReturnable<Boolean> cir, Mob mob) {
         if (mob instanceof AbstractHorse horse && IHorseData.of(horse).bh_hasCartGear()) {
             if (!horse.level().isClientSide()) {
-                player.sendSystemMessage(Component.translatable("message.icys-better-horses.wagon_cart_attached")
-                        .withStyle(ChatFormatting.RED));
+                player.displayClientMessage(Component.translatable("message.icys-better-horses.wagon_cart_attached")
+                        .withStyle(ChatFormatting.RED), false);
             }
             cir.setReturnValue(true);
         }

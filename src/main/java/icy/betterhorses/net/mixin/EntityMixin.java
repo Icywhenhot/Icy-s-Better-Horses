@@ -29,7 +29,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -165,7 +164,6 @@ public abstract class EntityMixin {
     private void bh_blockNonOwnerHorseSaddleShearing(
             Player player,
             InteractionHand hand,
-            Vec3 location,
             CallbackInfoReturnable<InteractionResult> cir) {
         Entity self = (Entity) (Object) this;
         if (self.level().isClientSide() || !(self instanceof AbstractHorse horse)) {

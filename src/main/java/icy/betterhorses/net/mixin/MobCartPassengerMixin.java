@@ -12,7 +12,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -39,7 +38,7 @@ public abstract class MobCartPassengerMixin {
 
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     private void bh_setDownOnSneakClick(
-            Player player, InteractionHand hand, Vec3 hitPos, CallbackInfoReturnable<InteractionResult> cir) {
+            Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
         if (!player.isSecondaryUseActive() || !this.bh_isCartCargo()) {
             return;
         }
@@ -77,13 +76,6 @@ public abstract class MobCartPassengerMixin {
     private void bh_dropJumpFlagInCart(CallbackInfo ci) {
         if (this.bh_isCartCargo()) {
             this.goalSelector.setControlFlag(Goal.Flag.JUMP, false);
-        }
-    }
-
-    @Inject(method = "canAttack(Lnet/minecraft/world/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
-    private void bh_noNewTargetsInCart(LivingEntity target, CallbackInfoReturnable<Boolean> cir) {
-        if (this.bh_isCartCargo()) {
-            cir.setReturnValue(false);
         }
     }
 

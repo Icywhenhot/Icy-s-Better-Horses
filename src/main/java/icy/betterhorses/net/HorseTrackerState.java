@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.Identifier;
 import net.minecraft.nbt.NbtOps;
 import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.resources.ResourceKey;
@@ -55,7 +54,7 @@ public class HorseTrackerState extends SavedData {
     ).apply(instance, HorseTrackerState::new));
 
     public static final SavedDataType<HorseTrackerState> TYPE = new SavedDataType<>(
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_tracker"),
+            IcysBetterHorses.MOD_ID + "_horse_tracker",
             HorseTrackerState::new,
             CODEC,
             DataFixTypes.SAVED_DATA_COMMAND_STORAGE);
