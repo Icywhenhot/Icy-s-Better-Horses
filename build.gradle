@@ -56,6 +56,17 @@ repositories {
             includeGroup 'maven.modrinth'
         }
     }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'CurseMaven'
+                url = 'https://cursemaven.com'
+            }
+        }
+        filter {
+            includeGroup 'curse.maven'
+        }
+    }
     mavenCentral()
 }
 
@@ -141,6 +152,19 @@ dependencies {
     localRuntime "maven.modrinth:biolith:EAjbdreT"
     compileOnly "maven.modrinth:curios:yohfFbgD"
     localRuntime "maven.modrinth:curios:yohfFbgD"
+
+    localRuntime "maven.modrinth:tooltip-overhaul:aclR21OH"
+    localRuntime "maven.modrinth:blueprint:FHOjk8Ez"
+    localRuntime "maven.modrinth:unusual_end:oV8w25It"
+    localRuntime "maven.modrinth:galosphere:IgULrnXA"
+    localRuntime "curse.maven:caverns-and-chasms-438005:8891838"
+    localRuntime "maven.modrinth:architectury-api:1IiqEQGl"
+    localRuntime "maven.modrinth:epic-knights-shields-armor-and-weapons:DDOFBcvu"
+    localRuntime "curse.maven:codechicken-lib-242818:8491811"
+    localRuntime "curse.maven:ender-storage-245174:6159037"
+    compileOnly "maven.modrinth:minecraft-comes-alive-reborn:S2Ln2tIn"
+    localRuntime "maven.modrinth:stoneycore:FpZHKl6Y"
+    localRuntime "maven.modrinth:kingdoms-sieges:8oYP0xED"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"

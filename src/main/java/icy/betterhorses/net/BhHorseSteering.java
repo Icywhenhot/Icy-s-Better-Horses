@@ -3,12 +3,17 @@ package icy.betterhorses.net;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.inventory.GearSlot;
 import icy.betterhorses.net.registry.BhContent;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -20,6 +25,11 @@ public final class BhHorseSteering {
     private static final double FRONT_PASSENGER_Z_OFFSET = 0.35D;
     private static final double REAR_PASSENGER_Z_OFFSET = -0.35D;
     private static final float FREE_CAMERA_ANGLE_THRESHOLD = 90.0F;
+
+    private static final TagKey<EntityType<?>> NPC_RIDERS = TagKey.create(Registries.ENTITY_TYPE,
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "npc_riders"));
+
+    public static final boolean IMMERSIVE_RIDING = ModList.get().isLoaded("immersive_horse_riding");
 
     private BhHorseSteering() {}
 
@@ -63,6 +73,9 @@ public final class BhHorseSteering {
     }
 
     public static @Nullable Vec2 riddenRotation(AbstractHorse horse, IHorseData data, Player player) {
+        if (IMMERSIVE_RIDING) {
+            return null;
+        }
         if (data.bh_isFreeLook()) {
             return new Vec2(horse.getXRot(), horse.getYRot());
         }
@@ -93,12 +106,20 @@ public final class BhHorseSteering {
         if (passengers.size() >= (multiRidingEnabled ? bh_seatCount(data) : 1)) {
             return false;
         }
-        if (passenger instanceof Player && !passengers.isEmpty()
+        boolean npc = !(passenger instanceof Player) && !data.bh_hasCartGear()
+                && passenger.getType().is(NPC_RIDERS);
+        if ((passenger instanceof Player || npc) && !passengers.isEmpty()
                 && data.bh_hasGear(GearSlot.CHEST)
                 && !BhBreedData.of(data.bh_getBreedKey()).archetype().allowsChestAndRiders()) {
             return false;
         }
 
+        if (npc) {
+            if (passengers.isEmpty()) {
+                return horse.isTamed() && horse.isSaddled();
+            }
+            return multiRidingEnabled && passengers.get(0) instanceof Player;
+        }
         if (!(passenger instanceof Player)) {
             return data.bh_hasCartGear()
                     && !passengers.isEmpty()

@@ -12,6 +12,8 @@
 		"EntityMixin",
 		"TrottingWagonsHitchMixin",
 		"TrottingWagonsFloatMixin",
+		"McaRideHorseMixin",
+		"SiegeTowSpeedMixin",
 		"QuarkSortMixin",
 		"QuarkDepositMixin",
 		"QuarkButtonsMixin",
@@ -56,6 +58,7 @@
 		"LivingEntityRendererMixin",
 		"LivingEntityRendererRiderMixin",
 		"MountFacingMixin",
+		"SiegeTowRenderMixin",
 		"SpyglassModListMixin"
 	],
 	"injectors": {

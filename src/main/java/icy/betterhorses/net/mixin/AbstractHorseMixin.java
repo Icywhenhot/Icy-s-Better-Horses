@@ -3,6 +3,7 @@ package icy.betterhorses.net.mixin;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhGears;
+import icy.betterhorses.net.BhSiegeTow;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhWagonHitch;
 import icy.betterhorses.net.ModSounds;
@@ -1153,9 +1154,20 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (BhVanillaHorseSwap.trySwap(self) || HorseTracker.discardIfStale(self)) {
             return;
         }
+        BhSiegeTow.face(self);
         for (HorseFeature feature : this.bh_features()) {
             feature.tick(self, this);
         }
+    }
+
+    @Override
+    public void calculateEntityAnimation(boolean includeHeight) {
+        Entity vehicle = getVehicle();
+        if (BhSiegeTow.towing(vehicle)) {
+            updateWalkAnimation(BhSiegeTow.stride(vehicle));
+            return;
+        }
+        super.calculateEntityAnimation(includeHeight);
     }
 
     @Unique

@@ -1,6 +1,9 @@
 package icy.betterhorses.net.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
+import icy.betterhorses.net.BhSiegeTow;
 import icy.betterhorses.net.client.render.BhMountedHorseVisibility;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -35,6 +38,12 @@ public abstract class LivingEntityRendererMixin {
         if (entity instanceof AbstractHorse) {
             BhMountedHorseVisibility.popOpacity();
         }
+    }
+
+    @ModifyExpressionValue(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+                           at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;shouldRiderSit()Z"))
+    private boolean bh_towedHorseWalks(boolean sit, @Local(argsOnly = true) LivingEntity entity) {
+        return sit && !BhSiegeTow.towing(entity.getVehicle());
     }
 
     @ModifyArg(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",

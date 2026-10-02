@@ -96,6 +96,9 @@ public final class BhTackTextures {
         if (item == Items.DIAMOND_HORSE_ARMOR) {
             return armorDiamond;
         }
+        if (key.getPath().equals("netherite_horse_armor")) {
+            return armorNetherite;
+        }
         return armorGeneric;
     }
 }
