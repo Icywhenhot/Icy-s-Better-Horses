@@ -10,6 +10,7 @@
 		"AbstractChestedHorseCreativeTamingMixin",
 		"AbstractMountInventoryMenuMixin",
 		"EntityMixin",
+		"PointBlankHitScanMixin",
 		"TrottingWagonsHitchMixin",
 		"TrottingWagonsFloatMixin",
 		"McaRideHorseMixin",

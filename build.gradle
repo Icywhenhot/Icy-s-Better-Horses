@@ -159,6 +159,7 @@ dependencies {
     localRuntime "maven.modrinth:unusual_end:oV8w25It"
     compileOnly "maven.modrinth:galosphere:IgULrnXA"
     localRuntime "maven.modrinth:galosphere:IgULrnXA"
+    localRuntime "maven.modrinth:vics-point-blank:7jPye7PA"
     compileOnly "curse.maven:caverns-and-chasms-438005:8891838"
     localRuntime "curse.maven:caverns-and-chasms-438005:8891838"
     localRuntime "maven.modrinth:architectury-api:1IiqEQGl"
