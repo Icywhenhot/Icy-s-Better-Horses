@@ -5,6 +5,7 @@ import icy.betterhorses.net.BhAttributes;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhGears;
+import icy.betterhorses.net.BhSiegeTow;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.ModSounds;
 import icy.betterhorses.net.BhCriteria;
@@ -1289,9 +1290,20 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         Vec3 now = self.position();
         this.bh_moved = this.bh_lastPos == null ? Vec3.ZERO : now.subtract(this.bh_lastPos);
         this.bh_lastPos = now;
+        BhSiegeTow.face(self);
         for (HorseFeature feature : this.bh_features()) {
             feature.tick(self, this);
         }
+    }
+
+    @Override
+    public void calculateEntityAnimation(boolean includeHeight) {
+        Entity vehicle = getVehicle();
+        if (BhSiegeTow.towing(vehicle)) {
+            updateWalkAnimation(BhSiegeTow.stride(vehicle));
+            return;
+        }
+        super.calculateEntityAnimation(includeHeight);
     }
 
     @Unique

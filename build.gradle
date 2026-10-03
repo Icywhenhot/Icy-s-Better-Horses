@@ -12,6 +12,10 @@ base {
 
 repositories {
 	maven {
+		url = 'https://jitpack.io'
+		content { includeGroup 'com.github.Chocohead' }
+	}
+	maven {
 		name = 'GeckoLib'
 		url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
 		content {
@@ -71,6 +75,13 @@ dependencies {
 	modImplementation "maven.modrinth:patchouli:${project.patchouli_version}"
 	modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 	modLocalRuntime "maven.modrinth:vics-point-blank:YSzjIQd7"
+	modCompileOnly "maven.modrinth:galosphere:Jqxb7gnx"
+	modLocalRuntime "maven.modrinth:galosphere:Jqxb7gnx"
+	modLocalRuntime "com.github.Chocohead:Fabric-ASM:v2.3"
+	modLocalRuntime "maven.modrinth:midnightlib:YXz8kIQl"
+	modLocalRuntime "maven.modrinth:tooltip-overhaul:QCwrs9Ai"
+	modLocalRuntime "maven.modrinth:architectury-api:WbL7MStR"
+	modLocalRuntime "maven.modrinth:epic-knights-shields-armor-and-weapons:rrDq7apN"
 	modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
 		exclude group: "net.fabricmc.fabric-api"
 	}

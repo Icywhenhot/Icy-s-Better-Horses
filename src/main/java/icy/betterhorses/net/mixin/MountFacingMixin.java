@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseSteering;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
@@ -17,7 +18,7 @@ public abstract class MountFacingMixin {
             target = "Lnet/minecraft/client/gui/Gui;setOverlayMessage(Lnet/minecraft/network/chat/Component;Z)V"))
     private void bh_turnHorseToRider(ClientboundSetPassengersPacket packet, CallbackInfo ci) {
         LocalPlayer player = Minecraft.getInstance().player;
-        if (!(player.getVehicle() instanceof AbstractHorse horse) || horse.getControllingPassenger() != player) {
+        if (BhHorseSteering.IMMERSIVE_RIDING || !(player.getVehicle() instanceof AbstractHorse horse) || horse.getControllingPassenger() != player) {
             return;
         }
         float yaw = player.getYRot();

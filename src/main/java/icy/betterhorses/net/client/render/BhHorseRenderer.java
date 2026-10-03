@@ -6,6 +6,7 @@ import icy.betterhorses.net.BhFeature;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.api.HoofStepEvent;
 import icy.betterhorses.net.inventory.GearSlot;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -86,6 +87,9 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
             return data.bh_hasGear(GearSlot.CHEST) ? textures.chest(data.bh_hasEnderChestGear()) : null;
         }));
         addLayer(new HorseStabilizerLayer<>(this));
+        if (FabricLoader.getInstance().isModLoaded("galosphere")) {
+            addLayer(new BhSterlingBannerLayer<>(this));
+        }
     }
 
     @Override

@@ -79,10 +79,15 @@ public final class BhTackTextures {
 
     private ResourceLocation lookup(Item item) {
         ResourceLocation key = BuiltInRegistries.ITEM.getKey(item);
-        ResourceLocation named = new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE,
-                base + "armor/" + key.getNamespace() + "/" + key.getPath() + ".png");
-        if (Minecraft.getInstance().getResourceManager().getResource(named).isPresent()) {
+        ResourceLocation named = named(key.getNamespace(), key.getPath());
+        if (named != null) {
             return named;
+        }
+        if (key.getPath().startsWith("waxed_")) {
+            named = named(key.getNamespace(), key.getPath().substring("waxed_".length()));
+            if (named != null) {
+                return named;
+            }
         }
         if (item == Items.LEATHER_HORSE_ARMOR) {
             return armorLeather;
@@ -96,6 +101,15 @@ public final class BhTackTextures {
         if (item == Items.DIAMOND_HORSE_ARMOR) {
             return armorDiamond;
         }
+        if (key.getPath().equals("netherite_horse_armor")) {
+            return armorNetherite;
+        }
         return armorGeneric;
+    }
+
+    private ResourceLocation named(String namespace, String path) {
+        ResourceLocation named = new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE,
+                base + "armor/" + namespace + "/" + path + ".png");
+        return Minecraft.getInstance().getResourceManager().getResource(named).isPresent() ? named : null;
     }
 }
