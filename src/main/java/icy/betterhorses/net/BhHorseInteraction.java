@@ -79,6 +79,9 @@ public final class BhHorseInteraction {
                 && !riderMayLeadPillion(horse, data)) {
             return true;
         }
+        if (BhHorseSteering.IMMERSIVE_RIDING) {
+            return false;
+        }
         horse.setYRot(player.getYRot());
         horse.yRotO = horse.getYRot();
         horse.setYHeadRot(player.getYHeadRot());

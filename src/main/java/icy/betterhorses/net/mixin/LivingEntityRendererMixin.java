@@ -1,16 +1,19 @@
 package icy.betterhorses.net.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import icy.betterhorses.net.BhSiegeTow;
 import icy.betterhorses.net.client.render.BhMountedHorseVisibility;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -35,6 +38,12 @@ public abstract class LivingEntityRendererMixin {
         if (entity instanceof AbstractHorse) {
             BhMountedHorseVisibility.popOpacity();
         }
+    }
+
+    @Redirect(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+              at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;shouldRiderSit()Z", remap = false))
+    private boolean bh_towedHorseWalks(Entity vehicle) {
+        return vehicle.shouldRiderSit() && !BhSiegeTow.towing(vehicle);
     }
 
     @ModifyArg(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",

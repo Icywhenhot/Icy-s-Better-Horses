@@ -13,6 +13,7 @@ import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.fml.ModList;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -23,6 +24,8 @@ public final class BhHorseSteering {
 
     private static final TagKey<EntityType<?>> NPC_RIDERS = TagKey.create(Registries.ENTITY_TYPE,
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "npc_riders"));
+
+    public static final boolean IMMERSIVE_RIDING = ModList.get().isLoaded("immersive_horse_riding");
 
     private static final double FRONT_PASSENGER_Z_OFFSET = 0.35D;
     private static final double REAR_PASSENGER_Z_OFFSET = -0.35D;
@@ -70,6 +73,9 @@ public final class BhHorseSteering {
     }
 
     public static @Nullable Vec2 riddenRotation(AbstractHorse horse, IHorseData data, Player player) {
+        if (IMMERSIVE_RIDING) {
+            return null;
+        }
         if (data.bh_isFreeLook()) {
             return new Vec2(horse.getXRot(), horse.getYRot());
         }

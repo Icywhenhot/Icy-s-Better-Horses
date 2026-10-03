@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.ModList;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import net.minecraft.resources.ResourceLocation;
@@ -71,22 +72,37 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
                         : null));
         addLayer(new BhTackLayer<>(this, models.apply(armor), models.apply(armorBaby), entity -> {
             ItemStack stack = barding(entity);
-            return stack.isEmpty() ? null : textures.armor(stack);
-        }, entity -> {
-            ItemStack stack = barding(entity);
-            if (!(stack.getItem() instanceof DyeableLeatherItem dyed)) {
-                return -1;
-            }
-            if (dyed.hasCustomColor(stack)) {
-                return 0xFF000000 | dyed.getColor(stack);
-            }
-            return stack.is(Items.LEATHER_HORSE_ARMOR) ? 0xFF000000 | UNDYED_BARDING : -1;
-        }));
+            return stack.isEmpty() || BhNeckPlates.of(stack) != null ? null : textures.armor(stack);
+        }, BhHorseRenderer::armorTint));
+        for (BhNeckPlates plates : BhNeckPlates.values()) {
+            BhHorseModel<T> plated = models.apply(plates.layer(armor));
+            addLayer(new BhTackLayer<>(this, plated, plated, entity -> {
+                ItemStack stack = barding(entity);
+                return BhNeckPlates.of(stack) == plates ? textures.armor(stack) : null;
+            }, BhHorseRenderer::armorTint));
+        }
         addLayer(new BhTackLayer<>(this, models.apply(chest), models.apply(chestBaby), entity -> {
             IHorseData data = IHorseData.of(entity);
             return data.bh_hasGear(GearSlot.CHEST) ? textures.chest(data.bh_hasEnderChestGear()) : null;
         }));
         addLayer(new HorseStabilizerLayer<>(this));
+        if (ModList.get().isLoaded("galosphere")) {
+            addLayer(new BhSterlingBannerLayer<>(this));
+        }
+        if (ModList.get().isLoaded("caverns_and_chasms")) {
+            addLayer(new BhUnicornHornLayer<>(this));
+        }
+    }
+
+    private static int armorTint(AbstractHorse horse) {
+        ItemStack stack = barding(horse);
+        if (!(stack.getItem() instanceof DyeableLeatherItem dyed)) {
+            return -1;
+        }
+        if (dyed.hasCustomColor(stack)) {
+            return 0xFF000000 | dyed.getColor(stack);
+        }
+        return stack.is(Items.LEATHER_HORSE_ARMOR) ? 0xFF000000 | UNDYED_BARDING : -1;
     }
 
     @Override

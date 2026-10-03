@@ -3,6 +3,7 @@ package icy.betterhorses.net.mixin;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhGears;
+import icy.betterhorses.net.BhSiegeTow;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhWagonHitch;
 import icy.betterhorses.net.ModSounds;
@@ -1281,9 +1282,20 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         Vec3 now = self.position();
         this.bh_moved = this.bh_lastPos == null ? Vec3.ZERO : now.subtract(this.bh_lastPos);
         this.bh_lastPos = now;
+        BhSiegeTow.face(self);
         for (HorseFeature feature : this.bh_features()) {
             feature.tick(self, this);
         }
+    }
+
+    @Override
+    public void calculateEntityAnimation(boolean includeHeight) {
+        Entity vehicle = getVehicle();
+        if (BhSiegeTow.towing(vehicle)) {
+            updateWalkAnimation(BhSiegeTow.stride(vehicle));
+            return;
+        }
+        super.calculateEntityAnimation(includeHeight);
     }
 
     @Unique
@@ -1652,7 +1664,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         bh_push(BH_CART, hasCart);
         bh_syncCartType();
         bh_push(BH_ENDER_CHEST,
-                this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal()).is(Items.ENDER_CHEST));
+                GearSlot.isEnderChest(this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal())));
         bh_push(BH_UPGRADED_SADDLE,
                 this.inventory != null && this.inventory.getItem(0).is(ModItems.UPGRADED_SADDLE.get()));
         this.entityData.set(BH_BARDING,
