@@ -25,7 +25,7 @@ public final class BhBiomeSpawns {
 
     public static void register() {
         Predicate<BiomeSelectionContext> modded = BiomeSelectors.foundInOverworld()
-                .and(ctx -> !ctx.getBiomeKey().identifier().getNamespace().equals("minecraft"))
+                .and(ctx -> !ctx.getBiomeKey().location().getNamespace().equals("minecraft"))
                 .and(BiomeSelectors.tag(MODDED_SPAWNS));
 
         BiomeModifications.create(ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_biome_spawns"))
