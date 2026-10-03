@@ -250,6 +250,14 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
         return rootPart;
     }
 
+    public ModelPart neck() {
+        return neck;
+    }
+
+    public ModelPart head() {
+        return head;
+    }
+
     @Override
     public void renderToBuffer(PoseStack poseStack, VertexConsumer consumer,
                                int packedLight, int packedOverlay, int color) {

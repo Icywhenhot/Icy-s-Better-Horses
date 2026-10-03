@@ -38,8 +38,12 @@ public enum GearSlot {
         return stack.is(CHEST.items);
     }
 
+    public static boolean isEnderChest(ItemStack stack) {
+        return stack.is(Items.ENDER_CHEST) || BhEnderStorage.isChest(stack);
+    }
+
     public static boolean isChest(ItemStack stack) {
-        return isStorageChest(stack) || stack.is(Items.ENDER_CHEST);
+        return isStorageChest(stack) || isEnderChest(stack);
     }
 
     public boolean accepts(ItemStack stack) {
@@ -48,7 +52,7 @@ public enum GearSlot {
         if (stack.is(ModItems.HORSE_STABILIZER) && !BhConfig.stabilizerEnabled()) return false;
         if (stack.is(items)) return true;
         return switch (this) {
-            case CHEST -> stack.is(Items.ENDER_CHEST);
+            case CHEST -> isEnderChest(stack);
             case HOOVES -> stack.is(ModItems.HORSE_HOOVES);
             case MEDKIT -> stack.is(ModItems.HORSE_MEDKIT);
             case STABILIZER -> stack.is(ModItems.HORSE_STABILIZER) || stack.is(ModItems.HORSE_CART);

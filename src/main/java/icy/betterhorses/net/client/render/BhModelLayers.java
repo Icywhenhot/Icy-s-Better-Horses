@@ -1,8 +1,11 @@
 package icy.betterhorses.net.client.render;
 
 import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+
+import java.util.function.Function;
 
 public final class BhModelLayers {
 
@@ -228,6 +231,23 @@ public final class BhModelLayers {
 
         event.registerLayerDefinition(
                 CLYDESDALE_HORSE_BABY, PercheronFoalGeometry::createBodyLayer);
+
+        registerPlates(event, ICELANDIC_ARMOR, IcelandicArmorGeometry::createBodyLayer);
+        registerPlates(event, FRIESIAN_ARMOR, FriesianArmorGeometry::createBodyLayer);
+        registerPlates(event, SMALL_ARMOR, SmallArmorGeometry::createBodyLayer);
+        registerPlates(event, HAFLINGER_ARMOR, HaflingerArmorGeometry::createBodyLayer);
+        registerPlates(event, MEDIUM_ARMOR, MediumArmorGeometry::createBodyLayer);
+        registerPlates(event, PERCHERON_ARMOR, PercheronArmorGeometry::createBodyLayer);
+        registerPlates(event, SHIRE_ARMOR, ShireArmorGeometry::createBodyLayer);
+        registerPlates(event, BELGIAN_ARMOR, BelgianArmorGeometry::createBodyLayer);
+    }
+
+    private static void registerPlates(EntityRenderersEvent.RegisterLayerDefinitions event,
+                                       ModelLayerLocation armor,
+                                       Function<BhNeckPlates, LayerDefinition> geometry) {
+        for (BhNeckPlates plates : BhNeckPlates.values()) {
+            event.registerLayerDefinition(plates.layer(armor), () -> geometry.apply(plates));
+        }
     }
 
     private static ModelLayerLocation layer(String path, String name) {

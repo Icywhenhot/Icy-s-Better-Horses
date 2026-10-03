@@ -2,6 +2,7 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.inventory.BhEnderStorage;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -14,7 +15,6 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.PlayerEnderChestContainer;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -81,11 +81,16 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         }
         final Container extraStorage = new Container() {
             private Container bh_active() {
-                return HorseInventoryMenuMixin.this.bh_isEnderChestGear(gear.getItem(GearSlot.CHEST.ordinal()))
-                        ? (HorseInventoryMenuMixin.this.bh_playerEnderChest == null
-                                ? HorseInventoryMenuMixin.this.bh_enderChestView
-                                : HorseInventoryMenuMixin.this.bh_playerEnderChest)
-                        : chest;
+                ItemStack stack = gear.getItem(GearSlot.CHEST.ordinal());
+                if (!HorseInventoryMenuMixin.this.bh_isEnderChestGear(stack)) {
+                    return chest;
+                }
+                if (HorseInventoryMenuMixin.this.bh_playerEnderChest == null) {
+                    return HorseInventoryMenuMixin.this.bh_enderChestView;
+                }
+                return BhEnderStorage.isChest(stack)
+                        ? BhEnderStorage.open(stack, HorseInventoryMenuMixin.this.bh_menuPlayer)
+                        : HorseInventoryMenuMixin.this.bh_playerEnderChest;
             }
 
             @Override
@@ -320,7 +325,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
     @Unique
     private boolean bh_isEnderChestGear(ItemStack stack) {
-        return stack.is(Items.ENDER_CHEST);
+        return GearSlot.isEnderChest(stack);
     }
 
     @Unique

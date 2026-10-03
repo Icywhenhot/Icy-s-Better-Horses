@@ -1564,7 +1564,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         ((AbstractHorse) (Object) this).setData(BhHorseAttachments.CART, hasCart);
         bh_syncCartType();
         ((AbstractHorse) (Object) this).setData(BhHorseAttachments.ENDER_CHEST,
-                this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal()).is(Items.ENDER_CHEST));
+                GearSlot.isEnderChest(this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal())));
         ((AbstractHorse) (Object) this).setData(BhHorseAttachments.UPGRADED_SADDLE,
                 this.inventory != null && this.inventory.getItem(0).is(ModItems.UPGRADED_SADDLE));
         this.bh_syncStabilizerCharge();
