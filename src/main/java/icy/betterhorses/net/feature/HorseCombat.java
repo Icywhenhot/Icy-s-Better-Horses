@@ -19,6 +19,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
@@ -275,7 +276,8 @@ public final class HorseCombat implements HorseFeature {
         if (!(horse.level() instanceof ServerLevel level) || !BhFeature.HORSE_KICK.on()) {
             return;
         }
-        if (data.bh_getBreedKey() == null || !(source.getEntity() instanceof LivingEntity attacker)) {
+        if (data.bh_getBreedKey() == null || source.is(DamageTypeTags.IS_EXPLOSION)
+                || !(source.getEntity() instanceof LivingEntity attacker) || !attacker.isAlive()) {
             return;
         }
         if (horse.hasIndirectPassenger(attacker)
