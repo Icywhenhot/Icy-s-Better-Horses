@@ -14,6 +14,7 @@
 		"AnimalMixin",
 		"EntityAccessor",
 		"EntityMixin",
+		"PointBlankHitScanMixin",
 		"TrottingWagonsHitchMixin",
 		"TrottingWagonsFloatMixin",
 		"QuarkSortMixin",
