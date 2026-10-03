@@ -1,7 +1,7 @@
 package icy.betterhorses.net.registry;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 
 import java.util.List;
@@ -16,8 +16,8 @@ public final class BreedCoatSet {
     private final String folder;
     private final List<String> coatIds;
     private final boolean hasFoalVariant;
-    private final List<Identifier> textures;
-    private final List<Identifier> foalTextures;
+    private final List<ResourceLocation> textures;
+    private final List<ResourceLocation> foalTextures;
 
     public BreedCoatSet(String resourceNamespace, String folder, List<String> coatIds, boolean hasFoalVariant) {
         if (coatIds.isEmpty()) {
@@ -31,9 +31,9 @@ public final class BreedCoatSet {
         this.foalTextures = hasFoalVariant ? texturesIn(folder + "/baby", this.coatIds) : null;
     }
 
-    private List<Identifier> texturesIn(String path, List<String> ids) {
+    private List<ResourceLocation> texturesIn(String path, List<String> ids) {
         return ids.stream()
-                .map(id -> Identifier.fromNamespaceAndPath(resourceNamespace, "textures/entity/horse/" + path + "/" + id + ".png"))
+                .map(id -> ResourceLocation.fromNamespaceAndPath(resourceNamespace, "textures/entity/horse/" + path + "/" + id + ".png"))
                 .toList();
     }
 
@@ -88,7 +88,7 @@ public final class BreedCoatSet {
         return coatIds.get(clamp(index));
     }
 
-    public Identifier texture(int index, boolean baby) {
+    public ResourceLocation texture(int index, boolean baby) {
         return baby && foalTextures != null
                 ? foalTextures.get(clamp(index))
                 : textures.get(clamp(index));

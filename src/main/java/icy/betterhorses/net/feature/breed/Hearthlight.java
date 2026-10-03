@@ -6,7 +6,7 @@ import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import icy.betterhorses.net.ModBlocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -31,7 +31,7 @@ public final class Hearthlight implements BreedAbility {
         }
         hauling = cart;
 
-        if (tier < 2 || !BhAbility.HAFLINGER_LIGHT.on() || level.isBrightOutside()) {
+        if (tier < 2 || !BhAbility.HAFLINGER_LIGHT.on() || level.isDay()) {
             clear(level, horse);
             glow(data, false);
             return;

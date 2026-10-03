@@ -1,12 +1,12 @@
 package icy.betterhorses.net.goal;
 
+import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.feature.HorseCombat;
-import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 import java.util.EnumSet;
 import java.util.UUID;
@@ -34,11 +34,11 @@ public class DefendOwnerGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (!icy.betterhorses.net.BhFeature.HORSE_DEFEND.on() || horse.isVehicle() || !(horse.level() instanceof ServerLevel level)) {
+        if (!icy.betterhorses.net.BhConfig.horseCombatEnabled() || horse.isVehicle() || !(horse.level() instanceof ServerLevel level)) {
             return false;
         }
         IHorseData data = IHorseData.of(horse);
-        if (data.bh_getCommand().equals(BhContent.COMMAND_STAY.key())) {
+        if (data.bh_getCommand() == HorseCommand.STAY) {
             return false;
         }
         UUID id = data.bh_getCombatTarget();
@@ -58,8 +58,8 @@ public class DefendOwnerGoal extends Goal {
     @Override
     public boolean canContinueToUse() {
         IHorseData data = IHorseData.of(horse);
-        if (!icy.betterhorses.net.BhFeature.HORSE_DEFEND.on() || horse.isVehicle() || data.bh_getCombatTarget() == null
-                || data.bh_getCommand().equals(BhContent.COMMAND_STAY.key())) {
+        if (!icy.betterhorses.net.BhConfig.horseCombatEnabled() || horse.isVehicle() || data.bh_getCombatTarget() == null
+                || data.bh_getCommand() == HorseCommand.STAY) {
             return false;
         }
         if (target == null || !target.isAlive()

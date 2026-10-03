@@ -1,25 +1,23 @@
 package icy.betterhorses.net.client.render;
 
-import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
-import net.minecraft.resources.Identifier;
-import com.geckolib.model.GeoModel;
-import com.geckolib.renderer.base.GeoRenderState;
+import net.minecraft.resources.ResourceLocation;
+import software.bernie.geckolib.model.GeoModel;
 
 public final class HorseCartGeoModel extends GeoModel<HorseCartEntity> {
 
     @Override
-    public Identifier getModelResource(GeoRenderState renderState) {
-        return HorseCartRenderer.typeOf(renderState).model();
+    public ResourceLocation getModelResource(HorseCartEntity cart) {
+        return cart.type().model();
     }
 
     @Override
-    public Identifier getTextureResource(GeoRenderState renderState) {
-        return HorseCartRenderer.typeOf(renderState).texture();
+    public ResourceLocation getTextureResource(HorseCartEntity cart) {
+        return cart.type().texture();
     }
 
     @Override
-    public Identifier getAnimationResource(HorseCartEntity animatable) {
-        return animatable.type().animation();
+    public ResourceLocation getAnimationResource(HorseCartEntity cart) {
+        return cart.type().animation();
     }
 }

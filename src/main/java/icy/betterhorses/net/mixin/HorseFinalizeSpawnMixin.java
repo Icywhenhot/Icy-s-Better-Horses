@@ -6,9 +6,9 @@ import icy.betterhorses.net.IHorseData;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.animal.equine.Horse;
+import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import org.jetbrains.annotations.Nullable;
@@ -36,7 +36,7 @@ public abstract class HorseFinalizeSpawnMixin {
     @Inject(method = "finalizeSpawn", at = @At("HEAD"))
     private void bh_captureGroupBreed(ServerLevelAccessor level,
                                       DifficultyInstance difficulty,
-                                      EntitySpawnReason reason,
+                                      MobSpawnType reason,
                                       @Nullable SpawnGroupData groupData,
                                       CallbackInfoReturnable<SpawnGroupData> cir) {
         if (groupData instanceof BhHorseGroupData existing) {
@@ -49,7 +49,7 @@ public abstract class HorseFinalizeSpawnMixin {
     @Inject(method = "finalizeSpawn", at = @At("TAIL"), cancellable = true)
     private void bh_applyBreedAndCoat(ServerLevelAccessor level,
                                       DifficultyInstance difficulty,
-                                      EntitySpawnReason reason,
+                                      MobSpawnType reason,
                                       @Nullable SpawnGroupData groupData,
                                       CallbackInfoReturnable<SpawnGroupData> cir) {
         Horse self = (Horse) (Object) this;
@@ -76,7 +76,7 @@ public abstract class HorseFinalizeSpawnMixin {
         if (bh_isNaturalHorseSpawn(reason)) {
             String biomeId = level.getBiome(self.blockPosition())
                     .unwrapKey()
-                    .map(key -> key.identifier().toString())
+                    .map(key -> key.location().toString())
                     .orElse("<unregistered>");
             BH_LOGGER.info("[HORSE_NATURAL_SPAWN] reason={} pos={} biome={} breed={} coat={}",
                     reason, self.blockPosition(), biomeId, breed, coat);
@@ -94,7 +94,7 @@ public abstract class HorseFinalizeSpawnMixin {
     }
 
     @Unique
-    private boolean bh_isNaturalHorseSpawn(EntitySpawnReason reason) {
-        return reason == EntitySpawnReason.NATURAL || reason == EntitySpawnReason.CHUNK_GENERATION;
+    private boolean bh_isNaturalHorseSpawn(MobSpawnType reason) {
+        return reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION;
     }
 }

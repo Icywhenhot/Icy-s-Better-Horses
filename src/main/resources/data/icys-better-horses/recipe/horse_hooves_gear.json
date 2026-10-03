@@ -7,8 +7,12 @@
     "CCC"
   ],
   "key": {
-    "C": "minecraft:copper_ingot",
-    "L": "minecraft:leather"
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "L": {
+      "item": "minecraft:leather"
+    }
   },
   "result": {
     "id": "icys-better-horses:horse_hooves_gear",

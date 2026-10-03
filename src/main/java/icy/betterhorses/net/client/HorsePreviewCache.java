@@ -5,14 +5,13 @@ import icy.betterhorses.net.mixin.HorseAccessor;
 import icy.betterhorses.net.network.HorseRosterEntry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
-import net.minecraft.world.entity.animal.equine.Horse;
-import net.minecraft.world.entity.animal.equine.Markings;
-import net.minecraft.world.entity.animal.equine.Variant;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.world.entity.animal.horse.Markings;
+import net.minecraft.world.entity.animal.horse.Variant;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -58,14 +57,14 @@ public final class HorsePreviewCache {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null) return null;
 
-        Identifier typeId = Identifier.tryParse(entry.entityTypeId());
+        ResourceLocation typeId = ResourceLocation.tryParse(entry.entityTypeId());
         if (typeId == null) return null;
-        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(typeId);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(typeId);
         if (type == null) return null;
 
         Entity raw;
         try {
-            raw = type.create(minecraft.level, EntitySpawnReason.LOAD);
+            raw = type.create(minecraft.level);
         } catch (Exception e) {
             IcysBetterHorses.LOGGER.warn("[manage] could not build a preview for {}: {}",
                     entry.entityTypeId(), e.toString());

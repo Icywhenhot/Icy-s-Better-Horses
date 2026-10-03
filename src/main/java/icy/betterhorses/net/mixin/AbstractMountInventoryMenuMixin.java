@@ -5,11 +5,10 @@ import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.world.Container;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.AbstractMountInventoryMenu;
+import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -21,12 +20,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import net.minecraft.world.item.Items;
 
-@Mixin(AbstractMountInventoryMenu.class)
+@Mixin(HorseInventoryMenu.class)
 public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerMenu {
 
-    @Shadow @Final protected Container mountContainer;
-    @Shadow @Final protected LivingEntity mount;
+    @Shadow @Final private Container horseContainer;
+    @Shadow @Final private AbstractHorse horse;
 
     protected AbstractMountInventoryMenuMixin(MenuType<?> type, int id) {
         super(type, id);
@@ -41,8 +41,7 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
 
     @Inject(method = "quickMoveStack", at = @At("HEAD"), cancellable = true)
     private void bh_quickMoveStack(Player player, int index, CallbackInfoReturnable<ItemStack> cir) {
-        if (!(this instanceof HorseInventoryLayoutAccess layoutAccess)
-                || !(this.mount instanceof AbstractHorse horse)) {
+        if (!(this instanceof HorseInventoryLayoutAccess layoutAccess)) {
             return;
         }
 
@@ -69,7 +68,7 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
         ItemStack sourceStack = sourceSlot.getItem();
         ItemStack copiedStack = sourceStack.copy();
 
-        int mountSlotEnd = this.mountContainer.getContainerSize() + 2;
+        int mountSlotEnd = this.horseContainer.getContainerSize() + 1;
         int playerInventoryStart = mountSlotEnd;
         int playerInventoryEnd = playerInventoryStart + 27;
         int hotbarStart = playerInventoryEnd;
@@ -156,6 +155,7 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
         }
 
         ItemStack chestStack = this.slots.get(chestGearSlotIndex).getItem();
-        return GearSlot.isChest(chestStack);
+        return chestStack.is(Items.CHEST)
+                || chestStack.is(Items.ENDER_CHEST);
     }
 }

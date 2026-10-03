@@ -30,7 +30,9 @@
     {
       "type": "modonomicon:spotlight",
       "id": "info",
-      "item": "icys-better-horses:canister",
+      "item": {
+        "item": "icys-better-horses:canister"
+      },
       "title": "book.icys-better-horses.stable_handbook.equipment.canister.info.title",
       "text": "book.icys-better-horses.stable_handbook.equipment.canister.info.text"
     }

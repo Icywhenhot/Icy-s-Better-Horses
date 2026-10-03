@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -13,11 +13,11 @@ import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.NameAndId;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,7 +62,7 @@ public final class BhCommands {
                 .then(Commands.literal("trusted")
                         .executes(BhCommands::listTrusted))
                 .then(Commands.literal("debug")
-                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .requires(source -> source.hasPermission(2))
                         .executes(BhCommands::dumpHorses)));
 
         BhHorseCommands.build(dispatcher);
@@ -111,56 +111,56 @@ public final class BhCommands {
         return best;
     }
 
-    private static Collection<NameAndId> targets(CommandContext<CommandSourceStack> context)
+    private static Collection<GameProfile> targets(CommandContext<CommandSourceStack> context)
             throws CommandSyntaxException {
         return GameProfileArgument.getGameProfiles(context, "player");
     }
 
-    private static int trust(CommandContext<CommandSourceStack> context, Collection<NameAndId> profiles)
+    private static int trust(CommandContext<CommandSourceStack> context, Collection<GameProfile> profiles)
             throws CommandSyntaxException {
         CommandSourceStack source = context.getSource();
         ServerPlayer owner = source.getPlayerOrException();
         int granted = 0;
 
-        for (NameAndId profile : profiles) {
-            if (profile.id().equals(owner.getUUID())) {
+        for (GameProfile profile : profiles) {
+            if (profile.getId().equals(owner.getUUID())) {
                 source.sendFailure(Component.translatable(MSG + "self"));
                 continue;
             }
-            if (!HorseTracker.trust(owner.getUUID(), profile.id(), profile.name())) {
-                source.sendFailure(Component.translatable(MSG + "already", profile.name()));
+            if (!HorseTracker.trust(owner.getUUID(), profile.getId(), profile.getName())) {
+                source.sendFailure(Component.translatable(MSG + "already", profile.getName()));
                 continue;
             }
 
             granted++;
-            source.sendSuccess(() -> Component.translatable(MSG + "added", profile.name())
+            source.sendSuccess(() -> Component.translatable(MSG + "added", profile.getName())
                     .withStyle(ChatFormatting.GREEN), false);
-            notify(source, profile.id(), MSG + "notify_added", owner.nameAndId().name());
+            notify(source, profile.getId(), MSG + "notify_added", owner.getGameProfile().getName());
             IcysBetterHorses.LOGGER.info("[trust] {} now trusts {} with their horses",
-                    owner.nameAndId().name(), profile.name());
+                    owner.getGameProfile().getName(), profile.getName());
         }
 
         return granted;
     }
 
-    private static int untrust(CommandContext<CommandSourceStack> context, Collection<NameAndId> profiles)
+    private static int untrust(CommandContext<CommandSourceStack> context, Collection<GameProfile> profiles)
             throws CommandSyntaxException {
         CommandSourceStack source = context.getSource();
         ServerPlayer owner = source.getPlayerOrException();
         int revoked = 0;
 
-        for (NameAndId profile : profiles) {
-            if (!HorseTracker.untrust(owner.getUUID(), profile.id())) {
-                source.sendFailure(Component.translatable(MSG + "not_trusted", profile.name()));
+        for (GameProfile profile : profiles) {
+            if (!HorseTracker.untrust(owner.getUUID(), profile.getId())) {
+                source.sendFailure(Component.translatable(MSG + "not_trusted", profile.getName()));
                 continue;
             }
 
             revoked++;
-            source.sendSuccess(() -> Component.translatable(MSG + "removed", profile.name())
+            source.sendSuccess(() -> Component.translatable(MSG + "removed", profile.getName())
                     .withStyle(ChatFormatting.YELLOW), false);
-            notify(source, profile.id(), MSG + "notify_removed", owner.nameAndId().name());
+            notify(source, profile.getId(), MSG + "notify_removed", owner.getGameProfile().getName());
             IcysBetterHorses.LOGGER.info("[trust] {} no longer trusts {} with their horses",
-                    owner.nameAndId().name(), profile.name());
+                    owner.getGameProfile().getName(), profile.getName());
 
         }
 

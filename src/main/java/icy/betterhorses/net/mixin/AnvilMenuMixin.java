@@ -6,7 +6,6 @@ import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.ItemCombinerMenu;
-import net.minecraft.world.inventory.ItemCombinerMenuSlotDefinition;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
@@ -22,9 +21,8 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenu {
     @Shadow private int repairItemCountCost;
     @Shadow @Final private DataSlot cost;
 
-    protected AnvilMenuMixin(MenuType<?> type, int id, Inventory inventory,
-                             ContainerLevelAccess access, ItemCombinerMenuSlotDefinition slots) {
-        super(type, id, inventory, access, slots);
+    protected AnvilMenuMixin(MenuType<?> type, int id, Inventory inventory, ContainerLevelAccess access) {
+        super(type, id, inventory, access);
     }
 
     @Inject(method = "createResult", at = @At("TAIL"))

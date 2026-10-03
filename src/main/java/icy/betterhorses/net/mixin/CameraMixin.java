@@ -7,10 +7,11 @@ import icy.betterhorses.net.client.ChargeShakeController;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.client.Camera;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.level.BlockGetter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,18 +22,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Camera.class)
 public abstract class CameraMixin {
 
-    @Shadow public abstract float xRot();
+    @Shadow public abstract float getXRot();
 
-    @Shadow public abstract float yRot();
+    @Shadow public abstract float getYRot();
 
     @Shadow protected abstract void setRotation(float yRot, float xRot);
 
-    @Shadow public abstract Entity entity();
+    @Shadow public abstract Entity getEntity();
 
-    @ModifyArg(method = "alignWithEntity", at = @At(value = "INVOKE",
+    @Shadow public abstract boolean isDetached();
+
+    @ModifyArg(method = "setup", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/Camera;setPosition(DDD)V"), index = 1)
     private double bh_raiseSmallCartView(double y) {
-        Entity entity = entity();
+        Entity entity = getEntity();
         if (entity == null || entity != Minecraft.getInstance().player) return y;
 
         Entity vehicle = entity.getVehicle();
@@ -42,6 +45,9 @@ public abstract class CameraMixin {
         } else if (vehicle instanceof HorseCartEntity cart) {
             if (cart.type().isLarge()) return y;
             horse = cart.boundHorse();
+        } else if (vehicle != null && !isDetached()
+                && BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.getType()).getNamespace().equals("trotting_wagons")) {
+            return y + 0.5D;
         } else {
             return y;
         }
@@ -53,9 +59,9 @@ public abstract class CameraMixin {
                 ? y + 0.5D : y;
     }
 
-    @Inject(method = "update", at = @At("TAIL"))
-    private void bh_applyChargeShake(DeltaTracker deltaTracker, CallbackInfo ci) {
-        Entity entity = entity();
+    @Inject(method = "setup", at = @At("TAIL"))
+    private void bh_applyChargeShake(BlockGetter level, Entity entity, boolean detached,
+                                     boolean mirrored, float partialTick, CallbackInfo ci) {
         if (entity == null || entity != Minecraft.getInstance().player
                 || !BhHorseKind.managed(entity.getVehicle())) return;
 
@@ -63,6 +69,6 @@ public abstract class CameraMixin {
         float pitch = ChargeShakeController.pitchOffset();
         if (yaw == 0.0F && pitch == 0.0F) return;
 
-        setRotation(yRot() + yaw, xRot() + pitch);
+        setRotation(getYRot() + yaw, getXRot() + pitch);
     }
 }

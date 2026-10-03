@@ -3,7 +3,7 @@ package icy.betterhorses.net;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.level.entity.EntityTypeTest;
 
 import java.util.ArrayList;
@@ -79,7 +79,7 @@ public final class BhTwinWatch {
                 HorseTracker.getGeneration(id),
                 HorseTracker.isStale(horse) ? " STALE" : "",
                 HorseTracker.getLoaded(id) == horse ? "" : " untracked",
-                horse.level().dimension().identifier(),
+                horse.level().dimension().location(),
                 horse.getBlockX(), horse.getBlockY(), horse.getBlockZ());
     }
 

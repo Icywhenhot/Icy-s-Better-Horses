@@ -1,60 +1,39 @@
 package icy.betterhorses.net.book;
 
-import com.klikli_dev.modonomicon.book.BookTextHolder;
-import com.klikli_dev.modonomicon.book.conditions.BookCondition;
-import com.klikli_dev.modonomicon.book.conditions.BookNoneCondition;
-import com.klikli_dev.modonomicon.book.page.BookPage;
+import com.google.gson.JsonObject;
 import com.klikli_dev.modonomicon.book.page.BookTextPage;
-import com.klikli_dev.modonomicon.data.BookPageType;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import icy.betterhorses.net.IcysBetterHorses;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class BhChargeMeterPage extends BookTextPage {
 
-    public static final Identifier ID =
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "charge_meter");
+    public static final ResourceLocation ID =
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "charge_meter");
 
-    public static final MapCodec<BhChargeMeterPage> CODEC = RecordCodecBuilder.mapCodec(instance ->
-            instance.group(
-                    BookTextHolder.CODEC
-                            .optionalFieldOf("title", BookTextHolder.EMPTY)
-                            .forGetter(BookTextPage::getTitle),
-                    BookTextHolder.CODEC
-                            .optionalFieldOf("text", BookTextHolder.EMPTY)
-                            .forGetter(BookTextPage::getText),
-                    Codec.BOOL.optionalFieldOf("use_markdown_in_title", false)
-                            .forGetter(BookTextPage::useMarkdownInTitle),
-                    Codec.BOOL.optionalFieldOf("show_title_separator", true)
-                            .forGetter(BookTextPage::showTitleSeparator),
-                    Codec.STRING.optionalFieldOf("id", "").forGetter(BookPage::getId),
-                    BookCondition.CODEC
-                            .optionalFieldOf("condition", new BookNoneCondition())
-                            .forGetter(BookPage::getCondition)
-            ).apply(instance, BhChargeMeterPage::new));
+    private BhChargeMeterPage(BookTextPage page) {
+        super(page.getTitle(), page.getText(), page.useMarkdownInTitle(), page.showTitleSeparator(),
+                page.getAnchor(), page.getCondition());
+    }
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, BhChargeMeterPage> STREAM_CODEC =
-            StreamCodec.composite(
-                    BookTextHolder.STREAM_CODEC, BookTextPage::getTitle,
-                    BookTextHolder.STREAM_CODEC, BookTextPage::getText,
-                    ByteBufCodecs.BOOL, BookTextPage::useMarkdownInTitle,
-                    ByteBufCodecs.BOOL, BookTextPage::showTitleSeparator,
-                    ByteBufCodecs.STRING_UTF8, BookPage::getId,
-                    BookCondition.STREAM_CODEC, BookPage::getCondition,
-                    BhChargeMeterPage::new);
+    public static BhChargeMeterPage fromJson(JsonObject json, HolderLookup.Provider registries) {
+        JsonObject compatible = json.deepCopy();
+        if (!compatible.has("anchor") && compatible.has("id")) {
+            compatible.add("anchor", compatible.get("id"));
+        }
+        if (!compatible.has("use_markdown_title") && compatible.has("use_markdown_in_title")) {
+            compatible.add("use_markdown_title", compatible.get("use_markdown_in_title"));
+        }
+        return new BhChargeMeterPage(BookTextPage.fromJson(ID, compatible, registries));
+    }
 
-    public BhChargeMeterPage(BookTextHolder title, BookTextHolder text, boolean useMarkdownInTitle,
-                             boolean showTitleSeparator, String id, BookCondition condition) {
-        super(title, text, useMarkdownInTitle, showTitleSeparator, id, condition);
+    public static BhChargeMeterPage fromNetwork(RegistryFriendlyByteBuf buffer) {
+        return new BhChargeMeterPage(BookTextPage.fromNetwork(buffer));
     }
 
     @Override
-    public BookPageType<?> type() {
-        return BhBookPages.CHARGE_METER;
+    public ResourceLocation getType() {
+        return ID;
     }
 }

@@ -1,11 +1,17 @@
 package icy.betterhorses.net;
 
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.sounds.SoundEvent;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public final class ModSounds {
+
+    private static final Map<String, SoundEvent> SOUNDS = new LinkedHashMap<>();
 
     public static final SoundEvent CALL_WHISTLE = register("call_whistle");
     public static final SoundEvent STABILIZER_INTRO = register("stabilizer_intro");
@@ -17,11 +23,14 @@ public final class ModSounds {
     public static final SoundEvent HORSE_CHARGE_THUD = register("horse_charge_thud");
 
     public static void init() {
+        SOUNDS.forEach((path, value) -> Registry.register(BuiltInRegistries.SOUND_EVENT, ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path), value));
     }
 
     private static SoundEvent register(String path) {
-        Identifier id = Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
-        return Registry.register(BuiltInRegistries.SOUND_EVENT, id, SoundEvent.createVariableRangeEvent(id));
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
+        SoundEvent sound = SoundEvent.createVariableRangeEvent(id);
+        SOUNDS.put(path, sound);
+        return sound;
     }
 
     private ModSounds() {}

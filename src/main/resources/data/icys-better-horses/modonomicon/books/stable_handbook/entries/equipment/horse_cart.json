@@ -30,7 +30,9 @@
     {
       "type": "modonomicon:spotlight",
       "id": "info",
-      "item": "icys-better-horses:horse_cart_gear",
+      "item": {
+        "item": "icys-better-horses:horse_cart_gear"
+      },
       "title": "book.icys-better-horses.stable_handbook.equipment.horse_cart.info.title",
       "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.info.text"
     },
@@ -69,21 +71,27 @@
     {
       "type": "modonomicon:spotlight",
       "id": "chest",
-      "item": "minecraft:chest",
+      "item": {
+        "item": "minecraft:chest"
+      },
       "title": "book.icys-better-horses.stable_handbook.equipment.horse_cart.chest.title",
       "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.chest.text"
     },
     {
       "type": "modonomicon:spotlight",
       "id": "plough",
-      "item": "minecraft:iron_hoe",
+      "item": {
+        "item": "minecraft:iron_hoe"
+      },
       "title": "book.icys-better-horses.stable_handbook.equipment.horse_cart.plough.title",
       "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.plough.text"
     },
     {
       "type": "modonomicon:spotlight",
       "id": "shears",
-      "item": "minecraft:shears",
+      "item": {
+        "item": "minecraft:shears"
+      },
       "title": "book.icys-better-horses.stable_handbook.equipment.horse_cart.shears.title",
       "text": "book.icys-better-horses.stable_handbook.equipment.horse_cart.shears.text"
     }

@@ -1,7 +1,7 @@
 package icy.betterhorses.net;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.DamageType;
 
@@ -14,6 +14,6 @@ public final class BhDamageTypes {
 
     private static ResourceKey<DamageType> key(String path) {
         return ResourceKey.create(Registries.DAMAGE_TYPE,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path));
+                ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path));
     }
 }

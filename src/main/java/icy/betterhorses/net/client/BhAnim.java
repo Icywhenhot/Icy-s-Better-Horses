@@ -1,6 +1,6 @@
 package icy.betterhorses.net.client;
 
-import org.joml.Matrix3x2fStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,13 +38,13 @@ public final class BhAnim {
         return (alpha << 24) | (argb & 0xFFFFFF);
     }
 
-    public static void enter(Matrix3x2fStack pose, float progress, float centerX, float centerY,
+    public static void enter(PoseStack pose, float progress, float centerX, float centerY,
                              float risePx, float startScale) {
         float rise = (1f - progress) * risePx;
         float scale = startScale + (1f - startScale) * progress;
-        pose.translate(centerX, centerY + rise);
-        pose.scale(scale, scale);
-        pose.translate(-centerX, -centerY);
+        pose.translate(centerX, centerY + rise, 0);
+        pose.scale(scale, scale, 1);
+        pose.translate(-centerX, -centerY, 0);
     }
 
     public static final class Lift {

@@ -3,7 +3,7 @@ package icy.betterhorses.net.network;
 import icy.betterhorses.net.BhTuning;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ public record ConfigSyncPayload(
         BhTuning tuning) implements CustomPacketPayload {
 
     public static final Type<ConfigSyncPayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath("icys-better-horses", "config_sync"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath("icys-better-horses", "config_sync"));
 
     private static final int MAX_KEYS = 256;
     private static final int MAX_KEY_LENGTH = 64;

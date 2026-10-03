@@ -2,137 +2,114 @@ package icy.betterhorses.net.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import icy.betterhorses.net.mixin.HorseModelAccessor;
-import icy.betterhorses.net.registry.BhRegistries;
-import icy.betterhorses.net.registry.BreedType;
-import icy.betterhorses.net.registry.StabilizerBody;
+import icy.betterhorses.net.HorseStabilizerState;
+import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.ModEntities;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.entity.state.EquineRenderState;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
-import java.util.Map;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
-public final class HorseStabilizerLayer<S extends EquineRenderState, M extends EntityModel<? super S>>
-        extends RenderLayer<S, M> {
+import java.util.Map;
+
+public final class HorseStabilizerLayer<T extends AbstractHorse, M extends EntityModel<T>> extends RenderLayer<T, M> {
 
     private record Variant(HorseStabilizerGeoRenderer renderer, double feetY, double zOffset) {}
 
+    private static final double BREED_FEET_Y = 24.0D / 16.0D;
+
     private static final Variant GENERIC = new Variant(
             new HorseStabilizerGeoRenderer(), 1.35D, -1.0D / 16.0D);
-
     private static final Variant ICELANDIC = new Variant(
-            new HorseStabilizerGeoRenderer(new IcelandicStabilizerGeoModel()), 24.0D / 16.0D, 0.0D);
-
+            new HorseStabilizerGeoRenderer(new IcelandicStabilizerGeoModel()), BREED_FEET_Y, 0.0D);
     private static final Variant FRIESIAN = new Variant(
-            new HorseStabilizerGeoRenderer(new FriesianStabilizerGeoModel()), 24.0D / 16.0D, 0.0D);
-
+            new HorseStabilizerGeoRenderer(new FriesianStabilizerGeoModel()), BREED_FEET_Y, 0.0D);
     private static final Variant MEDIUM = new Variant(
-            new HorseStabilizerGeoRenderer(new MediumStabilizerGeoModel()), 24.0D / 16.0D, 0.0D);
-
+            new HorseStabilizerGeoRenderer(new MediumStabilizerGeoModel()), BREED_FEET_Y, 0.0D);
     private static final Variant SMALL = new Variant(
-            new HorseStabilizerGeoRenderer(new SmallStabilizerGeoModel()), 24.0D / 16.0D, 0.0D);
-
+            new HorseStabilizerGeoRenderer(new SmallStabilizerGeoModel()), BREED_FEET_Y, 0.0D);
     private static final Variant HAFLINGER = new Variant(
-            new HorseStabilizerGeoRenderer(new HaflingerStabilizerGeoModel()), 24.0D / 16.0D, 0.0D);
-
+            new HorseStabilizerGeoRenderer(new HaflingerStabilizerGeoModel()), BREED_FEET_Y, 0.0D);
     private static final Variant PERCHERON = new Variant(
-            new HorseStabilizerGeoRenderer(new PercheronStabilizerGeoModel()), 24.0D / 16.0D, 0.0D);
-
+            new HorseStabilizerGeoRenderer(new PercheronStabilizerGeoModel()), BREED_FEET_Y, 0.0D);
     private static final Variant SHIRE = new Variant(
-            new HorseStabilizerGeoRenderer(new ShireStabilizerGeoModel()), 24.0D / 16.0D, 0.0D);
-
+            new HorseStabilizerGeoRenderer(new ShireStabilizerGeoModel()), BREED_FEET_Y, 0.0D);
     private static final Variant BELGIAN = new Variant(
-            new HorseStabilizerGeoRenderer(new BelgianStabilizerGeoModel()), 24.0D / 16.0D, 0.0D);
+            new HorseStabilizerGeoRenderer(new BelgianStabilizerGeoModel()), BREED_FEET_Y, 0.0D);
 
-    private static final Map<StabilizerBody, Variant> BY_BODY = Map.of(
-            StabilizerBody.ICELANDIC, ICELANDIC,
-            StabilizerBody.FRIESIAN, FRIESIAN,
-            StabilizerBody.MEDIUM, MEDIUM,
-            StabilizerBody.SMALL, SMALL,
-            StabilizerBody.HAFLINGER, HAFLINGER,
-            StabilizerBody.PERCHERON, PERCHERON,
-            StabilizerBody.SHIRE, SHIRE,
-            StabilizerBody.BELGIAN, BELGIAN);
-
-    private static Variant variantFor(EquineRenderState state) {
-        Identifier type = BuiltInRegistries.ENTITY_TYPE.getKey(state.entityType);
-        for (BreedType breed : BhRegistries.breedTypeRegistry()) {
-            if (breed.entityType().identifier().equals(type)) {
-                return BY_BODY.getOrDefault(breed.stabilizerBody(), GENERIC);
-            }
-        }
-        return GENERIC;
-    }
+    private static final Map<EntityType<?>, Variant> BY_TYPE = Map.ofEntries(
+            Map.entry(ModEntities.ICELANDIC_HORSE, ICELANDIC),
+            Map.entry(ModEntities.FRIESIAN_HORSE, FRIESIAN),
+            Map.entry(ModEntities.APPALOOSA_HORSE, MEDIUM),
+            Map.entry(ModEntities.THOROUGHBRED_HORSE, MEDIUM),
+            Map.entry(ModEntities.AMERICAN_PAINT_HORSE, MEDIUM),
+            Map.entry(ModEntities.ANDALUSIAN_HORSE, MEDIUM),
+            Map.entry(ModEntities.MUSTANG_HORSE, MEDIUM),
+            Map.entry(ModEntities.QUARTER_HORSE, MEDIUM),
+            Map.entry(ModEntities.ARABIAN_HORSE, SMALL),
+            Map.entry(ModEntities.MORGAN_HORSE, SMALL),
+            Map.entry(ModEntities.HAFLINGER_HORSE, HAFLINGER),
+            Map.entry(ModEntities.PERCHERON_HORSE, PERCHERON),
+            Map.entry(ModEntities.SHIRE_HORSE, SHIRE),
+            Map.entry(ModEntities.BELGIAN_HORSE, BELGIAN),
+            Map.entry(ModEntities.CLYDESDALE_HORSE, PERCHERON));
 
     private static final float MODEL_ROLL_DEGREES = 180.0F;
 
-    public HorseStabilizerLayer(RenderLayerParent<S, M> renderer) {
+    private static final double GEO_BLOCK_ANCHOR = 0.5D;
+    private static final double GEO_BLOCK_ANCHOR_Y = 0.51D;
+
+    public HorseStabilizerLayer(RenderLayerParent<T, M> renderer) {
         super(renderer);
     }
 
     @Override
-    public void submit(
-            PoseStack poseStack,
-            SubmitNodeCollector collector,
-            int packedLight,
-            S state,
-            float yRot,
-            float xRot) {
-        IBhEquineStabilizerState bhState = (IBhEquineStabilizerState) (Object) state;
-        if (!bhState.bh_hasStabilizer()) {
+    public void render(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, T entity,
+                       float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks,
+                       float netHeadYaw, float headPitch) {
+        if (entity.isInvisible() || !(entity instanceof IHorseData data) || !data.bh_hasStabilizerItem()) {
+            return;
+        }
+        if (BhMountedHorseVisibility.currentOpacity() <= 0.01F) {
             return;
         }
 
-        if (BhRenderContext.currentOpacity() <= 0.01F) {
+        M model = this.getParentModel();
+        if (!(model instanceof BhHorseModelAccess access)) {
             return;
         }
+        ModelPart body = access.bh_getBody();
 
-        CameraRenderState camera = BhRenderContext.currentCamera();
-        if (camera == null) {
-            return;
-        }
+        HorseStabilizerState state = data.bh_getStabilizerState();
+        HorseStabilizerAnimatable animatable = HorseStabilizerAnimatable.get(entity);
+        animatable.syncFromHorse(entity, state, ageInTicks);
 
-        HorseStabilizerAnimatable animatable = HorseStabilizerAnimatable.getById(bhState.bh_getHorseId());
-        if (animatable == null) {
-            return;
-        }
-
-        ModelPart body = ((HorseModelAccessor) this.getParentModel()).bh_getBody();
-        Variant variant = variantFor(state);
-
+        Variant variant = BY_TYPE.getOrDefault(entity.getType(), GENERIC);
         float restX = body.x;
         float restY = body.y;
         float restZ = body.z;
-        if (this.getParentModel() instanceof BhHorseModel model) {
-            BhHorseModel.Rest rest = model.bhBodyRest();
+        if (model instanceof BhHorseModel<?> breed) {
+            BhHorseModel.Rest rest = breed.bhBodyRest();
             restX = rest.x();
             restY = rest.y();
             restZ = rest.z();
         }
 
         poseStack.pushPose();
-        this.getParentModel().root().translateAndRotate(poseStack);
+        if (model instanceof BhHorseModel<?> breed) {
+            breed.root().translateAndRotate(poseStack);
+        }
         body.translateAndRotate(poseStack);
         poseStack.translate(
-                -restX / 16.0F,
-                variant.feetY() - restY / 16.0D,
-                -restZ / 16.0F + variant.zOffset());
+                -restX / 16.0F + GEO_BLOCK_ANCHOR,
+                variant.feetY() - restY / 16.0D + GEO_BLOCK_ANCHOR_Y,
+                -restZ / 16.0F + variant.zOffset() - GEO_BLOCK_ANCHOR);
         poseStack.mulPose(Axis.ZP.rotationDegrees(MODEL_ROLL_DEGREES));
 
-        variant.renderer().performRenderPass(
-                animatable,
-                null,
-                poseStack,
-                collector,
-                camera,
-                packedLight,
-                0);
+        variant.renderer().renderAt(poseStack, animatable, bufferSource, partialTicks, packedLight);
 
         poseStack.popPose();
     }

@@ -12,18 +12,17 @@ import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.gui.GuiGraphics;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import icy.betterhorses.net.ModItems;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix3x2fStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,12 +56,12 @@ public final class BhAbilityBadges {
     private static final int BAR_W = 66;
     private static final int VALUE_Y = 18;
 
-    private static final Identifier BAR = Identifier.fromNamespaceAndPath(
+    private static final ResourceLocation BAR = ResourceLocation.fromNamespaceAndPath(
             "icys-better-horses", "textures/gui/hud/badge_fill.png");
 
-    private static final Plate WIDE = new Plate(Identifier.fromNamespaceAndPath(
+    private static final Plate WIDE = new Plate(ResourceLocation.fromNamespaceAndPath(
             "icys-better-horses", "textures/gui/hud/badge_plate.png"), 102, 7, 27, TEXT_W);
-    private static final Plate NARROW = new Plate(Identifier.fromNamespaceAndPath(
+    private static final Plate NARROW = new Plate(ResourceLocation.fromNamespaceAndPath(
             "icys-better-horses", "textures/gui/hud/badge_plate_no_bar.png"), 70, 8, 28, 37);
     private static final Map<String, Boolean> found = new HashMap<>();
 
@@ -97,11 +96,11 @@ public final class BhAbilityBadges {
     private static final long HARNESS_LINGER = 30L;
     private static long harnessSeen = Long.MIN_VALUE / 2;
 
-    private static final Identifier[] BASH = new Identifier[BASH_FRAMES + 1];
+    private static final ResourceLocation[] BASH = new ResourceLocation[BASH_FRAMES + 1];
 
     static {
         for (int i = 0; i <= BASH_FRAMES; i++) {
-            BASH[i] = Identifier.fromNamespaceAndPath(
+            BASH[i] = ResourceLocation.fromNamespaceAndPath(
                     "icys-better-horses", "textures/gui/hud/bash_" + i + ".png");
         }
     }
@@ -118,24 +117,20 @@ public final class BhAbilityBadges {
         found.clear();
     }
 
-    public static void render(GuiGraphicsExtractor gfx, Font font, int screenW, int screenH,
+    public static void render(GuiGraphics gfx, Font font, int screenW, int screenH,
                               AbstractHorse horse) {
         IHorseData data = IHorseData.of(horse);
         harness(gfx, screenW, screenH, horse, data);
         ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
-        if (breedKey == null) {
-            return;
-        }
-        BreedType type = BhRegistries.breedTypeRegistry().getValue(breedKey.identifier());
-        if (type == null) {
-            return;
-        }
-        Identifier basis = type.abilities().isEmpty() ? breedKey.identifier() : type.abilities().get(0).identifier();
+        if (breedKey == null) return;
+        BreedType type = BhRegistries.breedTypeRegistry().get(breedKey.location());
+        if (type == null) return;
+        ResourceLocation basis = type.abilities().isEmpty() ? breedKey.location() : type.abilities().get(0).location();
 
         List<Badge> badges = new ArrayList<>();
         badges.add(read(basis, data.bh_getSurge(), false));
         for (int slot = 1; slot < Math.min(type.abilities().size(), BhSurge.ABILITY_SLOTS); slot++) {
-            badges.add(read(type.abilities().get(slot).identifier(), data.bh_getAbilitySurge(slot), false));
+            badges.add(read(type.abilities().get(slot).location(), data.bh_getAbilitySurge(slot), false));
         }
         badges.add(read(basis, data.bh_getPulse(), false));
         badges.add(read(basis, data.bh_getPerkSurge(), true));
@@ -166,79 +161,61 @@ public final class BhAbilityBadges {
             float at = slide.getOrDefault(key, want);
             at += (want - at) * SETTLE;
             slide.put(key, at);
-
             Badge badge = entry.getValue();
             Plate plate = badge.fill < 0.0F ? NARROW : WIDE;
             draw(gfx, font, screenW - plate.width() - MARGIN, Math.round(at), badge, plate, in);
             rank++;
         }
-
         shield(gfx, screenW, screenH, data.bh_getCharge());
     }
 
-    private static @Nullable Badge read(Identifier basis, int packed, boolean road) {
+    private static @Nullable Badge read(ResourceLocation basis, int packed, boolean road) {
         int phase = BhSurge.phase(packed);
-        if (phase == BhSurge.IDLE) {
-            return null;
-        }
+        if (phase == BhSurge.IDLE) return null;
         int variant = BhSurge.variant(packed);
         String namespace;
         String path;
         if (road) {
-            namespace = IcysBetterHorses.MOD_ID;
+            namespace = IcysBetterHorses.RESOURCE_NAMESPACE;
             path = variant == 0 ? ROAD_SLOT : "perk_" + variant;
         } else {
-            namespace = basis.getNamespace();
+            namespace = basis.getNamespace().equals(IcysBetterHorses.MOD_ID)
+                    ? IcysBetterHorses.RESOURCE_NAMESPACE : basis.getNamespace();
             path = basis.getPath() + (variant == 0 ? "" : "_" + variant);
         }
-        String key = namespace.equals(IcysBetterHorses.MOD_ID) ? path : namespace + "_" + path;
-        Identifier icon = Identifier.fromNamespaceAndPath(namespace, "textures/gui/hud/icon_" + path + ".png");
+        String key = namespace.equals(IcysBetterHorses.RESOURCE_NAMESPACE) ? path : namespace + "_" + path;
+        ResourceLocation icon = ResourceLocation.fromNamespaceAndPath(namespace, "textures/gui/hud/icon_" + path + ".png");
         Component label = Component.translatable("hud." + namespace + ".ability." + path);
         int percent = BhSurge.percent(packed);
         Component value = switch (phase) {
             case BhSurge.COOLING -> Component.translatable("hud.icys-better-horses.ability.cooling");
             case BhSurge.ARMED -> Component.translatable("hud.icys-better-horses.ability.ready");
-            default -> percent > 0
-                    ? Component.translatable("hud.icys-better-horses.ability.bonus", percent)
-                    : Component.empty();
+            default -> percent > 0 ? Component.translatable("hud.icys-better-horses.ability.bonus", percent) : Component.empty();
         };
-        boolean metered = (phase == BhSurge.ACTIVE || phase == BhSurge.COOLING)
-                && BhSurge.span(packed) > 0;
-        return new Badge(key, icon, label, value, metered ? BhSurge.fill(packed) : -1.0F,
-                phase == BhSurge.COOLING);
+        boolean metered = (phase == BhSurge.ACTIVE || phase == BhSurge.COOLING) && BhSurge.span(packed) > 0;
+        return new Badge(key, icon, label, value, metered ? BhSurge.fill(packed) : -1.0F, phase == BhSurge.COOLING);
     }
 
-    private static void draw(GuiGraphicsExtractor gfx, Font font, int x, int y,
-                             Badge badge, Plate plate, float in) {
+    private static void draw(GuiGraphics gfx, Font font, int x, int y, Badge badge, Plate plate, float in) {
         float a = BhAnim.clamp01(in);
-        if (a <= 0.01F) {
-            return;
-        }
+        if (a <= 0.01F) return;
         int slide = Math.round((1.0F - BhAnim.easeOutCubic(a)) * 14.0F);
         int left = x + slide;
         int tint = (Math.round(255.0F * a) << 24) | 0xFFFFFF;
-
-        gfx.blit(RenderPipelines.GUI_TEXTURED, plate.tex(), left, y,
-                0.0F, 0.0F, plate.width(), HEIGHT, plate.width(), HEIGHT, tint);
-
-        Identifier own = badge.icon();
+        tint(gfx, tint);
+        gfx.blit(plate.tex(), left, y, 0.0F, 0.0F, plate.width(), HEIGHT, plate.width(), HEIGHT);
+        ResourceLocation own = badge.icon();
         if (present(own)) {
-            gfx.blit(RenderPipelines.GUI_TEXTURED, own,
-                    left + plate.iconX(), y + ICON_Y, 0.0F, 0.0F, ICON, ICON, ICON, ICON, tint);
+            gfx.blit(own, left + plate.iconX(), y + ICON_Y, 0.0F, 0.0F, ICON, ICON, ICON, ICON);
         } else {
             ItemStack stock = STOCK_ICONS.get(badge.key);
-            if (stock != null) {
-                gfx.item(stock, left + plate.iconX(), y + ICON_Y);
-            }
+            if (stock != null) gfx.renderItem(stock, left + plate.iconX(), y + ICON_Y);
         }
-
+        gfx.setColor(1f, 1f, 1f, 1f);
         float labelScale = fit(font, badge.label, plate.textW());
         small(gfx, font, badge.label, left + plate.textX(), y + TEXT_Y, BhAnim.fade(INK, a), labelScale);
-
         int rawValue = font.width(badge.value);
-        if (rawValue <= 0) {
-            return;
-        }
+        if (rawValue <= 0) return;
         if (badge.fill < 0.0F) {
             small(gfx, font, badge.value, left + plate.textX(), y + VALUE_Y,
                     BhAnim.fade(INK_SOFT, a), fit(font, badge.value, plate.textW()));
@@ -250,61 +227,48 @@ public final class BhAbilityBadges {
             small(gfx, font, badge.value, left + plate.textX() + plate.textW() - valueWidth,
                     y + TEXT_Y, BhAnim.fade(INK_SOFT, a), TEXT_SCALE);
         }
-
         int span = Math.round(BAR_W * badge.fill);
         if (span > 0) {
-            gfx.blit(RenderPipelines.GUI_TEXTURED, BAR, left + BAR_X, y,
-                    BAR_X, 0.0F, span, HEIGHT, WIDE.width(), HEIGHT,
-                    BhAnim.fade(badge.cooling ? FILL_COOL : FILL, a));
+            tint(gfx, BhAnim.fade(badge.cooling ? FILL_COOL : FILL, a));
+            gfx.blit(BAR, left + BAR_X, y, BAR_X, 0.0F, span, HEIGHT, WIDE.width(), HEIGHT);
         }
+        gfx.setColor(1f, 1f, 1f, 1f);
     }
 
     private static float fit(Font font, Component text, int room) {
         int w = font.width(text);
-        if (w <= 0) {
-            return TEXT_SCALE;
-        }
+        if (w <= 0) return TEXT_SCALE;
         return Math.max(MIN_TEXT_SCALE, Math.min(TEXT_SCALE, room / (float) w));
     }
 
-    private static void small(GuiGraphicsExtractor gfx, Font font, Component text,
-                              int x, int y, int color, float scale) {
-        Matrix3x2fStack pose = gfx.pose();
-        pose.pushMatrix();
-        pose.translate(x, y);
-        pose.scale(scale, scale);
-        gfx.text(font, text, 0, 0, color, false);
-        pose.popMatrix();
+    private static void small(GuiGraphics gfx, Font font, Component text, int x, int y, int color, float scale) {
+        PoseStack pose = gfx.pose();
+        pose.pushPose();
+        pose.translate(x, y, 0);
+        pose.scale(scale, scale, 1);
+        gfx.drawString(font, text, 0, 0, color, false);
+        pose.popPose();
     }
 
-    public static Identifier chargeIcon(int percent) {
+    public static ResourceLocation chargeIcon(int percent) {
         return BASH[Math.clamp(Math.round(percent * BASH_FRAMES / 100.0F), 0, BASH_FRAMES)];
     }
 
-    private static boolean present(Identifier id) {
-        return found.computeIfAbsent(id.toString(), k -> Minecraft.getInstance()
-                .getResourceManager().getResource(id).isPresent());
+    private static boolean present(ResourceLocation id) {
+        return found.computeIfAbsent(id.toString(), k -> Minecraft.getInstance().getResourceManager().getResource(id).isPresent());
     }
 
-    private static void harness(GuiGraphicsExtractor gfx, int screenW, int screenH, AbstractHorse horse, IHorseData data) {
-        if (!data.bh_hasGear(GearSlot.STABILIZER) || data.bh_hasCartGear()) {
-            return;
-        }
+    private static void harness(GuiGraphics gfx, int screenW, int screenH, AbstractHorse horse, IHorseData data) {
+        if (!data.bh_hasGear(GearSlot.STABILIZER) || data.bh_hasCartGear()) return;
         long now = horse.level().getGameTime();
         HorseStabilizerState state = data.bh_getStabilizerState();
-        if (state == HorseStabilizerState.OPEN || state == HorseStabilizerState.HALF_OPEN) {
-            harnessSeen = now;
-        }
-        if (now - harnessSeen > HARNESS_LINGER || now < harnessSeen) {
-            return;
-        }
-
+        if (state == HorseStabilizerState.OPEN || state == HorseStabilizerState.HALF_OPEN) harnessSeen = now;
+        if (now - harnessSeen > HARNESS_LINGER || now < harnessSeen) return;
         BhConfig.Spot spot = BhConfig.harnessGauge();
         boolean left = spot.side() == BhConfig.Side.LEFT;
         int x = besideHotbar(screenW, spot.side(), spot.gap() + BASH_PAD);
         int y = screenH - HOTBAR_HEIGHT + (HOTBAR_HEIGHT - BASH_SIZE) / 2;
-        gfx.item(new ItemStack(ModItems.HORSE_STABILIZER), x, y);
-
+        gfx.renderItem(new ItemStack(ModItems.HORSE_STABILIZER), x, y);
         float charge = data.bh_getStabilizerCharge();
         int barX = left ? x - 5 : x + BASH_SIZE + 2;
         gfx.fill(barX - 1, y - 1, barX + 4, y + BASH_SIZE + 1, 0xFF000000);
@@ -316,17 +280,13 @@ public final class BhAbilityBadges {
         }
     }
 
-    private static void shield(GuiGraphicsExtractor gfx, int screenW, int screenH, int charge) {
-        if (charge < 0 || !BhFeature.HORSE_CHARGE.on() || !BhConfig.ownFeature(BhFeature.HORSE_CHARGE)) {
-            return;
-        }
+    private static void shield(GuiGraphics gfx, int screenW, int screenH, int charge) {
+        if (charge < 0 || !BhFeature.HORSE_CHARGE.on() || !BhConfig.ownFeature(BhFeature.HORSE_CHARGE)) return;
         BhConfig.Spot spot = BhConfig.chargeMeter();
         int x = besideHotbar(screenW, spot.side(), spot.gap());
         int y = screenH - HOTBAR_HEIGHT + (HOTBAR_HEIGHT - BASH_SIZE) / 2;
         int frame = Math.clamp(Math.round(charge * BASH_FRAMES / 100.0F), 0, BASH_FRAMES);
-
-        gfx.blit(RenderPipelines.GUI_TEXTURED, BASH[frame], x, y,
-                0.0F, 0.0F, BASH_SIZE, BASH_SIZE, BASH_SIZE, BASH_SIZE);
+        gfx.blit(BASH[frame], x, y, 0.0F, 0.0F, BASH_SIZE, BASH_SIZE, BASH_SIZE, BASH_SIZE);
     }
 
     private static int besideHotbar(int screenW, BhConfig.Side side, int gap) {
@@ -339,11 +299,13 @@ public final class BhAbilityBadges {
         return screenW / 2 + HOTBAR_HALF + gap + (lefty ? offhand : 0);
     }
 
-    private record Badge(String key, Identifier icon, Component label, Component value, float fill, boolean cooling) {}
-
-    private record Plate(Identifier tex, int width, int iconX, int textX, int textW) {}
-
-    static {
-        BhClientCaches.register(BhAbilityBadges::reset);
+    private static void tint(GuiGraphics gfx, int color) {
+        gfx.setColor(((color >> 16) & 255) / 255f, ((color >> 8) & 255) / 255f,
+                (color & 255) / 255f, ((color >>> 24) & 255) / 255f);
     }
+
+    private record Badge(String key, ResourceLocation icon, Component label, Component value, float fill, boolean cooling) {}
+    private record Plate(ResourceLocation tex, int width, int iconX, int textX, int textW) {}
+
+    static { BhClientCaches.register(BhAbilityBadges::reset); }
 }

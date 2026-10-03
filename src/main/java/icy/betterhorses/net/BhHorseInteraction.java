@@ -7,8 +7,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
-import net.minecraft.world.entity.animal.equine.Horse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -48,7 +48,7 @@ public final class BhHorseInteraction {
 
         data.bh_getGearContainer().setItem(GearSlot.STABILIZER.ordinal(), held.copyWithCount(1));
         held.consume(1, player);
-        horse.playSound(SoundEvents.HORSE_SADDLE.value(), 1.0F, 1.0F);
+        horse.playSound(SoundEvents.HORSE_SADDLE, 1.0F, 1.0F);
         return InteractionResult.CONSUME;
     }
 
@@ -117,7 +117,7 @@ public final class BhHorseInteraction {
         if (!horse.level().isClientSide()) {
             data.bh_setStabilizerState(landingState);
         }
-        horse.fallDistance = 0.0D;
+        horse.fallDistance = 0.0F;
         if (!horse.level().isClientSide()) {
             for (Entity passenger : horse.getIndirectPassengers()) {
                 if (passenger instanceof ServerPlayer serverPlayer) {

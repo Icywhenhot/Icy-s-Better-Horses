@@ -6,7 +6,7 @@ import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -19,30 +19,29 @@ public record BhBreedData(ArchetypeType archetype, int chestRows, int bondedChes
             BhContent.NONE.value(), BhContent.NONE.value().defaultChestRows(),
             BhContent.NONE.value().defaultChestRows(), DEFAULT_SPAWN_WEIGHT);
 
-    private static @Nullable Map<Identifier, BhBreedData> BUILT_IN;
-    private static final Map<Identifier, BhBreedData> live = new HashMap<>();
+    private static Map<ResourceLocation, BhBreedData> BUILT_IN = Map.of();
+    private static final Map<ResourceLocation, BhBreedData> live = new HashMap<>();
 
-    private static Map<Identifier, BhBreedData> builtIns() {
-        if (BUILT_IN == null) {
-            BUILT_IN = builtIn();
-        }
-        return BUILT_IN;
+    public static void initializeBuiltIns() {
+        BUILT_IN = builtIn();
+        live.clear();
+        live.putAll(BUILT_IN);
     }
 
     public static BhBreedData of(HorseBreed breed) {
-        if (!breed.isRealBreed()) {
-            return SPECIES_DEFAULT;
-        }
+        if (!breed.isRealBreed()) return SPECIES_DEFAULT;
         return of(idOf(breed));
     }
 
-    public static BhBreedData of(Identifier id) {
+    public static BhBreedData of(ResourceLocation id) {
         BhBreedData data = live.get(id);
-        return data != null ? data : builtIns().get(id);
+        if (data != null) return data;
+        data = BUILT_IN.get(id);
+        return data != null ? data : SPECIES_DEFAULT;
     }
 
     public static BhBreedData of(@Nullable ResourceKey<BreedType> id) {
-        return id == null ? SPECIES_DEFAULT : of(id.identifier());
+        return id == null ? SPECIES_DEFAULT : of(id.location());
     }
 
     public static BhBreedData speciesDefault() {
@@ -50,47 +49,44 @@ public record BhBreedData(ArchetypeType archetype, int chestRows, int bondedChes
     }
 
     public static BhBreedData builtIn(HorseBreed breed) {
-        if (!breed.isRealBreed()) {
-            return SPECIES_DEFAULT;
-        }
+        if (!breed.isRealBreed()) return SPECIES_DEFAULT;
         return builtIn(idOf(breed));
     }
 
-    public static BhBreedData builtIn(Identifier id) {
-        return builtIns().get(id);
+    public static BhBreedData builtIn(ResourceLocation id) {
+        BhBreedData data = BUILT_IN.get(id);
+        return data != null ? data : SPECIES_DEFAULT;
     }
 
-    public static Map<Identifier, BhBreedData> all() {
-        return live.isEmpty() ? builtIns() : Map.copyOf(live);
+    public static Map<ResourceLocation, BhBreedData> all() {
+        return Map.copyOf(live);
     }
 
-    public static void replaceAll(Map<Identifier, BhBreedData> loaded) {
+    public static void replaceAll(Map<ResourceLocation, BhBreedData> loaded) {
         live.clear();
-        live.putAll(builtIns());
+        live.putAll(BUILT_IN);
         live.putAll(loaded);
     }
 
     public static void resetToBuiltIn() {
         live.clear();
-        live.putAll(builtIns());
+        live.putAll(BUILT_IN);
     }
 
     public int rowsAt(int bondTier) {
         return bondTier >= 2 ? bondedChestRows : chestRows;
     }
 
-    private static Identifier idOf(HorseBreed breed) {
-        return Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, breed.id());
+    private static ResourceLocation idOf(HorseBreed breed) {
+        return ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, breed.id());
     }
 
-    private static Map<Identifier, BhBreedData> builtIn() {
-        Map<Identifier, BhBreedData> map = new HashMap<>();
+    private static Map<ResourceLocation, BhBreedData> builtIn() {
+        Map<ResourceLocation, BhBreedData> map = new HashMap<>();
         Registry<BreedType> registry = BhRegistries.breedTypeRegistry();
         for (BreedType type : registry) {
-            Identifier id = registry.getKey(type);
-            if (id == null) {
-                continue;
-            }
+            ResourceLocation id = registry.getKey(type);
+            if (id == null) continue;
             ArchetypeType archetype = resolveArchetype(type.archetype());
             int rows = type.chestRowsOverride() != null ? type.chestRowsOverride() : archetype.defaultChestRows();
             int bonded = type.bondedChestRowsOverride() != null ? type.bondedChestRowsOverride() : rows;
@@ -100,7 +96,7 @@ public record BhBreedData(ArchetypeType archetype, int chestRows, int bondedChes
     }
 
     private static ArchetypeType resolveArchetype(ResourceKey<ArchetypeType> key) {
-        ArchetypeType type = BhRegistries.archetypeTypeRegistry().getValue(key.identifier());
+        ArchetypeType type = BhRegistries.archetypeTypeRegistry().get(key.location());
         return type != null ? type : BhContent.NONE.value();
     }
 }

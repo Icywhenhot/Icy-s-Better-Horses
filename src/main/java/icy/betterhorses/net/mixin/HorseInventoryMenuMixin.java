@@ -5,7 +5,7 @@ import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -23,8 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import icy.betterhorses.net.BhCriteria;
 import icy.betterhorses.net.ModItems;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.ContainerUser;
-import net.minecraft.world.entity.animal.equine.Horse;
+import net.minecraft.world.entity.animal.horse.Horse;
 import org.jetbrains.annotations.Nullable;
 
 @Mixin(HorseInventoryMenu.class)
@@ -37,7 +36,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Unique private static final int BH_ENDER_SLOT_COUNT = 27;
     @Unique private static final int BH_MAX_CHEST_ROWS = 6;
     @Unique private static final int BH_ROW_HEIGHT = 18;
-    @Unique private static final int BH_CHEST_GAP = 7;
+
     @Unique private int bh_gearStartIndex = -1;
     @Unique private int bh_chestStartIndex = -1;
     @Unique private int bh_playerInventoryStartIndex = -1;
@@ -133,12 +132,12 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             }
 
             @Override
-            public void startOpen(ContainerUser user) {
+            public void startOpen(Player user) {
                 this.bh_active().startOpen(user);
             }
 
             @Override
-            public void stopOpen(ContainerUser user) {
+            public void stopOpen(Player user) {
                 this.bh_active().stopOpen(user);
             }
 
@@ -147,7 +146,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                 this.bh_active().clearContent();
             }
         };
-        this.bh_playerInventoryStartIndex = horseContainer.getContainerSize() + 2;
+        this.bh_playerInventoryStartIndex = horseContainer.getContainerSize() + 1;
         this.bh_playerInventoryEndIndex = Math.min(this.bh_playerInventoryStartIndex + 36, this.slots.size());
 
         this.bh_gearStartIndex = this.slots.size();
@@ -217,18 +216,13 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     }
 
     @Override
-    public @Nullable AbstractHorse bh_mount() {
-        return this.bh_horse;
-    }
-
-    @Override
     public void bh_refreshLayout() {
         this.bh_chestRows = this.bh_resolveChestRows();
         if (this.bh_playerInventoryStartIndex < 0 || this.bh_playerInventoryEndIndex < 0) {
             return;
         }
 
-        int wanted = this.bh_hasChestStorageLayout() ? this.bh_chestRows * BH_ROW_HEIGHT + BH_CHEST_GAP : 0;
+        int wanted = this.bh_hasChestStorageLayout() ? this.bh_chestRows * BH_ROW_HEIGHT : 0;
         if (wanted == this.bh_appliedShift) {
             return;
         }
@@ -262,6 +256,11 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Override
     public boolean bh_isSaddleSlotLocked() {
         return this.bh_horse != null && IHorseData.of(this.bh_horse).bh_hasCartGear();
+    }
+
+    @Override
+    public @Nullable AbstractHorse bh_mount() {
+        return this.bh_horse;
     }
 
     @Override
@@ -300,7 +299,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
     @Unique
     private boolean bh_isStorageChestGear(ItemStack stack) {
-        return GearSlot.isStorageChest(stack);
+        return stack.is(Items.CHEST);
     }
 
     @Unique

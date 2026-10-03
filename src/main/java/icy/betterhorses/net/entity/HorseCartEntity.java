@@ -10,6 +10,8 @@ import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.CartMenu;
 import icy.betterhorses.net.item.HorseCartItem;
 import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -17,7 +19,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.sounds.SoundEvents;
@@ -28,21 +30,19 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.entity.InterpolationHandler;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
-import net.minecraft.world.entity.animal.fox.Fox;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.Fox;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import icy.betterhorses.net.inventory.GearSlot;
@@ -53,33 +53,29 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.component.DataComponents;
-import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import org.jetbrains.annotations.Nullable;
 
-import com.geckolib.animatable.GeoEntity;
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.animatable.manager.AnimatableManager;
-import com.geckolib.animation.AnimationController;
-import com.geckolib.animation.RawAnimation;
-import com.geckolib.animation.object.PlayState;
-import com.geckolib.animation.state.AnimationTest;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public final class HorseCartEntity extends Entity implements GeoEntity {
 
@@ -111,18 +107,18 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     private static final float CART_BREAK_DAMAGE = 40.0F;
     private static final double REAR_SEAT_SIDE = 0.45D;
     private static final double REAR_SEAT_HEIGHT = 0.75D;
-    private static final float MAX_CARGO_WIDTH = EntityTypes.OAK_BOAT.getWidth();
+    private static final float MAX_CARGO_WIDTH = EntityType.BOAT.getWidth();
     private static final double BOARD_SCAN_HEIGHT = 1.6D;
     private static final int RESTORE_BOARD_TICKS = 80;
 
     private static final TagKey<Block> PLOUGHABLE = TagKey.create(Registries.BLOCK,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "ploughable"));
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "ploughable"));
     private static final TagKey<EntityType<?>> CARGO_BLOCKED = TagKey.create(Registries.ENTITY_TYPE,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "cart_cargo_blocked"));
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "cart_cargo_blocked"));
     private static final TagKey<EntityType<?>> CARGO_ALLOWED = TagKey.create(Registries.ENTITY_TYPE,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "cart_cargo_allowed"));
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "cart_cargo_allowed"));
     private static final TagKey<EntityType<?>> NEUTRAL = TagKey.create(Registries.ENTITY_TYPE,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "cart_pickup_neutral"));
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "cart_pickup_neutral"));
 
     public static final int PICKUP_ON = 1;
     public static final int PICKUP_PASSIVE = 2;
@@ -217,7 +213,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             return;
         }
         this.entityData.set(DATA_TYPE, type.ordinal());
-        this.setBoundingBox(this.makeBoundingBox(this.position()));
+        this.setBoundingBox(this.makeBoundingBox());
         this.dropOverflowPassengers();
     }
 
@@ -465,8 +461,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         this.updateRollSpeed();
         IHorseData data = IHorseData.of(boundHorse);
         if (data.bh_getCartId() != null && !getUUID().equals(data.bh_getCartId())
-                && level().getEntity(data.bh_getCartId()) instanceof HorseCartEntity replacement) {
-            for (Entity passenger : List.copyOf(getPassengers())) passenger.startRiding(replacement, true, true);
+                && this.level() instanceof ServerLevel serverLevel
+                && serverLevel.getEntity(data.bh_getCartId()) instanceof HorseCartEntity replacement) {
+            for (Entity passenger : List.copyOf(getPassengers())) passenger.startRiding(replacement, true);
             discard();
             return;
         }
@@ -648,18 +645,13 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     private void glueToHorse(AbstractHorse boundHorse) {
-        InterpolationHandler interpolation = this.getInterpolation();
-        if (interpolation != null) {
-            interpolation.cancel();
-        }
-
         this.followHorse(boundHorse);
         IHorseData.of(boundHorse).bh_bindCartEntity(this);
 
         Vec3 previous = cartPosFor(boundHorse.xo, boundHorse.yo, boundHorse.zo, boundHorse.yBodyRotO);
-        this.xo = previous.x;
-        this.yo = previous.y + this.liftO;
-        this.zo = previous.z;
+        this.xo = this.xOld = previous.x;
+        this.yo = this.yOld = previous.y + this.liftO;
+        this.zo = this.zOld = previous.z;
         this.yRotO = this.slackYawO;
     }
 
@@ -810,10 +802,10 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         if (!(candidate instanceof LivingEntity)
                 || candidate instanceof Player
                 || candidate instanceof AbstractHorse
-                || candidate.is(CARGO_BLOCKED)) {
+                || candidate.getType().is(CARGO_BLOCKED)) {
             return false;
         }
-        return candidate.is(CARGO_ALLOWED) || candidate.getBbWidth() < MAX_CARGO_WIDTH;
+        return candidate.getType().is(CARGO_ALLOWED) || candidate.getBbWidth() < MAX_CARGO_WIDTH;
     }
 
     private AABB boardScanBox() {
@@ -824,7 +816,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     private static boolean wanted(LivingEntity mob, int pickup) {
         int kind;
-        if (mob instanceof NeutralMob || mob.is(NEUTRAL)) {
+        if (mob instanceof NeutralMob || mob.getType().is(NEUTRAL)) {
             kind = PICKUP_NEUTRAL;
         } else if (mob instanceof Enemy) {
             kind = PICKUP_HOSTILE;
@@ -860,15 +852,15 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
                 continue;
             }
             if (this.rearSeatsFree()) {
-                candidate.startRiding(this, restoring, true);
+                candidate.startRiding(this, restoring);
             } else {
-                candidate.startRiding(boundHorse, false, true);
+                candidate.startRiding(boundHorse, false);
             }
         }
     }
 
     @Override
-    public InteractionResult interact(Player player, InteractionHand hand, Vec3 hitLocation) {
+    public InteractionResult interactAt(Player player, Vec3 hitLocation, InteractionHand hand) {
         boolean clientSide = this.level().isClientSide();
         ItemStack held = player.getItemInHand(hand);
 
@@ -985,7 +977,8 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             return;
         }
         this.dropPlough();
-        player.getItemInHand(hand).hurtAndBreak(1, player, hand);
+        player.getItemInHand(hand).hurtAndBreak(1, player,
+                hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
         this.playSound(SoundEvents.SHEEP_SHEAR, 1.0F, 1.0F);
     }
 
@@ -998,7 +991,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             return;
         }
         this.setPlough(ItemStack.EMPTY);
-        this.spawnAtLocation(level, hoe);
+        this.spawnAtLocation(hoe);
     }
 
     private void tillGround() {
@@ -1036,7 +1029,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         tool.hurtAndBreak(turned, level, null, item -> {});
         if (tool.isEmpty()) {
             this.setPlough(ItemStack.EMPTY);
-            this.playSound(SoundEvents.ITEM_BREAK.value(), 0.8F, 0.9F);
+            this.playSound(SoundEvents.ITEM_BREAK, 0.8F, 0.9F);
         }
     }
 
@@ -1122,7 +1115,8 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
         this.closeViewers();
         this.dropChest();
-        player.getItemInHand(hand).hurtAndBreak(1, player, hand);
+        player.getItemInHand(hand).hurtAndBreak(1, player,
+                hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
         this.playSound(SoundEvents.SHEEP_SHEAR, 1.0F, 1.0F);
     }
 
@@ -1144,10 +1138,10 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         for (int slot = 0; slot < this.placedChest.getContainerSize(); slot++) {
             ItemStack stack = this.placedChest.removeItemNoUpdate(slot);
             if (!stack.isEmpty()) {
-                this.spawnAtLocation(level, stack);
+                this.spawnAtLocation(stack);
             }
         }
-        this.spawnAtLocation(level, chest);
+        this.spawnAtLocation(chest);
     }
 
     public void openMenu(ServerPlayer player) {
@@ -1158,7 +1152,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
         int tab = this.hasChest() ? CartMenu.TAB_CARGO : CartMenu.TAB_CART;
         HorseCartEntity cart = this;
-        player.openMenu(new ExtendedMenuProvider<CartMenu.Opening>() {
+        player.openMenu(new ExtendedScreenHandlerFactory<CartMenu.Opening>() {
             @Override
             public CartMenu.Opening getScreenOpeningData(ServerPlayer opener) {
                 return new CartMenu.Opening(cart.getId(), tab);
@@ -1285,8 +1279,8 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     @Override
-    protected AABB makeBoundingBox(Vec3 pos) {
-        return boxFor(this.type(), pos, this.getYRot());
+    protected AABB makeBoundingBox() {
+        return boxFor(this.type(), this.position(), this.getYRot());
     }
 
     private static AABB boxFor(CartType size, Vec3 pos, float yaw) {
@@ -1308,20 +1302,21 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     @Override
-    public boolean canBeCollidedWith(Entity entity) {
-        if (entity == null) {
-            return true;
-        }
-        AbstractHorse bound = this.boundHorse();
-        if (bound != null && (entity == bound || entity.getVehicle() == bound)) {
-            return false;
-        }
-        return !this.hasPassenger(entity);
+    public boolean canBeCollidedWith() {
+        return true;
     }
 
     @Override
     public boolean canCollideWith(Entity entity) {
-        return this.canBeCollidedWith(entity);
+        return this.bh_collidesWith(entity);
+    }
+
+    public boolean bh_collidesWith(Entity mover) {
+        AbstractHorse bound = this.boundHorse();
+        if (bound != null && (mover == bound || mover.getVehicle() == bound)) {
+            return false;
+        }
+        return !this.hasPassenger(mover);
     }
 
     @Override
@@ -1335,7 +1330,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     @Override
-    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+    public boolean hurt(DamageSource source, float amount) {
         if (!this.isPlaced() || this.isRemoved()) {
             return false;
         }
@@ -1343,8 +1338,8 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         boolean instant = source.getEntity() instanceof Player player && player.getAbilities().instabuild;
         this.damageTaken += amount * 10.0F;
         this.markHurt();
-        if (instant || this.damageTaken > CART_BREAK_DAMAGE) {
-            this.breakIntoItems(level, !instant);
+        if ((instant || this.damageTaken > CART_BREAK_DAMAGE) && this.level() instanceof ServerLevel serverLevel) {
+            this.breakIntoItems(serverLevel, !instant);
         }
         return true;
     }
@@ -1354,7 +1349,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         this.dropChest();
         this.dropPlough();
         if (dropCart) {
-            this.spawnAtLocation(level, this.placedCart.isEmpty()
+            this.spawnAtLocation(this.placedCart.isEmpty()
                     ? new ItemStack(ModItems.HORSE_CART) : this.placedCart.copy());
         }
         this.playSound(SoundEvents.WOOD_BREAK, 1.0F, 1.0F);
@@ -1370,7 +1365,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
         if (DATA_TYPE.equals(key)) {
-            this.setBoundingBox(this.makeBoundingBox(this.position()));
+            this.setBoundingBox(this.makeBoundingBox());
         }
     }
 
@@ -1388,20 +1383,25 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     @Override
-    protected void readAdditionalSaveData(ValueInput input) {
-        this.horseUuid = input.read("BhHorse", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
-        this.entityData.set(DATA_PLACED, input.getBooleanOr("BhPlaced", false));
+    protected void readAdditionalSaveData(CompoundTag input) {
+        this.horseUuid = input.hasUUID("BhHorse") ? input.getUUID("BhHorse") : null;
+        this.entityData.set(DATA_PLACED, input.getBoolean("BhPlaced"));
         if (this.isPlaced()) {
             this.setNoGravity(false);
         }
-        this.placedChestItem = input.getBooleanOr("BhHasChest", false)
-                ? input.read("BhChestItem", ItemStack.CODEC).orElseGet(() -> new ItemStack(Items.CHEST))
-                : ItemStack.EMPTY;
+        this.placedChestItem = !input.getBoolean("BhHasChest") ? ItemStack.EMPTY
+                : input.contains("BhChestItem", Tag.TAG_COMPOUND)
+                ? ItemStack.parse(this.registryAccess(), input.getCompound("BhChestItem")).orElseGet(() -> new ItemStack(Items.CHEST))
+                : new ItemStack(Items.CHEST);
         this.entityData.set(DATA_HAS_CHEST, !this.placedChestItem.isEmpty());
-        this.placedPlow = input.read("BhPlow", ItemStack.CODEC).orElse(ItemStack.EMPTY);
+        this.placedPlow = input.contains("BhPlow", Tag.TAG_COMPOUND)
+                ? ItemStack.parse(this.registryAccess(), input.getCompound("BhPlow")).orElse(ItemStack.EMPTY)
+                : ItemStack.EMPTY;
         this.entityData.set(DATA_HAS_PLOW, !this.placedPlow.isEmpty());
-        boolean legacyLarge = input.getBooleanOr("BhLarge", false);
-        this.placedCart = input.read("BhCart", ItemStack.CODEC).orElse(ItemStack.EMPTY);
+        boolean legacyLarge = input.getBoolean("BhLarge");
+        this.placedCart = input.contains("BhCart", Tag.TAG_COMPOUND)
+                ? ItemStack.parse(this.registryAccess(), input.getCompound("BhCart")).orElse(ItemStack.EMPTY)
+                : ItemStack.EMPTY;
         if (this.isPlaced() && this.placedCart.isEmpty()) {
             this.placedCart = new ItemStack(ModItems.HORSE_CART);
             HorseCartItem.setType(this.placedCart, CartType.defaultFor(legacyLarge));
@@ -1411,74 +1411,73 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         if (!this.placedCart.isEmpty()) {
             this.mirrorSetup(this.placedCart);
         }
-        this.damageTaken = input.getFloatOr("BhDamage", 0.0F);
+        this.damageTaken = input.getFloat("BhDamage");
         this.placedChest.clearContent();
-        for (BhCartSlot entry : input.listOrEmpty("BhChestItems", BhCartSlot.CODEC)) {
-            if (entry.slot() >= 0 && entry.slot() < this.placedChest.getContainerSize()) {
-                this.placedChest.setItem(entry.slot(), entry.stack());
+        var items = input.getList("BhChestItems", Tag.TAG_COMPOUND);
+        for (int i = 0; i < items.size(); i++) {
+            CompoundTag entry = items.getCompound(i);
+            int slot = entry.getByte("Slot") & 255;
+            if (slot >= 0 && slot < this.placedChest.getContainerSize()) {
+                this.placedChest.setItem(slot,
+                        ItemStack.parse(this.registryAccess(), entry).orElse(ItemStack.EMPTY));
             }
         }
-        if (!input.getBooleanOr("BhChestWide", false) && !legacyLarge) {
+        if (!input.getBoolean("BhChestWide") && !legacyLarge) {
             CartType.widenLegacyRows(this.placedChest);
         }
     }
 
     @Override
-    protected void addAdditionalSaveData(ValueOutput output) {
-        if (this.horseUuid != null) output.store("BhHorse", net.minecraft.core.UUIDUtil.CODEC, this.horseUuid);
+    protected void addAdditionalSaveData(CompoundTag output) {
+        if (this.horseUuid != null) output.putUUID("BhHorse", this.horseUuid);
         output.putBoolean("BhPlaced", this.isPlaced());
         output.putBoolean("BhHasChest", this.hasChest());
         if (!this.placedChestItem.isEmpty()) {
-            output.store("BhChestItem", ItemStack.CODEC, this.placedChestItem);
+            output.put("BhChestItem", this.placedChestItem.save(this.registryAccess()));
         }
         if (!this.placedPlow.isEmpty()) {
-            output.store("BhPlow", ItemStack.CODEC, this.placedPlow);
+            output.put("BhPlow", this.placedPlow.save(this.registryAccess()));
         }
         if (!this.placedCart.isEmpty()) {
-            output.store("BhCart", ItemStack.CODEC, this.placedCart);
+            output.put("BhCart", this.placedCart.save(this.registryAccess()));
         }
         output.putBoolean("BhChestWide", true);
         output.putFloat("BhDamage", this.damageTaken);
-        ValueOutput.TypedOutputList<BhCartSlot> items = output.list("BhChestItems", BhCartSlot.CODEC);
+        net.minecraft.nbt.ListTag items = new net.minecraft.nbt.ListTag();
         for (int slot = 0; slot < this.placedChest.getContainerSize(); slot++) {
             ItemStack stack = this.placedChest.getItem(slot);
             if (!stack.isEmpty()) {
-                items.add(new BhCartSlot(slot, stack));
+                CompoundTag entry = new CompoundTag();
+                entry.putByte("Slot", (byte) slot);
+                items.add(stack.save(this.registryAccess(), entry));
             }
         }
-    }
-
-    public record BhCartSlot(int slot, ItemStack stack) {
-        public static final Codec<BhCartSlot> CODEC =
-                RecordCodecBuilder.create(instance -> instance.group(
-                        Codec.INT.fieldOf("Slot").forGetter(BhCartSlot::slot),
-                        ItemStack.CODEC.fieldOf("Item").forGetter(BhCartSlot::stack)
-                ).apply(instance, BhCartSlot::new));
+        output.put("BhChestItems", items);
     }
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("wheels", 0, this::wheelPredicate));
-        controllers.add(new AnimationController<>("chest", 0, this::chestPredicate));
-        controllers.add(new AnimationController<>("pose", 0, this::posePredicate));
-        controllers.add(new AnimationController<>("plough", 0, this::ploughPredicate));
+        controllers.add(new AnimationController<>(this, "wheels", 0, this::wheelPredicate));
+        controllers.add(new AnimationController<>(this, "chest", 0, this::chestPredicate));
+        controllers.add(new AnimationController<>(this, "pose", 0, this::posePredicate));
+        controllers.add(new AnimationController<>(this, "plough", 0, this::ploughPredicate));
     }
 
-    private PlayState posePredicate(AnimationTest<HorseCartEntity> test) {
+    private PlayState posePredicate(AnimationState<HorseCartEntity> test) {
         if (!this.isPlaced()) {
-            if (test.controller().getCurrentRawAnimation() != null) {
-                test.controller().reset();
+            if (test.getController().getCurrentRawAnimation() != null) {
+                test.resetCurrentAnimation();
             }
             return PlayState.STOP;
         }
         return test.setAndContinue(this.type().standing());
     }
 
-    private PlayState ploughPredicate(AnimationTest<HorseCartEntity> test) {
+    private PlayState ploughPredicate(AnimationState<HorseCartEntity> test) {
         RawAnimation dragging = this.type().tilling();
         if (dragging == null || !this.hasPlough() || this.smoothedSpeed <= 0.0D) {
-            if (test.controller().getCurrentRawAnimation() != null) {
-                test.controller().reset();
+            if (test.getController().getCurrentRawAnimation() != null) {
+                test.resetCurrentAnimation();
             }
             return PlayState.STOP;
         }
@@ -1487,11 +1486,11 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         return test.setAndContinue(dragging);
     }
 
-    private PlayState chestPredicate(AnimationTest<HorseCartEntity> test) {
+    private PlayState chestPredicate(AnimationState<HorseCartEntity> test) {
         if (!this.hasChest()) {
             this.chestAnimPrimed = false;
-            if (test.controller().getCurrentRawAnimation() != null) {
-                test.controller().reset();
+            if (test.getController().getCurrentRawAnimation() != null) {
+                test.resetCurrentAnimation();
             }
             return PlayState.STOP;
         }
@@ -1505,7 +1504,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         return test.setAndContinue(this.type().chestClosing());
     }
 
-    private PlayState wheelPredicate(AnimationTest<HorseCartEntity> test) {
+    private PlayState wheelPredicate(AnimationState<HorseCartEntity> test) {
         if (this.smoothedSpeed <= 0.0D) {
             test.setControllerSpeed(0.0F);
             return PlayState.STOP;

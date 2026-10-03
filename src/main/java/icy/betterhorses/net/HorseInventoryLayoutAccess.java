@@ -1,7 +1,7 @@
 package icy.betterhorses.net;
 
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import org.jetbrains.annotations.Nullable;
 
 public interface HorseInventoryLayoutAccess {

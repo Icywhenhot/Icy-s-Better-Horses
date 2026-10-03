@@ -1,74 +1,67 @@
 package icy.betterhorses.net.client.render;
 
-import icy.betterhorses.net.client.BhClientCaches;
-
 import icy.betterhorses.net.HorseStabilizerState;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import org.jetbrains.annotations.Nullable;
-import com.geckolib.animatable.GeoAnimatable;
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.animatable.manager.AnimatableManager;
-import com.geckolib.animation.AnimationController;
-import com.geckolib.animation.RawAnimation;
-import com.geckolib.animation.object.LoopType;
-import com.geckolib.animation.object.PlayState;
-import com.geckolib.animation.state.AnimationTest;
-import com.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.Animation;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.HashMap;
 
 public final class HorseStabilizerAnimatable implements GeoAnimatable {
+
     private static final RawAnimation DEPLOY_AND_GLIDE = RawAnimation.begin()
-            .then("animation", LoopType.PLAY_ONCE)
+            .then("animation", Animation.LoopType.PLAY_ONCE)
             .thenLoop("wingflap");
     private static final RawAnimation GLIDE_LOOP = RawAnimation.begin().thenLoop("wingflap");
     private static final Map<AbstractHorse, HorseStabilizerAnimatable> INSTANCES = new WeakHashMap<>();
 
-    private static final Map<Integer, HorseStabilizerAnimatable> BY_ID = new HashMap<>();
-
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private final AnimationController<HorseStabilizerAnimatable> controller =
-            new AnimationController<>("stabilizer", 0, this::animationPredicate);
+            new AnimationController<>(this, "stabilizer", 0, this::animationPredicate);
 
     private @Nullable AbstractHorse horse;
     private HorseStabilizerState state = HorseStabilizerState.CLOSED;
     private boolean active;
     private boolean deploySequenceRequested;
+    private double tick;
 
     public static HorseStabilizerAnimatable get(AbstractHorse horse) {
         return INSTANCES.computeIfAbsent(horse, ignored -> new HorseStabilizerAnimatable());
     }
 
     public static @Nullable HorseStabilizerAnimatable getById(int entityId) {
-        return BY_ID.get(entityId);
+        for (Map.Entry<AbstractHorse, HorseStabilizerAnimatable> entry : INSTANCES.entrySet()) {
+            if (entry.getKey().getId() == entityId) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
     public static void remove(AbstractHorse horse) {
-        HorseStabilizerAnimatable value = INSTANCES.remove(horse);
-        if (value != null) {
-            BY_ID.remove(horse.getId(), value);
-            value.horse = null;
-        }
+        INSTANCES.remove(horse);
     }
 
-    public static void reset() {
-        INSTANCES.clear();
-        BY_ID.clear();
-    }
-
-    public void syncFromHorse(AbstractHorse horse, HorseStabilizerState state) {
+    public void syncFromHorse(AbstractHorse horse, HorseStabilizerState state, double tick) {
         this.horse = horse;
-        BY_ID.put(horse.getId(), this);
+        this.tick = tick;
 
         boolean nextActive = state != HorseStabilizerState.CLOSED;
         if (nextActive && !this.active) {
             this.deploySequenceRequested = true;
-            this.controller.reset();
+            this.controller.forceAnimationReset();
         } else if (!nextActive && this.active) {
             this.deploySequenceRequested = false;
-            this.controller.reset();
+            this.controller.stop();
         }
 
         this.active = nextActive;
@@ -93,24 +86,21 @@ public final class HorseStabilizerAnimatable implements GeoAnimatable {
         return this.cache;
     }
 
-    private PlayState animationPredicate(AnimationTest<HorseStabilizerAnimatable> test) {
+    @Override
+    public double getTick(Object relatedObject) {
+        return this.tick;
+    }
+
+    private PlayState animationPredicate(AnimationState<HorseStabilizerAnimatable> state) {
         if (!this.active) {
             return PlayState.STOP;
         }
-
         if (this.deploySequenceRequested) {
             this.deploySequenceRequested = false;
-            return test.setAndContinue(DEPLOY_AND_GLIDE);
+            state.setAnimation(DEPLOY_AND_GLIDE);
+            return PlayState.CONTINUE;
         }
-
-        if (!test.isCurrentAnimation(DEPLOY_AND_GLIDE) && !test.isCurrentAnimation(GLIDE_LOOP)) {
-            return test.setAndContinue(GLIDE_LOOP);
-        }
-
+        state.setAnimation(GLIDE_LOOP);
         return PlayState.CONTINUE;
-    }
-
-    static {
-        BhClientCaches.register(HorseStabilizerAnimatable::reset);
     }
 }

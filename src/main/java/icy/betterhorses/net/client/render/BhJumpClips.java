@@ -7,7 +7,7 @@ import com.google.gson.JsonParser;
 import icy.betterhorses.net.IcysBetterHorses;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -42,8 +42,8 @@ public final class BhJumpClips {
     private static final String[] BONE_NAMES = {"body2", "neck", "head", "left_ear", "right_ear", "tail",
             "front_left_leg", "front_right_leg", "back_left_leg", "back_right_leg"};
 
-    private static final Identifier FILE =
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "clips/horse_jump.json");
+    private static final ResourceLocation FILE =
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "clips/horse_jump.json");
 
     private static final byte LINEAR = 0;
     private static final byte SMOOTH = 1;
@@ -79,8 +79,8 @@ public final class BhJumpClips {
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(
                 new SimpleSynchronousResourceReloadListener() {
                     @Override
-                    public Identifier getFabricId() {
-                        return Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "jump_clips");
+                    public ResourceLocation getFabricId() {
+                        return ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "jump_clips");
                     }
 
                     @Override

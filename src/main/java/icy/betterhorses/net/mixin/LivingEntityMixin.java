@@ -10,7 +10,6 @@ import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -19,7 +18,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,6 +31,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity {
+
+    @Inject(method = "lerpTo", at = @At("HEAD"))
+    private void bh_snapFarHorseTeleport(double x, double y, double z, float yRot, float xRot, int steps, CallbackInfo ci) {
+        if (this.level().isClientSide() && (Object) this instanceof AbstractHorse
+                && this.distanceToSqr(x, y, z) > 4096.0D) {
+            this.moveTo(x, y, z, yRot, xRot);
+        }
+    }
 
     @Unique private static final float BH_MEDKIT_HEALTH_THRESHOLD_FRACTION = 0.5F;
     @Unique private static final int BH_MEDKIT_EFFECT_DURATION = 20 * 30;
@@ -64,14 +71,14 @@ public abstract class LivingEntityMixin extends Entity {
     }
 
     @Inject(method = "isInvulnerableTo", at = @At("HEAD"), cancellable = true)
-    private void bh_shrugOffSlowBlocks(ServerLevel level, DamageSource source, CallbackInfoReturnable<Boolean> cir) {
+    private void bh_shrugOffSlowBlocks(DamageSource source, CallbackInfoReturnable<Boolean> cir) {
         if (SlowBlockImmunity.shrugsOffSlowBlockDamage((LivingEntity) (Object) this, source)) {
             cir.setReturnValue(true);
         }
     }
 
     @Inject(method = "actuallyHurt", at = @At("HEAD"), cancellable = true)
-    private void bh_queueHorseMedkit(ServerLevel level, DamageSource source, float amount, CallbackInfo ci) {
+    private void bh_queueHorseMedkit(DamageSource source, float amount, CallbackInfo ci) {
         this.bh_triggerHorseMedkitAfterDamage = false;
 
         LivingEntity self = (LivingEntity) (Object) this;
@@ -79,7 +86,7 @@ public abstract class LivingEntityMixin extends Entity {
             return;
         }
 
-        if (self.isInvulnerableTo(level, source) || !this.bh_hasEquippedMedkit(data)) {
+        if (self.isInvulnerableTo(source) || !this.bh_hasEquippedMedkit(data)) {
             return;
         }
 
@@ -91,7 +98,7 @@ public abstract class LivingEntityMixin extends Entity {
     }
 
     @Inject(method = "actuallyHurt", at = @At("TAIL"))
-    private void bh_afterDamage(ServerLevel level, DamageSource source, float amount, CallbackInfo ci) {
+    private void bh_afterDamage(DamageSource source, float amount, CallbackInfo ci) {
         LivingEntity self = (LivingEntity) (Object) this;
 
         if (!this.bh_triggerHorseMedkitAfterDamage) {
@@ -134,8 +141,8 @@ public abstract class LivingEntityMixin extends Entity {
 
         int dur = BH_MEDKIT_EFFECT_DURATION * ArchetypePerks.medkitMultiplier(BhBreedData.of(data.bh_getBreedKey()).archetype());
         self.addEffect(new MobEffectInstance(MobEffects.REGENERATION, dur, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.INSTANT_HEALTH, 1, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, dur, 0));
+        self.addEffect(new MobEffectInstance(MobEffects.HEAL, 1, 0));
+        self.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, dur, 0));
         self.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, dur, 0));
     }
 }

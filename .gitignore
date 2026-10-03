@@ -2,7 +2,6 @@
 .idea/
 build/
 run/
-logs/
 out/
 *.iml
 
@@ -12,5 +11,5 @@ Thumbs.db
 blockbench/
 tools/
 *.bbmodel
-*.md
-!guide/*.md
+
+*.log

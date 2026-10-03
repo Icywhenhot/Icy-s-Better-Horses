@@ -16,7 +16,7 @@ import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -82,14 +82,14 @@ public final class BreedAbilities implements HorseFeature {
         breedInitialized = true;
         activeBreedKey = key;
         slots.clear();
-        BreedType breed = key == null ? null : BhRegistries.breedTypeRegistry().getValue(key.identifier());
+        BreedType breed = key == null ? null : BhRegistries.breedTypeRegistry().get(key.location());
         if (breed != null) {
-            CompoundTag tags = saved.getCompoundOrEmpty(key.identifier().toString());
+            CompoundTag tags = saved.getCompound(key.location().toString());
             for (ResourceKey<AbilityType> id : breed.abilities()) {
-                AbilityType type = BhRegistries.abilityTypeRegistry().getValue(id.identifier());
+                AbilityType type = BhRegistries.abilityTypeRegistry().get(id.location());
                 if (type == null) continue;
                 BreedAbility ability = type.create();
-                if (!horse.level().isClientSide()) ability.load(tags.getCompoundOrEmpty(id.identifier().toString()).copy());
+                if (!horse.level().isClientSide()) ability.load(tags.getCompound(id.location().toString()).copy());
                 slots.add(new Slot(id, type, ability));
             }
         }
@@ -128,7 +128,7 @@ public final class BreedAbilities implements HorseFeature {
     }
 
     private static boolean enabled(Slot slot, IHorseData data) {
-        return slot.id.identifier().getNamespace().equals(IcysBetterHorses.MOD_ID)
+        return slot.id.location().getNamespace().equals(IcysBetterHorses.MOD_ID)
                 && data.bh_getBreed().isRealBreed()
                 ? BhConfig.anyAbilityEnabled(data.bh_getBreed()) : slot.type.defaultEnabled();
     }
@@ -148,12 +148,12 @@ public final class BreedAbilities implements HorseFeature {
 
     private void snapshot() {
         if (!breedInitialized || activeBreedKey == null) return;
-        String breed = activeBreedKey.identifier().toString();
-        CompoundTag tags = saved.getCompoundOrEmpty(breed).copy();
+        String breed = activeBreedKey.location().toString();
+        CompoundTag tags = saved.getCompound(breed).copy();
         for (Slot slot : slots) {
             CompoundTag tag = new CompoundTag();
             slot.ability.save(tag);
-            tags.put(slot.id.identifier().toString(), tag);
+            tags.put(slot.id.location().toString(), tag);
         }
         saved.put(breed, tags);
     }
@@ -187,7 +187,7 @@ public final class BreedAbilities implements HorseFeature {
             ItemStack stack = chest.getItem(i);
             if (!stack.isEmpty()) {
                 chest.setItem(i, ItemStack.EMPTY);
-                horse.spawnAtLocation(level, stack);
+                horse.spawnAtLocation(stack);
             }
         }
         chest.setChanged();

@@ -1,8 +1,9 @@
 package icy.betterhorses.net.client.render;
 
+import icy.betterhorses.net.entity.ClydesdaleHorse;
 import net.minecraft.client.model.geom.ModelPart;
 
-public class ClydesdaleHorseModel extends BhHorseModel {
+public class ClydesdaleHorseModel extends BhHorseModel<ClydesdaleHorse> {
 
     private static final float SHOULDER_HOLD = 0.55F;
 

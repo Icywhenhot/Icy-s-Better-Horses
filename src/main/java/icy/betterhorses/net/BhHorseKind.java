@@ -4,11 +4,11 @@ import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
@@ -17,9 +17,9 @@ import java.util.Set;
 public final class BhHorseKind {
 
     public static final TagKey<EntityType<?>> MANAGED = TagKey.create(Registries.ENTITY_TYPE,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horses"));
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horses"));
 
-    private static @Nullable Set<Identifier> breedEntities;
+    private static @Nullable Set<ResourceLocation> breedEntities;
 
     private BhHorseKind() {}
 
@@ -32,20 +32,20 @@ public final class BhHorseKind {
     }
 
     public static boolean managedId(@Nullable String id) {
-        Identifier parsed = id == null || id.isEmpty() ? null : Identifier.tryParse(id);
+        ResourceLocation parsed = id == null || id.isEmpty() ? null : ResourceLocation.tryParse(id);
         EntityType<?> type = parsed == null ? null : BuiltInRegistries.ENTITY_TYPE.getOptional(parsed).orElse(null);
         return type != null && managed(type);
     }
 
     private static boolean registeredBreed(EntityType<?> type) {
         if (breedEntities == null) {
-            Set<Identifier> ids = new HashSet<>();
+            Set<ResourceLocation> ids = new HashSet<>();
             for (BreedType breed : BhRegistries.breedTypeRegistry()) {
-                ids.add(breed.entityType().identifier());
+                ids.add(breed.entityType().location());
             }
             breedEntities = ids;
         }
-        Identifier id = BuiltInRegistries.ENTITY_TYPE.getKey(type);
+        ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(type);
         return id != null && breedEntities.contains(id);
     }
 }

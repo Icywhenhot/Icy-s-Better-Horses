@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
@@ -15,11 +16,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public class HorseCartItem extends Item {
@@ -31,19 +32,20 @@ public class HorseCartItem extends Item {
     }
 
     private static CompoundTag setup(ItemStack stack) {
-        return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompoundOrEmpty(SETUP);
+        return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound(SETUP);
     }
 
     private static void write(ItemStack stack, Consumer<CompoundTag> change) {
         CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
-            CompoundTag setup = tag.getCompoundOrEmpty(SETUP);
+            CompoundTag setup = tag.getCompound(SETUP);
             change.accept(setup);
             tag.put(SETUP, setup);
         });
     }
 
     public static @Nullable CartType storedType(ItemStack stack) {
-        return setup(stack).getString("Type").map(CartType::byId).orElse(null);
+        CompoundTag tag = setup(stack);
+        return !tag.contains("Type", Tag.TAG_STRING) ? null : CartType.byId(tag.getString("Type"));
     }
 
     public static void setType(ItemStack stack, CartType type) {
@@ -51,12 +53,12 @@ public class HorseCartItem extends Item {
     }
 
     public static boolean partHidden(ItemStack stack, String part) {
-        return setup(stack).getCompoundOrEmpty("Hidden").getBooleanOr(part, false);
+        return setup(stack).getCompound("Hidden").getBoolean(part);
     }
 
     public static void setPartHidden(ItemStack stack, String part, boolean hidden) {
         write(stack, tag -> {
-            CompoundTag parts = tag.getCompoundOrEmpty("Hidden");
+            CompoundTag parts = tag.getCompound("Hidden");
             if (hidden) {
                 parts.putBoolean(part, true);
             } else {
@@ -67,7 +69,8 @@ public class HorseCartItem extends Item {
     }
 
     public static int pickup(ItemStack stack) {
-        return setup(stack).getIntOr("Pickup", HorseCartEntity.PICKUP_DEFAULT);
+        CompoundTag tag = setup(stack);
+        return !tag.contains("Pickup", Tag.TAG_INT) ? HorseCartEntity.PICKUP_DEFAULT : tag.getInt("Pickup");
     }
 
     public static void setPickup(ItemStack stack, int mask) {
@@ -75,11 +78,10 @@ public class HorseCartItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
-                                Consumer<Component> lines, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flag) {
         CartType type = storedType(stack);
         if (type != null) {
-            lines.accept(type.displayName().withStyle(ChatFormatting.GRAY));
+            lines.add(type.displayName().withStyle(ChatFormatting.GRAY));
         }
     }
 
@@ -104,8 +106,7 @@ public class HorseCartItem extends Item {
             return InteractionResult.PASS;
         }
 
-        ItemStack stack = context.getItemInHand();
-        stack.consume(1, player);
+        context.getItemInHand().consume(1, player);
         return InteractionResult.CONSUME;
     }
 }

@@ -3,9 +3,8 @@ package icy.betterhorses.net.registry;
 import icy.betterhorses.net.IcysBetterHorses;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.fabricmc.fabric.api.event.registry.RegistryAttribute;
-import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 
 public final class BhRegistries {
@@ -33,8 +32,8 @@ public final class BhRegistries {
     private BhRegistries() {
     }
 
-    private static <T> MappedRegistry<T> build(ResourceKey<Registry<T>> key) {
-        return FabricRegistryBuilder.create(key).attribute(RegistryAttribute.SYNCED).buildAndRegister();
+    private static <T> Registry<T> build(ResourceKey<Registry<T>> key) {
+        return FabricRegistryBuilder.createSimple(key).attribute(RegistryAttribute.SYNCED).buildAndRegister();
     }
 
     public static Registry<ArchetypeType> archetypeTypeRegistry() {
@@ -61,7 +60,7 @@ public final class BhRegistries {
         return COMMANDS;
     }
 
-    private static Identifier id(String path) {
-        return Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
+    private static ResourceLocation id(String path) {
+        return ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
     }
 }

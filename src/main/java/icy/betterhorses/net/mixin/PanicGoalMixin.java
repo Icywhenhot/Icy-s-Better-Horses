@@ -1,10 +1,9 @@
 package icy.betterhorses.net.mixin;
 
-import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,7 +18,7 @@ public abstract class PanicGoalMixin {
 
     @Inject(method = "canUse", at = @At("HEAD"), cancellable = true)
     private void bh_holdTheLine(CallbackInfoReturnable<Boolean> cir) {
-        if (this.mob instanceof AbstractHorse horse && BhHorseKind.managed(horse)
+        if (this.mob instanceof AbstractHorse horse
                 && IHorseData.of(horse).bh_getCombatTarget() != null) {
             cir.setReturnValue(false);
         }

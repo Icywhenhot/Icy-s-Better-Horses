@@ -20,7 +20,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 
 public final class BhContent {
@@ -98,7 +98,7 @@ public final class BhContent {
 
     public static final Holder.Reference<BreedType> THOROUGHBRED = register(BhRegistries.breedTypeRegistry(), "thoroughbred",
             BreedType.builder(RACE.key())
-                    .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.THOROUGHBRED.folder(), BhBreedCoats.THOROUGHBRED.coatIds(), BhBreedCoats.THOROUGHBRED.hasFoalVariant())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.THOROUGHBRED.folder(), BhBreedCoats.THOROUGHBRED.coatIds(), BhBreedCoats.THOROUGHBRED.hasFoalVariant())
                     .entityType(entity("thoroughbred_horse"))
                     .chestRows(3).bondedChestRows(3)
                     .ability(TOP_END.key())
@@ -107,7 +107,7 @@ public final class BhContent {
 
     public static final Holder.Reference<BreedType> ARABIAN = register(BhRegistries.breedTypeRegistry(), "arabian",
             BreedType.builder(RACE.key())
-                    .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.ARABIAN.folder(), BhBreedCoats.ARABIAN.coatIds(), BhBreedCoats.ARABIAN.hasFoalVariant())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.ARABIAN.folder(), BhBreedCoats.ARABIAN.coatIds(), BhBreedCoats.ARABIAN.hasFoalVariant())
                     .entityType(entity("arabian_horse"))
                     .chestRows(3).bondedChestRows(3)
                     .ability(ENDURANCE.key())
@@ -116,7 +116,7 @@ public final class BhContent {
 
     public static final Holder.Reference<BreedType> QUARTER = register(BhRegistries.breedTypeRegistry(), "quarter",
             BreedType.builder(RACE.key())
-                    .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.QUARTER.folder(), BhBreedCoats.QUARTER.coatIds(), BhBreedCoats.QUARTER.hasFoalVariant())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.QUARTER.folder(), BhBreedCoats.QUARTER.coatIds(), BhBreedCoats.QUARTER.hasFoalVariant())
                     .entityType(entity("quarter_horse"))
                     .chestRows(3).bondedChestRows(3)
                     .ability(STANDSTILL_BURST.key())
@@ -125,7 +125,7 @@ public final class BhContent {
 
     public static final Holder.Reference<BreedType> FRIESIAN = register(BhRegistries.breedTypeRegistry(), "friesian",
             BreedType.builder(WAR.key())
-                    .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.FRIESIAN.folder(), BhBreedCoats.FRIESIAN.coatIds(), BhBreedCoats.FRIESIAN.hasFoalVariant())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.FRIESIAN.folder(), BhBreedCoats.FRIESIAN.coatIds(), BhBreedCoats.FRIESIAN.hasFoalVariant())
                     .entityType(entity("friesian_horse"))
                     .chestRows(3).bondedChestRows(3)
                     .ability(FRIESIAN_PRESENCE.key())
@@ -134,7 +134,7 @@ public final class BhContent {
 
     public static final Holder.Reference<BreedType> ANDALUSIAN = register(BhRegistries.breedTypeRegistry(), "andalusian",
             BreedType.builder(WAR.key())
-                    .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.ANDALUSIAN.folder(), BhBreedCoats.ANDALUSIAN.coatIds(), BhBreedCoats.ANDALUSIAN.hasFoalVariant())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.ANDALUSIAN.folder(), BhBreedCoats.ANDALUSIAN.coatIds(), BhBreedCoats.ANDALUSIAN.hasFoalVariant())
                     .entityType(entity("andalusian_horse"))
                     .chestRows(3).bondedChestRows(3)
                     .ability(SECOND_CHANCE.key())
@@ -143,7 +143,7 @@ public final class BhContent {
 
     public static final Holder.Reference<BreedType> PERCHERON = register(BhRegistries.breedTypeRegistry(), "percheron",
             BreedType.builder(DRAFT.key())
-                    .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.PERCHERON.folder(), BhBreedCoats.PERCHERON.coatIds(), BhBreedCoats.PERCHERON.hasFoalVariant())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.PERCHERON.folder(), BhBreedCoats.PERCHERON.coatIds(), BhBreedCoats.PERCHERON.hasFoalVariant())
                     .entityType(entity("percheron_horse"))
                     .chestRows(4).bondedChestRows(4)
                     .ability(SLOW_BLOCK_IMMUNITY.key())
@@ -152,7 +152,7 @@ public final class BhContent {
 
     public static final Holder.Reference<BreedType> CLYDESDALE = register(BhRegistries.breedTypeRegistry(), "clydesdale",
             BreedType.builder(DRAFT.key())
-                    .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.CLYDESDALE.folder(), BhBreedCoats.CLYDESDALE.coatIds(), BhBreedCoats.CLYDESDALE.hasFoalVariant())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.CLYDESDALE.folder(), BhBreedCoats.CLYDESDALE.coatIds(), BhBreedCoats.CLYDESDALE.hasFoalVariant())
                     .entityType(entity("clydesdale_horse"))
                     .chestRows(4).bondedChestRows(4)
                     .ability(IRONCLAD.key())
@@ -161,7 +161,7 @@ public final class BhContent {
 
     public static final Holder.Reference<BreedType> SHIRE = register(BhRegistries.breedTypeRegistry(), "shire",
             BreedType.builder(DRAFT.key())
-                    .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.SHIRE.folder(), BhBreedCoats.SHIRE.coatIds(), BhBreedCoats.SHIRE.hasFoalVariant())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.SHIRE.folder(), BhBreedCoats.SHIRE.coatIds(), BhBreedCoats.SHIRE.hasFoalVariant())
                     .entityType(entity("shire_horse"))
                     .chestRows(4).bondedChestRows(4)
                     .ability(INTIMIDATION.key())
@@ -170,7 +170,7 @@ public final class BhContent {
 
     public static final Holder.Reference<BreedType> BELGIAN = register(BhRegistries.breedTypeRegistry(), "belgian",
             BreedType.builder(DRAFT.key())
-                    .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.BELGIAN.folder(), BhBreedCoats.BELGIAN.coatIds(), BhBreedCoats.BELGIAN.hasFoalVariant())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.BELGIAN.folder(), BhBreedCoats.BELGIAN.coatIds(), BhBreedCoats.BELGIAN.hasFoalVariant())
                     .entityType(entity("belgian_horse"))
                     .chestRows(6).bondedChestRows(6)
                     .ability(BRICK_BREAK.key())
@@ -179,7 +179,7 @@ public final class BhContent {
 
     public static final Holder.Reference<BreedType> ICELANDIC = register(BhRegistries.breedTypeRegistry(), "icelandic",
             BreedType.builder(PONY.key())
-                    .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.ICELANDIC.folder(), BhBreedCoats.ICELANDIC.coatIds(), BhBreedCoats.ICELANDIC.hasFoalVariant())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.ICELANDIC.folder(), BhBreedCoats.ICELANDIC.coatIds(), BhBreedCoats.ICELANDIC.hasFoalVariant())
                     .entityType(entity("icelandic_horse"))
                     .chestRows(3).bondedChestRows(3)
                     .ability(HARDY_NORTHERN.key())
@@ -188,7 +188,7 @@ public final class BhContent {
 
     public static final Holder.Reference<BreedType> MUSTANG = register(BhRegistries.breedTypeRegistry(), "mustang",
             BreedType.builder(WAR.key())
-                    .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.MUSTANG.folder(), BhBreedCoats.MUSTANG.coatIds(), BhBreedCoats.MUSTANG.hasFoalVariant())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.MUSTANG.folder(), BhBreedCoats.MUSTANG.coatIds(), BhBreedCoats.MUSTANG.hasFoalVariant())
                     .entityType(entity("mustang_horse"))
                     .chestRows(3).bondedChestRows(3)
                     .ability(WILD_INSTINCTS.key())
@@ -197,7 +197,7 @@ public final class BhContent {
 
     public static final Holder.Reference<BreedType> HAFLINGER = register(BhRegistries.breedTypeRegistry(), "haflinger",
             BreedType.builder(PONY.key())
-                    .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.HAFLINGER.folder(), BhBreedCoats.HAFLINGER.coatIds(), BhBreedCoats.HAFLINGER.hasFoalVariant())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.HAFLINGER.folder(), BhBreedCoats.HAFLINGER.coatIds(), BhBreedCoats.HAFLINGER.hasFoalVariant())
                     .entityType(entity("haflinger_horse"))
                     .chestRows(4).bondedChestRows(6)
                     .ability(HEARTHLIGHT.key())
@@ -206,7 +206,7 @@ public final class BhContent {
 
     public static final Holder.Reference<BreedType> MORGAN = register(BhRegistries.breedTypeRegistry(), "morgan",
             BreedType.builder(WESTERN.key())
-                    .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.MORGAN.folder(), BhBreedCoats.MORGAN.coatIds(), BhBreedCoats.MORGAN.hasFoalVariant())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.MORGAN.folder(), BhBreedCoats.MORGAN.coatIds(), BhBreedCoats.MORGAN.hasFoalVariant())
                     .entityType(entity("morgan_horse"))
                     .chestRows(3).bondedChestRows(4)
                     .ability(EASY_KEEPER.key())
@@ -215,7 +215,7 @@ public final class BhContent {
 
     public static final Holder.Reference<BreedType> AMERICAN_PAINT = register(BhRegistries.breedTypeRegistry(), "american_paint",
             BreedType.builder(WESTERN.key())
-                    .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.AMERICAN_PAINT.folder(), BhBreedCoats.AMERICAN_PAINT.coatIds(), BhBreedCoats.AMERICAN_PAINT.hasFoalVariant())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.AMERICAN_PAINT.folder(), BhBreedCoats.AMERICAN_PAINT.coatIds(), BhBreedCoats.AMERICAN_PAINT.hasFoalVariant())
                     .entityType(entity("american_paint_horse"))
                     .chestRows(3).bondedChestRows(3)
                     .stabilizerBody(StabilizerBody.MEDIUM)
@@ -223,7 +223,7 @@ public final class BhContent {
 
     public static final Holder.Reference<BreedType> APPALOOSA = register(BhRegistries.breedTypeRegistry(), "appaloosa",
             BreedType.builder(WESTERN.key())
-                    .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.APPALOOSA.folder(), BhBreedCoats.APPALOOSA.coatIds(), BhBreedCoats.APPALOOSA.hasFoalVariant())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.APPALOOSA.folder(), BhBreedCoats.APPALOOSA.coatIds(), BhBreedCoats.APPALOOSA.hasFoalVariant())
                     .entityType(entity("appaloosa_horse"))
                     .chestRows(3).bondedChestRows(3)
                     .ability(STOCK_HORSE.key())
@@ -251,14 +251,14 @@ public final class BhContent {
 
     private static ResourceKey<EntityType<?>> entity(String path) {
         return ResourceKey.create(Registries.ENTITY_TYPE,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path));
+                ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path));
     }
 
     public static void init() {
     }
 
     private static <T> Holder.Reference<T> register(Registry<T> registry, String path, T value) {
-        return Registry.registerForHolder(registry, Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path), value);
+        return Registry.registerForHolder(registry, ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path), value);
     }
 
     public static void logSummary() {

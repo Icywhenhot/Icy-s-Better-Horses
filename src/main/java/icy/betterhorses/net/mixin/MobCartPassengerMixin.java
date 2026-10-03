@@ -2,17 +2,15 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.HorseCartEntity;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -39,7 +37,7 @@ public abstract class MobCartPassengerMixin {
 
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     private void bh_setDownOnSneakClick(
-            Player player, InteractionHand hand, Vec3 hitPos, CallbackInfoReturnable<InteractionResult> cir) {
+            Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
         if (!player.isSecondaryUseActive() || !this.bh_isCartCargo()) {
             return;
         }
@@ -80,10 +78,10 @@ public abstract class MobCartPassengerMixin {
         }
     }
 
-    @Inject(method = "canAttack(Lnet/minecraft/world/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
-    private void bh_noNewTargetsInCart(LivingEntity target, CallbackInfoReturnable<Boolean> cir) {
-        if (this.bh_isCartCargo()) {
-            cir.setReturnValue(false);
+    @Inject(method = "setTarget", at = @At("HEAD"), cancellable = true)
+    private void bh_noNewTargetsInCart(LivingEntity target, CallbackInfo ci) {
+        if (target != null && this.bh_isCartCargo()) {
+            ci.cancel();
         }
     }
 
@@ -95,7 +93,7 @@ public abstract class MobCartPassengerMixin {
     }
 
     @Inject(method = "doHurtTarget", at = @At("HEAD"), cancellable = true)
-    private void bh_landNoHitsInCart(ServerLevel level, Entity target, CallbackInfoReturnable<Boolean> cir) {
+    private void bh_landNoHitsInCart(Entity target, CallbackInfoReturnable<Boolean> cir) {
         if (this.bh_isCartCargo()) {
             cir.setReturnValue(false);
         }

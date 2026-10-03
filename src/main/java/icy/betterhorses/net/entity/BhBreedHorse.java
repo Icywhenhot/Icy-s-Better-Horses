@@ -1,33 +1,30 @@
 package icy.betterhorses.net.entity;
 
-import icy.betterhorses.net.BhHorseBackup;
 import net.minecraft.core.Holder;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.equine.Horse;
+import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
-import icy.betterhorses.net.BreedArchetype;
+import net.minecraft.nbt.CompoundTag;
 import icy.betterhorses.net.BhBreedData;
-import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.BhHorseBackup;
 import icy.betterhorses.net.registry.ArchetypeType;
-import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedCoatSet;
+import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedType;
-import net.minecraft.resources.ResourceKey;
+import icy.betterhorses.net.IHorseData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.level.ServerLevelAccessor;
 
@@ -42,15 +39,17 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
         super(type, level);
     }
 
+    /** Registry-backed coat definition used by 2.0.6 systems. */
     public BreedCoatSet bhCoatSet() {
-        ResourceKey<BreedType> key = bhFixedBreed();
-        BreedType type = BhRegistries.breedTypeRegistry().getValue(key.identifier());
+        BreedType type = BhRegistries.breedTypeRegistry().get(bhFixedBreed().location());
         if (type == null) {
-            throw new IllegalStateException("No BreedType registered for " + key.identifier()
-                    + " - is its DeferredRegister<BreedType> targeting BhRegistries.BREED_TYPES actually registered?");
+            throw new IllegalStateException("No BreedType registered for " + bhFixedBreed().location());
         }
         return type.coats();
     }
+
+    /** Legacy client compatibility until the renderer/UI stage moves fully to BreedCoatSet. */
+    public abstract BhBreedCoats bhCoats();
 
     public static AttributeSupplier.Builder bhAttributes(ArchetypeType arch) {
         return AbstractHorse.createBaseHorseAttributes()
@@ -109,16 +108,16 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
     }
 
     @Override
-    public void addAdditionalSaveData(ValueOutput output) {
-        super.addAdditionalSaveData(output);
-        output.putInt(COAT_TAG, this.entityData.get(BH_COAT));
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        tag.putInt(COAT_TAG, this.entityData.get(BH_COAT));
     }
 
     @Override
-    public void readAdditionalSaveData(ValueInput input) {
-        super.readAdditionalSaveData(input);
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
         BhHorseBackup.forget(this);
-        int saved = input.getIntOr(COAT_TAG, -1);
+        int saved = tag.contains(COAT_TAG) ? tag.getInt(COAT_TAG) : -1;
         this.entityData.set(BH_COAT, saved < 0 ? bhCoatSet().roll(this.random) : bhCoatSet().clamp(saved));
     }
 
@@ -126,7 +125,7 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
     public SpawnGroupData finalizeSpawn(
             ServerLevelAccessor level,
             DifficultyInstance difficulty,
-            EntitySpawnReason reason,
+            MobSpawnType reason,
             SpawnGroupData groupData) {
         SpawnGroupData result =
                 super.finalizeSpawn(level, difficulty, reason, groupData);
@@ -166,7 +165,7 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
             boolean sameBreed = other.getType() == this.getType();
             BhBreedHorse source = sameBreed || this.random.nextBoolean() ? this : other;
             Entity created =
-                    source.getType().create(level, EntitySpawnReason.BREEDING);
+                    source.getType().create(level);
             if (!(created instanceof BhBreedHorse foal)) {
                 return null;
             }

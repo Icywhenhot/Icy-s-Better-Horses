@@ -30,7 +30,9 @@
     {
       "type": "modonomicon:spotlight",
       "id": "info",
-      "item": "icys-better-horses:horse_stabilizer_gear",
+      "item": {
+        "item": "icys-better-horses:horse_stabilizer_gear"
+      },
       "title": "book.icys-better-horses.stable_handbook.equipment.horse_stabilizer.info.title",
       "text": "book.icys-better-horses.stable_handbook.equipment.horse_stabilizer.info.text"
     },

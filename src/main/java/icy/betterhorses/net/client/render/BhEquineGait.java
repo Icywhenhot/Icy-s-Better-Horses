@@ -9,7 +9,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -140,7 +140,6 @@ public final class BhEquineGait {
 
     private final float leadSign;
 
-    private final boolean[] hoofLifted = new boolean[4];
 
     private float walk;
     private float trot;
@@ -249,6 +248,9 @@ public final class BhEquineGait {
                 && client.options.keyJump.isDown()
                 ? Mth.clamp(player.getJumpRidingScale(), 0.0F, 1.0F)
                 : 0.0F;
+        state.firstPersonRider = player != null
+                && client.options.getCameraType().isFirstPerson()
+                && entity.hasPassenger(player);
     }
 
     public static void advanceFor(Entity entity,
@@ -270,13 +272,7 @@ public final class BhEquineGait {
             state.jumpCue = 0;
             state.stabilizer = 0;
         }
-        state.firstPersonRider =
-                ((IBhEquineStabilizerState) (Object) state).bh_isRiddenByPlayerInFirstPerson();
-
         BhEquineGait gait = ACTIVE.computeIfAbsent(state.entityId, key -> new BhEquineGait(entity.getId()));
-        state.hoofLifted = gait.hoofLifted;
-        state.kicksDust = state.entityId == entity.getId() && entity.getId() >= 0 && !entity.isInWater()
-                && entity.level().getEntity(entity.getId()) == entity;
         gait.sense(entity, state);
         gait.advance(state, state.ageInTicks);
     }

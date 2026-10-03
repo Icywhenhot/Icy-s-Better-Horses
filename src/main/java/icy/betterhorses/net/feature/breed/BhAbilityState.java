@@ -3,7 +3,7 @@ package icy.betterhorses.net.feature.breed;
 import icy.betterhorses.net.BhGears;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedAbilities;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 public final class BhAbilityState {
 

@@ -1,8 +1,8 @@
 package icy.betterhorses.net.goal;
 
+import icy.betterhorses.net.HorseCommand;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModTicketTypes;
-import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
@@ -10,7 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 import java.util.EnumSet;
 
@@ -42,10 +42,10 @@ public class HorseReturnHomeGoal extends Goal {
     public boolean canUse() {
         if (horse.isVehicle()) return false;
         IHorseData data = IHorseData.of(horse);
-        if (!data.bh_isOwned() || !data.bh_getCommand().equals(BhContent.COMMAND_RETURN_HOME.key())) return false;
+        if (!data.bh_isOwned() || data.bh_getCommand() != HorseCommand.RETURN_HOME) return false;
         BlockPos home = data.bh_getHome();
         if (home == null) {
-            data.bh_setCommand(BhContent.COMMAND_STAY.key());
+            data.bh_setCommand(HorseCommand.STAY);
             return false;
         }
         if (!homeIsHere(data)) return false;
@@ -55,11 +55,11 @@ public class HorseReturnHomeGoal extends Goal {
     @Override
     public boolean canContinueToUse() {
         IHorseData data = IHorseData.of(horse);
-        if (!data.bh_getCommand().equals(BhContent.COMMAND_RETURN_HOME.key())) return false;
+        if (data.bh_getCommand() != HorseCommand.RETURN_HOME) return false;
         BlockPos home = data.bh_getHome();
         if (home == null || !homeIsHere(data)) return false;
         if (horse.distanceToSqr(Vec3.atBottomCenterOf(home)) <= ARRIVED_DIST_SQ) {
-            data.bh_setCommand(BhContent.COMMAND_STAY.key());
+            data.bh_setCommand(HorseCommand.STAY);
             return false;
         }
         return true;
@@ -130,7 +130,7 @@ public class HorseReturnHomeGoal extends Goal {
         if (!(horse.level() instanceof ServerLevel serverLevel)) return;
         ticketChunk = horse.chunkPosition();
         ticketRefreshCooldown = TICKET_REFRESH_INTERVAL_TICKS;
-        serverLevel.getChunkSource().addTicketWithRadius(ModTicketTypes.HORSE_TASK, ticketChunk, TICKET_RADIUS);
+        serverLevel.getChunkSource().addRegionTicket(ModTicketTypes.HORSE_TASK, ticketChunk, TICKET_RADIUS, ticketChunk);
     }
 
     private boolean checkStuck() {
@@ -154,9 +154,10 @@ public class HorseReturnHomeGoal extends Goal {
         BlockPos home = IHorseData.of(horse).bh_getHome();
         if (home == null) return;
         if (horse.level() instanceof ServerLevel serverLevel) {
-            serverLevel.getChunkSource().addTicketWithRadius(ModTicketTypes.HORSE_TASK, ChunkPos.containing(home), 1);
+            ChunkPos chunk = new ChunkPos(home);
+            serverLevel.getChunkSource().addRegionTicket(ModTicketTypes.HORSE_TASK, chunk, 1, chunk);
         }
         if (!icy.betterhorses.net.HorsePlacement.teleport(horse, home)) return;
-        IHorseData.of(horse).bh_setCommand(BhContent.COMMAND_STAY.key());
+        IHorseData.of(horse).bh_setCommand(HorseCommand.STAY);
     }
 }

@@ -2,7 +2,7 @@ package icy.betterhorses.net.network;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 import java.util.UUID;
@@ -10,7 +10,7 @@ import java.util.UUID;
 public record TrustSyncPayload(List<UUID> trustingOwners) implements CustomPacketPayload {
 
     public static final Type<TrustSyncPayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath("icys-better-horses", "trust_sync"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath("icys-better-horses", "trust_sync"));
 
     @Override
     public Type<TrustSyncPayload> type() {

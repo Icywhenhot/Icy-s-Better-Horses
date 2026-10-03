@@ -19,20 +19,20 @@ import icy.betterhorses.net.registry.ArchetypeType;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
-import net.minecraft.world.entity.animal.equine.Donkey;
-import net.minecraft.world.entity.animal.equine.Horse;
-import net.minecraft.world.entity.animal.equine.Markings;
-import net.minecraft.world.entity.animal.equine.Mule;
-import net.minecraft.world.entity.animal.equine.SkeletonHorse;
-import net.minecraft.world.entity.animal.equine.Variant;
-import net.minecraft.world.entity.animal.equine.ZombieHorse;
+import net.minecraft.world.entity.animal.horse.Donkey;
+import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.world.entity.animal.horse.Markings;
+import net.minecraft.world.entity.animal.horse.Mule;
+import net.minecraft.world.entity.animal.horse.SkeletonHorse;
+import net.minecraft.world.entity.animal.horse.Variant;
+import net.minecraft.world.entity.animal.horse.ZombieHorse;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -71,9 +71,9 @@ public enum HorseBreed {
     public record Coat(Variant color, Markings markings) {}
 
     private final TagKey<Biome> biomeTag = TagKey.create(Registries.BIOME,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "spawns/" + name().toLowerCase(java.util.Locale.ROOT)));
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "spawns/" + name().toLowerCase(java.util.Locale.ROOT)));
     private final TagKey<Biome> moddedTag = TagKey.create(Registries.BIOME,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "spawns_modded/" + name().toLowerCase(java.util.Locale.ROOT)));
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "spawns_modded/" + name().toLowerCase(java.util.Locale.ROOT)));
     private final BreedArchetype archetype;
     private final @Nullable Supplier<BreedAbility> ability;
 

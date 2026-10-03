@@ -12,7 +12,7 @@
 		"sources": "https://github.com/Icywhenhot/Icy-s-Better-Horses",
 		"issues": "https://github.com/Icywhenhot/Icy-s-Better-Horses/issues"
 	},
-	"license": "ARR",
+	"license": "BML-1.0",
 	"icon": "assets/icys-better-horses/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -30,12 +30,12 @@
 		"icys-better-horses.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.19.3",
-		"minecraft": "~26.2",
-		"java": ">=25",
-		"fabric-api": "*",
-		"geckolib": ">=5.5.0",
-		"modonomicon": "*"
+		"fabricloader": ">=0.16.14",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": ">=0.116.15+1.21.1",
+		"geckolib": ">=4.7.5 <5",
+		"modonomicon": ">=1.120.4"
 	},
 	"suggests": {
 		"modmenu": "*",

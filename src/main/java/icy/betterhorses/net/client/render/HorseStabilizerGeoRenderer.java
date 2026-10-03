@@ -1,23 +1,16 @@
 package icy.betterhorses.net.client.render;
 
-import com.geckolib.constant.DataTickets;
-import com.geckolib.constant.dataticket.DataTicket;
-import com.geckolib.renderer.GeoObjectRenderer;
-import com.geckolib.renderer.base.BoneSnapshots;
-import com.geckolib.renderer.base.GeoRenderState;
-import com.geckolib.renderer.base.RenderPassInfo;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.resources.Identifier;
-import com.geckolib.model.GeoModel;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
+import software.bernie.geckolib.cache.object.BakedGeoModel;
+import software.bernie.geckolib.model.GeoModel;
+import software.bernie.geckolib.renderer.GeoObjectRenderer;
+import software.bernie.geckolib.util.Color;
 
-public final class HorseStabilizerGeoRenderer
-        extends GeoObjectRenderer<HorseStabilizerAnimatable, Void, GeoRenderState.Impl> {
-    private static final DataTicket<Boolean> WINGS_ACTIVE =
-            DataTicket.create("icys_better_horses_stabilizer_wings_active", Boolean.class);
-    private static final DataTicket<Float> OPACITY =
-            DataTicket.create("icys_better_horses_stabilizer_opacity", Float.class);
+public final class HorseStabilizerGeoRenderer extends GeoObjectRenderer<HorseStabilizerAnimatable> {
 
     public HorseStabilizerGeoRenderer() {
         this(new HorseStabilizerGeoModel());
@@ -27,49 +20,43 @@ public final class HorseStabilizerGeoRenderer
         super(model);
     }
 
-    @Override
-    public void addRenderData(
-            HorseStabilizerAnimatable animatable,
-            Void relatedObject,
-            GeoRenderState.Impl renderState,
-            float partialTick) {
-        renderState.addGeckolibData(WINGS_ACTIVE, animatable.isActive());
-        renderState.addGeckolibData(OPACITY, BhRenderContext.currentOpacity());
-
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level != null) {
-            renderState.addGeckolibData(
-                    DataTickets.TICK,
-                    (double) minecraft.level.getGameTime()
-                            + minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false));
-        }
+    public void renderAt(PoseStack poseStack, HorseStabilizerAnimatable animatable,
+                         MultiBufferSource bufferSource, float partialTick, int packedLight) {
+        RenderType renderType = getRenderType(animatable, getTextureLocation(animatable), bufferSource, partialTick);
+        VertexConsumer buffer = bufferSource.getBuffer(renderType);
+        render(poseStack, animatable, bufferSource, renderType, buffer, packedLight, partialTick);
     }
 
     @Override
-    public int getRenderColor(HorseStabilizerAnimatable animatable, Void relatedObject, float partialTick) {
-        return BhMountedHorseVisibility.applyOpacity(
-                super.getRenderColor(animatable, relatedObject, partialTick),
-                BhRenderContext.currentOpacity());
+    public RenderType getRenderType(HorseStabilizerAnimatable animatable, ResourceLocation texture,
+                                    MultiBufferSource bufferSource, float partialTick) {
+        return BhMountedHorseVisibility.currentOpacity() < 1.0F
+                ? RenderType.entityTranslucent(texture)
+                : super.getRenderType(animatable, texture, bufferSource, partialTick);
     }
 
     @Override
-    public RenderType getRenderType(GeoRenderState.Impl renderState, Identifier texture) {
-        return renderState.getOrDefaultGeckolibData(OPACITY, 1.0F) < 1.0F
-                ? RenderTypes.entityTranslucent(texture)
-                : super.getRenderType(renderState, texture);
+    public Color getRenderColor(HorseStabilizerAnimatable animatable, float partialTick, int packedLight) {
+        int argb = BhMountedHorseVisibility.applyOpacity(
+                super.getRenderColor(animatable, partialTick, packedLight).argbInt(),
+                BhMountedHorseVisibility.currentOpacity());
+        return Color.ofARGB((argb >>> 24) & 0xFF, (argb >>> 16) & 0xFF, (argb >>> 8) & 0xFF, argb & 0xFF);
     }
 
     @Override
-    public void adjustRenderPose(RenderPassInfo<GeoRenderState.Impl> renderPassInfo) {
-    }
-
-    @Override
-    public void adjustModelBonesForRender(
-            RenderPassInfo<GeoRenderState.Impl> renderPassInfo,
-            BoneSnapshots snapshots) {
-        boolean showWings = Boolean.TRUE.equals(renderPassInfo.getGeckolibData(WINGS_ACTIVE));
-
-        snapshots.ifPresent("wingsL", snapshot -> snapshot.skipRender(!showWings).skipChildrenRender(!showWings));
-        snapshots.ifPresent("wingsL2", snapshot -> snapshot.skipRender(!showWings).skipChildrenRender(!showWings));
+    public void preRender(PoseStack poseStack, HorseStabilizerAnimatable animatable, BakedGeoModel model,
+                          MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender,
+                          float partialTick, int packedLight, int packedOverlay, int color) {
+        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick,
+                packedLight, packedOverlay, color);
+        boolean wings = animatable.isActive();
+        model.getBone("wingsL").ifPresent(bone -> {
+            bone.setHidden(!wings);
+            bone.setChildrenHidden(!wings);
+        });
+        model.getBone("wingsL2").ifPresent(bone -> {
+            bone.setHidden(!wings);
+            bone.setChildrenHidden(!wings);
+        });
     }
 }

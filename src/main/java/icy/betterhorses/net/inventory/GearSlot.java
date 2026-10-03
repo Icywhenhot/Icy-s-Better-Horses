@@ -4,7 +4,7 @@ import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IcysBetterHorses;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -19,7 +19,7 @@ public enum GearSlot {
     public static final int COUNT = values().length;
 
     private final TagKey<Item> items = TagKey.create(Registries.ITEM,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID,
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID,
                     "gear/" + name().toLowerCase(java.util.Locale.ROOT)));
 
     public TagKey<Item> items() {

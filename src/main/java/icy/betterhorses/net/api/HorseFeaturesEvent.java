@@ -3,7 +3,7 @@ package icy.betterhorses.net.api;
 import icy.betterhorses.net.feature.HorseFeature;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 import java.util.ArrayList;
 import java.util.List;

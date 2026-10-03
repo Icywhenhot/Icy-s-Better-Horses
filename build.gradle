@@ -1,126 +1,44 @@
 plugins {
-	id 'net.fabricmc.fabric-loom' version "${loom_version}"
-	id 'maven-publish'
+    id 'fabric-loom' version "${loom_version}"
+    id 'maven-publish'
 }
-
 version = project.mod_version
 group = project.maven_group
-
+base { archivesName = 'icys-better-horses' }
+loom {
+    mixin { defaultRefmapName = 'icys-better-horses-refmap.json' }
+}
 repositories {
-	maven {
-		name = 'GeckoLib'
-		url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
-	}
-	exclusiveContent {
-		forRepository {
-			maven {
-				name = 'Modrinth'
-				url = 'https://api.modrinth.com/maven'
-			}
-		}
-		filter {
-			includeGroup 'maven.modrinth'
-		}
-	}
-	maven {
-		name = 'TerraformersMC'
-		url = 'https://maven.terraformersmc.com/releases/'
-		content { includeGroup "com.terraformersmc" }
-	}
-	maven {
-		name = 'Shedaniel'
-		url = 'https://maven.shedaniel.me/'
-		content { includeGroup "me.shedaniel.cloth" }
-	}
+    maven { url = 'https://api.modrinth.com/maven'; content { includeGroup 'maven.modrinth' } }
+    maven { url = 'https://maven.terraformersmc.com/releases/'; content { includeGroup 'com.terraformersmc' } }
+    maven { url = 'https://maven.shedaniel.me/'; content { includeGroup 'me.shedaniel.cloth' } }
 }
-
 dependencies {
-
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-
-	testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
-	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
-	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.0"
-	implementation "maven.modrinth:geckolib:${project.geckolib_version_id}"
-
-	implementation "maven.modrinth:modonomicon:${project.modonomicon_version_id}"
-
-	implementation "com.terraformersmc:modmenu:${project.modmenu_version}"
-	implementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
-		exclude group: "net.fabricmc.fabric-api"
-	}
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    modImplementation "maven.modrinth:geckolib:${project.geckolib_version_id}"
+    modImplementation "maven.modrinth:modonomicon:${project.modonomicon_version_id}"
+    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+    modImplementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") { exclude group: 'net.fabricmc.fabric-api' }
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.0'
 }
-
 processResources {
-	def version = project.version
-	inputs.property "version", version
-
-	filesMatching("fabric.mod.json") {
-		expand "version": version
-	}
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand version: project.version }
+    exclude '**/*.bbmodel'
 }
-
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = 25
-}
-
-tasks.named("runClient", JavaExec).configure {
-	if (System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("windows")) {
-
-		jvmArgs "-Doshi.util.wmi.timeout=5000"
-	}
-	doFirst {
-		def wanted = "Icy"
-		def offline = java.util.UUID.nameUUIDFromBytes(
-				("OfflinePlayer:" + wanted).getBytes(java.nio.charset.StandardCharsets.UTF_8))
-		def out = new ArrayList<String>(args)
-		def force = { String flag, String value ->
-			int at = out.indexOf(flag)
-			if (at >= 0 && at + 1 < out.size()) {
-				out.set(at + 1, value)
-			} else {
-				out.add(flag)
-				out.add(value)
-			}
-		}
-		force("--username", wanted)
-		force("--uuid", offline.toString().replace("-", ""))
-		args = out
-	}
-}
-
-test {
-	useJUnitPlatform()
-}
-
 java {
-
-	withSourcesJar()
-
-	sourceCompatibility = JavaVersion.VERSION_25
-	targetCompatibility = JavaVersion.VERSION_25
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
 }
-
-jar {
-	def projectName = project.name
-	inputs.property "projectName", projectName
-
-	from("LICENSE") {
-		rename { "${it}_$projectName"}
-	}
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll(['-Xmaxerrs', '300'])
 }
-
-publishing {
-	publications {
-		create("mavenJava", MavenPublication) {
-			from components.java
-		}
-	}
-
-	repositories {
-
-	}
-}
+test { useJUnitPlatform() }
+jar { from('LICENSE') { rename { "${it}_icys-better-horses" } } }

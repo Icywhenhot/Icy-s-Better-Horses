@@ -1,20 +1,18 @@
 package icy.betterhorses.net.mixin;
 
-import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhHorseTraits;
+import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
-import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.level.Level;
@@ -29,32 +27,32 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Objects;
-
 @Mixin(MapItem.class)
 public abstract class MapItemMixin {
 
     @ModifyConstant(method = "update", constant = @Constant(intValue = 128, ordinal = 0))
     private int bh_widenTrailBlazerScan(int scanWidth, Level level, Entity entity, MapItemSavedData data) {
-        if (!(entity.getVehicle() instanceof AbstractHorse horse) || !BhHorseKind.managed(horse)) {
+        if (!(entity.getVehicle() instanceof AbstractHorse horse)) {
             return scanWidth;
         }
         IHorseData d = IHorseData.of(horse);
-        if (!Objects.equals(d.bh_getBreedKey(), BhContent.AMERICAN_PAINT.key()) || !BhAbility.PAINT_SCAN.on()) {
+        if (d.bh_getBreed() != HorseBreed.AMERICAN_PAINT || !BhAbility.PAINT_SCAN.on()) {
             return scanWidth;
         }
         return scanWidth * (2 + BhHorseTraits.bondTier(d.bh_getBond()));
     }
 
     @Inject(method = "inventoryTick", at = @At("TAIL"))
-    private void bh_markPassedStructures(ItemStack stack, ServerLevel level, Entity holder,
-                                         EquipmentSlot slot, CallbackInfo ci) {
-        if (level.getGameTime() % 20L != 0L || !(holder.getVehicle() instanceof AbstractHorse horse)
-                || !BhHorseKind.managed(horse)) {
+    private void bh_markPassedStructures(ItemStack stack, Level world, Entity holder,
+                                         int slot, boolean selected, CallbackInfo ci) {
+        if (!(world instanceof ServerLevel level)) {
+            return;
+        }
+        if (level.getGameTime() % 20L != 0L || !(holder.getVehicle() instanceof AbstractHorse horse)) {
             return;
         }
         IHorseData d = IHorseData.of(horse);
-        if (!Objects.equals(d.bh_getBreedKey(), BhContent.AMERICAN_PAINT.key())
+        if (d.bh_getBreed() != HorseBreed.AMERICAN_PAINT
                 || !BhAbility.PAINT_STRUCTURES.on()
                 || BhHorseTraits.bondTier(d.bh_getBond()) < 2) {
             return;
@@ -62,9 +60,9 @@ public abstract class MapItemMixin {
 
         boolean marked = false;
         BlockPos at = horse.blockPosition();
-        Registry<Structure> reg = level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
+        Registry<Structure> reg = level.registryAccess().registryOrThrow(Registries.STRUCTURE);
         for (Structure s : level.structureManager().getAllStructuresAt(at).keySet()) {
-            Identifier id = reg.getKey(s);
+            ResourceLocation id = reg.getKey(s);
             StructureStart start = level.structureManager().getStructureAt(at, s);
             if (id == null || !start.isValid()) {
                 continue;

@@ -3,12 +3,12 @@ package icy.betterhorses.net.entity;
 import icy.betterhorses.net.IcysBetterHorses;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import com.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.RawAnimation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,9 +42,9 @@ public enum CartType {
 
     private final String id;
     private final boolean large;
-    private final Identifier model;
-    private final Identifier texture;
-    private final Identifier animation;
+    private final ResourceLocation model;
+    private final ResourceLocation texture;
+    private final ResourceLocation animation;
     private final String chestBone;
     private final String bedBone;
 
@@ -75,9 +75,9 @@ public enum CartType {
              List<Attachment> attachments, List<Part> parts) {
         this.id = id;
         this.large = large;
-        this.model = id(asset);
+        this.model = id("geo/" + asset + ".geo.json");
         this.texture = id("textures/entity/" + asset + ".png");
-        this.animation = id(asset);
+        this.animation = id("animations/" + asset + ".animation.json");
         this.chestBone = chestBone;
         this.bedBone = bedBone;
         this.wheelsRolling = RawAnimation.begin().thenLoop(wheelAnim);
@@ -98,8 +98,8 @@ public enum CartType {
         this.parts = parts;
     }
 
-    private static Identifier id(String path) {
-        return Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
+    private static ResourceLocation id(String path) {
+        return ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path);
     }
 
     public static @Nullable CartType byId(String id) {
@@ -172,15 +172,15 @@ public enum CartType {
         return this.large;
     }
 
-    public Identifier model() {
+    public ResourceLocation model() {
         return this.model;
     }
 
-    public Identifier texture() {
+    public ResourceLocation texture() {
         return this.texture;
     }
 
-    public Identifier animation() {
+    public ResourceLocation animation() {
         return this.animation;
     }
 
