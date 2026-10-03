@@ -25,7 +25,7 @@ public final class BhBiomeSpawns {
 
     public static void register() {
         Predicate<BiomeSelectionContext> modded = BiomeSelectors.foundInOverworld()
-                .and(BiomeSelectors.vanilla().negate())
+                .and(ctx -> !ctx.getBiomeKey().location().getNamespace().equals("minecraft"))
                 .and(BiomeSelectors.tag(MODDED_SPAWNS));
         BiomeModifications
                 .create(new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "horse_biome_spawns"))
