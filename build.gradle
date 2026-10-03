@@ -54,6 +54,7 @@ dependencies {
 	runtimeOnly "org.commonmark:commonmark-ext-ins:0.22.0"
 
 	modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+	modLocalRuntime "maven.modrinth:vics-point-blank:96kcubpx"
 	modImplementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
 		exclude group: "net.fabricmc.fabric-api"
 	}
