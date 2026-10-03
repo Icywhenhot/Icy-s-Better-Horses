@@ -2,14 +2,14 @@ package icy.betterhorses.net.network;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.UUID;
 
 public record HorseManagePayload(UUID horseId, int actionOrdinal) implements CustomPacketPayload {
 
     public static final Type<HorseManagePayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath("icys-better-horses", "horse_manage"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath("icys-better-horses", "horse_manage"));
 
     @Override
     public Type<HorseManagePayload> type() {

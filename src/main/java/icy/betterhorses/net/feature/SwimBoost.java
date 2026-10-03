@@ -1,7 +1,7 @@
 package icy.betterhorses.net.feature;
 
 import icy.betterhorses.net.IHorseData;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.phys.Vec3;
 
 public final class SwimBoost implements HorseFeature {

@@ -5,9 +5,9 @@ import net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext;
 import net.fabricmc.fabric.api.biome.v1.ModificationPhase;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MobSpawnSettings;
@@ -17,9 +17,9 @@ import java.util.function.Predicate;
 public final class BhBiomeSpawns {
 
     private static final TagKey<Biome> SPAWNS = TagKey.create(Registries.BIOME,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "spawns_horses"));
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "spawns_horses"));
     private static final TagKey<Biome> MODDED_SPAWNS = TagKey.create(Registries.BIOME,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "spawns_horses_modded"));
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "spawns_horses_modded"));
 
     private BhBiomeSpawns() {}
 
@@ -27,29 +27,30 @@ public final class BhBiomeSpawns {
         Predicate<BiomeSelectionContext> modded = BiomeSelectors.foundInOverworld()
                 .and(ctx -> !ctx.getBiomeKey().identifier().getNamespace().equals("minecraft"))
                 .and(BiomeSelectors.tag(MODDED_SPAWNS));
-        BiomeModifications.create(Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_biome_spawns"))
+
+        BiomeModifications.create(ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_biome_spawns"))
                 .add(ModificationPhase.ADDITIONS, BiomeSelectors.tag(SPAWNS).or(modded), (selectionContext, context) -> {
                     BhTuning tuning = BhConfig.tuning();
                     if (tuning.spawnWeight() <= 0) {
                         return;
                     }
+
                     MobSpawnSettings mobSettings = selectionContext.getBiome().getMobSettings();
                     boolean alreadyHasHorse = mobSettings.getMobs(MobCategory.CREATURE).unwrap().stream()
-                            .anyMatch(weighted -> weighted.value().type() == EntityTypes.HORSE);
+                            .anyMatch(weighted -> weighted.type == EntityType.HORSE);
                     float floor = (float) tuning.spawnFloor();
                     boolean boostedProbability = !alreadyHasHorse
                             && mobSettings.getCreatureProbability() < floor;
 
                     if (!alreadyHasHorse) {
-                        context.getMobSpawnSettings().addSpawn(
+                        context.getSpawnSettings().addSpawn(
                                 MobCategory.CREATURE,
                                 new MobSpawnSettings.SpawnerData(
-                                        EntityTypes.HORSE, tuning.groupMin(), tuning.groupMax()),
-                                tuning.spawnWeight());
+                                        EntityType.HORSE, tuning.spawnWeight(), tuning.groupMin(), tuning.groupMax()));
                     }
 
                     if (boostedProbability) {
-                        context.getMobSpawnSettings().setCreatureGenerationProbability(floor);
+                        context.getSpawnSettings().setCreatureSpawnProbability(floor);
                     }
                 });
     }

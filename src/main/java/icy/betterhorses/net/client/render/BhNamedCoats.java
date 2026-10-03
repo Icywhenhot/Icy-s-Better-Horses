@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -18,7 +18,7 @@ import java.util.Map;
 
 public final class BhNamedCoats {
 
-    private static final Map<Identifier, Boolean> found = new HashMap<>();
+    private static final Map<ResourceLocation, Boolean> found = new HashMap<>();
 
     private BhNamedCoats() {}
 
@@ -26,8 +26,8 @@ public final class BhNamedCoats {
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(
                 new SimpleSynchronousResourceReloadListener() {
                     @Override
-                    public Identifier getFabricId() {
-                        return Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "named_coats");
+                    public ResourceLocation getFabricId() {
+                        return ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "named_coats");
                     }
 
                     @Override
@@ -37,9 +37,9 @@ public final class BhNamedCoats {
                 });
     }
 
-    public static Identifier coat(BhBreedHorse horse) {
+    public static ResourceLocation coat(BhBreedHorse horse) {
         BreedCoatSet coats = horse.bhCoatSet();
-        Identifier normal = coats.texture(horse.bhCoat(), horse.isBaby());
+        ResourceLocation normal = coats.texture(horse.bhCoat(), horse.isBaby());
         Component custom = horse.getCustomName();
         if (custom == null) {
             return normal;
@@ -51,7 +51,7 @@ public final class BhNamedCoats {
         }
 
         String folder = horse.isBaby() && coats.hasFoalVariant() ? coats.folder() + "/baby" : coats.folder();
-        Identifier named = Identifier.tryBuild(coats.resourceNamespace(),
+        ResourceLocation named = ResourceLocation.tryBuild(coats.resourceNamespace(),
                 "textures/entity/horse/" + folder + "/named/" + name + ".png");
         if (named == null) {
             return normal;

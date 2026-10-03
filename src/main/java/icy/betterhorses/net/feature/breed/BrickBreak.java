@@ -10,12 +10,12 @@ import icy.betterhorses.net.IHorseData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -24,7 +24,7 @@ import net.minecraft.world.phys.Vec3;
 public final class BrickBreak implements BreedAbility {
 
     private static final TagKey<Block> BREAKABLE = TagKey.create(Registries.BLOCK,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_breakable"));
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_breakable"));
 
     public static final double MIN_SPEED = 0.30D;
     private static final double REACH = 1.2D;
@@ -115,7 +115,7 @@ public final class BrickBreak implements BreedAbility {
         if (broke) {
             cooldown = COOLDOWN;
             DamageSource src = level.damageSources().generic();
-            horse.hurtServer(level, src, SELF_DAMAGE);
+            horse.hurt(src, SELF_DAMAGE);
             BhSurge.pulse(data, 0, badge);
             charged = 0;
         }

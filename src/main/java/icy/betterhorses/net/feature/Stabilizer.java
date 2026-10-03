@@ -7,7 +7,7 @@ import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
@@ -26,7 +26,7 @@ public final class Stabilizer implements HorseFeature {
     @Override
     public void tick(AbstractHorse horse, IHorseData data) {
         boolean serverSide = !horse.level().isClientSide();
-        boolean simulates = serverSide || horse.isLocalInstanceAuthoritative();
+        boolean simulates = serverSide || horse.isControlledByLocalInstance();
 
         if (simulates) {
             trackDescent(horse, data);
@@ -54,7 +54,7 @@ public final class Stabilizer implements HorseFeature {
                 horse.hurtMarked = true;
             }
             if (state == HorseStabilizerState.OPEN) {
-                horse.fallDistance = 0.0D;
+                horse.fallDistance = 0.0F;
             }
         }
 

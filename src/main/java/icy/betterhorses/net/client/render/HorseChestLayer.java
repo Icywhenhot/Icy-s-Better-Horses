@@ -1,7 +1,8 @@
 package icy.betterhorses.net.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import icy.betterhorses.net.mixin.HorseModelAccessor;
+import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -9,27 +10,23 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.entity.state.DonkeyRenderState;
-import net.minecraft.client.renderer.entity.state.EquineRenderState;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
-public final class HorseChestLayer<S extends EquineRenderState, M extends EntityModel<? super S>>
-        extends RenderLayer<S, M> {
+public final class HorseChestLayer<T extends AbstractHorse, M extends EntityModel<T>> extends RenderLayer<T, M> {
 
-    private static final Identifier CHEST_TEXTURE =
-            Identifier.withDefaultNamespace("textures/entity/horse/donkey.png");
-
-    private static final int RENDER_ORDER = 2;
+    private static final ResourceLocation CHEST_TEXTURE =
+            ResourceLocation.withDefaultNamespace("textures/entity/horse/donkey.png");
 
     private final ModelPart chest;
 
-    public HorseChestLayer(RenderLayerParent<S, M> renderer) {
+    public HorseChestLayer(RenderLayerParent<T, M> renderer) {
         super(renderer);
         this.chest = bakeChest();
     }
@@ -46,48 +43,33 @@ public final class HorseChestLayer<S extends EquineRenderState, M extends Entity
     }
 
     @Override
-    public void submit(
-            PoseStack poseStack,
-            SubmitNodeCollector collector,
-            int packedLight,
-            S state,
-            float yRot,
-            float xRot) {
-        if (!((IBhEquineStabilizerState) (Object) state).bh_hasChestGear() || state.isInvisible || state.isBaby) {
+    public void render(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, T entity,
+                       float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks,
+                       float netHeadYaw, float headPitch) {
+        if (entity.isInvisible() || entity.isBaby()
+                || !(entity instanceof IHorseData data) || !data.bh_hasGear(GearSlot.CHEST)) {
             return;
         }
-        if (state instanceof DonkeyRenderState donkey && donkey.hasChest) {
+        if (entity instanceof AbstractChestedHorse chested && chested.hasChest()) {
             return;
         }
-        if (!(this.getParentModel() instanceof HorseModelAccessor parentModel)) {
-            return;
-        }
-        if (this.getParentModel() instanceof BhHorseModel) {
+        if (!(this.getParentModel() instanceof BhHorseModelAccess access)) {
             return;
         }
 
-        float opacity = BhRenderContext.currentOpacity();
+        float opacity = BhMountedHorseVisibility.currentOpacity();
         if (opacity <= 0.01F) {
             return;
         }
-
         RenderType renderType = opacity < 1.0F
-                ? RenderTypes.entityTranslucent(CHEST_TEXTURE)
-                : RenderTypes.entityCutout(CHEST_TEXTURE);
+                ? RenderType.entityTranslucent(CHEST_TEXTURE)
+                : RenderType.entityCutout(CHEST_TEXTURE);
 
         poseStack.pushPose();
-        this.getParentModel().root().translateAndRotate(poseStack);
-        parentModel.bh_getBody().translateAndRotate(poseStack);
-        collector.order(RENDER_ORDER).submitModelPart(
-                this.chest,
-                poseStack,
-                renderType,
-                packedLight,
-                LivingEntityRenderer.getOverlayCoords(state, 0.0F),
-                null,
-                BhMountedHorseVisibility.applyOpacity(-1, opacity),
-                null,
-                state.outlineColor);
+        access.bh_getBody().translateAndRotate(poseStack);
+        this.chest.render(poseStack, bufferSource.getBuffer(renderType), packedLight,
+                LivingEntityRenderer.getOverlayCoords(entity, 0.0F),
+                BhMountedHorseVisibility.applyOpacity(-1, opacity));
         poseStack.popPose();
     }
 }

@@ -8,13 +8,13 @@ import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.entity.BhBreedAbilities;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
@@ -34,7 +34,7 @@ public final class StockHorse implements BreedAbility {
     private static final double HERD_STOP_SQ = 25.0D;
     private static final double HERD_SPEED = 2.0D;
     private static final TagKey<EntityType<?>> LIVESTOCK = TagKey.create(Registries.ENTITY_TYPE,
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "livestock"));
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "livestock"));
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
@@ -102,6 +102,6 @@ public final class StockHorse implements BreedAbility {
     private List<Animal> nearby(AbstractHorse horse, double radius) {
         AABB box = horse.getBoundingBox().inflate(radius);
         return horse.level().getEntitiesOfClass(Animal.class, box,
-                a -> a.is(LIVESTOCK) && a.isAlive());
+                a -> a.getType().is(LIVESTOCK) && a.isAlive());
     }
 }

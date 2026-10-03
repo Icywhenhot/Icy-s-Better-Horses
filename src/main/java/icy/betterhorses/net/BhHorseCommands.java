@@ -22,15 +22,15 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.IdentifierArgument;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -136,11 +136,11 @@ public final class BhHorseCommands {
 
     public static void build(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("horse")
-                .then(properties(Commands.literal("set").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)), false)
+                .then(properties(Commands.literal("set").requires(source -> source.hasPermission(2)), false)
                         .then(properties(Commands.argument("targets", EntityArgument.entities()), true)))
                 .then(Commands.literal("spawn")
-                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
-                        .then(Commands.argument("breed", IdentifierArgument.id())
+                        .requires(source -> source.hasPermission(2))
+                        .then(Commands.argument("breed", ResourceLocationArgument.id())
                                 .suggests(BhHorseCommands::suggestBreeds)
                                 .executes(context -> spawn(context, ""))
                                 .then(Commands.argument("options", StringArgumentType.greedyString())
@@ -149,7 +149,7 @@ public final class BhHorseCommands {
                                                 StringArgumentType.getString(context, "options"))))))
                 .then(Commands.literal("coats")
                         .executes(context -> listCoats(context, implicitHorse(context.getSource())))
-                        .then(Commands.argument("breed", IdentifierArgument.id())
+                        .then(Commands.argument("breed", ResourceLocationArgument.id())
                                 .suggests(BhHorseCommands::suggestBreeds)
                                 .executes(context -> listCoats(context, breed(context))))));
     }
@@ -262,7 +262,7 @@ public final class BhHorseCommands {
         int done = 0;
         for (BhBreedHorse horse : targets(context, targeted)) {
             ResourceKey<GenderType> gender = gender(raw, horse);
-            IHorseData.of(horse).bh_setGender(gender);
+            IHorseData.of(horse).bh_setGenderKey(gender);
             refresh(horse);
             done++;
             source.sendSuccess(() -> Component.translatable(MSG + "gender_set", name(horse),
@@ -338,14 +338,14 @@ public final class BhHorseCommands {
 
         EntityType<? extends BhBreedHorse> type = ModEntities.forBreed(breedKey);
         ServerLevel level = source.getLevel();
-        BhBreedHorse horse = type == null ? null : type.create(level, EntitySpawnReason.COMMAND);
+        BhBreedHorse horse = type == null ? null : type.create(level);
         if (horse == null) {
             throw CANT_SPAWN.create();
         }
         Vec3 pos = source.getPosition();
-        horse.snapTo(pos.x, pos.y, pos.z, source.getRotation().y, 0.0F);
+        horse.moveTo(pos.x, pos.y, pos.z, source.getRotation().y, 0.0F);
         horse.finalizeSpawn(level, level.getCurrentDifficultyAt(horse.blockPosition()),
-                EntitySpawnReason.COMMAND, null);
+                MobSpawnType.COMMAND, null);
 
         BreedCoatSet coats = horse.bhCoatSet();
         String coat = picked.getOrDefault("coat", RANDOM);
@@ -361,7 +361,7 @@ public final class BhHorseCommands {
 
         String gender = picked.getOrDefault("gender", RANDOM);
         if (!gender.equals(RANDOM)) {
-            IHorseData.of(horse).bh_setGender(gender(gender, horse));
+            IHorseData.of(horse).bh_setGenderKey(gender(gender, horse));
         }
 
         Map<Stat, Double> wanted = new HashMap<>();
@@ -402,7 +402,7 @@ public final class BhHorseCommands {
         }
         if (owner != null) {
             horse.setTamed(true);
-            horse.setOwner(owner);
+            horse.setOwnerUUID(owner.getUUID());
             IHorseData.of(horse).bh_setOwner(owner.getUUID());
         }
         if (bond != null) {
@@ -419,7 +419,7 @@ public final class BhHorseCommands {
         source.sendSuccess(() -> Component.translatable(MSG + "spawned",
                 BreedType.displayName(breedKey, false),
                 coats.displayName(horse.bhCoat()),
-                GenderType.displayName(IHorseData.of(horse).bh_getGender()),
+                GenderType.displayName(IHorseData.of(horse).bh_getGenderKey()),
                 fmt(Stat.SPEED.shown(horse.getAttributeBaseValue(Attributes.MOVEMENT_SPEED))),
                 fmt(Stat.JUMP.shown(horse.getAttributeBaseValue(Attributes.JUMP_STRENGTH))),
                 fmt(horse.getAttributeBaseValue(Attributes.MAX_HEALTH))).withStyle(ChatFormatting.GREEN), true);
@@ -455,7 +455,7 @@ public final class BhHorseCommands {
     }
 
     private static int listCoats(CommandContext<CommandSourceStack> context, ResourceKey<BreedType> breedKey) {
-        BreedType type = BhRegistries.breedTypeRegistry().getValue(breedKey.identifier());
+        BreedType type = BhRegistries.breedTypeRegistry().get(breedKey.location());
         if (type == null) {
             return 0;
         }
@@ -469,15 +469,15 @@ public final class BhHorseCommands {
             throws CommandSyntaxException {
         ResourceKey<BreedType> key = breedOrNull(context);
         if (key == null) {
-            throw UNKNOWN_BREED.create(context.getArgument("breed", Identifier.class).toString());
+            throw UNKNOWN_BREED.create(context.getArgument("breed", ResourceLocation.class).toString());
         }
         return key;
     }
 
     private static @Nullable ResourceKey<BreedType> breedOrNull(CommandContext<CommandSourceStack> context) {
-        Identifier id = context.getArgument("breed", Identifier.class);
+        ResourceLocation id = context.getArgument("breed", ResourceLocation.class);
         if (!BhRegistries.breedTypeRegistry().containsKey(id) && id.getNamespace().equals("minecraft")) {
-            id = Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, id.getPath());
+            id = ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, id.getPath());
         }
         if (!BhRegistries.breedTypeRegistry().containsKey(id)) {
             return null;
@@ -488,10 +488,10 @@ public final class BhHorseCommands {
 
     private static ResourceKey<GenderType> gender(String raw, BhBreedHorse horse) throws CommandSyntaxException {
         if (raw.equals(RANDOM)) {
-            List<Identifier> all = new ArrayList<>(BhRegistries.genderTypeRegistry().keySet());
+            List<ResourceLocation> all = new ArrayList<>(BhRegistries.genderTypeRegistry().keySet());
             return ResourceKey.create(BhRegistries.GENDER_TYPES, all.get(horse.getRandom().nextInt(all.size())));
         }
-        Identifier id = Identifier.tryParse(raw.contains(":") ? raw : IcysBetterHorses.MOD_ID + ":" + raw);
+        ResourceLocation id = ResourceLocation.tryParse(raw.contains(":") ? raw : IcysBetterHorses.MOD_ID + ":" + raw);
         if (id == null || !BhRegistries.genderTypeRegistry().containsKey(id)) {
             throw UNKNOWN_GENDER.create(raw);
         }
@@ -502,7 +502,7 @@ public final class BhHorseCommands {
         return BhRegistries.genderTypeRegistry().keySet().stream().map(BhHorseCommands::shortId).toList();
     }
 
-    private static String shortId(Identifier id) {
+    private static String shortId(ResourceLocation id) {
         return id.getNamespace().equals(IcysBetterHorses.MOD_ID) ? id.getPath() : id.toString();
     }
 
@@ -513,7 +513,7 @@ public final class BhHorseCommands {
     private static CompletableFuture<Suggestions> suggestBreeds(CommandContext<CommandSourceStack> context,
                                                                 SuggestionsBuilder builder) {
         List<String> ids = new ArrayList<>();
-        for (Identifier id : BhRegistries.breedTypeRegistry().keySet()) {
+        for (ResourceLocation id : BhRegistries.breedTypeRegistry().keySet()) {
             if (ModEntities.forBreed(ResourceKey.create(BhRegistries.BREED_TYPES, id)) != null) {
                 ids.add(shortId(id));
             }
@@ -588,7 +588,7 @@ public final class BhHorseCommands {
         String key = token.substring(0, eq).toLowerCase(Locale.ROOT);
         SuggestionsBuilder values = builder.createOffset(builder.getStart() + tokenStart + eq + 1);
         ResourceKey<BreedType> breedKey = breedOrNull(context);
-        BreedType type = breedKey == null ? null : BhRegistries.breedTypeRegistry().getValue(breedKey.identifier());
+        BreedType type = breedKey == null ? null : BhRegistries.breedTypeRegistry().get(breedKey.location());
         ArchetypeType arch = breedKey == null ? null : BhBreedData.of(breedKey).archetype();
         switch (key) {
             case "coat" -> {

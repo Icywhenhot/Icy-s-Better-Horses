@@ -7,12 +7,11 @@ import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BhRegistries;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.util.Mth;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Reader;
 import java.util.HashMap;
@@ -29,8 +28,8 @@ public final class BhBreedLoader {
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(
                 new SimpleSynchronousResourceReloadListener() {
                     @Override
-                    public Identifier getFabricId() {
-                        return Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "breeds");
+                    public ResourceLocation getFabricId() {
+                        return ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "breeds");
                     }
 
                     @Override
@@ -41,14 +40,14 @@ public final class BhBreedLoader {
     }
 
     private static void load(ResourceManager manager) {
-        Map<Identifier, BhBreedData> loaded = new HashMap<>();
-        Map<Identifier, Resource> found = manager.listResources(DIR, id -> id.getPath().endsWith(".json"));
+        Map<ResourceLocation, BhBreedData> loaded = new HashMap<>();
+        Map<ResourceLocation, Resource> found = manager.listResources(DIR, id -> id.getPath().endsWith(".json"));
 
-        for (Map.Entry<Identifier, Resource> entry : found.entrySet()) {
-            Identifier file = entry.getKey();
+        for (Map.Entry<ResourceLocation, Resource> entry : found.entrySet()) {
+            ResourceLocation file = entry.getKey();
             String name = file.getPath();
             name = name.substring(name.lastIndexOf('/') + 1, name.length() - ".json".length());
-            Identifier breedId = Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, name);
+            ResourceLocation breedId = ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, name);
             if (!BhRegistries.breedTypeRegistry().containsKey(breedId)) {
                 IcysBetterHorses.LOGGER.warn("[breeds] {} does not name a registered breed, skipping", file);
                 continue;
@@ -70,7 +69,7 @@ public final class BhBreedLoader {
         IcysBetterHorses.LOGGER.info("[breeds] loaded {} breed definitions", loaded.size());
     }
 
-    private static BhBreedData read(Identifier breedId, JsonObject root) {
+    private static BhBreedData read(ResourceLocation breedId, JsonObject root) {
         BhBreedData fallback = BhBreedData.builtIn(breedId);
         ArchetypeType arch = fallback.archetype();
         if (root.has("class")) {
@@ -79,29 +78,24 @@ public final class BhBreedLoader {
             if (resolved != null) {
                 arch = resolved;
             } else {
-                IcysBetterHorses.LOGGER.warn("[breeds] {} has unknown class '{}', keeping {}",
-                        breedId, wanted, arch);
+                IcysBetterHorses.LOGGER.warn("[breeds] {} has unknown class '{}', keeping {}", breedId, wanted, arch);
             }
         }
         int rows = clampRows(root, "chest_rows", fallback.chestRows());
         int bonded = clampRows(root, "bonded_chest_rows", Math.max(fallback.bondedChestRows(), rows));
-        int weight = root.has("spawn_weight")
-                ? Math.max(0, root.get("spawn_weight").getAsInt())
-                : fallback.spawnWeight();
+        int weight = root.has("spawn_weight") ? Math.max(0, root.get("spawn_weight").getAsInt()) : fallback.spawnWeight();
         return new BhBreedData(arch, rows, Math.max(bonded, rows), weight);
     }
 
     private static @Nullable ArchetypeType resolveArchetype(String wanted) {
-        Identifier location = wanted.indexOf(':') >= 0
-                ? Identifier.tryParse(wanted)
-                : Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, wanted.toLowerCase(Locale.ROOT));
-        return location == null ? null : BhRegistries.archetypeTypeRegistry().getValue(location);
+        ResourceLocation location = wanted.indexOf(':') >= 0
+                ? ResourceLocation.tryParse(wanted)
+                : ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, wanted.toLowerCase(Locale.ROOT));
+        return location == null ? null : BhRegistries.archetypeTypeRegistry().get(location);
     }
 
     private static int clampRows(JsonObject root, String key, int fallback) {
-        if (!root.has(key)) {
-            return fallback;
-        }
+        if (!root.has(key)) return fallback;
         return Math.clamp(root.get(key).getAsInt(), 0, 6);
     }
 }

@@ -30,7 +30,9 @@
     {
       "type": "modonomicon:spotlight",
       "id": "info",
-      "item": "icys-better-horses:horse_hooves_gear",
+      "item": {
+        "item": "icys-better-horses:horse_hooves_gear"
+      },
       "title": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.info.title",
       "text": "book.icys-better-horses.stable_handbook.equipment.horse_hooves.info.text"
     },

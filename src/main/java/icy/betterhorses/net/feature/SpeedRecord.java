@@ -4,7 +4,7 @@ import icy.betterhorses.net.BhCriteria;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 public final class SpeedRecord implements HorseFeature {
 

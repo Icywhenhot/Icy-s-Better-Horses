@@ -4,7 +4,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
@@ -96,16 +96,16 @@ public final class BhBreedAbilities {
     }
 
     public static void grantSpeed(LivingEntity target, int durationTicks, int amplifier) {
-        applyQuietEffect(target, MobEffects.SPEED, durationTicks, amplifier);
+        applyQuietEffect(target, MobEffects.MOVEMENT_SPEED, durationTicks, amplifier);
     }
 
     public static void grantResistance(LivingEntity target, int durationTicks) {
-        applyQuietEffect(target, MobEffects.RESISTANCE, durationTicks, 0);
+        applyQuietEffect(target, MobEffects.DAMAGE_RESISTANCE, durationTicks, 0);
     }
 
     public static boolean isDarkOutside(AbstractHorse horse) {
         return horse.level() instanceof ServerLevel level
-                && (!level.isBrightOutside() || level.isThundering());
+                && (!level.isDay() || level.isThundering());
     }
 
 }

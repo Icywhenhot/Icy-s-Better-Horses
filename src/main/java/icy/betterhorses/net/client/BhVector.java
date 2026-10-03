@@ -1,17 +1,14 @@
 package icy.betterhorses.net.client;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import icy.betterhorses.net.mixin.GuiGraphicsExtractorAccessor;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix3x2f;
-import org.joml.Matrix3x2fc;
-import org.joml.Vector2f;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.GameRenderer;
+import org.joml.Matrix4f;
 
 public final class BhVector {
 
@@ -58,59 +55,19 @@ public final class BhVector {
         }
     }
 
-    public static void submit(GuiGraphicsExtractor gfx, Builder builder) {
+    public static void submit(GuiGraphics gfx, Builder builder) {
         if (builder.isEmpty()) return;
 
-        float[] xy = new float[builder.vertices * 2];
-        int[] colors = new int[builder.vertices];
-        System.arraycopy(builder.xy, 0, xy, 0, xy.length);
-        System.arraycopy(builder.colors, 0, colors, 0, colors.length);
-
-        Matrix3x2f pose = new Matrix3x2f(gfx.pose());
-        ((GuiGraphicsExtractorAccessor) (Object) gfx).bh_guiRenderState()
-                .addGuiElement(new MeshRenderState(xy, colors, pose, bounds(xy, pose)));
-    }
-
-    private static ScreenRectangle bounds(float[] xy, Matrix3x2fc pose) {
-        float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;
-        float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
-        Vector2f point = new Vector2f();
-        for (int i = 0; i < xy.length; i += 2) {
-            pose.transformPosition(point.set(xy[i], xy[i + 1]));
-            minX = Math.min(minX, point.x);
-            minY = Math.min(minY, point.y);
-            maxX = Math.max(maxX, point.x);
-            maxY = Math.max(maxY, point.y);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        Matrix4f pose = gfx.pose().last().pose();
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        for (int i = 0; i < builder.vertices; i++) {
+            buffer.addVertex(pose, builder.xy[i * 2], builder.xy[i * 2 + 1], 0f).setColor(builder.colors[i]);
         }
-        int x = (int) Math.floor(minX);
-        int y = (int) Math.floor(minY);
-        return new ScreenRectangle(x, y, (int) Math.ceil(maxX) - x + 1, (int) Math.ceil(maxY) - y + 1);
-    }
-
-    private record MeshRenderState(float[] xy, int[] colors, Matrix3x2fc pose, ScreenRectangle bounds)
-            implements GuiElementRenderState {
-
-        @Override
-        public void buildVertices(VertexConsumer consumer) {
-            for (int i = 0; i < colors.length; i++) {
-                consumer.addVertexWith2DPose(pose, xy[i * 2], xy[i * 2 + 1]).setColor(colors[i]);
-            }
-        }
-
-        @Override
-        public RenderPipeline pipeline() {
-            return RenderPipelines.GUI;
-        }
-
-        @Override
-        public TextureSetup textureSetup() {
-            return TextureSetup.noTexture();
-        }
-
-        @Override
-        public @Nullable ScreenRectangle scissorArea() {
-            return null;
-        }
+        BufferUploader.drawWithShader(buffer.buildOrThrow());
+        RenderSystem.disableBlend();
     }
 
     public static void wedge(Builder builder, float cx, float cy, float innerRadius, float outerRadius,

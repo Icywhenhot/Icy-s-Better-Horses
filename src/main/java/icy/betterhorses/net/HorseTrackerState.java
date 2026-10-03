@@ -3,21 +3,19 @@ package icy.betterhorses.net;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.Identifier;
 import net.minecraft.nbt.NbtOps;
 import icy.betterhorses.net.registry.BreedType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.datafix.DataFixTypes;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.saveddata.SavedDataType;
-import net.minecraft.world.level.storage.TagValueOutput;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -54,10 +52,10 @@ public class HorseTrackerState extends SavedData {
                     .optionalFieldOf("trusted_by_player", Map.of()).forGetter(state -> state.trustedByPlayer)
     ).apply(instance, HorseTrackerState::new));
 
-    public static final SavedDataType<HorseTrackerState> TYPE = new SavedDataType<>(
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_tracker"),
+    private static final String FILE_NAME = "icys-better-horses_horse_tracker";
+    private static final Factory<HorseTrackerState> FACTORY = new Factory<>(
             HorseTrackerState::new,
-            CODEC,
+            HorseTrackerState::load,
             DataFixTypes.SAVED_DATA_COMMAND_STORAGE);
 
     private final Map<UUID, UUID> lastRiddenByPlayer;
@@ -98,7 +96,23 @@ public class HorseTrackerState extends SavedData {
     }
 
     public static HorseTrackerState get(MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(TYPE);
+        return server.overworld().getDataStorage().computeIfAbsent(FACTORY, FILE_NAME);
+    }
+
+    private static HorseTrackerState load(CompoundTag tag, HolderLookup.Provider registries) {
+        return CODEC.parse(NbtOps.INSTANCE, tag)
+                .resultOrPartial(message -> IcysBetterHorses.LOGGER.error("Could not load horse tracker: {}", message))
+                .orElseGet(HorseTrackerState::new);
+    }
+
+    @Override
+    public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
+        CODEC.encodeStart(NbtOps.INSTANCE, this)
+                .resultOrPartial(message -> IcysBetterHorses.LOGGER.error("Could not save horse tracker: {}", message))
+                .filter(CompoundTag.class::isInstance)
+                .map(CompoundTag.class::cast)
+                .ifPresent(tag::merge);
+        return tag;
     }
 
     public void setLastRidden(UUID playerId, UUID horseId) {
@@ -113,22 +127,20 @@ public class HorseTrackerState extends SavedData {
     public void recordHorse(AbstractHorse horse) {
         UUID horseId = horse.getUUID();
         lastKnownPositions.put(horseId, new KnownPosition(horse.level().dimension(), horse.blockPosition()));
-        TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, horse.registryAccess());
-        horse.saveWithoutId(output);
-        output.putString("id", net.minecraft.world.entity.EntityType.getKey(horse.getType()).toString());
-        CompoundTag snapshot = output.buildResult();
+        CompoundTag snapshot = horse.saveWithoutId(new CompoundTag());
+        snapshot.putString("id", net.minecraft.world.entity.EntityType.getKey(horse.getType()).toString());
         IHorseData data = IHorseData.of(horse);
         CompoundTag summary = new CompoundTag();
         summary.putString("name", horse.hasCustomName() ? horse.getCustomName().getString() : "");
         ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
-        summary.putString("breedId", breedKey != null ? breedKey.identifier().toString() : data.bh_getBreed().id());
-        summary.putString("gender", data.bh_getGender().identifier().toString());
+        summary.putString("breedId", breedKey != null ? breedKey.location().toString() : data.bh_getBreed().id());
+        summary.putString("gender", data.bh_getGenderKey().location().toString());
         summary.putBoolean("mixed", data.bh_isMixedBreed());
         summary.putInt("bond", data.bh_getBond());
         summary.putBoolean("home", data.bh_getHome() != null);
         summary.putString("type", net.minecraft.world.entity.EntityType.getKey(horse.getType()).toString());
-        summary.putInt("variant", horse instanceof net.minecraft.world.entity.animal.equine.Horse h ? h.getVariant().ordinal() : -1);
-        summary.putInt("markings", horse instanceof net.minecraft.world.entity.animal.equine.Horse h ? h.getMarkings().ordinal() : -1);
+        summary.putInt("variant", horse instanceof net.minecraft.world.entity.animal.horse.Horse h ? h.getVariant().ordinal() : -1);
+        summary.putInt("markings", horse instanceof net.minecraft.world.entity.animal.horse.Horse h ? h.getMarkings().ordinal() : -1);
         summary.putBoolean("baby", horse.isBaby());
         summary.putInt("coat", horse instanceof icy.betterhorses.net.entity.BhBreedHorse h ? h.bhCoat() : -1);
         snapshot.put("BH_Roster", summary);
@@ -172,7 +184,7 @@ public class HorseTrackerState extends SavedData {
     }
 
     private static boolean isOwnedBy(CompoundTag snapshot, UUID playerId) {
-        return snapshot.read("BH_Owner", UUIDUtil.CODEC).map(playerId::equals).orElse(false);
+        return snapshot.hasUUID("BH_Owner") && playerId.equals(snapshot.getUUID("BH_Owner"));
     }
 
     public void setActiveHorse(UUID playerId, UUID horseId) {

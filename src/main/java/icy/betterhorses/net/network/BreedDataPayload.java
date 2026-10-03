@@ -8,7 +8,7 @@ import icy.betterhorses.net.registry.BhRegistries;
 import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +18,7 @@ import java.util.Map;
 public record BreedDataPayload(List<Entry> entries) implements CustomPacketPayload {
 
     public static final Type<BreedDataPayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath("icys-better-horses", "breed_data"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath("icys-better-horses", "breed_data"));
 
     private static final int MAX_ENTRIES = 128;
     private static final int MAX_NAME = 64;
@@ -28,9 +28,9 @@ public record BreedDataPayload(List<Entry> entries) implements CustomPacketPaylo
     public static BreedDataPayload current() {
         List<Entry> out = new ArrayList<>();
         Registry<ArchetypeType> archetypes = BhRegistries.archetypeTypeRegistry();
-        for (Map.Entry<Identifier, BhBreedData> entry : BhBreedData.all().entrySet()) {
+        for (Map.Entry<ResourceLocation, BhBreedData> entry : BhBreedData.all().entrySet()) {
             BhBreedData data = entry.getValue();
-            Identifier archetypeId = archetypes.getKey(data.archetype());
+            ResourceLocation archetypeId = archetypes.getKey(data.archetype());
             out.add(new Entry(entry.getKey().getPath(),
                     archetypeId != null ? archetypeId.toString() : "",
                     data.chestRows(), data.bondedChestRows(), data.spawnWeight()));
@@ -38,14 +38,14 @@ public record BreedDataPayload(List<Entry> entries) implements CustomPacketPaylo
         return new BreedDataPayload(out);
     }
 
-    public Map<Identifier, BhBreedData> toMap() {
-        Map<Identifier, BhBreedData> map = new HashMap<>();
+    public Map<ResourceLocation, BhBreedData> toMap() {
+        Map<ResourceLocation, BhBreedData> map = new HashMap<>();
         for (Entry entry : entries) {
-            Identifier breedId = Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, entry.breed());
+            ResourceLocation breedId = ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, entry.breed());
             BhBreedData fallback = BhBreedData.builtIn(breedId);
-            Identifier archetypeId = Identifier.tryParse(entry.archetype());
+            ResourceLocation archetypeId = ResourceLocation.tryParse(entry.archetype());
             ArchetypeType arch = archetypeId != null
-                    ? BhRegistries.archetypeTypeRegistry().getValue(archetypeId)
+                    ? BhRegistries.archetypeTypeRegistry().get(archetypeId)
                     : null;
             if (arch == null) {
                 arch = fallback != null ? fallback.archetype() : BhContent.NONE.value();

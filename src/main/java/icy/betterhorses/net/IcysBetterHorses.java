@@ -1,12 +1,12 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.network.BhRearPayload;
-import net.fabricmc.fabric.api.item.v1.DefaultItemComponentEvents;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.enchantment.Enchantable;
-import net.minecraft.world.item.Items;
 import icy.betterhorses.net.network.BhChargePayload;
+import icy.betterhorses.net.network.HorseJumpPayload;
 import icy.betterhorses.net.feature.HorseCombat;
+import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.registry.CommandType;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.network.CartMenuPayload;
 import icy.betterhorses.net.network.BhFreeLookPayload;
@@ -16,7 +16,6 @@ import icy.betterhorses.net.network.HorseGearPayload;
 import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseChargeShakePayload;
-import icy.betterhorses.net.network.HorseJumpPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
@@ -29,19 +28,16 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import icy.betterhorses.net.registry.BhContent;
-import icy.betterhorses.net.registry.BhRegistries;
-import icy.betterhorses.net.registry.CommandType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LightningBolt;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +53,7 @@ import net.minecraft.sounds.SoundEvent;
 public class IcysBetterHorses implements ModInitializer {
 
     public static final String MOD_ID = "icys-better-horses";
+    public static final String RESOURCE_NAMESPACE = "icys-better-horses";
 
     private static final double CART_REACH = 12.0D;
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
@@ -69,22 +66,14 @@ public class IcysBetterHorses implements ModInitializer {
     @Override
     public void onInitialize() {
         BhConfig.load();
+        BhContent.init();
+        BhContent.logSummary();
+        BhBreedData.initializeBuiltIns();
         ModBlocks.init();
         ModEntities.init();
         ModItems.init();
-        DefaultItemComponentEvents.MODIFY.register(context -> {
-            context.modify(Items.LEATHER_HORSE_ARMOR, builder -> builder.set(DataComponents.ENCHANTABLE, new Enchantable(15)));
-            context.modify(Items.COPPER_HORSE_ARMOR, builder -> builder.set(DataComponents.ENCHANTABLE, new Enchantable(8)));
-            context.modify(Items.IRON_HORSE_ARMOR, builder -> builder.set(DataComponents.ENCHANTABLE, new Enchantable(9)));
-            context.modify(Items.GOLDEN_HORSE_ARMOR, builder -> builder.set(DataComponents.ENCHANTABLE, new Enchantable(25)));
-            context.modify(Items.DIAMOND_HORSE_ARMOR, builder -> builder.set(DataComponents.ENCHANTABLE, new Enchantable(10)));
-            context.modify(Items.NETHERITE_HORSE_ARMOR, builder -> builder.set(DataComponents.ENCHANTABLE, new Enchantable(15)));
-        });
         ModSounds.init();
         ModMenus.init();
-        ModTicketTypes.init();
-        BhContent.init();
-        BhContent.logSummary();
         BhBiomeSpawns.register();
         BhBreedLoader.register();
         BhHorseSpawnRules.installSpawnPlacementOverride();
@@ -100,28 +89,28 @@ public class IcysBetterHorses implements ModInitializer {
     }
 
     private void registerPackets() {
-        PayloadTypeRegistry.serverboundPlay().register(RadialCommandPayload.TYPE, new RadialCommandPayload.StreamCodec());
-        PayloadTypeRegistry.serverboundPlay().register(CallHorsePayload.TYPE, new CallHorsePayload.StreamCodec());
-        PayloadTypeRegistry.serverboundPlay().register(HorseRecallPayload.TYPE, new HorseRecallPayload.StreamCodec());
-        PayloadTypeRegistry.serverboundPlay().register(OpenHorseRosterPayload.TYPE, new OpenHorseRosterPayload.StreamCodec());
-        PayloadTypeRegistry.serverboundPlay().register(HorseManagePayload.TYPE, new HorseManagePayload.StreamCodec());
-        PayloadTypeRegistry.serverboundPlay().register(HorseGearPayload.TYPE, new HorseGearPayload.StreamCodec());
-        PayloadTypeRegistry.serverboundPlay().register(BhFreeLookPayload.TYPE, new BhFreeLookPayload.StreamCodec());
-        PayloadTypeRegistry.serverboundPlay().register(BhRearPayload.TYPE, new BhRearPayload.StreamCodec());
-        PayloadTypeRegistry.serverboundPlay().register(CartMenuPayload.TYPE, new CartMenuPayload.StreamCodec());
-        PayloadTypeRegistry.serverboundPlay().register(BhChargePayload.TYPE, new BhChargePayload.StreamCodec());
-        PayloadTypeRegistry.clientboundPlay().register(HorseRosterSyncPayload.TYPE, new HorseRosterSyncPayload.StreamCodec());
-        PayloadTypeRegistry.clientboundPlay().register(HorseManageResultPayload.TYPE, new HorseManageResultPayload.StreamCodec());
-        PayloadTypeRegistry.clientboundPlay().register(TrustSyncPayload.TYPE, new TrustSyncPayload.StreamCodec());
-        PayloadTypeRegistry.clientboundPlay().register(ConfigSyncPayload.TYPE, new ConfigSyncPayload.StreamCodec());
-        PayloadTypeRegistry.clientboundPlay().register(BreedDataPayload.TYPE, new BreedDataPayload.StreamCodec());
-        PayloadTypeRegistry.clientboundPlay().register(HorseChargeShakePayload.TYPE, new HorseChargeShakePayload.StreamCodec());
-        PayloadTypeRegistry.clientboundPlay().register(HorseJumpPayload.TYPE, new HorseJumpPayload.StreamCodec());
+        PayloadTypeRegistry.playC2S().register(RadialCommandPayload.TYPE, new RadialCommandPayload.StreamCodec());
+        PayloadTypeRegistry.playC2S().register(CallHorsePayload.TYPE, new CallHorsePayload.StreamCodec());
+        PayloadTypeRegistry.playC2S().register(HorseRecallPayload.TYPE, new HorseRecallPayload.StreamCodec());
+        PayloadTypeRegistry.playC2S().register(OpenHorseRosterPayload.TYPE, new OpenHorseRosterPayload.StreamCodec());
+        PayloadTypeRegistry.playC2S().register(HorseManagePayload.TYPE, new HorseManagePayload.StreamCodec());
+        PayloadTypeRegistry.playC2S().register(HorseGearPayload.TYPE, new HorseGearPayload.StreamCodec());
+        PayloadTypeRegistry.playC2S().register(BhFreeLookPayload.TYPE, new BhFreeLookPayload.StreamCodec());
+        PayloadTypeRegistry.playC2S().register(BhRearPayload.TYPE, new BhRearPayload.StreamCodec());
+        PayloadTypeRegistry.playC2S().register(CartMenuPayload.TYPE, new CartMenuPayload.StreamCodec());
+        PayloadTypeRegistry.playC2S().register(BhChargePayload.TYPE, new BhChargePayload.StreamCodec());
+        PayloadTypeRegistry.playS2C().register(HorseRosterSyncPayload.TYPE, new HorseRosterSyncPayload.StreamCodec());
+        PayloadTypeRegistry.playS2C().register(HorseManageResultPayload.TYPE, new HorseManageResultPayload.StreamCodec());
+        PayloadTypeRegistry.playS2C().register(TrustSyncPayload.TYPE, new TrustSyncPayload.StreamCodec());
+        PayloadTypeRegistry.playS2C().register(ConfigSyncPayload.TYPE, new ConfigSyncPayload.StreamCodec());
+        PayloadTypeRegistry.playS2C().register(BreedDataPayload.TYPE, new BreedDataPayload.StreamCodec());
+        PayloadTypeRegistry.playS2C().register(HorseChargeShakePayload.TYPE, new HorseChargeShakePayload.StreamCodec());
+        PayloadTypeRegistry.playS2C().register(HorseJumpPayload.TYPE, new HorseJumpPayload.StreamCodec());
     }
 
     private static ResourceKey<CommandType> bh_parseCommand(String raw) {
-        Identifier loc = Identifier.tryParse(raw);
-        return loc != null
+        ResourceLocation loc = ResourceLocation.tryParse(raw);
+        return loc != null && BhRegistries.commandTypeRegistry().containsKey(loc)
                 ? ResourceKey.create(BhRegistries.COMMAND_TYPES, loc)
                 : null;
     }
@@ -134,7 +123,8 @@ public class IcysBetterHorses implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(RadialCommandPayload.TYPE, (payload, context) -> {
             ServerPlayer player = context.player();
             ResourceKey<CommandType> command = bh_parseCommand(payload.commandId());
-            context.server().execute(() -> handleRadialCommand(player, payload.horseId(), command, payload.abilityId()));
+            context.server().execute(() ->
+                    handleRadialCommand(player, payload.horseId(), command, payload.abilityId()));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(CallHorsePayload.TYPE, (payload, context) -> {
@@ -173,6 +163,7 @@ public class IcysBetterHorses implements ModInitializer {
             ServerPlayer player = context.player();
             context.server().execute(() -> HorseCombat.riderCharge(player.getUUID(), payload.on()));
         });
+
         ServerPlayNetworking.registerGlobalReceiver(OpenHorseRosterPayload.TYPE, (payload, context) -> {
             ServerPlayer player = context.player();
             context.server().execute(() -> sendRoster(player));
@@ -192,8 +183,9 @@ public class IcysBetterHorses implements ModInitializer {
             BhCriteria.fire(player, BhCriteria.OWN_HORSE);
             BhCriteria.fire(player, BhCriteria.HORSE_COUNT, roster.size());
             for (HorseRosterEntry entry : roster) {
-                Identifier breedId = Identifier.tryParse(entry.breedId());
-                BhCriteria.fireBreed(player, HorseBreed.byId(breedId != null ? breedId.getPath() : entry.breedId()));
+                ResourceLocation breedId = ResourceLocation.tryParse(entry.breedId());
+                String path = breedId != null ? breedId.getPath() : entry.breedId();
+                BhCriteria.fireBreed(player, HorseBreed.byId(path));
             }
         }
     }
@@ -223,9 +215,9 @@ public class IcysBetterHorses implements ModInitializer {
     }
 
     public static void handleRadialCommand(ServerPlayer player, int horseId,
-                                          ResourceKey<CommandType> command, String abilityId) {
+                                           ResourceKey<CommandType> command, String abilityId) {
         if (command == null) return;
-        CommandType type = BhRegistries.commandTypeRegistry().getValue(command.identifier());
+        CommandType type = BhRegistries.commandTypeRegistry().get(command.location());
         if (type == null) return;
         AbstractHorse horse = findCommandHorse(player, horseId, 12.0);
         if (horse == null) return;
@@ -234,12 +226,16 @@ public class IcysBetterHorses implements ModInitializer {
             if (type.execute(horse, player)) playCommandAnswer(horse);
             return;
         }
+
         IHorseData data = IHorseData.of(horse);
         if (command.equals(BhContent.COMMAND_ABILITY.key())) {
             IHorseAbilityHost host = (IHorseAbilityHost) horse;
             if (!abilityId.isEmpty()) {
-                Identifier id = Identifier.tryParse(abilityId);
-                if (id == null || !host.bh_activateAbility(ResourceKey.create(BhRegistries.ABILITY_TYPES, id))) return;
+                ResourceLocation id = ResourceLocation.tryParse(abilityId);
+                if (id == null || !BhRegistries.abilityTypeRegistry().containsKey(id)
+                        || !host.bh_activateAbility(ResourceKey.create(BhRegistries.ABILITY_TYPES, id))) {
+                    return;
+                }
             } else if (CommandType.toggleable(data.bh_getBreedKey())) {
                 boolean paused = !data.bh_isAbilityPaused();
                 data.bh_setAbilityPaused(paused);
@@ -253,16 +249,17 @@ public class IcysBetterHorses implements ModInitializer {
             playCommandAnswer(horse);
             return;
         }
+
         if (command.equals(BhContent.COMMAND_SET_HOME.key())) {
             data.bh_setHome(horse.blockPosition());
-            data.bh_setCommand(BhContent.COMMAND_STAY.key());
+            data.bh_setCommandKey(BhContent.COMMAND_STAY.key());
             player.sendSystemMessage(Component.translatable("message.icys-better-horses.home_set"));
             BhCriteria.fire(player, BhCriteria.SET_HOME);
         } else {
             if (command.equals(BhContent.COMMAND_WANDER.key())) {
                 data.bh_setWanderCenter(horse.blockPosition());
             }
-            data.bh_setCommand(command);
+            data.bh_setCommandKey(command);
         }
 
         playCommandAnswer(horse);
@@ -373,7 +370,10 @@ public class IcysBetterHorses implements ModInitializer {
                 ServerPlayNetworking.send(player, breeds);
             }
         });
-        ServerLifecycleEvents.SERVER_STARTED.register(HorseTracker::attach);
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            HorseTracker.attach(server);
+            BhTwinWatch.reset();
+        });
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> HorseTracker.recordLoadedPositions());
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             staleHorses.clear();
@@ -398,7 +398,7 @@ public class IcysBetterHorses implements ModInitializer {
         if (staleHorses.isEmpty()) return;
         for (AbstractHorse stale : staleHorses) {
             if (!stale.isRemoved()) {
-                LOGGER.info("[whistle] discarding stale horse copy {} on load (generation {} < {})",
+                LOGGER.debug("Discarding stale horse copy {} (generation {} < {})",
                         stale.getUUID(),
                         IHorseData.of(stale).bh_getGeneration(),
                         HorseTracker.getGeneration(stale.getUUID()));
@@ -447,7 +447,9 @@ public class IcysBetterHorses implements ModInitializer {
         if (target == null || player.distanceToSqr(target) > CART_REACH * CART_REACH) {
             return;
         }
-        HorseCartEntity cart = target instanceof HorseCartEntity found ? found
+
+        HorseCartEntity cart = target instanceof HorseCartEntity found
+                ? found
                 : target instanceof AbstractHorse horse && IHorseData.of(horse).bh_hasCartGear()
                 ? IHorseData.of(horse).bh_getCartEntity()
                 : null;

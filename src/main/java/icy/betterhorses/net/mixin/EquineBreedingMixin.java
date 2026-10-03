@@ -1,14 +1,13 @@
 package icy.betterhorses.net.mixin;
 
-import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.equine.Horse;
-import net.minecraft.world.entity.animal.equine.Donkey;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.world.entity.animal.horse.Donkey;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -25,12 +24,11 @@ public abstract class EquineBreedingMixin {
 
     @Inject(method = "canMate", at = @At("HEAD"), cancellable = true)
     private void bh_checkGender(Animal other, CallbackInfoReturnable<Boolean> cir) {
-        if (!BhConfig.genderBreedingEnabled() || !(other instanceof AbstractHorse mate)
-                || !BhHorseKind.managed(mate)) {
+        if (!BhConfig.genderBreedingEnabled() || !(other instanceof AbstractHorse mate)) {
             return;
         }
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (!IHorseData.of(self).bh_getGender().equals(IHorseData.of(mate).bh_getGender())) {
+        if (IHorseData.of(self).bh_getGender() != IHorseData.of(mate).bh_getGender()) {
             return;
         }
         cir.setReturnValue(false);

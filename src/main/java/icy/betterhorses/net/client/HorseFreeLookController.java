@@ -4,7 +4,7 @@ import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.IcysBetterHorsesClient;
 import icy.betterhorses.net.network.BhFreeLookPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import org.jetbrains.annotations.Nullable;
 
 public final class HorseFreeLookController {

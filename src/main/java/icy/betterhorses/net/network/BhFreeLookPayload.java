@@ -2,12 +2,12 @@ package icy.betterhorses.net.network;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public record BhFreeLookPayload(int horseId, boolean freeLook) implements CustomPacketPayload {
 
     public static final Type<BhFreeLookPayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath("icys-better-horses", "free_look"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath("icys-better-horses", "free_look"));
 
     @Override
     public Type<BhFreeLookPayload> type() {

@@ -2,19 +2,18 @@ package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
+import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedAbilities;
-import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Objects;
 
 public final class HardyNorthern implements BreedAbility {
 
@@ -63,7 +62,7 @@ public final class HardyNorthern implements BreedAbility {
     }
 
     public static boolean blocksFreeze(IHorseData data, int tier) {
-        return Objects.equals(data.bh_getBreedKey(), BhContent.ICELANDIC.key()) && tier >= 1
+        return data.bh_getBreed() == HorseBreed.ICELANDIC && tier >= 1
                 && BhAbility.ICELANDIC_FREEZE.on();
     }
 
@@ -76,7 +75,7 @@ public final class HardyNorthern implements BreedAbility {
 
     private static boolean hardened(LivingEntity target) {
         return target instanceof AbstractHorse horse
-                && Objects.equals(IHorseData.of(horse).bh_getBreedKey(), BhContent.ICELANDIC.key())
+                && IHorseData.of(horse).bh_getBreed() == HorseBreed.ICELANDIC
                 && BhHorseTraits.bondTier(IHorseData.of(horse).bh_getBond()) >= 2
                 && BhAbility.ICELANDIC_CLEAR.on();
     }

@@ -3,7 +3,7 @@ package icy.betterhorses.net.registry;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.IcysBetterHorses;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 public final class BhBreeds {
@@ -15,7 +15,7 @@ public final class BhBreeds {
         if (!breed.isRealBreed()) {
             return null;
         }
-        return ResourceKey.create(BhRegistries.BREED_TYPES, Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, breed.id()));
+        return ResourceKey.create(BhRegistries.BREED_TYPES, ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, breed.id()));
     }
 
     public static ResourceKey<SpeciesType> speciesOf(HorseBreed breed) {

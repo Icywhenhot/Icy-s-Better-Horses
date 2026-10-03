@@ -2,16 +2,13 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.client.BhSlotFlash;
-import icy.betterhorses.net.client.RiderPanel;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,7 +16,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractContainerScreen.class)
 public abstract class AbstractContainerScreenMixin {
@@ -30,7 +26,7 @@ public abstract class AbstractContainerScreenMixin {
 
     @Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true)
     private void bh_refuseLockedSlot(
-            Slot slot, int slotId, int mouseButton, ContainerInput input, CallbackInfo ci) {
+            Slot slot, int slotId, int mouseButton, ClickType input, CallbackInfo ci) {
         if (!(this.getMenu() instanceof HorseInventoryLayoutAccess layoutAccess)) {
             return;
         }
@@ -46,13 +42,6 @@ public abstract class AbstractContainerScreenMixin {
         if (slotId == BH_SADDLE_SLOT && layoutAccess.bh_isSaddleSlotLocked()) {
             bh_refuse(slotId, "message.icys-better-horses.saddle_cart_attached");
             ci.cancel();
-        }
-    }
-
-    @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
-    private void bh_riderPanelKey(KeyEvent event, CallbackInfoReturnable<Boolean> cir) {
-        if (RiderPanel.onKey((Screen) (Object) this, event)) {
-            cir.setReturnValue(true);
         }
     }
 

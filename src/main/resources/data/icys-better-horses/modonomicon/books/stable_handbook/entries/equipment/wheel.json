@@ -30,7 +30,9 @@
     {
       "type": "modonomicon:spotlight",
       "id": "info",
-      "item": "icys-better-horses:wheel",
+      "item": {
+        "item": "icys-better-horses:wheel"
+      },
       "title": "book.icys-better-horses.stable_handbook.equipment.wheel.info.title",
       "text": "book.icys-better-horses.stable_handbook.equipment.wheel.info.text"
     }

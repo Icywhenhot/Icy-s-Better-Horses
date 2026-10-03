@@ -7,10 +7,11 @@ import icy.betterhorses.net.book.BhCartModelsPage;
 import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import com.mojang.blaze3d.platform.Lighting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -37,7 +38,7 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
     private static final int LARGE_SCALE = 12;
     private static final float SMALL_HEIGHT = 1.7F;
     private static final float LARGE_HEIGHT = 3.1F;
-    private static final float BASE_YAW = 200.0F;
+    private static final float BASE_YAW = 45.0F;
     private static final float SPIN_RANGE = 20.0F;
     private static final float DEG = (float) Math.PI / 180.0F;
 
@@ -68,7 +69,7 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
     }
 
     @Override
-    public void render(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         centeredFitted(guiGraphics,
                 Component.translatable("book.icys-better-horses.carts.title").getString(),
                 TITLE_Y, BookEntryScreen.PAGE_WIDTH);
@@ -88,25 +89,24 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
                 COUNT_Y, BookEntryScreen.PAGE_WIDTH);
     }
 
-    private void centeredFitted(GuiGraphicsExtractor guiGraphics, String text, int y, int maxWidth) {
+    private void centeredFitted(GuiGraphics guiGraphics, String text, int y, int maxWidth) {
         int width = this.font.width(text);
         int centerX = BookEntryScreen.PAGE_WIDTH / 2;
         if (width <= maxWidth) {
-            guiGraphics.text(this.font, text, centerX - width / 2, y, INK, false);
+            guiGraphics.drawString(this.font, text, centerX - width / 2, y, INK, false);
             return;
         }
 
         float scale = maxWidth / (float) width;
         var pose = guiGraphics.pose();
-        pose.pushMatrix();
-        pose.translate(centerX, (float) y);
-        pose.scale(scale, scale);
-        guiGraphics.text(this.font, text, -width / 2, 0, INK, false);
-        pose.popMatrix();
+        pose.pushPose();
+        pose.translate(centerX, (float) y, 0);
+        pose.scale(scale, scale, 1);
+        guiGraphics.drawString(this.font, text, -width / 2, 0, INK, false);
+        pose.popPose();
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private void renderCart(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
+    private void renderCart(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         if (errored || cart == null) {
             return;
         }
@@ -118,8 +118,8 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
         int y0 = pageY + MODEL_CENTER_Y - MODEL_BOX_HEIGHT / 2;
         int y1 = y0 + MODEL_BOX_HEIGHT;
 
-        float spin = (float) Math.atan(((x0 + x1) / 2.0F - mouseX) / 40.0F);
-        float lean = (float) Math.atan(((y0 + y1) / 2.0F - mouseY) / 40.0F);
+        float spin = (float) Math.atan(((x0 + x1) / 2.0F - (pageX + mouseX)) / 40.0F);
+        float lean = (float) Math.atan(((y0 + y1) / 2.0F - (pageY + mouseY)) / 40.0F);
         Quaternionf flip = new Quaternionf().rotateZ((float) Math.PI);
         Quaternionf pitch = new Quaternionf().rotateX(lean * SPIN_RANGE * DEG);
         flip.mul(pitch);
@@ -130,23 +130,54 @@ public class BhCartModelsPageRenderer extends BookPageRenderer<BhCartModelsPage>
         cart.setYBodyRot(yaw);
         cart.setYHeadRot(yaw);
 
+        var pose = guiGraphics.pose();
+        pose.pushPose();
+        pose.translate(-pageX, -pageY, 0.0F);
         try {
-            EntityRenderer renderer = this.mc.getEntityRenderDispatcher().getRenderer(cart);
-            EntityRenderState state = renderer.createRenderState(cart, 1.0F);
-            state.shadowPieces.clear();
-            state.outlineColor = 0;
-
-            Vec3 shift = new Vec3(0.0D, 0.0D, size.bedCenterBehind()).yRot(-yaw * DEG).scale(-1.0D);
+            Vec3 shift = new Vec3(0.0D, 0.0D, size.bedCenterBehind()).yRot(-yaw * DEG);
             Vector3f offset = new Vector3f((float) shift.x,
                     (size.isLarge() ? LARGE_HEIGHT : SMALL_HEIGHT) / 2.0F,
-                    (float) shift.z);
+                    (float) -shift.z);
 
-            guiGraphics.entity(state, size.isLarge() ? LARGE_SCALE : SMALL_SCALE,
-                    offset, flip, pitch, x0, y0, x1, y1);
+            drawCart(guiGraphics, size.isLarge() ? LARGE_SCALE : SMALL_SCALE,
+                    offset, flip, pitch, yaw, x0, y0, x1, y1);
         } catch (Exception exception) {
             errored = true;
             IcysBetterHorses.LOGGER.warn("[handbook] could not draw the cart preview", exception);
+        } finally {
+            pose.popPose();
         }
+    }
+
+    private void drawCart(GuiGraphics guiGraphics, int scale, Vector3f offset,
+                          Quaternionf spin, Quaternionf lean, float yaw,
+                          int x0, int y0, int x1, int y1) {
+        HorseCartEntity drawn = this.cart;
+        if (drawn == null) {
+            return;
+        }
+
+        guiGraphics.enableScissor(x0, y0, x1, y1);
+        var pose = guiGraphics.pose();
+        pose.pushPose();
+        pose.translate((x0 + x1) / 2.0F, (y0 + y1) / 2.0F, 50.0F);
+        pose.scale(scale, scale, -scale);
+        pose.translate(offset.x, offset.y, offset.z);
+        pose.mulPose(spin);
+        pose.mulPose(new Quaternionf().rotateY(yaw * DEG));
+
+        Lighting.setupForEntityInInventory();
+        EntityRenderDispatcher dispatcher = this.mc.getEntityRenderDispatcher();
+        dispatcher.overrideCameraOrientation(lean.conjugate(new Quaternionf()).rotateY((float) Math.PI));
+        dispatcher.setRenderShadow(false);
+        RenderSystem.runAsFancy(() -> dispatcher.render(drawn, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F,
+                pose, guiGraphics.bufferSource(), 15728880));
+        guiGraphics.flush();
+        dispatcher.setRenderShadow(true);
+
+        pose.popPose();
+        Lighting.setupFor3DItems();
+        guiGraphics.disableScissor();
     }
 
     private void cycle(int direction) {

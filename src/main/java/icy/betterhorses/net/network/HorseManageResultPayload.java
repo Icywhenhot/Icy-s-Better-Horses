@@ -2,7 +2,7 @@ package icy.betterhorses.net.network;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.UUID;
 
@@ -10,7 +10,7 @@ public record HorseManageResultPayload(UUID horseId, int actionOrdinal, boolean 
         implements CustomPacketPayload {
 
     public static final Type<HorseManageResultPayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath("icys-better-horses", "horse_manage_result"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath("icys-better-horses", "horse_manage_result"));
 
     @Override
     public Type<HorseManageResultPayload> type() {

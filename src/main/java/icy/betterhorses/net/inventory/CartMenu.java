@@ -1,14 +1,14 @@
 package icy.betterhorses.net.inventory;
 
+import com.mojang.datafixers.util.Pair;
 import icy.betterhorses.net.IcysBetterHorses;
-import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
 import icy.betterhorses.net.ModMenus;
 import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.mixin.SlotAccessor;
-import net.minecraft.resources.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Container;
@@ -16,6 +16,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -40,16 +41,24 @@ public class CartMenu extends AbstractContainerMenu {
     public static final int RIG_START = CartType.CHEST_SLOTS;
     private static final int PLAYER_START = RIG_START + CartType.Attachment.values().length;
 
-    private static final Identifier EMPTY_CHEST =
-            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "container/slot/cart_chest");
-    private static final Identifier EMPTY_HOE = Identifier.withDefaultNamespace("container/slot/hoe");
-    private static final Identifier EMPTY_SHOVEL = Identifier.withDefaultNamespace("container/slot/shovel");
+    private static final ResourceLocation EMPTY_CHEST =
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "item/empty_slot_chest");
+    private static final ResourceLocation EMPTY_HOE = ResourceLocation.withDefaultNamespace("item/empty_slot_hoe");
+    private static final ResourceLocation EMPTY_SHOVEL = ResourceLocation.withDefaultNamespace("item/empty_slot_shovel");
 
     public record Opening(int cartId, int tab) {
-        public static final StreamCodec<ByteBuf, Opening> CODEC = StreamCodec.composite(
-                ByteBufCodecs.VAR_INT, Opening::cartId,
-                ByteBufCodecs.VAR_INT, Opening::tab,
-                Opening::new);
+        public static final StreamCodec<RegistryFriendlyByteBuf, Opening> CODEC = new StreamCodec<>() {
+            @Override
+            public Opening decode(RegistryFriendlyByteBuf buf) {
+                return new Opening(buf.readVarInt(), buf.readVarInt());
+            }
+
+            @Override
+            public void encode(RegistryFriendlyByteBuf buf, Opening value) {
+                buf.writeVarInt(value.cartId());
+                buf.writeVarInt(value.tab());
+            }
+        };
     }
 
     private final @Nullable HorseCartEntity cart;
@@ -298,9 +307,10 @@ public class CartMenu extends AbstractContainerMenu {
         }
 
         @Override
-        public Identifier getNoItemIcon() {
-            return this.kind == CartType.Attachment.CHEST ? EMPTY_CHEST
-                    : (System.currentTimeMillis() / 1000L) % 2L == 0L ? EMPTY_HOE : EMPTY_SHOVEL;
+        public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
+            return Pair.of(InventoryMenu.BLOCK_ATLAS,
+                    this.kind == CartType.Attachment.CHEST ? EMPTY_CHEST
+                            : (System.currentTimeMillis() / 1000L) % 2L == 0L ? EMPTY_HOE : EMPTY_SHOVEL);
         }
     }
 }

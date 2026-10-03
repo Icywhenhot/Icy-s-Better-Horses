@@ -1,7 +1,7 @@
 package icy.betterhorses.net.feature;
 
 import icy.betterhorses.net.IHorseData;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 public interface HorseFeature {
 

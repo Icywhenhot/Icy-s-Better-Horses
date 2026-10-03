@@ -1,123 +1,80 @@
 package icy.betterhorses.net.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.phys.Vec3;
-import com.geckolib.constant.DataTickets;
-import com.geckolib.constant.dataticket.DataTicket;
-import com.geckolib.renderer.GeoEntityRenderer;
-import com.geckolib.renderer.base.BoneSnapshots;
-import com.geckolib.renderer.base.GeoRenderState;
-import com.geckolib.renderer.base.RenderPassInfo;
+import software.bernie.geckolib.cache.object.BakedGeoModel;
+import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
-public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity, EntityRenderState> {
-
-    private static final DataTicket<Boolean> HAS_CHEST =
-            DataTicket.create("bh_cart_has_chest", Boolean.class);
-    private static final DataTicket<Boolean> HAS_PLOW =
-            DataTicket.create("bh_cart_has_plow", Boolean.class);
-    private static final DataTicket<Boolean> IS_PLACED =
-            DataTicket.create("bh_cart_is_placed", Boolean.class);
-    private static final DataTicket<Integer> TYPE =
-            DataTicket.create("bh_cart_type", Integer.class);
-    private static final DataTicket<Integer> HIDDEN =
-            DataTicket.create("bh_cart_hidden", Integer.class);
-    private static final DataTicket<Integer> CART_ID =
-            DataTicket.create("bh_cart_id", Integer.class);
-    private static final DataTicket<Float> TILT =
-            DataTicket.create("bh_cart_tilt", Float.class);
-
-    private static final String PLOW_BONE = "plow";
-    private static final String PROP_BONE = "bone3";
-
-    public static CartType typeOf(GeoRenderState renderState) {
-        return CartType.byOrdinal(renderState.getOrDefaultGeckolibData(TYPE, 0));
-    }
+public final class HorseCartRenderer extends GeoEntityRenderer<HorseCartEntity> {
 
     public HorseCartRenderer(EntityRendererProvider.Context context) {
         super(context, new HorseCartGeoModel());
     }
 
     @Override
-    public void adjustModelBonesForRender(RenderPassInfo<EntityRenderState> pass, BoneSnapshots snapshots) {
-        super.adjustModelBonesForRender(pass, snapshots);
-
-        if (!pass.renderState().getOrDefaultGeckolibData(HAS_CHEST, false)) {
-            snapshots.ifPresent(typeOf(pass.renderState()).chestBone(),
-                    snapshot -> snapshot.skipRender(true).skipChildrenRender(true));
-        }
-        if (!pass.renderState().getOrDefaultGeckolibData(IS_PLACED, false)) {
-            snapshots.ifPresent(PROP_BONE,
-                    snapshot -> snapshot.skipRender(true).skipChildrenRender(true));
-        }
-        if (!pass.renderState().getOrDefaultGeckolibData(HAS_PLOW, false)) {
-            snapshots.ifPresent(PLOW_BONE,
-                    snapshot -> snapshot.skipRender(true).skipChildrenRender(true));
-        }
-        CartType type = typeOf(pass.renderState());
-        int hidden = pass.renderState().getOrDefaultGeckolibData(HIDDEN, 0);
+    public void preRender(PoseStack poseStack, HorseCartEntity cart, BakedGeoModel model,
+                          MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender,
+                          float partialTick, int packedLight, int packedOverlay, int color) {
+        super.preRender(poseStack, cart, model, bufferSource, buffer, isReRender, partialTick,
+                packedLight, packedOverlay, color);
+        CartType type = cart.type();
+        showBone(model, type.chestBone(), cart.hasChest());
+        showBone(model, "plow", cart.hasPlough());
+        showBone(model, "bone3", cart.isPlaced());
         for (int i = 0; i < type.parts().size(); i++) {
-            if ((hidden & (1 << i)) != 0) {
-                snapshots.ifPresent(type.parts().get(i).bone(),
-                        snapshot -> snapshot.skipRender(true).skipChildrenRender(true));
-            }
+            showBone(model, type.parts().get(i).bone(), !cart.partHidden(i));
         }
-        recordBed(pass.renderState().getOrDefaultGeckolibData(CART_ID, -1), type, snapshots);
     }
 
-    private static void recordBed(int id, CartType type, BoneSnapshots snapshots) {
-        if (id < 0 || Minecraft.getInstance().level == null
-                || !(Minecraft.getInstance().level.getEntity(id) instanceof HorseCartEntity cart)) {
-            return;
-        }
-        float bounce = snapshots.get("cart").map(bone -> bone.getTranslateY()).orElse(0.0F);
+    @Override
+    public void postRender(PoseStack poseStack, HorseCartEntity cart, BakedGeoModel model,
+                           MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender,
+                           float partialTick, int packedLight, int packedOverlay, int colour) {
+        super.postRender(poseStack, cart, model, bufferSource, buffer, isReRender, partialTick,
+                packedLight, packedOverlay, colour);
+        if (isReRender) return;
+        float bounce = model.getBone("cart").map(bone -> bone.getPosY()).orElse(0.0F);
         float rock = 0.0F;
-        var bed = snapshots.get(type.bedBone());
+        var bed = model.getBone(cart.type().bedBone());
         if (bed.isPresent()) {
-            bounce += bed.get().getTranslateY();
+            bounce += bed.get().getPosY();
             rock = bed.get().getRotX();
         }
         cart.recordBed(bounce / 16.0F, (float) Math.toDegrees(rock));
     }
 
-    @Override
-    protected void applyRotations(RenderPassInfo<EntityRenderState> pass, PoseStack poseStack, float nativeScale) {
-        super.applyRotations(pass, poseStack, nativeScale);
-        poseStack.mulPose(Axis.XP.rotationDegrees(pass.getOrDefaultGeckolibData(TILT, 0.0F)));
+    private static void showBone(BakedGeoModel model, String name, boolean show) {
+        model.getBone(name).ifPresent(bone -> {
+            bone.setHidden(!show);
+            bone.setChildrenHidden(!show);
+        });
     }
 
     @Override
-    public void extractRenderState(HorseCartEntity entity, EntityRenderState state, float partialTick) {
-        super.extractRenderState(entity, state, partialTick);
+    protected void applyRotations(HorseCartEntity cart, PoseStack pose, float ageInTicks, float rotationYaw,
+                                  float partialTick, float scale) {
+        super.applyRotations(cart, pose, ageInTicks, cart.gluedRenderYaw(partialTick), partialTick, scale);
+        pose.mulPose(Axis.XP.rotationDegrees(cart.renderTilt(partialTick)));
+    }
 
-        state.addGeckolibData(HAS_CHEST, entity.hasChest());
-        state.addGeckolibData(HAS_PLOW, entity.hasPlough());
-        state.addGeckolibData(IS_PLACED, entity.isPlaced());
-        state.addGeckolibData(TYPE, entity.type().ordinal());
-        int hidden = 0;
-        for (int i = 0; i < entity.type().parts().size(); i++) {
-            if (entity.partHidden(i)) {
-                hidden |= 1 << i;
-            }
-        }
-        state.addGeckolibData(HIDDEN, hidden);
-        state.addGeckolibData(CART_ID, entity.getId());
-        state.addGeckolibData(TILT, entity.renderTilt(partialTick));
-
-        Vec3 glued = entity.gluedRenderPosition(partialTick);
+    @Override
+    public void render(HorseCartEntity cart, float yaw, float partialTick, PoseStack pose,
+                       MultiBufferSource buffers, int light) {
+        Vec3 glued = cart.gluedRenderPosition(partialTick);
         if (glued != null) {
-            state.x = glued.x;
-            state.y = glued.y;
-            state.z = glued.z;
-
-            float yaw = entity.gluedRenderYaw(partialTick);
-            state.addGeckolibData(DataTickets.ENTITY_YAW, yaw);
-            state.addGeckolibData(DataTickets.ENTITY_BODY_YAW, yaw);
+            Vec3 normal = cart.getPosition(partialTick);
+            pose.pushPose();
+            pose.translate(glued.x - normal.x, glued.y - normal.y, glued.z - normal.z);
+            super.render(cart, yaw, partialTick, pose, buffers, light);
+            pose.popPose();
+            return;
         }
+        super.render(cart, yaw, partialTick, pose, buffers, light);
     }
 }

@@ -2,12 +2,12 @@ package icy.betterhorses.net.network;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public record HorseGearPayload(int horseId, int gear, int gaitGear) implements CustomPacketPayload {
 
     public static final Type<HorseGearPayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath("icys-better-horses", "horse_gear"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath("icys-better-horses", "horse_gear"));
 
     @Override
     public Type<HorseGearPayload> type() {

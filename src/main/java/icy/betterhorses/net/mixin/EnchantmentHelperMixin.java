@@ -8,7 +8,7 @@ import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -28,10 +28,11 @@ public abstract class EnchantmentHelperMixin {
                 || !(entity.getVehicle() instanceof AbstractHorse horse) || !BhHorseKind.managed(horse)) {
             return level;
         }
-        IHorseData d = IHorseData.of(horse);
-        if (!Objects.equals(d.bh_getBreedKey(), BhContent.AMERICAN_PAINT.key()) || !BhAbility.PAINT_LOOTING.on()) {
+        IHorseData data = IHorseData.of(horse);
+        if (!Objects.equals(data.bh_getBreedKey(), BhContent.AMERICAN_PAINT.key())
+                || !BhAbility.PAINT_LOOTING.on()) {
             return level;
         }
-        return Math.max(level, BhHorseTraits.bondTier(d.bh_getBond()) + 1);
+        return Math.max(level, BhHorseTraits.bondTier(data.bh_getBond()) + 1);
     }
 }

@@ -2,34 +2,28 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhHorseBackup;
 import icy.betterhorses.net.BhHorseKind;
-import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.entity.BhBreedHorse;
+import net.minecraft.nbt.CompoundTag;
+import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.HorseTracker;
 import icy.betterhorses.net.IHorseData;
-import icy.betterhorses.net.entity.BhBreedHorse;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.feature.breed.Ironclad;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.storage.TagValueOutput;
-import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -37,16 +31,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import net.minecraft.world.item.equipment.Equippable;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
 
     @Inject(method = "saveAsPassenger", at = @At("RETURN"))
-    private void bh_saveAsPlainHorse(ValueOutput output, CallbackInfoReturnable<Boolean> cir) {
-        if (cir.getReturnValueZ() && (Object) this instanceof BhBreedHorse horse
-                && output instanceof TagValueOutput tagged) {
-            BhHorseBackup.write(horse, tagged.buildResult());
+    private void bh_saveAsPlainHorse(CompoundTag compound, CallbackInfoReturnable<Boolean> cir) {
+        if (cir.getReturnValueZ() && (Object) this instanceof BhBreedHorse horse) {
+            BhHorseBackup.write(horse, compound);
         }
     }
 
@@ -57,13 +49,20 @@ public abstract class EntityMixin {
     }
 
     @Unique
-    private static final Identifier BH_MOUNTED_STEP_HEIGHT_ID =
-            Identifier.fromNamespaceAndPath("icys-better-horses", "mounted_step_height");
+    private static final ResourceLocation BH_MOUNTED_STEP_HEIGHT_ID =
+            ResourceLocation.fromNamespaceAndPath("icys-better-horses", "mounted_step_height");
     @Unique
-    private static final Identifier BH_MOUNTED_BREAK_SPEED_ID =
-            Identifier.fromNamespaceAndPath("icys-better-horses", "mounted_break_speed");
+    private static final ResourceLocation BH_MOUNTED_BREAK_SPEED_ID =
+            ResourceLocation.fromNamespaceAndPath("icys-better-horses", "mounted_break_speed");
     @Unique private static final double BH_MOUNTED_STEP_HEIGHT_BONUS = 0.1D;
     @Unique private static final double BH_MOUNTED_BREAK_SPEED_BONUS = 2.75D;
+
+    @Inject(method = "canCollideWith", at = @At("HEAD"), cancellable = true)
+    private void bh_ignoreOwnCart(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+        if (entity instanceof HorseCartEntity cart && !cart.bh_collidesWith((Entity) (Object) this)) {
+            cir.setReturnValue(false);
+        }
+    }
 
     @Inject(method = "deflection", at = @At("HEAD"), cancellable = true)
     private void bh_ridersDeflectProjectiles(Projectile projectile, CallbackInfoReturnable<ProjectileDeflection> cir) {
@@ -86,11 +85,10 @@ public abstract class EntityMixin {
         }
     }
 
-    @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;ZZ)Z", at = @At("RETURN"))
+    @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;Z)Z", at = @At("RETURN"))
     private void bh_applyMountedHorseBonuses(
             Entity vehicle,
             boolean force,
-            boolean sendGameEvent,
             CallbackInfoReturnable<Boolean> cir) {
         Entity self = (Entity) (Object) this;
         if (!cir.getReturnValueZ() || !(self instanceof ServerPlayer player)
@@ -124,7 +122,10 @@ public abstract class EntityMixin {
     private void bh_removeMountedHorseBonuses(CallbackInfo ci) {
         if (!((Object) this instanceof ServerPlayer player)
                 || !(player.getVehicle() instanceof AbstractHorse horse)
-                || !BhHorseKind.managed(horse)) return;
+                || !BhHorseKind.managed(horse)) {
+            return;
+        }
+
         if (horse.getPassengers().size() == 1) {
             @Nullable AttributeInstance stepHeight = horse.getAttribute(Attributes.STEP_HEIGHT);
             if (stepHeight != null) {
@@ -152,61 +153,7 @@ public abstract class EntityMixin {
 
         HorseTracker.setLastRidden(player.getUUID(), horse);
         data.bh_setWanderCenter(horse.blockPosition());
-        data.bh_setCommand(BhContent.COMMAND_WANDER.key());
+        data.bh_setCommandKey(BhContent.COMMAND_WANDER.key());
     }
 
-    @Inject(
-            method = "interact",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/world/entity/Mob;canShearEquipment(Lnet/minecraft/world/entity/player/Player;)Z"
-            ),
-            cancellable = true)
-    private void bh_blockNonOwnerHorseSaddleShearing(
-            Player player,
-            InteractionHand hand,
-            Vec3 location,
-            CallbackInfoReturnable<InteractionResult> cir) {
-        Entity self = (Entity) (Object) this;
-        if (self.level().isClientSide() || !(self instanceof AbstractHorse horse)) {
-            return;
-        }
-
-        ItemStack held = player.getItemInHand(hand);
-        boolean cartHitched = held.is(Items.SHEARS)
-                && !player.isSecondaryUseActive()
-                && IHorseData.of(horse).bh_hasCartGear()
-                && !horse.getItemBySlot(EquipmentSlot.SADDLE).isEmpty();
-        if (!cartHitched && !bh_shouldBlockHorseSaddleShearing(horse, player, held)) {
-            return;
-        }
-
-        horse.playSound(SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
-        if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.translatable(cartHitched
-                    ? "message.icys-better-horses.saddle_cart_attached"
-                    : "message.icys-better-horses.not_shear_owner"));
-        }
-        cir.setReturnValue(InteractionResult.CONSUME);
-    }
-
-    @Unique
-    private static boolean bh_shouldBlockHorseSaddleShearing(AbstractHorse horse, Player player, ItemStack heldItem) {
-        if (!heldItem.is(Items.SHEARS) || player.isSecondaryUseActive()) {
-            return false;
-        }
-
-        IHorseData data = IHorseData.of(horse);
-        if (data.bh_mayHandle(player.getUUID())) {
-            return false;
-        }
-
-        ItemStack saddle = horse.getItemBySlot(EquipmentSlot.SADDLE);
-        if (saddle.isEmpty()) {
-            return false;
-        }
-
-        Equippable equippable = saddle.get(DataComponents.EQUIPPABLE);
-        return equippable != null && equippable.canBeSheared();
-    }
 }

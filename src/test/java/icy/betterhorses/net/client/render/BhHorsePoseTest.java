@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class BhHorsePoseTest {
     @Test
     void cachedTackMatchesIndependentAnimation() throws Exception {
-        List<Supplier<BhHorseModel>> models = List.of(
+        List<Supplier<BhHorseModel<?>>> models = List.of(
                 () -> new ShireHorseModel(ShireHorseGeometry.createBodyLayer().bakeRoot()),
                 () -> new ShireHorseModel(ShireSaddleGeometry.createBodyLayer().bakeRoot()),
                 () -> new ShireHorseModel(ShireArmorGeometry.createBodyLayer().bakeRoot()),
@@ -25,24 +25,29 @@ class BhHorsePoseTest {
             }
             state.ageInTicks = frame;
             state.poseRevision++;
-            for (Supplier<BhHorseModel> factory : models) {
-                BhHorseModel first = factory.get();
-                BhHorseModel cached = factory.get();
-                first.setupAnim(state);
-                cached.setupAnim(state);
-                List<ModelPart> actual = cached.allParts();
+            for (Supplier<BhHorseModel<?>> factory : models) {
+                BhHorseModel<?> first = factory.get();
+                BhHorseModel<?> cached = factory.get();
+                first.setupState(state);
+                cached.setupState(state);
+                ModelPart[] actual = cached.posedParts;
                 BhRiderMotion rider = BhRiderMotion.get(state.entityId);
                 state.poseRevision++;
-                BhHorseModel independent = factory.get();
-                independent.setupAnim(state);
-                List<ModelPart> expected = independent.allParts();
-                assertEquals(expected.size(), actual.size());
-                for (int part = 0; part < expected.size(); part++) {
-                    assertEquals(expected.get(part).storePose(), actual.get(part).storePose());
-                    assertEquals(expected.get(part).visible, actual.get(part).visible);
+                BhHorseModel<?> independent = factory.get();
+                independent.setupState(state);
+                ModelPart[] expected = independent.posedParts;
+                assertEquals(expected.length, actual.length);
+                for (int part = 0; part < expected.length; part++) {
+                    assertEquals(describe(expected[part]), describe(actual[part]));
+                    assertEquals(expected[part].visible, actual[part].visible);
                 }
                 assertEquals(BhRiderMotion.get(state.entityId), rider);
             }
         }
+    }
+
+    private static String describe(ModelPart part) {
+        return part.x + "," + part.y + "," + part.z + "," + part.xRot + "," + part.yRot + "," + part.zRot
+                + "," + part.xScale + "," + part.yScale + "," + part.zScale;
     }
 }

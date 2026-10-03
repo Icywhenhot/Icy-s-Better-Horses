@@ -1,17 +1,13 @@
 {
-  "fabric:load_conditions": [
-    {
-      "condition": "fabric:all_mods_loaded",
-      "values": [
-        "modonomicon"
-      ]
-    }
-  ],
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    "minecraft:book",
-    "#icys-better-horses:stable_handbook_ingredients"
+    {
+      "item": "minecraft:book"
+    },
+    {
+      "tag": "icys-better-horses:stable_handbook_ingredients"
+    }
   ],
   "result": {
     "id": "modonomicon:modonomicon",
@@ -19,5 +15,13 @@
     "components": {
       "modonomicon:book_id": "icys-better-horses:stable_handbook"
     }
-  }
+  },
+  "fabric:load_conditions": [
+    {
+      "condition": "fabric:all_mods_loaded",
+      "values": [
+        "modonomicon"
+      ]
+    }
+  ]
 }

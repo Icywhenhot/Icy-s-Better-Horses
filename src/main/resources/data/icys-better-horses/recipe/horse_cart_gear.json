@@ -7,9 +7,15 @@
     "W W"
   ],
   "key": {
-    "S": "#minecraft:wooden_slabs",
-    "P": "#minecraft:planks",
-    "W": "icys-better-horses:wheel"
+    "S": {
+      "tag": "minecraft:wooden_slabs"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "W": {
+      "item": "icys-better-horses:wheel"
+    }
   },
   "result": {
     "id": "icys-better-horses:horse_cart_gear",

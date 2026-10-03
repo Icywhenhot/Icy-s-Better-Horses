@@ -6,7 +6,7 @@ import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedAbilities;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 
 public final class SecondChance implements BreedAbility {
@@ -42,7 +42,7 @@ public final class SecondChance implements BreedAbility {
             return;
         }
         int amp = BhHorseTraits.bondTier(data.bh_getBond()) >= 1 ? 1 : 0;
-        BhBreedAbilities.applyQuietEffect(rider, MobEffects.RESISTANCE, DURATION, amp);
+        BhBreedAbilities.applyQuietEffect(rider, MobEffects.DAMAGE_RESISTANCE, DURATION, amp);
     }
 
 }

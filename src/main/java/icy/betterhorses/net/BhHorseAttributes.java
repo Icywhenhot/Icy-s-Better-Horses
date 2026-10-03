@@ -1,7 +1,7 @@
 package icy.betterhorses.net;
 
 import net.minecraft.core.Holder;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -21,7 +21,7 @@ public final class BhHorseAttributes {
         if (inst == null) {
             return;
         }
-        Identifier id = idFor(src, key);
+        ResourceLocation id = idFor(src, key);
         inst.removeModifier(id);
         if (amount != 0.0D) {
             inst.addTransientModifier(new AttributeModifier(id, amount, op));
@@ -35,8 +35,8 @@ public final class BhHorseAttributes {
         }
     }
 
-    private static Identifier idFor(Source src, String key) {
-        return Identifier.fromNamespaceAndPath(
+    private static ResourceLocation idFor(Source src, String key) {
+        return ResourceLocation.fromNamespaceAndPath(
                 IcysBetterHorses.MOD_ID, src.name().toLowerCase() + "/" + key);
     }
 }

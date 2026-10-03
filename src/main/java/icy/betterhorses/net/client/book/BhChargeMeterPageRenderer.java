@@ -4,8 +4,7 @@ import com.klikli_dev.modonomicon.client.gui.book.entry.BookEntryScreen;
 import com.klikli_dev.modonomicon.client.render.page.BookTextPageRenderer;
 import icy.betterhorses.net.book.BhChargeMeterPage;
 import icy.betterhorses.net.client.BhAbilityBadges;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class BhChargeMeterPageRenderer extends BookTextPageRenderer {
 
@@ -21,18 +20,18 @@ public class BhChargeMeterPageRenderer extends BookTextPageRenderer {
     }
 
     @Override
-    public void render(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         super.render(guiGraphics, mouseX, mouseY, partialTicks);
 
         long step = (System.currentTimeMillis() / FRAME_MS) % (STEPS + HOLD);
         int percent = (int) Math.min(step, STEPS) * 100 / STEPS;
 
         var pose = guiGraphics.pose();
-        pose.pushMatrix();
-        pose.translate((BookEntryScreen.PAGE_WIDTH - ICON * ZOOM) / 2.0F, ICON_Y);
-        pose.scale(ZOOM, ZOOM);
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, BhAbilityBadges.chargeIcon(percent),
+        pose.pushPose();
+        pose.translate((BookEntryScreen.PAGE_WIDTH - ICON * ZOOM) / 2.0F, ICON_Y, 0);
+        pose.scale(ZOOM, ZOOM, 1);
+        guiGraphics.blit(BhAbilityBadges.chargeIcon(percent),
                 0, 0, 0.0F, 0.0F, ICON, ICON, ICON, ICON);
-        pose.popMatrix();
+        pose.popPose();
     }
 }

@@ -2,12 +2,12 @@ package icy.betterhorses.net.network;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public record CartMenuPayload(int targetId) implements CustomPacketPayload {
 
     public static final Type<CartMenuPayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath("icys-better-horses", "cart_menu"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath("icys-better-horses", "cart_menu"));
 
     @Override
     public Type<CartMenuPayload> type() {

@@ -2,7 +2,7 @@ package icy.betterhorses.net.entity;
 
 import icy.betterhorses.net.IcysBetterHorses;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 
 import java.util.List;
@@ -112,8 +112,8 @@ public final class BhBreedCoats {
 
     private final String folder;
     private final List<String> coatIds;
-    private final List<Identifier> textures;
-    private final List<Identifier> foalTextures;
+    private final List<ResourceLocation> textures;
+    private final List<ResourceLocation> foalTextures;
 
     private BhBreedCoats(String folder, List<String> coatIds) {
         this(folder, coatIds, false);
@@ -129,9 +129,9 @@ public final class BhBreedCoats {
         this.foalTextures = hasFoalCoats ? texturesIn(folder + "/baby", this.coatIds) : null;
     }
 
-    private static List<Identifier> texturesIn(String path, List<String> ids) {
+    private static List<ResourceLocation> texturesIn(String path, List<String> ids) {
         return ids.stream()
-                .map(id -> Identifier.fromNamespaceAndPath(
+                .map(id -> ResourceLocation.fromNamespaceAndPath(
                         IcysBetterHorses.MOD_ID,
                         "textures/entity/horse/" + path + "/" + id + ".png"))
                 .toList();
@@ -184,11 +184,11 @@ public final class BhBreedCoats {
         return coatIds.get(clamp(index));
     }
 
-    public Identifier texture(int index) {
+    public ResourceLocation texture(int index) {
         return textures.get(clamp(index));
     }
 
-    public Identifier texture(int index, boolean baby) {
+    public ResourceLocation texture(int index, boolean baby) {
         return baby && foalTextures != null
                 ? foalTextures.get(clamp(index))
                 : textures.get(clamp(index));

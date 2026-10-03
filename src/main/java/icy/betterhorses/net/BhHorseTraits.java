@@ -6,8 +6,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
-import net.minecraft.world.entity.animal.equine.Horse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.player.Player;
 import icy.betterhorses.net.registry.BhContent;
 
@@ -49,7 +49,7 @@ public final class BhHorseTraits {
 
     public static HorseBreed pickBreed(AbstractHorse horse, RandomSource random) {
         if (horse instanceof BhBreedEntity breedEntity) {
-            return HorseBreed.byId(breedEntity.bhFixedBreed().identifier().getPath());
+            return HorseBreed.byId(breedEntity.bhFixedBreed().location().getPath());
         }
         HorseBreed species = HorseBreed.speciesFor(horse);
         if (species != null) {

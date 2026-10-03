@@ -5,7 +5,7 @@ import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.animal.equine.Horse;
+import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.level.Level;
 
 public class MustangHorse extends MediumHorse {
@@ -18,6 +18,11 @@ public class MustangHorse extends MediumHorse {
     @Override
     public ResourceKey<BreedType> bhFixedBreed() {
         return BhContent.MUSTANG.key();
+    }
+
+    @Override
+    public BhBreedCoats bhCoats() {
+        return BhBreedCoats.MUSTANG;
     }
 
     public static AttributeSupplier.Builder createAttributes() {

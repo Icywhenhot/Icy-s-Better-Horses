@@ -1,8 +1,9 @@
 package icy.betterhorses.net.client.render;
 
+import icy.betterhorses.net.entity.SmallHorse;
 import net.minecraft.client.model.geom.ModelPart;
 
-public class SmallFoalModel extends SmallHorseModel {
+public class SmallFoalModel<T extends SmallHorse> extends SmallHorseModel<T> {
 
     private static final float STRIDE = 0.55F;
 

@@ -30,6 +30,12 @@
       "translate": "advancements.icys-better-horses.stable_reading.title"
     }
   },
+  "parent": "icys-better-horses:hold_your_horses",
+  "requirements": [
+    [
+      "has_handbook"
+    ]
+  ],
   "fabric:load_conditions": [
     {
       "condition": "fabric:all_mods_loaded",
@@ -37,11 +43,5 @@
         "modonomicon"
       ]
     }
-  ],
-  "parent": "icys-better-horses:hold_your_horses",
-  "requirements": [
-    [
-      "has_handbook"
-    ]
   ]
 }

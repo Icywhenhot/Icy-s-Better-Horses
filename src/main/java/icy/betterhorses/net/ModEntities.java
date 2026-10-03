@@ -19,20 +19,26 @@ import icy.betterhorses.net.entity.BelgianHorse;
 import icy.betterhorses.net.entity.ClydesdaleHorse;
 import icy.betterhorses.net.entity.ShireHorse;
 import icy.betterhorses.net.entity.ThoroughbredHorse;
+import icy.betterhorses.net.registry.BhBreeds;
 import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedType;
-import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public final class ModEntities {
+
+    private static final Map<String, EntityType<?>> TYPES = new LinkedHashMap<>();
 
     public static final EntityType<HorseCartEntity> HORSE_CART = register(
             "horse_cart",
@@ -119,16 +125,21 @@ public final class ModEntities {
                     .clientTrackingRange(10)
                     .build(key("clydesdale_horse")));
 
-    //No more jankyness!!!!! YIPPYYPYPYPYPPPYPY
     public static @Nullable EntityType<? extends BhBreedHorse> forBreed(ResourceKey<BreedType> breedKey) {
-        BreedType type = BhRegistries.breedTypeRegistry().getValue(breedKey.identifier());
-        if (type == null) {
-            return null;
-        }
-        EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.getOptional(type.entityType().identifier()).orElse(null);
+        BreedType type = BhRegistries.breedTypeRegistry().get(breedKey.location());
+        if (type == null) return null;
+        EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.getOptional(type.entityType().location()).orElse(null);
+        if (entityType == null) return null;
         @SuppressWarnings("unchecked")
         EntityType<? extends BhBreedHorse> result = (EntityType<? extends BhBreedHorse>) entityType;
         return result;
+    }
+
+    /** Compatibility overload retained for staged client/common callers. */
+    public static EntityType<? extends BhBreedHorse> forBreed(HorseBreed breed) {
+        ResourceKey<BreedType> key = BhBreeds.keyOf(breed);
+        EntityType<? extends BhBreedHorse> result = key == null ? null : forBreed(key);
+        return result != null ? result : MUSTANG_HORSE;
     }
 
     private static <T extends SmallHorse> EntityType<T> registerSmall(
@@ -152,35 +163,36 @@ public final class ModEntities {
     }
 
     public static void init() {
-        FabricDefaultAttributeRegistry.register(ICELANDIC_HORSE, IcelandicHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(FRIESIAN_HORSE, FriesianHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(HAFLINGER_HORSE, HaflingerHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(APPALOOSA_HORSE, AppaloosaHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(THOROUGHBRED_HORSE, ThoroughbredHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(AMERICAN_PAINT_HORSE, AmericanPaintHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(ANDALUSIAN_HORSE, AndalusianHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(MUSTANG_HORSE, MustangHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(QUARTER_HORSE, QuarterHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(ARABIAN_HORSE, ArabianHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(MORGAN_HORSE, MorganHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(PERCHERON_HORSE, PercheronHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(SHIRE_HORSE, ShireHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(BELGIAN_HORSE, BelgianHorse.createAttributes());
-        FabricDefaultAttributeRegistry.register(CLYDESDALE_HORSE, ClydesdaleHorse.createAttributes());
+        TYPES.forEach((path, value) -> Registry.register(BuiltInRegistries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path), value));
+        registerAttributes();
+    }
+
+    public static void registerAttributes() {
+        FabricDefaultAttributeRegistry.register(ICELANDIC_HORSE, IcelandicHorse.createAttributes().build());
+        FabricDefaultAttributeRegistry.register(FRIESIAN_HORSE, FriesianHorse.createAttributes().build());
+        FabricDefaultAttributeRegistry.register(HAFLINGER_HORSE, HaflingerHorse.createAttributes().build());
+        FabricDefaultAttributeRegistry.register(APPALOOSA_HORSE, AppaloosaHorse.createAttributes().build());
+        FabricDefaultAttributeRegistry.register(THOROUGHBRED_HORSE, ThoroughbredHorse.createAttributes().build());
+        FabricDefaultAttributeRegistry.register(AMERICAN_PAINT_HORSE, AmericanPaintHorse.createAttributes().build());
+        FabricDefaultAttributeRegistry.register(ANDALUSIAN_HORSE, AndalusianHorse.createAttributes().build());
+        FabricDefaultAttributeRegistry.register(MUSTANG_HORSE, MustangHorse.createAttributes().build());
+        FabricDefaultAttributeRegistry.register(QUARTER_HORSE, QuarterHorse.createAttributes().build());
+        FabricDefaultAttributeRegistry.register(ARABIAN_HORSE, ArabianHorse.createAttributes().build());
+        FabricDefaultAttributeRegistry.register(MORGAN_HORSE, MorganHorse.createAttributes().build());
+        FabricDefaultAttributeRegistry.register(PERCHERON_HORSE, PercheronHorse.createAttributes().build());
+        FabricDefaultAttributeRegistry.register(SHIRE_HORSE, ShireHorse.createAttributes().build());
+        FabricDefaultAttributeRegistry.register(BELGIAN_HORSE, BelgianHorse.createAttributes().build());
+        FabricDefaultAttributeRegistry.register(CLYDESDALE_HORSE, ClydesdaleHorse.createAttributes().build());
     }
 
     private static <T extends Entity> EntityType<T> register(
             String path, EntityType<T> type) {
-        return Registry.register(
-                BuiltInRegistries.ENTITY_TYPE,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path),
-                type);
+        TYPES.put(path, type);
+        return type;
     }
 
-    private static ResourceKey<EntityType<?>> key(String path) {
-        return ResourceKey.create(
-                Registries.ENTITY_TYPE,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path));
+    private static String key(String path) {
+        return ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, path).toString();
     }
 
     private ModEntities() {}

@@ -2,14 +2,15 @@ package icy.betterhorses.net;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.advancements.predicates.ContextAwarePredicate;
-import net.minecraft.advancements.predicates.MinMaxBounds;
-import net.minecraft.advancements.predicates.entity.EntityPredicate;
-import net.minecraft.advancements.triggers.SimpleCriterionTrigger;
+import net.minecraft.advancements.critereon.ContextAwarePredicate;
+import net.minecraft.advancements.critereon.EntityPredicate;
+import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
@@ -33,8 +34,7 @@ public final class BhCriteria {
 
     public static void init() {
         Registry.register(BuiltInRegistries.TRIGGER_TYPES,
-                Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "milestone"),
-                MILESTONE);
+                ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "milestone"), MILESTONE);
     }
 
     public static void fire(@Nullable ServerPlayer player, String key) {

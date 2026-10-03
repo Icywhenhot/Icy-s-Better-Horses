@@ -7,14 +7,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.equine.Horse;
-import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.entity.animal.horse.Horse;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
-import java.util.Optional;
 
 public final class BhVanillaHorseSwap {
 
@@ -35,30 +30,20 @@ public final class BhVanillaHorseSwap {
             breedKey = IHorseData.of(horse).bh_getBreedKey();
             if (breedKey == null) {
                 breedKey = pickForBiome(level, horse);
-                if (breedKey == null) {
-                    return false;
-                }
+                if (breedKey == null) return false;
             }
             entityType = ModEntities.forBreed(breedKey);
-            if (entityType == null) {
-                return false;
-            }
+            if (entityType == null) return false;
         }
-        if (!(entityType.create(level, EntitySpawnReason.CONVERSION) instanceof BhBreedHorse swap)) {
-            return false;
-        }
+        if (!(entityType.create(level) instanceof BhBreedHorse swap)) return false;
 
-        var out = net.minecraft.world.level.storage.TagValueOutput.createWithContext(
-                net.minecraft.util.ProblemReporter.DISCARDING, horse.registryAccess());
-        horse.saveWithoutId(out);
-        var tag = out.buildResult();
+        CompoundTag tag = horse.saveWithoutId(new CompoundTag());
         if (restored != null) {
             BhHorseBackup.restoreInto(tag, backup);
         } else {
-            tag.putString("BH_BreedId", breedKey.identifier().toString());
+            tag.putString("BH_BreedId", breedKey.location().toString());
         }
-        swap.load(net.minecraft.world.level.storage.TagValueInput.create(
-                net.minecraft.util.ProblemReporter.DISCARDING, horse.registryAccess(), tag));
+        swap.load(tag);
         if (restored == null) {
             swap.bhConvertFrom(horse);
             swap.setHealth(Math.min(horse.getHealth(), swap.getMaxHealth()));

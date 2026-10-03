@@ -5,14 +5,13 @@ import com.klikli_dev.modonomicon.client.render.page.BookPageRenderer;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.book.BhBreedCoatsPage;
 import icy.betterhorses.net.entity.BhBreedHorse;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.client.Minecraft;
@@ -68,7 +67,7 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
     }
 
     @Override
-    public void render(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         centeredFitted(
                 guiGraphics,
                 Component.translatable("book.icys-better-horses.coats.title").getString(),
@@ -86,30 +85,30 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
 
         renderHorse(guiGraphics, mouseX, mouseY);
 
-        centeredFitted(guiGraphics, horse.bhCoatSet().displayName(coatIndex).getString(),
+        centeredFitted(guiGraphics, horse.bhCoats().displayName(coatIndex).getString(),
                 NAME_Y, NAME_MAX_WIDTH);
         centeredFitted(guiGraphics, (coatIndex + 1) + " / " + coatCount(),
                 COUNT_Y, BookEntryScreen.PAGE_WIDTH);
     }
 
-    private void centeredFitted(GuiGraphicsExtractor guiGraphics, String text, int y, int maxWidth) {
+    private void centeredFitted(GuiGraphics guiGraphics, String text, int y, int maxWidth) {
         int width = this.font.width(text);
         int centerX = BookEntryScreen.PAGE_WIDTH / 2;
         if (width <= maxWidth) {
-            guiGraphics.text(this.font, text, centerX - width / 2, y, INK, false);
+            guiGraphics.drawString(this.font, text, centerX - width / 2, y, INK, false);
             return;
         }
 
         float scale = maxWidth / (float) width;
         var pose = guiGraphics.pose();
-        pose.pushMatrix();
-        pose.translate(centerX, (float) y);
-        pose.scale(scale, scale);
-        guiGraphics.text(this.font, text, -width / 2, 0, INK, false);
-        pose.popMatrix();
+        pose.pushPose();
+        pose.translate(centerX, (float) y, 0);
+        pose.scale(scale, scale, 1);
+        guiGraphics.drawString(this.font, text, -width / 2, 0, INK, false);
+        pose.popPose();
     }
 
-    private void renderHorse(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
+    private void renderHorse(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         if (errored || horse == null) {
             return;
         }
@@ -127,13 +126,18 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
                 MODEL_BOX_HEIGHT * MODEL_FILL / visualHeight,
                 BookEntryScreen.PAGE_WIDTH * MODEL_FILL / boxWidth)));
 
+        var pose = guiGraphics.pose();
+        pose.pushPose();
+        pose.translate(-pageX, -pageY, 0.0F);
         try {
-            InventoryScreen.extractEntityInInventoryFollowsMouse(
-                    guiGraphics, x0, y0, x1, y1, scale, 0.0F, mouseX, (y0 + y1) / 2f, horse);
+            InventoryScreen.renderEntityInInventoryFollowsMouse(
+                    guiGraphics, x0, y0, x1, y1, scale, 0.0F, pageX + mouseX, (y0 + y1) / 2f, horse);
         } catch (Exception exception) {
             errored = true;
             IcysBetterHorses.LOGGER.warn("[handbook] could not draw the coat preview for {}",
                     this.getPage().getEntityId(), exception);
+        } finally {
+            pose.popPose();
         }
     }
 
@@ -147,7 +151,7 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
     }
 
     private int coatCount() {
-        return horse == null ? 0 : horse.bhCoatSet().count();
+        return horse == null ? 0 : horse.bhCoats().count();
     }
 
     private void loadHorse() {
@@ -160,8 +164,8 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
             return;
         }
 
-        Identifier typeId = Identifier.tryParse(this.getPage().getEntityId());
-        EntityType<?> type = typeId == null ? null : BuiltInRegistries.ENTITY_TYPE.getValue(typeId);
+        ResourceLocation typeId = ResourceLocation.tryParse(this.getPage().getEntityId());
+        EntityType<?> type = typeId == null ? null : BuiltInRegistries.ENTITY_TYPE.get(typeId);
         if (type == null) {
             markErrored("unknown entity type " + this.getPage().getEntityId(), null);
             return;
@@ -169,7 +173,7 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
 
         Entity created;
         try {
-            created = type.create(minecraft.level, EntitySpawnReason.LOAD);
+            created = type.create(minecraft.level);
         } catch (Exception exception) {
             markErrored("could not build " + this.getPage().getEntityId(), exception);
             return;

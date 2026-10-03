@@ -32,14 +32,18 @@
     {
       "type": "modonomicon:spotlight",
       "id": "chest",
-      "item": "minecraft:chest",
+      "item": {
+        "item": "minecraft:chest"
+      },
       "title": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.chest.title",
       "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.chest.text"
     },
     {
       "type": "modonomicon:spotlight",
       "id": "ender_chest",
-      "item": "minecraft:ender_chest",
+      "item": {
+        "item": "minecraft:ender_chest"
+      },
       "title": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.ender_chest.title",
       "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.ender_chest.text"
     },
