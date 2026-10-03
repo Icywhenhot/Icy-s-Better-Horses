@@ -3,6 +3,7 @@ package icy.betterhorses.net.entity;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.BhHorseSteering;
+import icy.betterhorses.net.BhRiderSeat;
 import icy.betterhorses.net.BhWaterline;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModEntities;
@@ -765,7 +766,8 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         }
         Vec3 seat = benchSeatOffset(boundHorse, BhHorseSteering.benchSeatIndex(boundHorse, passenger),
                 yaw, cartTilt, this.renderLift(partialTick));
-        return boundHorse.getPosition(partialTick).add(seat).subtract(riding);
+        return boundHorse.getPosition(partialTick).add(seat).subtract(riding)
+                .subtract(0.0D, BhRiderSeat.seatDrop(passenger), 0.0D);
     }
 
     private Vec3 carriageSeatOffset(int seatIndex, float cartYaw) {

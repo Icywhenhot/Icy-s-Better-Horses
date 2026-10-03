@@ -1460,7 +1460,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
                 BhRiderSeat.publish(self.getId(), Vec3.ZERO);
             }
             cir.setReturnValue(HorseCartEntity
-                    .benchSeatOffset(self, BhHorseSteering.benchSeatIndex(self, passenger)));
+                    .benchSeatOffset(self, BhHorseSteering.benchSeatIndex(self, passenger))
+                    .subtract(0.0D, BhRiderSeat.seatDrop(passenger), 0.0D));
             return;
         }
 
