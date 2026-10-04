@@ -34,7 +34,7 @@ public class DefendOwnerGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (!icy.betterhorses.net.BhConfig.horseCombatEnabled() || horse.isVehicle() || !(horse.level() instanceof ServerLevel level)) {
+        if (!icy.betterhorses.net.BhFeature.HORSE_DEFEND.on() || horse.isVehicle() || !(horse.level() instanceof ServerLevel level)) {
             return false;
         }
         IHorseData data = IHorseData.of(horse);
@@ -58,7 +58,7 @@ public class DefendOwnerGoal extends Goal {
     @Override
     public boolean canContinueToUse() {
         IHorseData data = IHorseData.of(horse);
-        if (!icy.betterhorses.net.BhConfig.horseCombatEnabled() || horse.isVehicle() || data.bh_getCombatTarget() == null
+        if (!icy.betterhorses.net.BhFeature.HORSE_DEFEND.on() || horse.isVehicle() || data.bh_getCombatTarget() == null
                 || data.bh_getCommand() == HorseCommand.STAY) {
             return false;
         }

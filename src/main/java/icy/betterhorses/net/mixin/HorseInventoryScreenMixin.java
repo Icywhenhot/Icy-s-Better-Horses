@@ -202,7 +202,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
             ((AbstractContainerScreenAccessor) (Object) this).bh_setImageHeight(desiredImageHeight);
             this.topPos = (this.height - this.imageHeight) / 2;
             this.leftPos = (this.width - this.imageWidth) / 2;
-            this.rebuildWidgets();
+            this.init(this.minecraft, this.width, this.height);
         }
 
         this.inventoryLabelY = upgradedSaddleLayout ? this.imageHeight + 1000 : BH_DEFAULT_INVENTORY_LABEL_Y;
@@ -381,7 +381,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         }
 
         ItemStack chestStack = this.menu.getSlot(chestSlotIndex).getItem();
-        return chestStack.is(Items.CHEST) || chestStack.is(Items.ENDER_CHEST);
+        return GearSlot.isChest(chestStack);
     }
 
     @Unique

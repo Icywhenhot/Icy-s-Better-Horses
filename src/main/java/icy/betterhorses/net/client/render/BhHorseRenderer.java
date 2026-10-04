@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.DyedItemColor;
@@ -73,9 +74,11 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
             return stack.isEmpty() ? null : textures.armor(stack);
         }, entity -> {
             ItemStack stack = entity.getBodyArmorItem();
-            return stack.is(Items.LEATHER_HORSE_ARMOR)
-                    ? 0xFF000000 | DyedItemColor.getOrDefault(stack, 0xBB744F)
-                    : -1;
+            if (stack.is(Items.LEATHER_HORSE_ARMOR)) {
+                return 0xFF000000 | DyedItemColor.getOrDefault(stack, 0xBB744F);
+            }
+            DyedItemColor dye = stack.get(DataComponents.DYED_COLOR);
+            return dye == null ? -1 : 0xFF000000 | dye.rgb();
         }));
         addLayer(new BhTackLayer<>(this, models.apply(chest), models.apply(chestBaby), entity -> {
             IHorseData data = IHorseData.of(entity);

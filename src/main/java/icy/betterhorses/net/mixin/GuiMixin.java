@@ -56,7 +56,7 @@ public abstract class GuiMixin {
         }
     }
 
-    @WrapOperation(method = "isExperienceBarVisible", at = @At(value = "INVOKE",
+    @WrapOperation(method = {"renderHotbarAndDecorations", "isExperienceBarVisible"}, at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/player/LocalPlayer;jumpableVehicle()Lnet/minecraft/world/entity/PlayerRideableJumping;"))
     private PlayerRideableJumping bh_xpBarWhileRiding(LocalPlayer player, Operation<PlayerRideableJumping> original) {
         return this.bh_xpOverJumpBar() ? null : original.call(player);

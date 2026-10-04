@@ -40,7 +40,21 @@ public final class BhConfigScreen {
         }
         Map<BhFeature, Boolean> picks = new EnumMap<>(BhConfig.featureView());
         for (BhFeature feature : BhFeature.values()) {
-            general.addEntry(bh_toggle(eb, feature, picks));
+            if (!feature.combat()) {
+                general.addEntry(bh_toggle(eb, feature, picks));
+            }
+        }
+
+        ConfigCategory combat = builder.getOrCreateCategory(
+                Component.translatable("config.icys-better-horses.category.horse_combat"));
+        if (locked) {
+            combat.addEntry(eb.startTextDescription(
+                    Component.translatable("config.icys-better-horses.server_managed")).build());
+        }
+        for (BhFeature feature : BhFeature.values()) {
+            if (feature.combat()) {
+                combat.addEntry(bh_toggle(eb, feature, picks));
+            }
         }
 
         BhTuning start = BhConfig.tuningView();
@@ -150,11 +164,17 @@ public final class BhConfigScreen {
                         IcysBetterHorsesClient.CART_MENU_KEY)
                 .setTooltip(Component.translatable("config.icys-better-horses.cart_menu_key.tooltip"))
                 .build());
+        keybinds.addEntry(eb.fillKeybindingField(
+                        Component.translatable("config.icys-better-horses.charge_key"),
+                        IcysBetterHorsesClient.CHARGE_KEY)
+                .setTooltip(Component.translatable("config.icys-better-horses.charge_key.tooltip"))
+                .build());
 
         builder.setSavingRunnable(() -> {
             BhConfig.apply(picks, new BhTuning(nums[0], nums[1], nums[2], nums[3], nums[4], floor[0]));
             BhConfig.applyAbilities(masters[0], masters[1], abilityPicks);
             BhConfig.applyHud(new BhConfig.Spot(sides[0], gaps[0]), new BhConfig.Spot(sides[1], gaps[1]));
+            IcysBetterHorsesClient.sendChargeChoice();
             KeyMapping.resetMapping();
             Minecraft.getInstance().options.save();
         });

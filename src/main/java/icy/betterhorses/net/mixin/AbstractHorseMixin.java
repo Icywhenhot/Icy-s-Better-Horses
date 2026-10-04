@@ -549,7 +549,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public boolean bh_hasChestGear() {
         ItemStack chestGear = bh_gearContainer.getItem(GearSlot.CHEST.ordinal());
-        return chestGear.is(Items.CHEST) || chestGear.is(Items.ENDER_CHEST);
+        return GearSlot.isChest(chestGear);
     }
 
     @Override
@@ -1575,7 +1575,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
                 BhRiderSeat.publish(self.getId(), Vec3.ZERO);
             }
             cir.setReturnValue(HorseCartEntity
-                    .benchSeatOffset(self, BhHorseSteering.benchSeatIndex(self, passenger)));
+                    .benchSeatOffset(self, BhHorseSteering.benchSeatIndex(self, passenger))
+                    .subtract(0.0D, BhRiderSeat.seatDrop(passenger), 0.0D));
             return;
         }
 

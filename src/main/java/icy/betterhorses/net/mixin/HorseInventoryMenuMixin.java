@@ -36,6 +36,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Unique private static final int BH_ENDER_SLOT_COUNT = 27;
     @Unique private static final int BH_MAX_CHEST_ROWS = 6;
     @Unique private static final int BH_ROW_HEIGHT = 18;
+    @Unique private static final int BH_CHEST_GAP = 7;
 
     @Unique private int bh_gearStartIndex = -1;
     @Unique private int bh_chestStartIndex = -1;
@@ -222,7 +223,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             return;
         }
 
-        int wanted = this.bh_hasChestStorageLayout() ? this.bh_chestRows * BH_ROW_HEIGHT : 0;
+        int wanted = this.bh_hasChestStorageLayout() ? this.bh_chestRows * BH_ROW_HEIGHT + BH_CHEST_GAP : 0;
         if (wanted == this.bh_appliedShift) {
             return;
         }
@@ -299,7 +300,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
 
     @Unique
     private boolean bh_isStorageChestGear(ItemStack stack) {
-        return stack.is(Items.CHEST);
+        return GearSlot.isStorageChest(stack);
     }
 
     @Unique

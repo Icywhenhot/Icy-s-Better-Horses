@@ -589,6 +589,7 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
               + (-6.0F + 6.0F * Mth.sin(panicT * 1.7F + 2.1F)) * Mth.DEG_TO_RAD * panic;
 
         float headYaw = Mth.clamp(state.yRot * Mth.DEG_TO_RAD, -0.6F, 0.6F) * 0.5F
+              + (10.0F * Mth.DEG_TO_RAD) * bank
               + (5.0F * Mth.DEG_TO_RAD)
                 * Mth.cos(Mth.clamp(0.5F - Mth.sin(idleT) * 1.5F, 0.0F, 1.0F) * Mth.PI) * alive
               + (-Mth.sin(shakeT) / 3.0F + Mth.cos(shakeT) / 8.0F) * shake
@@ -596,7 +597,7 @@ public abstract class BhHorseModel<T extends BhBreedHorse> extends EntityModel<T
 
         head.yRot = headRest.yRot() + headYaw;
         head.zRot = headRest.zRot()
-              - BANK_ROLL * 0.45F * bank
+              + BANK_ROLL * 0.45F * bank
               + (2.0F * Mth.DEG_TO_RAD)
                 * Mth.cos(Mth.clamp(0.5F - Mth.sin(idleT) * 1.5F, 0.0F, 1.0F) * Mth.PI)
                 * alive * (1.0F - graze)

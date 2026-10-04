@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.network.chat.Component;
@@ -26,7 +27,7 @@ public abstract class MobNameTagBondMixin {
     @Inject(method = "interact", at = @At("HEAD"))
     private void bh$captureNameTagState(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
         Mob self = (Mob) (Object) this;
-        if (!(self instanceof AbstractHorse)) {
+        if (!BhHorseKind.managed(self)) {
             return;
         }
         ItemStack stack = player.getItemInHand(hand);
