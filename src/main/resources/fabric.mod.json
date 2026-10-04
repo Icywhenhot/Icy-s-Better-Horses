@@ -12,7 +12,7 @@
 		"sources": "https://github.com/Icywhenhot/Icy-s-Better-Horses",
 		"issues": "https://github.com/Icywhenhot/Icy-s-Better-Horses/issues"
 	},
-	"license": "ARR",
+	"license": "BML-1.0",
 	"icon": "assets/icys-better-horses/icon.png",
 	"environment": "*",
 	"entrypoints": {
