@@ -1,5 +1,6 @@
 package icy.betterhorses.net.client;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import icy.betterhorses.net.IHorseAbilityHost;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.registry.AbilityType;
@@ -198,7 +199,7 @@ public class RadialMenuScreen extends Screen {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
-        if (event.button() == 0) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             double dx = event.x() - width / 2.0;
             double dy = event.y() - height / 2.0;
             double dist = Math.sqrt(dx * dx + dy * dy);

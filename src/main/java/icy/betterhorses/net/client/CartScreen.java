@@ -6,6 +6,7 @@ import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.inventory.CartMenu;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractButton;
@@ -509,7 +510,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         int tab = this.hoveredTab(event.x(), event.y());
-        if (tab >= 0 && event.button() == 0) {
+        if (tab >= 0 && event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             if (tab != CartMenu.TAB_CARGO || this.hasChest()) {
                 this.selectTab(tab);
             }

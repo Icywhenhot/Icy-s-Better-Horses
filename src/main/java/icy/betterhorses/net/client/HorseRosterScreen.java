@@ -628,7 +628,7 @@ public class HorseRosterScreen extends Screen {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() != 0 || bhClosing) {
+        if (event.button() != InputConstants.MOUSE_BUTTON_LEFT || bhClosing) {
             return super.mouseClicked(event, doubleClick);
         }
         double mouseX = event.x();
