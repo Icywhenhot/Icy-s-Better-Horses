@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.client.HccThrottle;
 import icy.betterhorses.net.client.HorseAutodriveController;
 import icy.betterhorses.net.client.HorseGearController;
 import icy.betterhorses.net.client.HorseFreeLookController;
@@ -54,17 +55,21 @@ public abstract class KeyboardInputMixin extends Input {
                 this.leftImpulse
         );
 
+        boolean held = this.up;
         boolean forwardDown = output.forwardDown();
         float forwardImpulse = output.forwardImpulse();
         float leftImpulse = output.leftImpulse();
+        boolean geared = false;
         if (output.active()) {
             HorseGearController.INSTANCE.reset();
         } else if (HorseGearController.INSTANCE
                 .tick(eligible, riddenHorse, this.up, this.down)
                 .geared()) {
+            geared = true;
             forwardDown = true;
             forwardImpulse = 1.0F;
         }
+        HccThrottle.tick(riddenHorse, output.active() || geared, held);
 
         this.up = forwardDown;
         this.down = output.backDown();

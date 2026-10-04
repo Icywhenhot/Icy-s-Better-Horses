@@ -20,13 +20,16 @@
     "LeafPassthroughMixin",
     "MapItemMixin",
     "LivingEntityMixin",
+    "McaRideHorseMixin",
     "MobCartPassengerMixin",
     "MobNameTagBondMixin",
     "MoveControlStepMixin",
     "PanicGoalMixin",
     "PlayerHurtMixin",
     "EntitySlowBlockMixin",
+    "PointBlankHitScanMixin",
     "PowderSnowBlockMixin",
+    "SiegeTowSpeedMixin",
     "SpawnPlacementsAccessor",
     "ShovelItemAccessor",
     "SlotAccessor",
@@ -55,7 +58,8 @@
     "BookModelManagerMixin",
     "GameRendererMixin",
     "LevelRendererMixin",
-    "MountFacingMixin"
+    "MountFacingMixin",
+    "SiegeTowRenderMixin"
   ],
   "injectors": {
     "defaultRequire": 1

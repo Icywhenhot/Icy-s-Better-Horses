@@ -1,0 +1,9 @@
+{
+  "frames": [
+    {
+      "namespace": "icys-better-horses",
+      "texture": "icys-better-horses:textures/gui/tooltip_frame.png",
+      "priority": 10
+    }
+  ]
+}

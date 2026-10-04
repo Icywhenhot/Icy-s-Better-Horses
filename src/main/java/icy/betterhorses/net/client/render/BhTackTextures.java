@@ -38,6 +38,7 @@ public final class BhTackTextures {
     private final ResourceLocation armorIron;
     private final ResourceLocation armorGold;
     private final ResourceLocation armorDiamond;
+    private final ResourceLocation armorNetherite;
     private final ResourceLocation armorGeneric;
 
     private BhTackTextures(String breed) {
@@ -50,6 +51,7 @@ public final class BhTackTextures {
         this.armorIron = tex(base, "armor_iron");
         this.armorGold = tex(base, "armor_gold");
         this.armorDiamond = tex(base, "armor_diamond");
+        this.armorNetherite = tex(base, "armor_netherite");
         this.armorGeneric = tex(base, "armor_generic");
     }
 
@@ -84,13 +86,19 @@ public final class BhTackTextures {
 
     private ResourceLocation lookup(Item item) {
         ResourceLocation key = BuiltInRegistries.ITEM.getKey(item);
-        ResourceLocation named = ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE,
-                base + "armor/" + key.getNamespace() + "/" + key.getPath() + ".png");
-        if (Minecraft.getInstance().getResourceManager().getResource(named).isPresent()) return named;
+        ResourceLocation named = named(key.getNamespace(), key.getPath());
+        if (named != null) return named;
         if (item == Items.LEATHER_HORSE_ARMOR) return armorLeather;
         if (item == Items.IRON_HORSE_ARMOR) return armorIron;
         if (item == Items.GOLDEN_HORSE_ARMOR) return armorGold;
         if (item == Items.DIAMOND_HORSE_ARMOR) return armorDiamond;
+        if (key.getPath().equals("netherite_horse_armor")) return armorNetherite;
         return armorGeneric;
+    }
+
+    private ResourceLocation named(String namespace, String path) {
+        ResourceLocation named = ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE,
+                base + "armor/" + namespace + "/" + path + ".png");
+        return Minecraft.getInstance().getResourceManager().getResource(named).isPresent() ? named : null;
     }
 }
