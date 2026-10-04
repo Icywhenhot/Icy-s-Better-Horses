@@ -5,6 +5,10 @@
     "minecraft:golden_horse_armor",
     "minecraft:diamond_horse_armor",
     "minecraft:copper_horse_armor",
-    "minecraft:netherite_horse_armor"
+    "minecraft:netherite_horse_armor",
+    {
+      "id": "obsidianequipmentrework:obsidian_horse_armor",
+      "required": false
+    }
   ]
 }
