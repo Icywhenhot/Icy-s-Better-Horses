@@ -53,4 +53,4 @@ Looking for a specific number? [Bonding](ownership-and-bonding) has the stat tab
 
 ## License
 
-All Rights Reserved. Play it, pack it into a free modpack, but don't reupload or ship pieces of it elsewhere without asking first.
+Licensed under the **Bare Minimum License (BML) v1.0**. Code may be used and modified under the license; bundled artwork, textures, models, sounds, music, and documentation remain subject to the BML asset restrictions and anti-reposting terms.
