@@ -288,8 +288,12 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         HorseStabilizerSoundController.tick(client);
         if (client.player == null || client.level == null) return;
 
+        boolean callClicked = false;
+        while (CALL_KEY.consumeClick()) {
+            callClicked = true;
+        }
         boolean callKeyDown = CALL_KEY.isDown();
-        if (callKeyDown && !callKeyWasDown) {
+        if ((callClicked || callKeyDown) && !callKeyWasDown) {
             if (bh_anyHorseRoused(client)) {
                 ClientPlayNetworking.send(new HorseRecallPayload());
             } else if (BhHorseKind.managed(client.player.getVehicle())
@@ -300,7 +304,6 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
             }
         }
         callKeyWasDown = callKeyDown;
-        while (CALL_KEY.consumeClick()) {}
 
         while (RADIAL_KEY.consumeClick()) {
             bh_tryOpenRadial(client);
