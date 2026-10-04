@@ -45,4 +45,4 @@ The repository keeps a branch per Minecraft version; this release is maintained 
 
 ## License
 
-All Rights Reserved. See [LICENSE](LICENSE). Play it, pack it into a free modpack, but don't reupload or ship pieces of it elsewhere without asking first.
+Licensed under the **Bare Minimum License (BML) v1.0**. See [LICENSE](LICENSE) for the full terms. Code may be used and modified under the license; bundled artwork, textures, models, sounds, music, and documentation remain subject to the BML asset restrictions and anti-reposting terms.
