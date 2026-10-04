@@ -77,4 +77,4 @@ Mod Menu (built against 7.2.2)
 Cloth Config (built against 11.1.136)
 
 License
-This mod is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
+Licensed under the **Bare Minimum License (BML) v1.0**. See [LICENSE](LICENSE) for the full terms. Code may be used and modified under the license; bundled artwork, textures, models, sounds, music, and documentation remain subject to the BML asset restrictions and anti-reposting terms.
