@@ -1,5 +1,7 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.api.HorseRecallEvent;
+import net.minecraftforge.common.MinecraftForge;
 import icy.betterhorses.net.network.HorseRosterEntry;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.BlockPos;
@@ -166,6 +168,7 @@ public final class HorseManagement {
             return Outcome.fail(respawnFailureKey(player, horseId));
         }
         IHorseData.of(respawned).bh_setCommand(BhContent.COMMAND_FOLLOW.getKey());
+        MinecraftForge.EVENT_BUS.post(new HorseRecallEvent.Respawned(player, respawned));
         return Outcome.OK;
     }
 
@@ -304,7 +307,8 @@ public final class HorseManagement {
         IHorseData data = IHorseData.of(horse);
         if (data.bh_hasCartGear()) return Outcome.fail(MSG_CART);
         if (data.bh_getBond() <= 0) return Outcome.fail(MSG_NO_BOND);
-        if (horse.distanceToSqr(player) > CALL_TELEPORT_DIST_SQ
+        boolean handled = MinecraftForge.EVENT_BUS.post(new HorseRecallEvent.Summon(player, horse));
+        if (!handled && horse.distanceToSqr(player) > CALL_TELEPORT_DIST_SQ
                 && !HorsePlacement.teleport(horse, player.blockPosition())) return Outcome.fail(MSG_UNSAFE);
         data.bh_setCommand(BhContent.COMMAND_FOLLOW.getKey());
         return Outcome.OK;
