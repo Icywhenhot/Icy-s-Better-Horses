@@ -3,8 +3,12 @@ package icy.betterhorses.net;
 import icy.betterhorses.net.client.BhClientCaches;
 
 import icy.betterhorses.net.entity.PercheronHorse;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
@@ -21,6 +25,9 @@ public final class BhRiderSeat {
     private static final float HUMANOID_HEIGHT = 1.2F;
     private static final double PLAYER_SEAT_SHARE = 1.0D / 3.0D;
 
+    public static final TagKey<EntityType<?>> SELF_SEATED = TagKey.create(Registries.ENTITY_TYPE,
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "self_seated_riders"));
+
     private static final Map<Integer, Vec3> APPLIED = new ConcurrentHashMap<>();
 
     private BhRiderSeat() {}
@@ -32,6 +39,7 @@ public final class BhRiderSeat {
     public static double seatDrop(Entity passenger) {
         if (passenger instanceof Player || !(passenger instanceof LivingEntity)
                 || passenger.getBbHeight() < HUMANOID_HEIGHT
+                || passenger.getType().is(SELF_SEATED)
                 || Math.abs(passenger.getAttachments().get(EntityAttachment.VEHICLE, 0, 0.0F).y) > 1.0E-4D) {
             return 0.0D;
         }

@@ -41,6 +41,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
+import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -524,6 +525,17 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         }
     }
 
+    public void releaseFollowersOf(Player owner) {
+        List<Entity> riders = new ArrayList<>(this.getPassengers());
+        riders.addAll(this.benchCargo());
+        for (Entity rider : riders) {
+            if (rider != owner && rider.getType().is(BhRiderSeat.SELF_SEATED)
+                    && rider instanceof OwnableEntity pet && owner.getUUID().equals(pet.getOwnerUUID())) {
+                this.setDown(rider);
+            }
+        }
+    }
+
     public void setDown(Entity passenger) {
         passenger.stopRiding();
         setSeatedPose(passenger, false);
@@ -538,6 +550,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     private static void setSeatedPose(Entity passenger, boolean seated) {
+        if (passenger.getType().is(BhRiderSeat.SELF_SEATED)) {
+            return;
+        }
         if (passenger instanceof TamableAnimal tamable) {
             tamable.setInSittingPose(seated || tamable.isOrderedToSit());
         } else if (passenger instanceof Fox fox) {
@@ -850,7 +865,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
                     || candidate.isVehicle()
                     || !candidate.isAlive()
                     || !this.canCarry(candidate)
-                    || !restoring && !wanted(candidate, pickup)) {
+                    || !restoring && (!wanted(candidate, pickup) || candidate.getType().is(BhRiderSeat.SELF_SEATED))) {
                 continue;
             }
             if (this.rearSeatsFree()) {
