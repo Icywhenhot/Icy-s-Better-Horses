@@ -89,6 +89,17 @@ public abstract class EntityMixin {
     }
 
     @Inject(method = "removeVehicle", at = @At("HEAD"))
+    private void bh_followersLeaveCart(CallbackInfo ci) {
+        if (!((Object) this instanceof ServerPlayer player)) return;
+        Entity vehicle = player.getVehicle();
+        HorseCartEntity cart = vehicle instanceof HorseCartEntity riding ? riding
+                : vehicle instanceof AbstractHorse horse ? IHorseData.of(horse).bh_getCartEntity() : null;
+        if (cart != null && !cart.isRemoved()) {
+            cart.releaseFollowersOf(player);
+        }
+    }
+
+    @Inject(method = "removeVehicle", at = @At("HEAD"))
     private void bh_removeMountedHorseBonuses(CallbackInfo ci) {
         if (!((Object) this instanceof ServerPlayer player)
                 || !(player.getVehicle() instanceof AbstractHorse horse)
