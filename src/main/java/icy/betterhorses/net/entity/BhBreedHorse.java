@@ -72,17 +72,15 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
 
     private void bhInheritStats(BhBreedHorse a, BhBreedHorse b) {
         ArchetypeType arch = bhArchetype();
-        setBase(Attributes.MAX_HEALTH,
-                arch.clampHealth(mix(a, b, Attributes.MAX_HEALTH, arch.rollHealth(this.random))));
-        setBase(Attributes.MOVEMENT_SPEED,
-                arch.clampSpeed(mix(a, b, Attributes.MOVEMENT_SPEED, arch.rollSpeed(this.random))));
-        setBase(Attributes.JUMP_STRENGTH,
-                arch.clampJump(mix(a, b, Attributes.JUMP_STRENGTH, arch.rollJump(this.random))));
+        setBase(Attributes.MAX_HEALTH, arch.clampHealth(better(a, b, Attributes.MAX_HEALTH, 1.0D)));
+        setBase(Attributes.MOVEMENT_SPEED, arch.clampSpeed(better(a, b, Attributes.MOVEMENT_SPEED, 43.2D)));
+        setBase(Attributes.JUMP_STRENGTH, arch.clampJump(better(a, b, Attributes.JUMP_STRENGTH, 6.0D)));
         setHealth(getMaxHealth());
     }
 
-    private double mix(BhBreedHorse a, BhBreedHorse b, Holder<Attribute> attr, double rolled) {
-        return (a.getAttributeBaseValue(attr) + b.getAttributeBaseValue(attr) + rolled) / 3.0D;
+    private double better(BhBreedHorse a, BhBreedHorse b, Holder<Attribute> attr, double shownPerRaw) {
+        double best = Math.max(a.getAttributeBaseValue(attr), b.getAttributeBaseValue(attr));
+        return best + (this.random.nextDouble() * 1.5D - 0.5D) / shownPerRaw;
     }
 
     private void setBase(Holder<Attribute> attr, double value) {
