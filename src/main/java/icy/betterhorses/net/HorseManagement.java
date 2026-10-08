@@ -17,6 +17,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 
@@ -32,6 +33,7 @@ import icy.betterhorses.net.entity.BhBreedHorse;
 public final class HorseManagement {
 
     private static final double CALL_TELEPORT_DIST_SQ = 32.0 * 32.0;
+    private static final long NPC_RECALL_LOCK_TICKS = 1200L;
 
     private static final AtomicInteger scratchIds = new AtomicInteger();
 
@@ -167,6 +169,7 @@ public final class HorseManagement {
         if (respawned == null) {
             return Outcome.fail(respawnFailureKey(player, horseId));
         }
+        takeBackFromNpcs(respawned);
         IHorseData.of(respawned).bh_setCommand(BhContent.COMMAND_FOLLOW.getKey());
         MinecraftForge.EVENT_BUS.post(new HorseRecallEvent.Respawned(player, respawned));
         return Outcome.OK;
@@ -310,8 +313,16 @@ public final class HorseManagement {
         boolean handled = MinecraftForge.EVENT_BUS.post(new HorseRecallEvent.Summon(player, horse));
         if (!handled && horse.distanceToSqr(player) > CALL_TELEPORT_DIST_SQ
                 && !HorsePlacement.teleport(horse, player.blockPosition())) return Outcome.fail(MSG_UNSAFE);
+        takeBackFromNpcs(horse);
         data.bh_setCommand(BhContent.COMMAND_FOLLOW.getKey());
         return Outcome.OK;
+    }
+
+    private static void takeBackFromNpcs(AbstractHorse horse) {
+        for (Entity rider : List.copyOf(horse.getPassengers())) {
+            if (!(rider instanceof Player)) rider.stopRiding();
+        }
+        IHorseData.of(horse).bh_setNpcLockUntil(horse.level().getGameTime() + NPC_RECALL_LOCK_TICKS);
     }
 
     private static boolean hasCart(ServerPlayer player, UUID id) {
@@ -441,7 +452,9 @@ public final class HorseManagement {
             return null;
         }
 
-        Entity loaded = EntityType.loadEntityRecursive(snapshot, level, entity -> entity);
+        CompoundTag body = snapshot.copy();
+        body.remove("Passengers");
+        Entity loaded = EntityType.loadEntityRecursive(body, level, entity -> entity);
         if (!(loaded instanceof AbstractHorse horse)) {
             IcysBetterHorses.LOGGER.warn("[whistle] snapshot of horse {} did not deserialize to a horse", horseId);
             return null;

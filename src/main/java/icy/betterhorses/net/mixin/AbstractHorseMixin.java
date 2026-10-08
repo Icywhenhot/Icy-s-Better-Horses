@@ -612,6 +612,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private @Nullable UUID bh_cartId;
     @Unique private int bh_bondRemainder;
     @Unique private long bh_rescueReadyAt;
+    @Unique private long bh_npcLockUntil;
 
     @Override
     public int bh_getBondRemainder() { return bh_bondRemainder; }
@@ -624,6 +625,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Override
     public void bh_setRescueReadyAt(long value) { bh_rescueReadyAt = value; }
+
+    @Override
+    public long bh_getNpcLockUntil() { return bh_npcLockUntil; }
+
+    @Override
+    public void bh_setNpcLockUntil(long until) { bh_npcLockUntil = until; }
 
     @Override
     public void bh_onRemoved() {
@@ -1608,6 +1615,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Override
     protected boolean canAddPassenger(Entity passenger) {
+        if (!bh_ours()) return super.canAddPassenger(passenger);
         return BhHorseSteering.canAddPassenger((AbstractHorse) (Object) this, this, passenger);
     }
 

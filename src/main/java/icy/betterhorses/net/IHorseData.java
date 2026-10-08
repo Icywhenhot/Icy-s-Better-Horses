@@ -142,6 +142,10 @@ public interface IHorseData {
 
     void bh_setRescueReadyAt(long value);
 
+    long bh_getNpcLockUntil();
+
+    void bh_setNpcLockUntil(long until);
+
     void bh_onRemoved();
 
     @Nullable UUID bh_getCartId();
