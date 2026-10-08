@@ -1,6 +1,7 @@
 package icy.betterhorses.net.client;
 
 import icy.betterhorses.net.BhHorseKind;
+import icy.betterhorses.net.BhJumpHeight;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.registry.BreedType;
@@ -24,7 +25,6 @@ public final class BhHorseHud {
     private static final int STATS_ACCENT = 0xD06E5324;
 
     private static final double SPEED_DISPLAY = 43.2D;
-    private static final double JUMP_DISPLAY = 6.0D;
 
     private BhHorseHud() {}
 
@@ -50,7 +50,7 @@ public final class BhHorseHud {
         String speedValue = String.format(Locale.ROOT, "%.1f",
                 horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * SPEED_DISPLAY);
         String jumpValue = String.format(Locale.ROOT, "%.1f",
-                Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * JUMP_DISPLAY - 1.0D));
+                BhJumpHeight.blocks(horse.getAttributeValue(Attributes.JUMP_STRENGTH)));
 
         IHorseData data = IHorseData.of(horse);
         ResourceKey<BreedType> breedKey = data.bh_getBreedKey();

@@ -88,7 +88,7 @@ public final class BhHorseCommands {
         double shown(double base) {
             return switch (this) {
                 case SPEED -> base * SPEED_FACTOR;
-                case JUMP -> Math.max(0.0D, base * 6.0D - 1.0D);
+                case JUMP -> BhJumpHeight.blocks(base);
                 case HEALTH -> base;
             };
         }
@@ -96,7 +96,7 @@ public final class BhHorseCommands {
         double base(double shown) {
             return switch (this) {
                 case SPEED -> shown / SPEED_FACTOR;
-                case JUMP -> (shown + 1.0D) / 6.0D;
+                case JUMP -> BhJumpHeight.strength(shown);
                 case HEALTH -> shown;
             };
         }
