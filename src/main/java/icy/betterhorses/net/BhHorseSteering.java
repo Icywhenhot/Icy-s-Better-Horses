@@ -9,6 +9,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec2;
@@ -26,8 +27,8 @@ public final class BhHorseSteering {
     private static final double REAR_PASSENGER_Z_OFFSET = -0.35D;
     private static final float FREE_CAMERA_ANGLE_THRESHOLD = 90.0F;
 
-    private static final TagKey<EntityType<?>> NPC_RIDERS = TagKey.create(Registries.ENTITY_TYPE,
-            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "npc_riders"));
+    private static final TagKey<EntityType<?>> BLOCKED_RIDERS = TagKey.create(Registries.ENTITY_TYPE,
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "blocked_riders"));
 
     public static final boolean IMMERSIVE_RIDING = ModList.get().isLoaded("immersive_horse_riding");
 
@@ -107,7 +108,7 @@ public final class BhHorseSteering {
             return false;
         }
         boolean npc = !(passenger instanceof Player) && !data.bh_hasCartGear()
-                && passenger.getType().is(NPC_RIDERS);
+                && passenger instanceof LivingEntity && !passenger.getType().is(BLOCKED_RIDERS);
         if ((passenger instanceof Player || npc) && !passengers.isEmpty()
                 && data.bh_hasGear(GearSlot.CHEST)
                 && !BhBreedData.of(data.bh_getBreedKey()).archetype().allowsChestAndRiders()) {
@@ -116,7 +117,7 @@ public final class BhHorseSteering {
 
         if (npc) {
             if (passengers.isEmpty()) {
-                return horse.isTamed() && horse.isSaddled();
+                return horse.level().getGameTime() >= data.bh_getNpcLockUntil();
             }
             return multiRidingEnabled && passengers.get(0) instanceof Player;
         }
