@@ -1,5 +1,6 @@
 package icy.betterhorses.net.client;
 
+import icy.betterhorses.net.BhJumpHeight;
 import icy.betterhorses.net.HorseManageAction;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.network.HorseManagePayload;
@@ -49,7 +50,7 @@ public class HorseInfoScreen extends Screen {
     private static final double SPEED_MAX =
             ArchetypeType.topSpeed() * BOND_MAX_MULTIPLIER * SPEED_DISPLAY_FACTOR;
     private static final double JUMP_MAX =
-            Math.max(0.0D, ArchetypeType.topJump() * BOND_MAX_MULTIPLIER * 6.0D - 1.0D);
+            BhJumpHeight.blocks(ArchetypeType.topJump() * BOND_MAX_MULTIPLIER);
     private static final double HEALTH_MAX = ArchetypeType.topHealth();
 
     private static final int DISOWN_BTN_WIDTH = 110;
@@ -190,7 +191,7 @@ public class HorseInfoScreen extends Screen {
                 speedBlocksPerSec / SPEED_MAX);
         y += ROW_HEIGHT;
 
-        double jumpBlocks = Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D) * statP;
+        double jumpBlocks = BhJumpHeight.blocks(horse.getAttributeValue(Attributes.JUMP_STRENGTH)) * statP;
         drawStatRow(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.jump"),
                 String.format(Locale.ROOT, "%.2f blk", jumpBlocks),
