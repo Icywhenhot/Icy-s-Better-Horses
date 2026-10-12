@@ -1245,8 +1245,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             float amount,
             CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
+        // a block that keeps hurting it would have it neighing over its own cries of pain
         if (!cir.getReturnValueZ()
                 || !(self instanceof Horse)
+                || source.is(BH_FLEES_BLOCK)
                 || self.getRandom().nextFloat() >= BH_HURT_NEIGH_CHANCE) {
             return;
         }
