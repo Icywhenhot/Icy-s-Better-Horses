@@ -12,8 +12,8 @@ import net.minecraft.world.phys.Vec3;
 import java.util.EnumSet;
 import java.util.UUID;
 
-// Walks a horse off a block that is hurting it. It only ever walks: a horse with no way out stays
-// where it is, and its owner is told.
+// Runs a horse off a block that is hurting it. It only ever goes on foot: a horse with no way out
+// stays where it is, and its owner is told.
 public class HorseEscapeHazardGoal extends Goal {
 
     private static final double ESCAPE_SPEED = 1.3;
@@ -84,7 +84,7 @@ public class HorseEscapeHazardGoal extends Goal {
             Vec3 spot = DefaultRandomPos.getPos(horse, ESCAPE_RANGE, ESCAPE_HEIGHT);
             if (spot == null) continue;
             Path path = horse.getNavigation().createPath(spot.x, spot.y, spot.z, 0);
-            if (path != null && path.canReach() && horse.getNavigation().moveTo(path, ESCAPE_SPEED)) {
+            if (path != null && path.canReach() && horse.getNavigation().moveTo(path, HorsePace.modifier(horse, 1.0, ESCAPE_SPEED))) {
                 return true;
             }
         }
