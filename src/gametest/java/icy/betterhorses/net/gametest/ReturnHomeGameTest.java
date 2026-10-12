@@ -42,10 +42,10 @@ public class ReturnHomeGameTest implements FabricGameTest {
         // sent once it has landed: a horse still in the air cannot plan a path
         helper.runAfterDelay(10, () -> data.bh_setCommand(BhContent.COMMAND_RETURN_HOME.key()));
 
-        // one second in the middle of the run: past the start-up, before the first leg runs out
+        // one second in the middle of the run: past the walk it sets off at, before the first leg runs out
         double[] at = new double[1];
-        helper.runAfterDelay(40, () -> at[0] = horse.getX());
-        helper.runAfterDelay(60, () -> {
+        helper.runAfterDelay(95, () -> at[0] = horse.getX());
+        helper.runAfterDelay(115, () -> {
             double covered = horse.getX() - at[0];
             double gallopCovers = horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * GALLOP_PER_SPEED * 20.0D;
             horse.discard();
@@ -53,6 +53,31 @@ public class ReturnHomeGameTest implements FabricGameTest {
                     "a horse sent home should run there a little under its gallop: covered "
                             + String.format("%.1f", covered) + " blocks in 1 second, a gallop covers "
                             + String.format("%.1f", gallopCovers));
+            helper.succeed();
+        });
+    }
+
+    // A horse sent home by mistake has to be catchable on foot before it is away.
+    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 100)
+    public void setsOffForHomeAtAWalk(GameTestHelper helper) {
+        int y = 160;
+        keepLaneLoaded(helper);
+        floor(helper, y);
+        AbstractHorse horse = runner(helper, y);
+        IHorseData data = IHorseData.of(horse);
+        data.bh_setOwner(UUID.randomUUID());
+        data.bh_setHome(helper.absolutePos(new BlockPos(62, y + 1, 4)));
+        helper.runAfterDelay(10, () -> data.bh_setCommand(BhContent.COMMAND_RETURN_HOME.key()));
+
+        double startX = horse.getX();
+        helper.runAfterDelay(60, () -> {
+            double covered = horse.getX() - startX;
+            double gallopCovers = horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * GALLOP_PER_SPEED * 20.0D;
+            horse.discard();
+            helper.assertTrue(covered >= 2.0D && covered <= gallopCovers * 0.9D,
+                    "a horse sent home should walk for its first few seconds: covered "
+                            + String.format("%.1f", covered) + " blocks in 2.5 seconds, a gallop covers "
+                            + String.format("%.1f", gallopCovers) + " a second");
             helper.succeed();
         });
     }
