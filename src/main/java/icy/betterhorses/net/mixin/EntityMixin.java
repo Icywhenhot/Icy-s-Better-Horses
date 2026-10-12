@@ -74,6 +74,8 @@ public abstract class EntityMixin {
             return;
         }
 
+        if (horse.getFirstPassenger() == player) IHorseData.of(horse).bh_setSaddleOrder(false);
+
         if (player.getUUID().equals(IHorseData.of(horse).bh_getOwner())) {
             HorseTracker.setLastRidden(player.getUUID(), horse);
         }
@@ -101,6 +103,10 @@ public abstract class EntityMixin {
         if (!player.getUUID().equals(data.bh_getOwner())) return;
         HorseTracker.setLastRidden(player.getUUID(), horse);
         data.bh_setWanderCenter(horse.blockPosition());
+        if (data.bh_hasSaddleOrder()) {
+            data.bh_setSaddleOrder(false);
+            return;
+        }
         data.bh_setCommand(BhContent.COMMAND_WANDER.key());
     }
 

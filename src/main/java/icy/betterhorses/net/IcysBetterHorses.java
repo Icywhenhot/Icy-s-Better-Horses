@@ -292,6 +292,7 @@ public final class IcysBetterHorses implements ModInitializer {
             if (command.equals(BhContent.COMMAND_WANDER.key())) {
                 data.bh_setWanderCenter(horse.blockPosition());
             }
+            data.bh_setSaddleOrder(player.getVehicle() == horse);
             data.bh_setCommand(command);
         }
 
