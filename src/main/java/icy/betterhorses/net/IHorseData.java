@@ -87,6 +87,8 @@ public interface IHorseData {
     void bh_setCombatTarget(@Nullable UUID target);
     int bh_getSpookTicks();
     void bh_setSpookTicks(int ticks);
+    int bh_getHazardEscapeTicks();
+    void bh_setHazardEscapeTicks(int ticks);
     int bh_getCombatState();
     int bh_getKickTicks();
     int bh_getJumpCue();
