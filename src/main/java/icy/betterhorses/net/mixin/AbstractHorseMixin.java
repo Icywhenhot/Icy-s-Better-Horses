@@ -1304,8 +1304,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             AbstractHorse self = (AbstractHorse) (Object) this;
             this.bh_grazeBlockedUntilTick = self.tickCount + BH_GRAZE_HURT_COOLDOWN_TICKS;
             this.bh_combat.onHurt(self, this, source);
-            if (bh_ours() && !self.isVehicle() && source.is(BH_FLEES_BLOCK) && BhFeature.HAZARD_ESCAPE.on()) {
-                this.bh_hazardEscapeTicks = BH_HAZARD_ESCAPE_TICKS;
+            if (bh_ours() && source.is(BH_FLEES_BLOCK) && BhFeature.HAZARD_ESCAPE.on()) {
+                // a ridden horse is left to its rider to get off the block
+                if (!self.isVehicle()) this.bh_hazardEscapeTicks = BH_HAZARD_ESCAPE_TICKS;
                 // a horse rearing at the pain cannot move, and would rear again at each new hurt
                 this.bh_clearStanding();
             }

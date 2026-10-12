@@ -138,6 +138,30 @@ public class HazardEscapeGameTest implements FabricGameTest {
         });
     }
 
+    // A horse rearing at the pain cannot move, so its rider could not ride it off the fire.
+    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 140)
+    public void aRiddenHorseOnACampfireDoesNotRear(GameTestHelper helper) {
+        int y = 235;
+        AbstractHorse horse = horseOnACampfire(helper, y);
+        ServerPlayer owner = owner(helper, horse, 2.5D, y + 2, 4.5D, BhContent.COMMAND_STAY.key());
+        owner.startRiding(horse, true);
+        horse.setHealth(horse.getMaxHealth());
+        float before = horse.getHealth();
+        int[] reared = new int[1];
+        helper.onEachTick(() -> {
+            if (horse.isStanding()) reared[0]++;
+        });
+
+        helper.runAfterDelay(120, () -> {
+            float lost = before - horse.getHealth();
+            cleanUp(horse, owner);
+            helper.assertTrue(lost >= 6.0F, "the test needs a ridden horse the campfire has hurt several times, it lost " + lost);
+            helper.assertTrue(reared[0] == 0, "a ridden horse on a campfire must not rear, but was rearing for "
+                    + reared[0] + " ticks");
+            helper.succeed();
+        });
+    }
+
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 80)
     public void mountingAHorseEndsItsGetaway(GameTestHelper helper) {
         int y = 225;
