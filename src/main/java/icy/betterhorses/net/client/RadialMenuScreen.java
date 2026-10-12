@@ -13,6 +13,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 import java.util.ArrayList;
@@ -51,6 +52,8 @@ public class RadialMenuScreen extends Screen {
 
     private static final int LABEL_COLOR = 0xFFEBD9BE;
     private static final int LABEL_HOVER_COLOR = 0xFFFFFFFF;
+
+    private static final int NAME_GAP = 8;
 
     private static final float RIM_THICKNESS = 1.5F;
     private static final float HOVER_PUSH = 4F;
@@ -172,6 +175,14 @@ public class RadialMenuScreen extends Screen {
             int textColor = bh_mixColor(LABEL_COLOR, LABEL_HOVER_COLOR, hoverAmount[i]);
             gfx.drawCenteredString(font, text, lx, ly - font.lineHeight / 2, textColor);
         }
+
+        // which horse the wheel is for: a rider who looks at no other horse gets the one under them
+        Entity target = minecraft.level.getEntity(horseId);
+        Component name = minecraft.player != null && minecraft.player.getVehicle() == target
+                ? Component.translatable("screen.icys-better-horses.radial.riding", target.getDisplayName())
+                : target.getDisplayName();
+        gfx.drawCenteredString(font, name, cx, cy - RING_BACKDROP_OUTER - NAME_GAP - font.lineHeight,
+                LABEL_HOVER_COLOR);
 
         pose.popPose();
     }

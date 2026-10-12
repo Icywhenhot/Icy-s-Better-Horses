@@ -24,6 +24,7 @@
   "book.icys-better-horses.coats.title": "Coats",
   "book.icys-better-horses.coats.unavailable": "This breed's coats can't be shown here.",
   "screen.icys-better-horses.radial": "Horse Commands",
+  "screen.icys-better-horses.radial.riding": "%s (riding)",
   "screen.icys-better-horses.manage": "Your Horses",
   "screen.icys-better-horses.manage.empty": "You don't have any horses yet.",
   "screen.icys-better-horses.manage.preview_empty": "Select a horse",
