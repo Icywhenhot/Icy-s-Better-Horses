@@ -60,6 +60,26 @@ public class MountStateGameTest implements FabricGameTest {
         helper.succeed();
     }
 
+    // Stay means stay here: ridden on somewhere else, the order no longer stands.
+    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
+    public void anOrderFromTheSaddleIsDroppedOnceTheHorseIsRiddenOn(GameTestHelper helper) {
+        AbstractHorse horse = ownedHorse(helper);
+        for (int x = 5; x < 12; x++) {
+            helper.setBlock(x, 1, 2, Blocks.STONE);
+        }
+        ServerPlayer owner = owner(helper, horse);
+        owner.startRiding(horse, true);
+
+        IcysBetterHorses.handleRadialCommand(owner, horse.getId(), BhContent.COMMAND_STAY.key());
+        horse.setPos(horse.getX() + 7.0D, horse.getY(), horse.getZ());
+        owner.stopRiding();
+
+        boolean wanders = IHorseData.of(horse).bh_getCommand().equals(BhContent.COMMAND_WANDER.key());
+        owner.discard();
+        helper.assertTrue(wanders, "a horse told to stay and then ridden somewhere else should wander where its owner gets off");
+        helper.succeed();
+    }
+
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void aHorseGivenNoOrderFromTheSaddleWandersWhenItsOwnerGetsOff(GameTestHelper helper) {
         AbstractHorse horse = ownedHorse(helper);

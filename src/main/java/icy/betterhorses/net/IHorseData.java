@@ -27,7 +27,7 @@ public interface IHorseData {
     ResourceKey<CommandType> bh_getCommand();
     void bh_setCommand(ResourceKey<CommandType> command);
 
-    // An order its rider gave from the saddle is what the horse does once they get off.
+    // An order its rider gave from the saddle is what the horse does once they get off there.
     boolean bh_hasSaddleOrder();
 
     void bh_setSaddleOrder(boolean ordered);
