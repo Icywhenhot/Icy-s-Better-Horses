@@ -1,5 +1,9 @@
 package icy.betterhorses.net.client;
 
+import com.mojang.blaze3d.platform.InputConstants;
+import icy.betterhorses.net.IcysBetterHorsesClient;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import org.lwjgl.glfw.GLFW;
 import icy.betterhorses.net.IHorseAbilityHost;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.registry.AbilityType;
@@ -63,6 +67,7 @@ public class RadialMenuScreen extends Screen {
     private int hoveredIndex = -1;
     private final BhAnim.Lift hover = new BhAnim.Lift();
     private long bhOpenMs;
+    private boolean wheelKeyWasDown = true;
 
     private final List<Entry> commands;
     private final int segmentCount;
@@ -113,6 +118,26 @@ public class RadialMenuScreen extends Screen {
     @Override
     protected void init() {
         bhOpenMs = System.currentTimeMillis();
+    }
+
+    // The key that opened the wheel closes it again. It is still held as the wheel opens, so only
+    // a fresh press counts.
+    @Override
+    public void tick() {
+        boolean down = wheelKeyDown();
+        if (down && !wheelKeyWasDown) onClose();
+        wheelKeyWasDown = down;
+    }
+
+    private boolean wheelKeyDown() {
+        if (minecraft == null) return false;
+        InputConstants.Key key = KeyBindingHelper.getBoundKeyOf(IcysBetterHorsesClient.RADIAL_KEY);
+        long window = minecraft.getWindow().getWindow();
+        return switch (key.getType()) {
+            case KEYSYM -> InputConstants.isKeyDown(window, key.getValue());
+            case MOUSE -> GLFW.glfwGetMouseButton(window, key.getValue()) == GLFW.GLFW_PRESS;
+            default -> false;
+        };
     }
 
     @Override
