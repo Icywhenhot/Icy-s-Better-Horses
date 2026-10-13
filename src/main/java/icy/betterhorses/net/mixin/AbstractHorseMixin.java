@@ -20,6 +20,8 @@ import icy.betterhorses.net.BhHorseSteering;
 import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.registry.BhBreeds;
 import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.BhFeature;
+import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedType;
 import icy.betterhorses.net.registry.CommandType;
@@ -50,6 +52,7 @@ import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.item.HorseCartItem;
 import icy.betterhorses.net.entity.HorseCartEntity;
+import icy.betterhorses.net.goal.HorseEscapeHazardGoal;
 import icy.betterhorses.net.goal.HorseFollowOwnerGoal;
 import icy.betterhorses.net.goal.HorseReturnHomeGoal;
 import icy.betterhorses.net.goal.DefendOwnerGoal;
@@ -68,6 +71,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -80,6 +84,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -170,6 +175,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private @Nullable UUID bh_combatTarget = null;
     @Unique private boolean bh_abilityPaused = false;
     @Unique private int bh_spookTicks = 0;
+    // block damage that a horse nobody is riding walks away from; lava is left to vanilla panic
+    @Unique private static final TagKey<DamageType> BH_FLEES_BLOCK = TagKey.create(Registries.DAMAGE_TYPE,
+            new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "horse_flees_block"));
+    @Unique private static final int BH_HAZARD_ESCAPE_TICKS = 40;
+    @Unique private int bh_hazardEscapeTicks = 0;
 
     @Unique private @Nullable Vec3 bh_lastPos = null;
     @Unique private Vec3 bh_moved = Vec3.ZERO;
@@ -1025,6 +1035,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     }
 
     @Override
+    public int bh_getHazardEscapeTicks() {
+        return this.bh_hazardEscapeTicks;
+    }
+
+    @Override
+    public void bh_setHazardEscapeTicks(int ticks) {
+        this.bh_hazardEscapeTicks = Math.max(0, ticks);
+    }
+
+    @Override
     public @Nullable BreedAbility bh_currentAbility() {
         this.bh_abilities.initialize((AbstractHorse) (Object) this, this);
         return this.bh_abilities.current();
@@ -1225,8 +1245,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             float amount,
             CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
+        // a block that keeps hurting it would have it neighing over its own cries of pain
         if (!cir.getReturnValueZ()
                 || !(self instanceof Horse)
+                || source.is(BH_FLEES_BLOCK)
                 || self.getRandom().nextFloat() >= BH_HURT_NEIGH_CHANCE) {
             return;
         }
@@ -1284,6 +1306,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             AbstractHorse self = (AbstractHorse) (Object) this;
             this.bh_grazeBlockedUntilTick = self.tickCount + BH_GRAZE_HURT_COOLDOWN_TICKS;
             this.bh_combat.onHurt(self, this, source);
+            if (bh_ours() && source.is(BH_FLEES_BLOCK) && BhFeature.HAZARD_ESCAPE.on()) {
+                // a ridden horse is left to its rider to get off the block
+                if (!self.isVehicle()) this.bh_hazardEscapeTicks = BH_HAZARD_ESCAPE_TICKS;
+                // a horse rearing at the pain cannot move, and would rear again at each new hurt
+                this.bh_clearStanding();
+            }
         }
     }
 
@@ -1566,6 +1594,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Inject(method = "registerGoals", at = @At("TAIL"))
     private void bh_onRegisterGoals(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
+        goalSelector.addGoal(1, new HorseEscapeHazardGoal(self));
         goalSelector.addGoal(1, new SpookGoal(self));
         goalSelector.addGoal(2, new DefendOwnerGoal(self));
         goalSelector.addGoal(3, new HorseStayGoal(self));
