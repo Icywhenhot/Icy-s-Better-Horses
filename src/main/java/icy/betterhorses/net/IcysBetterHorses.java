@@ -41,6 +41,9 @@ import java.util.List;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -97,9 +100,18 @@ public final class IcysBetterHorses implements ModInitializer {
         ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register(this::onDatapackSync);
         CommandRegistrationCallback.EVENT.register(BhCommands::register);
         BhBreedLoader.register();
+        ServerLivingEntityEvents.AFTER_DEATH.register(IcysBetterHorses::onLivingDeath);
         bh_registerSpawnEggDispensers();
 
         LOGGER.info("Icy's Better Horses initialized.");
+    }
+
+    private static void onLivingDeath(LivingEntity entity, DamageSource source) {
+        if (entity instanceof AbstractHorse horse && !horse.level().isClientSide()
+                && source.getEntity() instanceof ServerPlayer killer
+                && killer.getUUID().equals(IHorseData.of(horse).bh_getOwner())) {
+            BhCriteria.fire(killer, BhCriteria.KILL_OWN_HORSE);
+        }
     }
 
     private static void bh_registerSpawnEggDispensers() {
@@ -163,7 +175,8 @@ public final class IcysBetterHorses implements ModInitializer {
                 BhConfig.classAbilitiesEnabled(),
                 BhConfig.breedAbilitiesEnabled(),
                 BhConfig.disabledAbilities(),
-                BhConfig.tuning()));
+                BhConfig.tuning(),
+                BhConfig.breedingFoods()));
         BhNetworking.sendToPlayer(player, BreedDataPayload.current());
     }
 
@@ -346,11 +359,16 @@ public final class IcysBetterHorses implements ModInitializer {
     }
 
     public static void handleManageAction(ServerPlayer player, UUID horseId, HorseManageAction action) {
+        if (action != HorseManageAction.DISOWN && !BhFeature.HORSE_MANAGEMENT.on()) {
+            return;
+        }
         HorseManagement.Outcome outcome = switch (action) {
             case WHISTLE -> HorseManagement.whistle(player, horseId);
             case SEND_HOME -> HorseManagement.sendHome(player, horseId);
             case DISOWN -> HorseManagement.disown(player, horseId);
             case SET_ACTIVE -> HorseManagement.setActive(player, horseId);
+            case REVIVE -> HorseManagement.revive(player, horseId);
+            case FORGET -> HorseManagement.forget(player, horseId);
         };
 
         BhNetworking.sendToPlayer(player, new HorseManageResultPayload(

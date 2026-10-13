@@ -10,6 +10,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.Locale;
+
 public enum GearSlot {
     CHEST,
     HOOVES,
@@ -56,6 +58,6 @@ public enum GearSlot {
     }
 
     public String translationKey() {
-        return "gear.icys-better-horses." + name().toLowerCase();
+        return "gear.icys-better-horses." + name().toLowerCase(Locale.ROOT);
     }
 }

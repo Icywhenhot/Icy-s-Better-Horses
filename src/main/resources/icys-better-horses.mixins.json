@@ -31,6 +31,8 @@
 		"EnchantmentHelperMixin",
 		"CreeperMixin",
 		"McaRideHorseMixin",
+		"MobCalmMixin",
+		"PathNavigationIdleGaitMixin",
 		"MobCartPassengerMixin",
 		"MobNameTagBondMixin",
 		"MoveControlStepMixin",
@@ -49,6 +51,7 @@
 		"VehicleStepMixin"
 	],
 	"client": [
+		"KeyMappingShareMixin",
 		"AbstractContainerScreenAccessor",
 		"AbstractContainerScreenMixin",
 		"AbstractHorseRendererMixin",
@@ -61,7 +64,7 @@
 		"LevelRendererMixin",
 		"GameRendererMixin",
 		"LivingEntityRendererMixin",
-		"LivingEntityRendererRiderMixin",
+		"EntityRenderDispatcherRiderMixin",
 		"MountFacingMixin"
 	],
 	"injectors": {

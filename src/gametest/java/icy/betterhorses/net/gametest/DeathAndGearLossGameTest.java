@@ -4,6 +4,7 @@ import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModEntities;
 import icy.betterhorses.net.ModItems;
+import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.gametest.framework.GameTest;
@@ -146,7 +147,7 @@ public class DeathAndGearLossGameTest implements FabricGameTest {
     }
 
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 40)
-    public void deathWithCartDropsChestAndPloughContents(GameTestHelper helper) {
+    public void deathWithCartLeavesCartStandingWithChestAndPlough(GameTestHelper helper) {
         helper.setBlock(2, 1, 2, Blocks.STONE);
         AbstractHorse horse = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
         IHorseData data = IHorseData.of(horse);
@@ -161,12 +162,18 @@ public class DeathAndGearLossGameTest implements FabricGameTest {
         horse.kill();
 
         Map<Item, Integer> found = countDrops(helper, horse);
-        helper.assertTrue(found.getOrDefault(Items.DIAMOND, 0) == 7,
-                "expected the cart chest's 7 diamonds to drop on death, found "
-                        + found.getOrDefault(Items.DIAMOND, 0));
-        helper.assertTrue(found.getOrDefault(Items.IRON_HOE, 0) == 1,
-                "expected the cart plough to drop on death, found "
-                        + found.getOrDefault(Items.IRON_HOE, 0));
+        helper.assertTrue(found.getOrDefault(Items.DIAMOND, 0) == 0
+                        && found.getOrDefault(Items.IRON_HOE, 0) == 0
+                        && found.getOrDefault(ModItems.HORSE_CART, 0) == 0,
+                "nothing from the cart should drop, found " + found);
+        List<HorseCartEntity> carts = helper.getLevel().getEntitiesOfClass(HorseCartEntity.class,
+                horse.getBoundingBox().inflate(6));
+        helper.assertTrue(carts.size() == 1 && carts.get(0).isPlaced(),
+                "expected one cart left standing where the horse died, found " + carts.size());
+        HorseCartEntity cart = carts.get(0);
+        helper.assertTrue(cart.hasChest() && cart.hasPlough(), "the standing cart should keep its chest and plough");
+        helper.assertTrue(cart.chestContainer() != null && cart.chestContainer().countItem(Items.DIAMOND) == 7,
+                "the standing cart's chest should still hold the 7 diamonds");
         helper.succeed();
     }
 

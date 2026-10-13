@@ -263,7 +263,7 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
     public static void receiveConfig(ConfigSyncPayload payload) {
         if (Minecraft.getInstance().hasSingleplayerServer()) return;
         BhConfig.adoptServer(payload.disabledFeatures(), payload.classAbilities(),
-                payload.breedAbilities(), payload.disabledAbilities(), payload.tuning());
+                payload.breedAbilities(), payload.disabledAbilities(), payload.tuning(), payload.breedingFoods());
     }
 
     public static void receiveBreeds(BreedDataPayload payload) {
@@ -326,8 +326,14 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         }
 
         while (IcysBetterHorsesClient.MANAGE_KEY.consumeClick()) {
-            if (client.screen == null) {
+            if (client.screen != null) {
+                continue;
+            }
+            if (BhFeature.HORSE_MANAGEMENT.on()) {
                 client.setScreen(new HorseRosterScreen());
+            } else {
+                client.gui.setOverlayMessage(
+                        Component.translatable("message.icys-better-horses.manage.disabled"), false);
             }
         }
 

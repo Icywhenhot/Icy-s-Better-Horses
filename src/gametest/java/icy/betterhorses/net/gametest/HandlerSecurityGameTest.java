@@ -135,7 +135,7 @@ public class HandlerSecurityGameTest implements FabricGameTest {
     @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = 20)
     public void fromIdClampsOutOfRangeOrdinals(GameTestHelper helper) {
         helper.assertTrue(HorseManageAction.fromId(-5) == HorseManageAction.WHISTLE, "negative action id should clamp low");
-        helper.assertTrue(HorseManageAction.fromId(9999) == HorseManageAction.SET_ACTIVE, "huge action id should clamp high");
+        helper.assertTrue(HorseManageAction.fromId(9999) == HorseManageAction.FORGET, "huge action id should clamp high");
         helper.succeed();
     }
 

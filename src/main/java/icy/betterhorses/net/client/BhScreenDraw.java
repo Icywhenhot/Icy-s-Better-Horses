@@ -55,6 +55,8 @@ public final class BhScreenDraw {
             new ResourceLocation("icys-better-horses", "textures/gui/cross_button.png");
     public static final ResourceLocation WHISTLE_BUTTON_TEXTURE =
             new ResourceLocation("icys-better-horses", "textures/gui/whistle_button.png");
+    public static final ResourceLocation SUMMON_BUTTON_TEXTURE =
+            new ResourceLocation("icys-better-horses", "textures/gui/summon_button.png");
     public static final ResourceLocation SEND_HOME_BUTTON_TEXTURE =
             new ResourceLocation("icys-better-horses", "textures/gui/send_home_button.png");
     public static final ResourceLocation SET_ACTIVE_BUTTON_TEXTURE =

@@ -92,6 +92,11 @@ public interface IHorseData {
     int bh_getJumpCue();
     void bh_cueJump();
     void bh_setKickTicks(int ticks);
+    int bh_getBegSide();
+    void bh_setBegSide(int side);
+
+    double bh_idleSpeedModifier(double requested);
+    float bh_getBegTilt(float partialTick);
 
     boolean bh_isAbilityPaused();
     void bh_setAbilityPaused(boolean paused);
@@ -204,6 +209,10 @@ public interface IHorseData {
     ItemStack bh_getBarding();
 
     SimpleContainer bh_getGearContainer();
+
+    SimpleContainer bh_getBannerContainer();
+
+    ItemStack bh_getBanner();
 
     SimpleContainer bh_getChestContainer();
 

@@ -87,9 +87,7 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
             return data.bh_hasGear(GearSlot.CHEST) ? textures.chest(data.bh_hasEnderChestGear()) : null;
         }));
         addLayer(new HorseStabilizerLayer<>(this));
-        if (FabricLoader.getInstance().isModLoaded("galosphere")) {
-            addLayer(new BhSterlingBannerLayer<>(this));
-        }
+        addLayer(FabricLoader.getInstance().isModLoaded("galosphere") ? new BhSterlingBannerLayer<>(this) : new BhBannerLayer<>(this));
     }
 
     @Override

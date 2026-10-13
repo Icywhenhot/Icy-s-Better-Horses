@@ -27,11 +27,13 @@ class BhConfigTest {
         assertEquals(2, tuning.groupMin());
         assertEquals(6, tuning.groupMax());
         assertEquals(0.10D, tuning.spawnFloor());
+        assertEquals(10, tuning.reviveLevels());
+        assertEquals(20, tuning.reviveBondLoss());
     }
 
     @Test
     void constructorArgumentsMapToFieldsInDeclaredOrder() {
-        BhTuning tuning = new BhTuning(2, 3, 4, 5, 6, 0.25D);
+        BhTuning tuning = new BhTuning(2, 3, 4, 5, 6, 0.25D, 7, 8);
 
         assertEquals(2, tuning.bondAmount());
         assertEquals(3, tuning.bondMinutes());
@@ -39,6 +41,8 @@ class BhConfigTest {
         assertEquals(5, tuning.groupMin());
         assertEquals(6, tuning.groupMax());
         assertEquals(0.25D, tuning.spawnFloor());
+        assertEquals(7, tuning.reviveLevels());
+        assertEquals(8, tuning.reviveBondLoss());
         assertEquals(3600, tuning.bondIntervalTicks());
     }
 

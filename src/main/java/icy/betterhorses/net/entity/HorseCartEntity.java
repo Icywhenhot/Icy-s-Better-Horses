@@ -141,6 +141,8 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     private static final double REFERENCE_SPEED = 0.35D;
     private static final double MIN_ANIM_SPEED = 0.15D;
     private static final double MAX_ANIM_SPEED = 1.5D;
+    private static final int STRAND_EASE_TICKS = 12;
+    private static final float STRAND_SETTLE = 0.85F;
 
     private static final EntityDataAccessor<Integer> DATA_HORSE_ID =
             SynchedEntityData.defineId(HorseCartEntity.class, EntityDataSerializers.INT);
@@ -176,6 +178,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     private ItemStack placedPlow = ItemStack.EMPTY;
     private float damageTaken;
     private boolean chestAnimPrimed = false;
+    private boolean easeToStand;
 
     private double prevX;
     private double prevZ;
@@ -405,6 +408,63 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         return cart;
     }
 
+    public static void strand(AbstractHorse horse) {
+        if (!(horse.level() instanceof ServerLevel level)) {
+            return;
+        }
+        IHorseData data = IHorseData.of(horse);
+        SimpleContainer gear = data.bh_getGearContainer();
+        ItemStack cartItem = gear.getItem(GearSlot.STABILIZER.ordinal());
+        if (!cartItem.is(ModItems.HORSE_CART)) {
+            return;
+        }
+        HorseCartEntity cart = data.bh_getCartEntity();
+        boolean fresh = cart == null || cart.isRemoved() || cart.isPlaced();
+        if (fresh) {
+            cart = new HorseCartEntity(ModEntities.HORSE_CART, level);
+            cart.setPos(horse.getX(), horse.getY(), horse.getZ());
+            cart.setYRot(horse.yBodyRot);
+            cart.setYBodyRot(horse.yBodyRot);
+            cart.setYHeadRot(horse.yBodyRot);
+        }
+        cart.closeViewers();
+        cart.unloadPassengers();
+
+        cart.placedCart = cartItem.copyWithCount(1);
+        gear.setItem(GearSlot.STABILIZER.ordinal(), ItemStack.EMPTY);
+        if (data.bh_hasCartChest()) {
+            ItemStack chest = data.bh_getCartChestItem();
+            cart.placedChestItem = chest.isEmpty() ? new ItemStack(Items.CHEST) : chest.copy();
+            SimpleContainer from = data.bh_getCartChestContainer();
+            for (int slot = 0; slot < Math.min(from.getContainerSize(), cart.placedChest.getContainerSize()); slot++) {
+                cart.placedChest.setItem(slot, from.removeItemNoUpdate(slot));
+            }
+            data.bh_setCartChest(ItemStack.EMPTY);
+        }
+        if (data.bh_hasCartPlough()) {
+            cart.placedPlow = data.bh_getCartPlough().copy();
+            data.bh_setCartPlough(ItemStack.EMPTY);
+        }
+        data.bh_setCartId(null);
+
+        cart.horse = null;
+        cart.horseUuid = null;
+        cart.entityData.set(DATA_HORSE_ID, -1);
+        CartType stored = HorseCartItem.storedType(cart.placedCart);
+        cart.entityData.set(DATA_TYPE, (stored == null ? CartType.BUGGY : stored).ordinal());
+        cart.entityData.set(DATA_HAS_CHEST, !cart.placedChestItem.isEmpty());
+        cart.entityData.set(DATA_HAS_PLOW, !cart.placedPlow.isEmpty());
+        cart.entityData.set(DATA_ROLL_SPEED, 0.0F);
+        cart.mirrorSetup(cart.placedCart);
+        cart.setNoGravity(false);
+        cart.entityData.set(DATA_PLACED, true);
+        if (fresh) {
+            level.addFreshEntity(cart);
+        }
+        IcysBetterHorses.LOGGER.info("[cart] horse {} died pulling a cart, left it standing at {}",
+                horse.getUUID(), cart.blockPosition());
+    }
+
     @Override
     public ItemStack getPickResult() {
         return new ItemStack(ModItems.HORSE_CART);
@@ -436,6 +496,12 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             AbstractHorse boundHorse = this.clientHorse();
             if (boundHorse != null) {
                 this.glueToHorse(boundHorse);
+            } else if (this.isPlaced()) {
+                this.slackYawO = this.slackYaw;
+                this.tiltO = this.tilt;
+                this.tilt *= STRAND_SETTLE;
+                this.liftO = this.lift;
+                this.lift *= STRAND_SETTLE;
             }
             this.updateClientSpeed();
             return;
@@ -1386,6 +1452,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         if (DATA_TYPE.equals(key)) {
             this.setBoundingBox(this.makeBoundingBox());
         }
+        if (DATA_PLACED.equals(key) && this.level().isClientSide() && this.isPlaced() && this.tickCount > 0) {
+            this.easeToStand = true;
+        }
     }
 
     @Override
@@ -1488,6 +1557,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
                 test.resetCurrentAnimation();
             }
             return PlayState.STOP;
+        }
+        if (this.easeToStand) {
+            test.getController().setTransitionLength(STRAND_EASE_TICKS);
         }
         return test.setAndContinue(this.type().standing());
     }

@@ -84,7 +84,9 @@ public final class BhNetworking {
         toServer(HorseRecallPayload.class, HorseRecallPayload::decode,
                 (payload, player) -> IcysBetterHorses.handleRecall(player));
         toServer(OpenHorseRosterPayload.class, OpenHorseRosterPayload::decode,
-                (payload, player) -> IcysBetterHorses.sendRoster(player));
+                (payload, player) -> {
+                    if (BhFeature.HORSE_MANAGEMENT.on()) IcysBetterHorses.sendRoster(player);
+                });
         toServer(HorseManagePayload.class, HorseManagePayload::decode,
                 (payload, player) -> IcysBetterHorses.handleManageAction(
                         player, payload.horseId(), HorseManageAction.fromId(payload.actionOrdinal())));

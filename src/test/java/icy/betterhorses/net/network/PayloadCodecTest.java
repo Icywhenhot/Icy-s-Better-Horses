@@ -191,7 +191,8 @@ class PayloadCodecTest {
                 3,
                 2,
                 false,
-                5);
+                5,
+                false);
         HorseRosterEntry sentinel = new HorseRosterEntry(
                 UUID.fromString("22222222-0000-1111-2222-777788889999"),
                 "",
@@ -208,7 +209,8 @@ class PayloadCodecTest {
                 -1,
                 -1,
                 true,
-                -1);
+                -1,
+                true);
         HorseRosterEntry mixed = new HorseRosterEntry(
                 UUID.fromString("33333333-0000-1111-2222-101112131415"),
                 "Bucephalus",
@@ -225,7 +227,8 @@ class PayloadCodecTest {
                 8,
                 6,
                 false,
-                12);
+                12,
+                false);
 
         HorseRosterSyncPayload original = new HorseRosterSyncPayload(List.of(populated, sentinel, mixed));
         FriendlyByteBuf buf = buf();
@@ -250,7 +253,8 @@ class PayloadCodecTest {
                 true,
                 false,
                 List.of("charge_jump"),
-                new BhTuning(42, 17, 250, 3, 9, 0.25D));
+                new BhTuning(42, 17, 250, 3, 9, 0.25D, 10, 20),
+                List.of("minecraft:golden_carrot", "minecraft:apple"));
         FriendlyByteBuf buf = buf();
         ConfigSyncPayload.encode(original, buf);
         assertEquals(original, ConfigSyncPayload.decode(buf));
@@ -264,7 +268,8 @@ class PayloadCodecTest {
                 false,
                 true,
                 List.of("night_vision", "double_jump", "swim_boost"),
-                new BhTuning(63, 200, 777, 5, 20, 0.75D));
+                new BhTuning(63, 200, 777, 5, 20, 0.75D, 10, 20),
+                List.of("minecraft:golden_carrot", "minecraft:apple"));
         FriendlyByteBuf buf = buf();
         ConfigSyncPayload.encode(original, buf);
         assertEquals(original, ConfigSyncPayload.decode(buf));
@@ -278,7 +283,8 @@ class PayloadCodecTest {
                 true,
                 true,
                 List.of(),
-                new BhTuning(5, 30, 100, 2, 4, 0.5D));
+                new BhTuning(5, 30, 100, 2, 4, 0.5D, 10, 20),
+                List.of("minecraft:golden_carrot", "minecraft:apple"));
         FriendlyByteBuf buf = buf();
         ConfigSyncPayload.encode(original, buf);
         assertEquals(original, ConfigSyncPayload.decode(buf));
@@ -296,7 +302,8 @@ class PayloadCodecTest {
                 true,
                 false,
                 List.of("ability-a", "ability-b"),
-                new BhTuning(11, 22, 33, 4, 8, 0.125D));
+                new BhTuning(11, 22, 33, 4, 8, 0.125D, 10, 20),
+                List.of("minecraft:golden_carrot", "minecraft:apple"));
         FriendlyByteBuf buf = buf();
         ConfigSyncPayload.encode(original, buf);
         ConfigSyncPayload decoded = ConfigSyncPayload.decode(buf);

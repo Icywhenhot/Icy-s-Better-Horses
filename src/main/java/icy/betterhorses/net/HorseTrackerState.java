@@ -47,8 +47,15 @@ public class HorseTrackerState extends SavedData {
             Codec.unboundedMap(UUIDUtil.STRING_CODEC, UUIDUtil.STRING_CODEC)
                     .optionalFieldOf("active_horse_by_player", Map.of()).forGetter(state -> state.activeHorseByPlayer),
             Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.STRING))
-                    .optionalFieldOf("trusted_by_player", Map.of()).forGetter(state -> state.trustedByPlayer)
+                    .optionalFieldOf("trusted_by_player", Map.of()).forGetter(state -> state.trustedByPlayer),
+            Codec.unboundedMap(UUIDUtil.STRING_CODEC, CompoundTag.CODEC)
+                    .optionalFieldOf("dead_horses", Map.of()).forGetter(state -> state.deadHorses)
     ).apply(instance, HorseTrackerState::new));
+
+    private static final List<String> DEATH_STRIPPED = List.of(
+            "SaddleItem", "ArmorItem", "Items", "ArmorItems", "HandItems", "Passengers", "Leash",
+            "BH_Gear", "BH_Banner", "BH_Chest", "BH_CartChest", "BH_CartChestItem", "BH_CartPlow", "BH_CartId",
+            "ActiveEffects", "InLove", "LoveCause", "DeathTime", "HurtTime", "Fire");
 
     private static final String FILE_NAME = "icys-better-horses_horse_tracker";
 
@@ -59,6 +66,7 @@ public class HorseTrackerState extends SavedData {
     private final Set<UUID> pendingDisowns;
     private final Map<UUID, UUID> activeHorseByPlayer;
     private final Map<UUID, Map<UUID, String>> trustedByPlayer;
+    private final Map<UUID, CompoundTag> deadHorses;
 
     public HorseTrackerState() {
         this.lastRiddenByPlayer = new ConcurrentHashMap<>();
@@ -68,6 +76,7 @@ public class HorseTrackerState extends SavedData {
         this.pendingDisowns = ConcurrentHashMap.newKeySet();
         this.activeHorseByPlayer = new ConcurrentHashMap<>();
         this.trustedByPlayer = new ConcurrentHashMap<>();
+        this.deadHorses = new ConcurrentHashMap<>();
     }
 
     private HorseTrackerState(
@@ -77,7 +86,8 @@ public class HorseTrackerState extends SavedData {
             Map<UUID, Integer> generations,
             List<UUID> pendingDisowns,
             Map<UUID, UUID> activeHorseByPlayer,
-            Map<UUID, Map<UUID, String>> trustedByPlayer) {
+            Map<UUID, Map<UUID, String>> trustedByPlayer,
+            Map<UUID, CompoundTag> deadHorses) {
         this.lastRiddenByPlayer = new ConcurrentHashMap<>(lastRiddenByPlayer);
         this.lastKnownPositions = new ConcurrentHashMap<>(lastKnownPositions);
         this.snapshots = new ConcurrentHashMap<>(snapshots);
@@ -87,6 +97,7 @@ public class HorseTrackerState extends SavedData {
         this.activeHorseByPlayer = new ConcurrentHashMap<>(activeHorseByPlayer);
         this.trustedByPlayer = new ConcurrentHashMap<>();
         trustedByPlayer.forEach((owner, trusted) -> this.trustedByPlayer.put(owner, new ConcurrentHashMap<>(trusted)));
+        this.deadHorses = new ConcurrentHashMap<>(deadHorses);
     }
 
     public static HorseTrackerState get(MinecraftServer server) {
@@ -122,6 +133,50 @@ public class HorseTrackerState extends SavedData {
     public void recordHorse(AbstractHorse horse) {
         UUID horseId = horse.getUUID();
         lastKnownPositions.put(horseId, new KnownPosition(horse.level().dimension(), horse.blockPosition()));
+        CompoundTag snapshot = snapshotOf(horse);
+        CompoundTag old = snapshots.put(horseId, snapshot);
+        if (!snapshot.equals(old)) setDirty();
+    }
+
+    public void recordDeath(AbstractHorse horse) {
+        UUID horseId = horse.getUUID();
+        CompoundTag body = snapshotOf(horse);
+        DEATH_STRIPPED.forEach(body::remove);
+        body.putBoolean("ChestedHorse", false);
+        body.putBoolean("BH_CartChestOn", false);
+        CompoundTag death = new CompoundTag();
+        death.putString("dimension", horse.level().dimension().location().toString());
+        death.put("pos", net.minecraft.nbt.NbtUtils.writeBlockPos(horse.blockPosition()));
+        death.putLong("time", horse.level().getGameTime());
+        body.put("BH_Death", death);
+        deadHorses.put(horseId, body);
+        lastKnownPositions.remove(horseId);
+        snapshots.remove(horseId);
+        activeHorseByPlayer.values().removeIf(horseId::equals);
+        setDirty();
+    }
+
+    public @Nullable CompoundTag getDeadHorse(UUID horseId) {
+        return deadHorses.get(horseId);
+    }
+
+    public boolean forgetDeadHorse(UUID horseId) {
+        if (deadHorses.remove(horseId) == null) {
+            return false;
+        }
+        setDirty();
+        return true;
+    }
+
+    public List<UUID> findDeadHorsesOwnedBy(UUID playerId) {
+        List<UUID> owned = new ArrayList<>();
+        deadHorses.forEach((horseId, body) -> {
+            if (isOwnedBy(body, playerId)) owned.add(horseId);
+        });
+        return owned;
+    }
+
+    private static CompoundTag snapshotOf(AbstractHorse horse) {
         CompoundTag snapshot = horse.saveWithoutId(new CompoundTag());
         snapshot.putString("id", net.minecraft.world.entity.EntityType.getKey(horse.getType()).toString());
         IHorseData data = IHorseData.of(horse);
@@ -139,8 +194,7 @@ public class HorseTrackerState extends SavedData {
         summary.putBoolean("baby", horse.isBaby());
         summary.putInt("coat", horse instanceof icy.betterhorses.net.entity.BhBreedHorse h ? h.bhCoat() : -1);
         snapshot.put("BH_Roster", summary);
-        CompoundTag old = snapshots.put(horseId, snapshot);
-        if (!snapshot.equals(old)) setDirty();
+        return snapshot;
     }
 
     public void forgetHorse(UUID horseId) {
@@ -258,7 +312,8 @@ public class HorseTrackerState extends SavedData {
         return lastRiddenByPlayer.size() + " last-ridden entries, "
                 + snapshots.size() + " snapshots, "
                 + lastKnownPositions.size() + " positions, "
-                + generations.size() + " generations";
+                + generations.size() + " generations, "
+                + deadHorses.size() + " dead";
     }
 
     public void setGeneration(UUID horseId, int generation) {
