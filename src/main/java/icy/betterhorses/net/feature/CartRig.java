@@ -6,7 +6,6 @@ import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.HorseCartEntity;
-import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.resources.ResourceKey;
@@ -74,7 +73,7 @@ public final class CartRig implements HorseFeature {
             if (cart != null) data.bh_setCartId(cart.getUUID());
             missingTicks = 0;
         } else if (!wantsCart && cart != null) {
-            if (hasCart) {
+            if (hasCart && !cart.isPlaced()) {
                 cart.discard();
             }
             cart = null;

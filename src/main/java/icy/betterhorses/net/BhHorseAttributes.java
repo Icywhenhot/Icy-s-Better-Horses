@@ -7,6 +7,8 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
+import java.util.Locale;
+
 public final class BhHorseAttributes {
 
     public enum Source {
@@ -37,6 +39,6 @@ public final class BhHorseAttributes {
 
     private static Identifier idFor(Source src, String key) {
         return Identifier.fromNamespaceAndPath(
-                IcysBetterHorses.MOD_ID, src.name().toLowerCase() + "/" + key);
+                IcysBetterHorses.MOD_ID, src.name().toLowerCase(Locale.ROOT) + "/" + key);
     }
 }

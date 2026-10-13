@@ -37,7 +37,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Locale;
 import net.minecraft.world.entity.animal.equine.Horse;
 
-@Mixin(AbstractMountInventoryScreen.class)
+@Mixin(value = AbstractMountInventoryScreen.class, priority = 1100)
 public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<AbstractMountInventoryMenu> {
 
     @Shadow protected LivingEntity mount;
@@ -70,6 +70,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final int BH_STATS_LINE_SPACING = 10;
     @Unique private static final int BH_TEXT_COLOR = 0xFF404040;
     @Unique private static final float BH_LOCK_FLASH_ALPHA = 0.65F;
+    @Unique private static final int BH_BANNER_HINT_TINT = 0xA0B7AB99;
+    @Unique private static final int BH_BANNER_LOCKED_TINT = 0xD08B8B8B;
     @Unique private static final Identifier BH_BOND_BRONZE =
             Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/bond/bronze.png");
     @Unique private static final Identifier BH_BOND_SILVER =
@@ -143,6 +145,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
         this.bh_drawGearPanel(gfx);
         this.bh_drawChestPanel(gfx);
+        this.bh_drawBannerSlot(gfx);
         InventoryScreen.renderEntityInInventoryFollowsMouse(
                 gfx,
                 x + 26,
@@ -162,6 +165,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         if (this.bh_getHorseOrNull() == null) {
             return;
         }
+        this.bh_drawBannerSlot(gfx);
         if (!this.bh_hasUpgradedSaddleInMenu() || this.bh_hasChestStorageLayout()) {
             return;
         }
@@ -309,6 +313,28 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
                 : ModItems.HORSE_CART;
         this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, stabilizerSlotHint);
         this.bh_drawLockedSlotFlash(gfx);
+    }
+
+    @Unique
+    private void bh_drawBannerSlot(GuiGraphics gfx) {
+        HorseInventoryLayoutAccess layoutAccess = this.bh_getLayoutAccessOrNull();
+        int index = layoutAccess == null ? -1 : layoutAccess.bh_getBannerSlotIndex();
+        if (index < 0) {
+            return;
+        }
+        Slot slot = this.menu.getSlot(index);
+        int x = this.leftPos + slot.x;
+        int y = this.topPos + slot.y;
+        gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SLOT_SPRITE, x - 1, y - 1, 18, 18);
+        if (slot.hasItem()) {
+            return;
+        }
+        gfx.renderItem(new ItemStack(Items.WHITE_BANNER), x, y);
+        gfx.fill(x, y, x + 16, y + 16,
+                layoutAccess.bh_isBannerSlotLocked() ? BH_BANNER_LOCKED_TINT : BH_BANNER_HINT_TINT);
+        if (BhSlotFlash.flashingSlot() == index && !this.bh_hasUpgradedSaddleInMenu()) {
+            this.bh_drawLockedSlotFlash(gfx);
+        }
     }
 
     @Unique

@@ -24,6 +24,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 public class BhModMenuIntegration implements ModMenuApi {
 
@@ -56,6 +57,21 @@ public class BhModMenuIntegration implements ModMenuApi {
             }
         }
 
+        List<String> foods = new ArrayList<>(BhConfig.breedingFoodsView());
+        general.addEntry(eb.startStrList(
+                        Component.translatable("config.icys-better-horses.breeding_foods"), new ArrayList<>(foods))
+                .setExpanded(true)
+                .setDefaultValue(BhConfig.DEFAULT_BREEDING_FOODS)
+                .setTooltip(Component.translatable("config.icys-better-horses.breeding_foods.tooltip"))
+                .setCellErrorSupplier(id -> BhConfig.knownItem(id)
+                        ? Optional.empty()
+                        : Optional.of(Component.translatable("config.icys-better-horses.breeding_foods.unknown")))
+                .setSaveConsumer(value -> {
+                    foods.clear();
+                    foods.addAll(value);
+                })
+                .build());
+
         ConfigCategory combat = builder.getOrCreateCategory(
                 Component.translatable("config.icys-better-horses.category.horse_combat"));
         if (locked) {
@@ -70,7 +86,7 @@ public class BhModMenuIntegration implements ModMenuApi {
 
         BhTuning start = BhConfig.tuningView();
         int[] nums = {start.bondAmount(), start.bondMinutes(), start.spawnWeight(),
-                start.groupMin(), start.groupMax()};
+                start.groupMin(), start.groupMax(), start.reviveLevels(), start.reviveBondLoss()};
         double[] floor = {start.spawnFloor()};
 
         ConfigCategory tuning = builder.getOrCreateCategory(
@@ -84,6 +100,8 @@ public class BhModMenuIntegration implements ModMenuApi {
         tuning.addEntry(bh_number(eb, "spawn_weight", nums, 2, 0, 1000));
         tuning.addEntry(bh_number(eb, "spawn_group_min", nums, 3, 1, 32));
         tuning.addEntry(bh_number(eb, "spawn_group_max", nums, 4, 1, 32));
+        tuning.addEntry(bh_number(eb, "revive_xp_levels", nums, 5, 0, 1000));
+        tuning.addEntry(bh_number(eb, "revive_bond_loss", nums, 6, 0, 100));
         tuning.addEntry(eb.startDoubleField(
                         Component.translatable("config.icys-better-horses.spawn_probability_floor"), floor[0])
                 .setMin(0.0D).setMax(1.0D)
@@ -182,8 +200,9 @@ public class BhModMenuIntegration implements ModMenuApi {
                 .build());
 
         builder.setSavingRunnable(() -> {
-            BhConfig.apply(picks, new BhTuning(nums[0], nums[1], nums[2], nums[3], nums[4], floor[0]));
+            BhConfig.apply(picks, new BhTuning(nums[0], nums[1], nums[2], nums[3], nums[4], floor[0], nums[5], nums[6]));
             BhConfig.applyAbilities(masters[0], masters[1], abilityPicks);
+            BhConfig.applyBreedingFoods(foods);
             BhConfig.applyHud(new BhConfig.Spot(sides[0], gaps[0]), new BhConfig.Spot(sides[1], gaps[1]));
             IcysBetterHorsesClient.sendChargeChoice();
             KeyMapping.resetMapping();

@@ -54,6 +54,8 @@ public final class BhScreenDraw {
             Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/cross_button.png");
     public static final Identifier WHISTLE_BUTTON_TEXTURE =
             Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/whistle_button.png");
+    public static final Identifier SUMMON_BUTTON_TEXTURE =
+            Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/summon_button.png");
     public static final Identifier SEND_HOME_BUTTON_TEXTURE =
             Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/send_home_button.png");
     public static final Identifier SET_ACTIVE_BUTTON_TEXTURE =
@@ -101,9 +103,13 @@ public final class BhScreenDraw {
     }
 
     public static void rowPlate(GuiGraphics gfx, int x, int rowTop, int rowWidth, int rowHeight) {
+        rowPlate(gfx, x, rowTop, rowWidth, rowHeight, 0xFFFFFFFF);
+    }
+
+    public static void rowPlate(GuiGraphics gfx, int x, int rowTop, int rowWidth, int rowHeight, int tint) {
         int texHeight = rowHeight + 2;
         gfx.blit(RenderPipelines.GUI_TEXTURED, ROW_TEXTURE, x, rowTop - 1, 0.0F, 0.0F,
-                rowWidth, texHeight, rowWidth, texHeight);
+                rowWidth, texHeight, rowWidth, texHeight, tint);
     }
 
     public static void button(GuiGraphics gfx, Font font, int x, int y, int width, int height,

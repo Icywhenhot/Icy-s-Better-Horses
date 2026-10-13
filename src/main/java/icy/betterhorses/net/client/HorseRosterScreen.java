@@ -1,5 +1,6 @@
 package icy.betterhorses.net.client;
 
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.HorseManageAction;
 import icy.betterhorses.net.HorseManagement;
@@ -103,6 +104,11 @@ public class HorseRosterScreen extends Screen {
     private static final int CONFIRM_BTN_HEIGHT = 20;
     private static final int CONFIRM_DISOWN_TEXT_COLOR = 0xFF3A2714;
     private static final int CONFIRM_CANCEL_TEXT_COLOR = 0xFFEDE6DA;
+
+    private static final float DEAD_TINT = 0.45F;
+    private static final float DEAD_MODEL_TINT = 0.4F;
+    private static final int COST_OK_COLOR = 0xFF80FF20;
+    private static final int COST_SHORT_COLOR = 0xFFFF6B6B;
 
     private int left;
     private int top;
@@ -275,23 +281,35 @@ public class HorseRosterScreen extends Screen {
         pose.pushMatrix();
         pose.translate(0f, cardRise - ly);
 
-        BhScreenDraw.rowPlate(gfx, rowLeft, y, ROWS_WIDTH, ROW_HEIGHT);
+        BhScreenDraw.rowPlate(gfx, rowLeft, y, ROWS_WIDTH, ROW_HEIGHT, shade(entry, 0xFFFFFFFF));
 
         int textX = rowLeft + 6;
         if (entry.active()) {
             gfx.fill(rowLeft + 2, y + ROW_HEIGHT / 2 - 3, rowLeft + 4, y + ROW_HEIGHT / 2 + 3, BhScreenDraw.ACTIVE);
         }
-        gfx.drawString(this.font, displayName(entry), textX, y + 5, ROW_NAME_COLOR, false);
-        gfx.drawString(this.font, subtitle(entry), textX, y + 17, ROW_SUBTITLE_COLOR, false);
+        gfx.drawString(this.font, displayName(entry), textX, y + 5, shade(entry, ROW_NAME_COLOR), false);
+        gfx.drawString(this.font, subtitle(entry), textX, y + 17, shade(entry, ROW_SUBTITLE_COLOR), false);
 
         int btnY = y + (ROW_HEIGHT - BTN_HEIGHT) / 2;
+        if (entry.dead()) {
+            Component cost = reviveCost();
+            gfx.drawString(this.font, cost, homeButtonX() - BTN_GAP - this.font.width(cost),
+                    btnY + (BTN_HEIGHT - this.font.lineHeight) / 2 + 1,
+                    canAffordRevive() ? COST_OK_COLOR : COST_SHORT_COLOR, false);
+            drawActionButton(gfx, entry, HorseManageAction.REVIVE, BhScreenDraw.SUMMON_BUTTON_TEXTURE,
+                    homeButtonX(), btnY, BTN_HOME_WIDTH,
+                    Component.translatable("screen.icys-better-horses.manage.summon"), mouseX, mouseY);
+            drawDisownPennant(gfx, entry, HorseManageAction.FORGET, disownButtonX(), btnY, mouseX, mouseY);
+            pose.popMatrix();
+            return;
+        }
         drawActionButton(gfx, entry, HorseManageAction.WHISTLE, BhScreenDraw.WHISTLE_BUTTON_TEXTURE,
                 whistleButtonX(), btnY, BTN_WHISTLE_WIDTH,
                 Component.translatable("screen.icys-better-horses.manage.whistle"), mouseX, mouseY);
         drawActionButton(gfx, entry, HorseManageAction.SEND_HOME, BhScreenDraw.SEND_HOME_BUTTON_TEXTURE,
                 homeButtonX(), btnY, BTN_HOME_WIDTH,
                 Component.translatable("screen.icys-better-horses.manage.send_home"), mouseX, mouseY);
-        drawDisownPennant(gfx, entry, disownButtonX(), btnY, mouseX, mouseY);
+        drawDisownPennant(gfx, entry, HorseManageAction.DISOWN, disownButtonX(), btnY, mouseX, mouseY);
 
         pose.popMatrix();
     }
@@ -328,15 +346,15 @@ public class HorseRosterScreen extends Screen {
         pose.popMatrix();
     }
 
-    private void drawDisownPennant(GuiGraphics gfx, HorseRosterEntry entry,
+    private void drawDisownPennant(GuiGraphics gfx, HorseRosterEntry entry, HorseManageAction action,
                                    int x, int y, int mouseX, int mouseY) {
-        boolean flashing = ClientHorseRoster.isFlashing(entry.horseId(), HorseManageAction.DISOWN);
+        boolean flashing = ClientHorseRoster.isFlashing(entry.horseId(), action);
         boolean hovered = BhScreenDraw.inBox(mouseX, mouseY, x, y, BTN_DISOWN_WIDTH, BTN_DISOWN_HEIGHT);
         int tint = flashing ? BTN_DISOWN_FLASH_TINT : 0xFFFFFFFF;
 
         float shakeX = flashing ? shakeOffset(ClientHorseRoster.flashElapsedMs()) : 0f;
-        float ly = lift.get(pressKey(entry.horseId(), HorseManageAction.DISOWN), hovered, LIFT_PX);
-        float sc = press.scale(pressKey(entry.horseId(), HorseManageAction.DISOWN), PRESS_DEPTH, PRESS_MS);
+        float ly = lift.get(pressKey(entry.horseId(), action), hovered, LIFT_PX);
+        float sc = press.scale(pressKey(entry.horseId(), action), PRESS_DEPTH, PRESS_MS);
 
         BhScreenDraw.textureShadow(gfx, BhScreenDraw.CROSS_BUTTON_TEXTURE, Math.round(x + shakeX), y,
                 BTN_DISOWN_WIDTH, BTN_DISOWN_HEIGHT, ly, ROW_SHADOW_ALPHA);
@@ -420,6 +438,7 @@ public class HorseRosterScreen extends Screen {
         boolean drawn = false;
         if (settled && preview != null) {
             try {
+                HorsePreviewCache.tint(preview, selected.dead() ? DEAD_MODEL_TINT : 1.0F);
                 renderPreviewModel(gfx, preview, x, modelTop, x + width, modelBottom, mouseX, mouseY);
                 drawn = true;
             } catch (Exception e) {
@@ -437,6 +456,12 @@ public class HorseRosterScreen extends Screen {
                 pos.getX(), pos.getY(), pos.getZ()), centerX, coordsY, width - PREVIEW_TEXT_INSET);
 
         int line = setActiveButtonY() - PREVIEW_TEXT_HEIGHT;
+        if (selected.dead()) {
+            int after = Math.max(0, selected.bond() - BhConfig.tuning().reviveBondLoss());
+            inkCentered(gfx, Component.translatable("screen.icys-better-horses.manage.revive_bond",
+                    selected.bond(), after), centerX, line);
+            return;
+        }
         inkCentered(gfx, Component.translatable("screen.icys-better-horses.manage.bond", selected.bond()),
                 centerX, line);
         line += PREVIEW_LINE_HEIGHT;
@@ -554,9 +579,11 @@ public class HorseRosterScreen extends Screen {
 
         HorseRosterEntry entry = ClientHorseRoster.find(confirmingDisownOf);
         Component name = entry == null ? Component.literal("?") : displayName(entry);
-        gfx.drawCenteredString(this.font, Component.translatable("screen.icys-better-horses.manage.confirm_title"),
+        String keys = entry != null && entry.dead()
+                ? "screen.icys-better-horses.manage.forget_" : "screen.icys-better-horses.manage.confirm_";
+        gfx.drawCenteredString(this.font, Component.translatable(keys + "title"),
                 cx + CONFIRM_WIDTH / 2, cy + 12, BhScreenDraw.TEXT);
-        gfx.drawCenteredString(this.font, Component.translatable("screen.icys-better-horses.manage.confirm_body", name),
+        gfx.drawCenteredString(this.font, Component.translatable(keys + "body", name),
                 cx + CONFIRM_WIDTH / 2, cy + 26, BhScreenDraw.TEXT_MUTED);
 
         int btnY = confirmButtonY();
@@ -564,7 +591,7 @@ public class HorseRosterScreen extends Screen {
         boolean cancelHovered = BhScreenDraw.inBox(mouseX, mouseY, confirmCancelX(), btnY, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT);
 
         confirmButton(gfx, BhScreenDraw.DISOWN_BUTTON_SMALL_TEXTURE, confirmYesX(), btnY, "confirm_yes",
-                "screen.icys-better-horses.manage.confirm_yes", CONFIRM_DISOWN_TEXT_COLOR, yesHovered);
+                keys + "yes", CONFIRM_DISOWN_TEXT_COLOR, yesHovered);
         confirmButton(gfx, BhScreenDraw.CANCEL_BUTTON_TEXTURE, confirmCancelX(), btnY, "confirm_cancel",
                 "screen.icys-better-horses.manage.confirm_cancel", CONFIRM_CANCEL_TEXT_COLOR, cancelHovered);
 
@@ -611,8 +638,35 @@ public class HorseRosterScreen extends Screen {
         return HorseBreed.byId(breedId).displayName(mixed);
     }
 
+    private static int shade(HorseRosterEntry entry, int color) {
+        if (!entry.dead()) {
+            return color;
+        }
+        int r = Math.round(((color >> 16) & 255) * DEAD_TINT);
+        int g = Math.round(((color >> 8) & 255) * DEAD_TINT);
+        int b = Math.round((color & 255) * DEAD_TINT);
+        return (color & 0xFF000000) | (r << 16) | (g << 8) | b;
+    }
+
+    private Component reviveCost() {
+        Minecraft minecraft = Minecraft.getInstance();
+        int cost = BhConfig.tuning().reviveLevels();
+        if (cost <= 0 || minecraft.player != null && minecraft.player.getAbilities().instabuild) {
+            return Component.translatable("screen.icys-better-horses.manage.summon_free");
+        }
+        return Component.translatable("screen.icys-better-horses.manage.summon_cost", cost);
+    }
+
+    private static boolean canAffordRevive() {
+        Minecraft minecraft = Minecraft.getInstance();
+        return minecraft.player == null || minecraft.player.getAbilities().instabuild
+                || minecraft.player.experienceLevel >= BhConfig.tuning().reviveLevels();
+    }
+
     private Component subtitle(HorseRosterEntry entry) {
-        Component where = entry.loaded()
+        Component where = entry.dead()
+                ? Component.translatable("screen.icys-better-horses.manage.fallen")
+                : entry.loaded()
                 ? Component.literal(BhScreenDraw.prettifyDimension(entry.dimensionId()))
                 : Component.translatable("screen.icys-better-horses.manage.resting");
         return Component.empty()
@@ -637,7 +691,9 @@ public class HorseRosterScreen extends Screen {
         if (confirmingDisownOf != null) {
             int btnY = confirmButtonY();
             if (BhScreenDraw.inBox(mouseX, mouseY, confirmYesX(), btnY, CONFIRM_BTN_WIDTH, CONFIRM_BTN_HEIGHT)) {
-                send(confirmingDisownOf, HorseManageAction.DISOWN);
+                HorseRosterEntry confirming = ClientHorseRoster.find(confirmingDisownOf);
+                send(confirmingDisownOf, confirming != null && confirming.dead()
+                        ? HorseManageAction.FORGET : HorseManageAction.DISOWN);
                 confirmingDisownOf = null;
                 return true;
             }
@@ -649,7 +705,7 @@ public class HorseRosterScreen extends Screen {
         }
 
         HorseRosterEntry selected = ClientHorseRoster.find(selectedHorseId);
-        if (selected != null && !selected.active()
+        if (selected != null && !selected.active() && !selected.dead()
                 && BhScreenDraw.inBox(mouseX, mouseY, setActiveButtonX(), setActiveButtonY(),
                         SET_ACTIVE_WIDTH, SET_ACTIVE_HEIGHT)) {
             press.hit("setActive");
@@ -662,6 +718,26 @@ public class HorseRosterScreen extends Screen {
             HorseRosterEntry entry = entries.get(i + scrollOffset);
             int y = rowY(i);
             int btnY = y + (ROW_HEIGHT - BTN_HEIGHT) / 2;
+
+            if (entry.dead()) {
+                if (BhScreenDraw.inBox(mouseX, mouseY, homeButtonX(), btnY, BTN_HOME_WIDTH, BTN_HEIGHT)) {
+                    press.hit(pressKey(entry.horseId(), HorseManageAction.REVIVE));
+                    send(entry.horseId(), HorseManageAction.REVIVE);
+                    return true;
+                }
+                if (BhScreenDraw.inBox(mouseX, mouseY, disownButtonX(), btnY, BTN_DISOWN_WIDTH, BTN_DISOWN_HEIGHT)) {
+                    press.hit(pressKey(entry.horseId(), HorseManageAction.FORGET));
+                    ClientHorseRoster.clearFlash();
+                    confirmingDisownOf = entry.horseId();
+                    bhConfirmOpenMs = System.currentTimeMillis();
+                    return true;
+                }
+                if (BhScreenDraw.inBox(mouseX, mouseY, left + PADDING, y, ROWS_WIDTH, ROW_HEIGHT)) {
+                    selectedHorseId = entry.horseId();
+                    return true;
+                }
+                continue;
+            }
 
             if (BhScreenDraw.inBox(mouseX, mouseY, whistleButtonX(), btnY, BTN_WHISTLE_WIDTH, BTN_HEIGHT)) {
                 press.hit(pressKey(entry.horseId(), HorseManageAction.WHISTLE));

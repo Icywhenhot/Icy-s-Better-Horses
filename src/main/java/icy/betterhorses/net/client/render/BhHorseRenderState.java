@@ -14,6 +14,8 @@ public class BhHorseRenderState extends EquineRenderState {
     public Identifier coatTexture;
 
     public float phaseOffset;
+    public float begTilt;
+    public float previewTint = 1.0F;
 
     public float random01;
 

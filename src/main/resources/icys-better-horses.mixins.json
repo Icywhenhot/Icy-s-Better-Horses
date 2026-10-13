@@ -37,7 +37,9 @@
 		"SpawnPlacementsAccessor",
 		"SlotAccessor",
 		"ShovelItemAccessor",
-		"VehicleStepMixin"
+		"VehicleStepMixin",
+		"MobCalmMixin",
+		"PathNavigationIdleGaitMixin"
 	],
 	"client": [
 		"AbstractContainerScreenAccessor",
@@ -60,7 +62,9 @@
 		"LivingEntityRendererRiderMixin",
 		"LivingEntityRendererSubmitMixin",
 		"HudMixin",
-		"MountFacingMixin"
+		"MountFacingMixin",
+		"KeyMappingShareMixin",
+		"EntityRenderDispatcherRiderMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

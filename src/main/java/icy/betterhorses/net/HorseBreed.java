@@ -21,11 +21,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.entity.animal.equine.Donkey;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.entity.animal.equine.Markings;
@@ -36,14 +34,13 @@ import net.minecraft.world.entity.animal.equine.ZombieHorse;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Locale;
 import java.util.ArrayList;
 import java.util.function.Supplier;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 public enum HorseBreed {
     THOROUGHBRED(BreedArchetype.RACE, TopEnd::new),
@@ -135,7 +132,7 @@ public enum HorseBreed {
     }
 
     public Component displayName() {
-        return Component.translatable("breed.icys-better-horses." + name().toLowerCase());
+        return Component.translatable("breed.icys-better-horses." + name().toLowerCase(Locale.ROOT));
     }
 
     public Component displayName(boolean mixed) {
@@ -144,7 +141,7 @@ public enum HorseBreed {
         }
         return Component.translatable(
                 "breed.icys-better-horses.mix_format",
-                Component.translatable("breed.icys-better-horses." + name().toLowerCase()));
+                Component.translatable("breed.icys-better-horses." + name().toLowerCase(Locale.ROOT)));
     }
 
     public List<Coat> allowedCoats() {

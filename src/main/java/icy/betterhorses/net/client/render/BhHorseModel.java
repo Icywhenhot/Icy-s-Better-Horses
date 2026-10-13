@@ -357,6 +357,7 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
                 * state.tailSwishRaw * Mth.PI);
 
         final float stay = state.stayWeight;
+        final float beg = state.begTilt * (1.0F - graze) * (1.0F - rear);
         final float settle = state.mountSettle;
         final float feed = Mth.clamp(state.feedingAnimation, 0.0F, 1.0F);
         final float chewing = Math.max(graze, feed);
@@ -493,7 +494,8 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
               + Mth.cos(shakeT) / 8.0F * shake
               + (2.0F * Mth.cos(Mth.clamp(0.5F - Mth.sin(-Mth.PI / 12.0F + idleT) * 0.7F,
                                           0.0F, 1.0F) * Mth.PI)
-                 * (0.8F - Mth.cos(idleT / 4.0F + Mth.sin(idleT / 4.0F))) * alive) * Mth.DEG_TO_RAD;
+                 * (0.8F - Mth.cos(idleT / 4.0F + Mth.sin(idleT / 4.0F))) * alive) * Mth.DEG_TO_RAD
+              + (6.0F * Mth.DEG_TO_RAD) * beg;
 
         head.xRot = headRest.xRot()
               - viewDuck
@@ -528,7 +530,8 @@ public abstract class BhHorseModel extends EntityModel<BhHorseRenderState>
               + (2.0F * Mth.DEG_TO_RAD)
                 * Mth.cos(Mth.clamp(0.5F - Mth.sin(idleT) * 1.5F, 0.0F, 1.0F) * Mth.PI)
                 * alive * (1.0F - graze)
-              + (-Mth.sin(shakeT) / 3.0F) * shake;
+              + (-Mth.sin(shakeT) / 3.0F) * shake
+              + (24.0F * Mth.DEG_TO_RAD) * beg;
         head.x = headRest.x() + Mth.sin(shakeT) / 1.3F * shake;
 
         snout.xRot = snoutRest.xRot() + Mth.sin(chewT) * 0.06F * chewing;
