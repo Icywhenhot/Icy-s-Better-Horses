@@ -28,6 +28,7 @@ public final class BhCriteria {
     public static final String TOP_SPEED = "top_speed";
     public static final String FOAL = "foal";
     public static final String MIXED_FOAL = "mixed_foal";
+    public static final String KILL_OWN_HORSE = "kill_own_horse";
     public static final String BREED_PREFIX = "breed/";
 
     public static final Milestone MILESTONE = new Milestone();

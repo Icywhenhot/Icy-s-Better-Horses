@@ -72,7 +72,7 @@ public final class CartRig implements HorseFeature {
             if (cart != null) data.bh_setCartId(cart.getUUID());
             missingTicks = 0;
         } else if (!wantsCart && cart != null) {
-            if (hasCart) {
+            if (hasCart && !cart.isPlaced()) {
                 cart.discard();
             }
             cart = null;

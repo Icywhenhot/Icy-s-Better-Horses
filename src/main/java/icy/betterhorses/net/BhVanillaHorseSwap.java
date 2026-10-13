@@ -9,7 +9,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public final class BhVanillaHorseSwap {
 
@@ -18,8 +21,14 @@ public final class BhVanillaHorseSwap {
     public static boolean trySwap(Entity entity) {
         if (!(entity instanceof Horse horse) || horse.getClass() != Horse.class
                 || !(horse.level() instanceof ServerLevel level)
-                || !horse.isAlive() || horse.isVehicle() || horse.isPassenger()) {
+                || !horse.isAlive() || horse.isPassenger()) {
             return false;
+        }
+        List<Entity> riders = List.copyOf(horse.getPassengers());
+        for (Entity rider : riders) {
+            if (rider instanceof Player) {
+                return false;
+            }
         }
 
         CompoundTag backup = BhHorseBackup.find(horse);
@@ -48,16 +57,25 @@ public final class BhVanillaHorseSwap {
             swap.bhConvertFrom(horse);
             swap.setHealth(Math.min(horse.getHealth(), swap.getMaxHealth()));
         }
+        horse.ejectPassengers();
         horse.remove(Entity.RemovalReason.CHANGED_DIMENSION);
         if (!level.addFreshEntity(swap)) {
             ((icy.betterhorses.net.mixin.EntityAccessor) horse).bh_unsetRemoved();
             if (!level.addFreshEntity(horse)) {
                 throw new IllegalStateException("horse conversion rollback failed " + horse.getUUID());
             }
+            reseat(riders, horse);
             return false;
         }
+        reseat(riders, swap);
         if (IHorseData.of(swap).bh_isOwned()) HorseTracker.register(swap);
         return true;
+    }
+
+    private static void reseat(List<Entity> riders, Entity mount) {
+        for (Entity rider : riders) {
+            if (rider.isAlive()) rider.startRiding(mount, true);
+        }
     }
 
     private static @Nullable ResourceKey<BreedType> pickForBiome(ServerLevel level, Horse horse) {

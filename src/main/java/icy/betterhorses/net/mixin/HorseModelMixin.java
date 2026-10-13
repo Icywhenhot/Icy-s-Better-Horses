@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.client.render.BhMountedHorseVisibility;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.AgeableListModel;
@@ -28,5 +29,6 @@ public abstract class HorseModelMixin<T extends AbstractHorse> extends AgeableLi
             this.headParts.xRot = Math.min(this.headParts.xRot + BhMountedHorseVisibility.HEAD_PITCH_OFFSET, 1.5F);
             this.headParts.y += BhMountedHorseVisibility.HEAD_Y_OFFSET;
         }
+        this.headParts.zRot = 0.25F * IHorseData.of(entity).bh_getBegTilt(mc.getTimer().getGameTimeDeltaPartialTick(true));
     }
 }

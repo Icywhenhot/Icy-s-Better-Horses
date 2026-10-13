@@ -6,9 +6,10 @@ version = project.mod_version
 group = project.maven_group
 base { archivesName = 'icys-better-horses' }
 loom {
-    mixin { defaultRefmapName = 'icys-better-horses-refmap.json' }
+    mixin { useLegacyMixinAp = true; defaultRefmapName = 'icys-better-horses-refmap.json' }
 }
 repositories {
+    maven { url = 'https://maven.ladysnake.org/releases'; content { includeGroup 'org.ladysnake.cardinal-components-api' } }
     maven { url = 'https://api.modrinth.com/maven'; content { includeGroup 'maven.modrinth' } }
     maven { url = 'https://maven.terraformersmc.com/releases/'; content { includeGroup 'com.terraformersmc' } }
     maven { url = 'https://maven.shedaniel.me/'; content { includeGroup 'me.shedaniel.cloth' } }
@@ -21,6 +22,9 @@ dependencies {
     modImplementation "maven.modrinth:geckolib:${project.geckolib_version_id}"
     modImplementation "maven.modrinth:modonomicon:${project.modonomicon_version_id}"
     modLocalRuntime "me.zeroeightsix:fiber:0.23.0-2"
+    runtimeOnly "org.openjdk.nashorn:nashorn-core:15.4"
+    runtimeOnly "com.electronwill.night-config:core:3.8.0"
+    runtimeOnly "com.electronwill.night-config:toml:3.8.0"
     runtimeOnly "org.commonmark:commonmark:0.22.0"
     runtimeOnly "org.commonmark:commonmark-ext-gfm-strikethrough:0.22.0"
     runtimeOnly "org.commonmark:commonmark-ext-ins:0.22.0"
@@ -32,6 +36,12 @@ dependencies {
     modLocalRuntime "maven.modrinth:vics-point-blank:7FaixPLu"
     modLocalRuntime "maven.modrinth:architectury-api:Pzc2FP5K"
     modLocalRuntime "maven.modrinth:epic-knights-shields-armor-and-weapons:dLYqLDl7"
+    modLocalRuntime "maven.modrinth:millager:n0GIQp9y"
+    modLocalRuntime "maven.modrinth:im-fast:xNGfkEBd"
+    modLocalRuntime "maven.modrinth:touhoulittlemaid-orihime:xBOWZa8l"
+    modLocalRuntime "maven.modrinth:forge-config-api-port:N5qzq0XV"
+    modLocalRuntime "org.ladysnake.cardinal-components-api:cardinal-components-base:6.1.2"
+    modLocalRuntime "org.ladysnake.cardinal-components-api:cardinal-components-entity:6.1.2"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.0'
@@ -51,4 +61,5 @@ tasks.withType(JavaCompile).configureEach {
     options.compilerArgs.addAll(['-Xmaxerrs', '300'])
 }
 test { useJUnitPlatform() }
+tasks.withType(AbstractArchiveTask).configureEach { archiveVersion = "${project.mod_version}-fab-${project.minecraft_version}" }
 jar { from('LICENSE') { rename { "${it}_icys-better-horses" } } }

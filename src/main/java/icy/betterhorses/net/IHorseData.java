@@ -138,6 +138,11 @@ public interface IHorseData {
     int bh_getJumpCue();
     void bh_cueJump();
     void bh_setKickTicks(int ticks);
+    int bh_getBegSide();
+    void bh_setBegSide(int side);
+
+    double bh_idleSpeedModifier(double requested);
+    float bh_getBegTilt(float partialTick);
     boolean bh_isAbilityPaused();
     void bh_setAbilityPaused(boolean paused);
 
@@ -175,6 +180,10 @@ public interface IHorseData {
     void bh_setBondRemainder(int value);
     long bh_getRescueReadyAt();
     void bh_setRescueReadyAt(long value);
+
+    long bh_getNpcLockUntil();
+
+    void bh_setNpcLockUntil(long until);
     void bh_onRemoved();
     @Nullable HorseCartEntity bh_getCartEntity();
     default void bh_bindCartEntity(HorseCartEntity cart) {}
@@ -209,6 +218,10 @@ public interface IHorseData {
     void bh_clearStanding();
     boolean bh_hasUpgradedSaddle();
     SimpleContainer bh_getGearContainer();
+
+    SimpleContainer bh_getBannerContainer();
+
+    ItemStack bh_getBanner();
     SimpleContainer bh_getChestContainer();
     boolean bh_hasChestGear();
     boolean bh_hasEnderChestGear();

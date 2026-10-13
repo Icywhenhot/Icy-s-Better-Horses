@@ -25,6 +25,14 @@ public interface HorseInventoryLayoutAccess {
         return false;
     }
 
+    default int bh_getBannerSlotIndex() {
+        return -1;
+    }
+
+    default boolean bh_isBannerSlotLocked() {
+        return false;
+    }
+
     default void bh_onMenuRemoved(Player player) {
     }
 

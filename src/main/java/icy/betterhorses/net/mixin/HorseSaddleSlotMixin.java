@@ -6,6 +6,7 @@ import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -32,8 +33,7 @@ public abstract class HorseSaddleSlotMixin extends Slot {
 
     @Inject(method = "mayPlace", at = @At("HEAD"), cancellable = true)
     private void bh_acceptUpgradedSaddle(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-        if (stack.is(ModItems.UPGRADED_SADDLE)
-                && !hasItem()
+        if ((stack.is(ModItems.UPGRADED_SADDLE) || stack.is(Items.SADDLE))
                 && this.val$horse.isSaddleable()) {
             cir.setReturnValue(true);
         }

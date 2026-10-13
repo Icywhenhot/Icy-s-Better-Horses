@@ -33,6 +33,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -111,6 +112,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     private static final float MAX_CARGO_WIDTH = EntityType.BOAT.getWidth();
     private static final double BOARD_SCAN_HEIGHT = 1.6D;
     private static final int RESTORE_BOARD_TICKS = 80;
+    private static final double FOLLOWER_BOARD_RANGE = 3.0D;
 
     private static final TagKey<Block> PLOUGHABLE = TagKey.create(Registries.BLOCK,
             ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "ploughable"));
@@ -139,6 +141,8 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     private static final double REFERENCE_SPEED = 0.35D;
     private static final double MIN_ANIM_SPEED = 0.15D;
     private static final double MAX_ANIM_SPEED = 1.5D;
+    private static final int STRAND_EASE_TICKS = 12;
+    private static final float STRAND_SETTLE = 0.85F;
 
     private static final EntityDataAccessor<Integer> DATA_HORSE_ID =
             SynchedEntityData.defineId(HorseCartEntity.class, EntityDataSerializers.INT);
@@ -174,6 +178,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     private ItemStack placedPlow = ItemStack.EMPTY;
     private float damageTaken;
     private boolean chestAnimPrimed = false;
+    private boolean easeToStand;
 
     private double prevX;
     private double prevZ;
@@ -403,6 +408,63 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         return cart;
     }
 
+    public static void strand(AbstractHorse horse) {
+        if (!(horse.level() instanceof ServerLevel level)) {
+            return;
+        }
+        IHorseData data = IHorseData.of(horse);
+        SimpleContainer gear = data.bh_getGearContainer();
+        ItemStack cartItem = gear.getItem(GearSlot.STABILIZER.ordinal());
+        if (!cartItem.is(ModItems.HORSE_CART)) {
+            return;
+        }
+        HorseCartEntity cart = data.bh_getCartEntity();
+        boolean fresh = cart == null || cart.isRemoved() || cart.isPlaced();
+        if (fresh) {
+            cart = new HorseCartEntity(ModEntities.HORSE_CART, level);
+            cart.setPos(horse.getX(), horse.getY(), horse.getZ());
+            cart.setYRot(horse.yBodyRot);
+            cart.setYBodyRot(horse.yBodyRot);
+            cart.setYHeadRot(horse.yBodyRot);
+        }
+        cart.closeViewers();
+        cart.unloadPassengers();
+
+        cart.placedCart = cartItem.copyWithCount(1);
+        gear.setItem(GearSlot.STABILIZER.ordinal(), ItemStack.EMPTY);
+        if (data.bh_hasCartChest()) {
+            ItemStack chest = data.bh_getCartChestItem();
+            cart.placedChestItem = chest.isEmpty() ? new ItemStack(Items.CHEST) : chest.copy();
+            SimpleContainer from = data.bh_getCartChestContainer();
+            for (int slot = 0; slot < Math.min(from.getContainerSize(), cart.placedChest.getContainerSize()); slot++) {
+                cart.placedChest.setItem(slot, from.removeItemNoUpdate(slot));
+            }
+            data.bh_setCartChest(ItemStack.EMPTY);
+        }
+        if (data.bh_hasCartPlough()) {
+            cart.placedPlow = data.bh_getCartPlough().copy();
+            data.bh_setCartPlough(ItemStack.EMPTY);
+        }
+        data.bh_setCartId(null);
+
+        cart.horse = null;
+        cart.horseUuid = null;
+        cart.entityData.set(DATA_HORSE_ID, -1);
+        CartType stored = HorseCartItem.storedType(cart.placedCart);
+        cart.entityData.set(DATA_TYPE, (stored == null ? CartType.BUGGY : stored).ordinal());
+        cart.entityData.set(DATA_HAS_CHEST, !cart.placedChestItem.isEmpty());
+        cart.entityData.set(DATA_HAS_PLOW, !cart.placedPlow.isEmpty());
+        cart.entityData.set(DATA_ROLL_SPEED, 0.0F);
+        cart.mirrorSetup(cart.placedCart);
+        cart.setNoGravity(false);
+        cart.entityData.set(DATA_PLACED, true);
+        if (fresh) {
+            level.addFreshEntity(cart);
+        }
+        IcysBetterHorses.LOGGER.info("[cart] horse {} died pulling a cart, left it standing at {}",
+                horse.getUUID(), cart.blockPosition());
+    }
+
     @Override
     public ItemStack getPickResult() {
         return new ItemStack(ModItems.HORSE_CART);
@@ -434,6 +496,12 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             AbstractHorse boundHorse = this.clientHorse();
             if (boundHorse != null) {
                 this.glueToHorse(boundHorse);
+            } else if (this.isPlaced()) {
+                this.slackYawO = this.slackYaw;
+                this.tiltO = this.tilt;
+                this.tilt *= STRAND_SETTLE;
+                this.liftO = this.lift;
+                this.lift *= STRAND_SETTLE;
             }
             this.updateClientSpeed();
             return;
@@ -524,6 +592,17 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         }
     }
 
+    public void releaseFollowersOf(Player owner) {
+        List<Entity> riders = new ArrayList<>(this.getPassengers());
+        riders.addAll(this.benchCargo());
+        for (Entity rider : riders) {
+            if (rider != owner && rider.getType().is(BhRiderSeat.SELF_SEATED)
+                    && rider instanceof OwnableEntity pet && owner.getUUID().equals(pet.getOwnerUUID())) {
+                this.setDown(rider);
+            }
+        }
+    }
+
     public void setDown(Entity passenger) {
         passenger.stopRiding();
         setSeatedPose(passenger, false);
@@ -538,6 +617,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     private static void setSeatedPose(Entity passenger, boolean seated) {
+        if (passenger.getType().is(BhRiderSeat.SELF_SEATED)) return;
         if (passenger instanceof TamableAnimal tamable) {
             tamable.setInSittingPose(seated || tamable.isOrderedToSit());
         } else if (passenger instanceof Fox fox) {
@@ -790,6 +870,35 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         return this.carriageSeatOffset(seatIndex, this.getYRot());
     }
 
+    private void boardFollowers() {
+        if (!this.rearSeatsFree()) {
+            return;
+        }
+        for (LivingEntity mob : this.level().getEntitiesOfClass(LivingEntity.class,
+                this.getBoundingBox().inflate(FOLLOWER_BOARD_RANGE), this::followsRearRider)) {
+            if (!this.rearSeatsFree()) {
+                return;
+            }
+            if (!mob.isPassenger() && !mob.isVehicle() && mob.isAlive() && this.canCarry(mob)) {
+                mob.startRiding(this, false);
+            }
+        }
+    }
+
+    private boolean followsRearRider(LivingEntity mob) {
+        if (!mob.getType().is(BhRiderSeat.SELF_SEATED) || !(mob instanceof OwnableEntity pet)
+                || pet.getOwnerUUID() == null
+                || mob instanceof TamableAnimal tamable && tamable.isOrderedToSit()) {
+            return false;
+        }
+        for (Entity rider : this.getPassengers()) {
+            if (rider instanceof Player && pet.getOwnerUUID().equals(rider.getUUID())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean canCarry(Entity candidate) {
         if (candidate instanceof Player) {
             return true;
@@ -829,6 +938,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
     }
 
     private void tryBoardNearbyMobs() {
+        this.boardFollowers();
         if (!BhConfig.cartPickupEnabled()) {
             return;
         }
@@ -1369,6 +1479,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         if (DATA_TYPE.equals(key)) {
             this.setBoundingBox(this.makeBoundingBox());
         }
+        if (DATA_PLACED.equals(key) && this.level().isClientSide() && this.isPlaced() && this.tickCount > 0) {
+            this.easeToStand = true;
+        }
     }
 
     @Override
@@ -1471,6 +1584,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
                 test.resetCurrentAnimation();
             }
             return PlayState.STOP;
+        }
+        if (this.easeToStand) {
+            test.getController().transitionLength(STRAND_EASE_TICKS);
         }
         return test.setAndContinue(this.type().standing());
     }

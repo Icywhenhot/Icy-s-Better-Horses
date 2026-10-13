@@ -8,8 +8,9 @@ import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.client.render.BhMountedHorseVisibility;
 import icy.betterhorses.net.client.render.BhRiderMotion;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.phys.Vec3;
@@ -21,18 +22,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayDeque;
 
-@Mixin(LivingEntityRenderer.class)
-public abstract class LivingEntityRendererRiderMixin {
+@Mixin(EntityRenderDispatcher.class)
+public abstract class EntityRenderDispatcherRiderMixin {
 
     @Unique private static final float BH_RIDER_FOLLOW = 1.0F;
 
     @Unique private static final ArrayDeque<Boolean> BH_PUSHED = new ArrayDeque<>();
 
-    @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
-            at = @At("HEAD"))
-    private void bh_offsetRiderToSaddle(LivingEntity entity, float yaw, float partialTicks,
+    @Inject(method = "render(Lnet/minecraft/world/entity/Entity;DDDFFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderer;render(Lnet/minecraft/world/entity/Entity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"))
+    private void bh_offsetRiderToSaddle(Entity rendered, double x, double y, double z, float yaw, float partialTicks,
                                         PoseStack poseStack, MultiBufferSource bufferSource, int packedLight,
                                         CallbackInfo ci) {
+        if (!(rendered instanceof LivingEntity entity)) {
+            BH_PUSHED.push(Boolean.FALSE);
+            return;
+        }
         HorseCartEntity cart = entity.getVehicle() instanceof HorseCartEntity carrying ? carrying
                 : entity.getVehicle() instanceof AbstractHorse puller && IHorseData.of(puller).bh_hasCartGear()
                 ? IHorseData.of(puller).bh_getCartEntity() : null;
@@ -88,9 +93,10 @@ public abstract class LivingEntityRendererRiderMixin {
         poseStack.mulPose(Axis.YP.rotationDegrees(horseYaw - 180.0F));
     }
 
-    @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
-            at = @At("RETURN"))
-    private void bh_restoreRiderPose(LivingEntity entity, float yaw, float partialTicks,
+    @Inject(method = "render(Lnet/minecraft/world/entity/Entity;DDDFFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderer;render(Lnet/minecraft/world/entity/Entity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+                    shift = At.Shift.AFTER))
+    private void bh_restoreRiderPose(Entity rendered, double x, double y, double z, float yaw, float partialTicks,
                                      PoseStack poseStack, MultiBufferSource bufferSource, int packedLight,
                                      CallbackInfo ci) {
         if (!BH_PUSHED.isEmpty() && BH_PUSHED.pop()) {

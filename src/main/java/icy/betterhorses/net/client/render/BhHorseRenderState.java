@@ -139,4 +139,5 @@ public class BhHorseRenderState {
     public float pivotPhase;
     public float pivotDir;
     public float backWeight;
+    public float begTilt;
 }

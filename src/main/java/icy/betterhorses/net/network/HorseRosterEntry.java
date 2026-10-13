@@ -24,7 +24,8 @@ public record HorseRosterEntry(
         int variantOrdinal,
         int markingsOrdinal,
         boolean baby,
-        int breedCoat) {
+        int breedCoat,
+        boolean dead) {
 
     /** Legacy ordinal constructor retained for compatibility with older callers. */
     public HorseRosterEntry(UUID horseId, String customName, String breedId, int genderOrdinal,
@@ -34,7 +35,7 @@ public record HorseRosterEntry(
         this(horseId, customName, breedId,
                 IcysBetterHorses.MOD_ID + ":" + HorseGender.fromId(genderOrdinal).name().toLowerCase(Locale.ROOT),
                 mixedBreed, bond, loaded, hasHome, active, dimensionId, pos, entityTypeId,
-                variantOrdinal, markingsOrdinal, baby, breedCoat);
+                variantOrdinal, markingsOrdinal, baby, breedCoat, false);
     }
 
     /** Legacy ordinal accessor for callers that still consume the old gender representation. */
@@ -62,12 +63,13 @@ public record HorseRosterEntry(
         buf.writeVarInt(entry.markingsOrdinal() + 1);
         buf.writeBoolean(entry.baby());
         buf.writeVarInt(entry.breedCoat() + 1);
+        buf.writeBoolean(entry.dead());
     }
 
     public static HorseRosterEntry decode(FriendlyByteBuf buf) {
         return new HorseRosterEntry(
                 buf.readUUID(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readBoolean(), buf.readVarInt(),
                 buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readUtf(), buf.readBlockPos(),
-                buf.readUtf(), buf.readVarInt() - 1, buf.readVarInt() - 1, buf.readBoolean(), buf.readVarInt() - 1);
+                buf.readUtf(), buf.readVarInt() - 1, buf.readVarInt() - 1, buf.readBoolean(), buf.readVarInt() - 1, buf.readBoolean());
     }
 }

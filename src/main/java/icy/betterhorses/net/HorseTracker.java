@@ -62,6 +62,9 @@ public final class HorseTracker {
         if (isStale(horse) || !BhHorseKind.managed(horse)) return;
         ownedHorses.put(horse.getUUID(), horse);
         HorseTrackerState state = state();
+        if (state != null && state.forgetDeadHorse(horse.getUUID())) {
+            IcysBetterHorses.LOGGER.info("[revive] horse {} is alive again, dropping its death record", horse.getUUID());
+        }
         if (state != null && IHorseData.of(horse).bh_isOwned()) {
             state.recordHorse(horse);
         }
@@ -75,7 +78,11 @@ public final class HorseTracker {
 
         Entity.RemovalReason reason = horse.getRemovalReason();
         boolean destroyed = reason != null ? reason.shouldDestroy() : horse.isDeadOrDying();
-        if (destroyed) {
+        if (reason == Entity.RemovalReason.KILLED && IHorseData.of(horse).bh_isOwned() && BhHorseKind.managed(horse)) {
+            state.recordDeath(horse);
+            IcysBetterHorses.LOGGER.info("[revive] horse {} died at {} in {}, keeping a death record",
+                    horse.getUUID(), horse.blockPosition(), horse.level().dimension().location());
+        } else if (destroyed) {
             state.forgetHorse(horse.getUUID());
             IcysBetterHorses.LOGGER.debug("[whistle] forgot horse {} (destroyed, removalReason={})",
                     horse.getUUID(), reason);
@@ -204,6 +211,21 @@ public final class HorseTracker {
     public static boolean consumePendingDisown(UUID horseId) {
         HorseTrackerState state = state();
         return state != null && state.consumePendingDisown(horseId);
+    }
+
+    public static @Nullable CompoundTag getDeadHorse(UUID horseId) {
+        HorseTrackerState state = state();
+        return state == null ? null : state.getDeadHorse(horseId);
+    }
+
+    public static boolean forgetDeadHorse(UUID horseId) {
+        HorseTrackerState state = state();
+        return state != null && state.forgetDeadHorse(horseId);
+    }
+
+    public static List<UUID> findDeadHorsesOwnedBy(UUID playerId) {
+        HorseTrackerState state = state();
+        return state == null ? List.of() : state.findDeadHorsesOwnedBy(playerId);
     }
 
     public static int getGeneration(UUID horseId) {
