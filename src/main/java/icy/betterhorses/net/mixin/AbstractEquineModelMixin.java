@@ -24,6 +24,10 @@ public abstract class AbstractEquineModelMixin<T extends EquineRenderState> exte
 
     @Inject(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/EquineRenderState;)V", at = @At("RETURN"))
     private void bh_lowerHeadWhenRidden(T state, CallbackInfo ci) {
+        if (state instanceof IBhEquineStabilizerState begging) {
+            this.headParts.zRot += begging.bh_getBegTilt() * 0.45F
+                    * (1.0F - state.eatAnimation) * (1.0F - state.standAnimation);
+        }
         if (!(state instanceof IBhEquineStabilizerState bhState) || !bhState.bh_isRiddenByPlayerInFirstPerson()) {
             return;
         }

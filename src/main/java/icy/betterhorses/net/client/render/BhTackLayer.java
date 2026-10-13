@@ -96,7 +96,7 @@ public class BhTackLayer<S extends BhHorseRenderState, M extends BhHorseModel>
 
         BhHorseModel model = state.isBaby ? babyModel : adultModel;
 
-        int color = tint.applyAsInt(state);
+        int color = BhRenderContext.tint(tint.applyAsInt(state));
 
         if (opacity >= 1.0F) {
             renderColoredCutoutModel(model, texture, poseStack, collector, packedLight, state, color, 0);

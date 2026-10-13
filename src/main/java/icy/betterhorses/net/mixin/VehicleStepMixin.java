@@ -8,12 +8,12 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
-@Mixin(ServerGamePacketListenerImpl.class)
+@Mixin(value = ServerGamePacketListenerImpl.class, priority = 500)
 public abstract class VehicleStepMixin {
 
     @Shadow public ServerPlayer player;
 
-    @ModifyConstant(method = "handleMoveVehicle", constant = @Constant(doubleValue = 0.0625D))
+    @ModifyConstant(method = "handleMoveVehicle", constant = @Constant(doubleValue = 0.0625D), require = 0)
     private double bh_horseMissTolerance(double original) {
         return this.player.getRootVehicle() instanceof AbstractHorse ? 0.36D : original;
     }

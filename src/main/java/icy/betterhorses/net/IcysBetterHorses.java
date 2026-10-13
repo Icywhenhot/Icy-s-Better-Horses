@@ -37,7 +37,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LightningBolt;
@@ -96,6 +95,12 @@ public class IcysBetterHorses implements ModInitializer {
         registerJoinSync();
         registerEntityTracking();
         registerTickEvents();
+        net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
+            if (entity instanceof AbstractHorse horse && source.getEntity() instanceof ServerPlayer killer
+                    && killer.getUUID().equals(IHorseData.of(horse).bh_getOwner())) {
+                BhCriteria.fire(killer, BhCriteria.KILL_OWN_HORSE);
+            }
+        });
         LOGGER.info("Icy's Better Horses initialized.");
     }
 
@@ -175,7 +180,9 @@ public class IcysBetterHorses implements ModInitializer {
         });
         ServerPlayNetworking.registerGlobalReceiver(OpenHorseRosterPayload.TYPE, (payload, context) -> {
             ServerPlayer player = context.player();
-            context.server().execute(() -> sendRoster(player));
+            context.server().execute(() -> {
+                if (BhFeature.HORSE_MANAGEMENT.on()) sendRoster(player);
+            });
         });
 
         ServerPlayNetworking.registerGlobalReceiver(HorseManagePayload.TYPE, (payload, context) -> {
@@ -185,7 +192,7 @@ public class IcysBetterHorses implements ModInitializer {
         });
     }
 
-    private void sendRoster(ServerPlayer player) {
+    private static void sendRoster(ServerPlayer player) {
         List<HorseRosterEntry> roster = HorseManagement.buildRoster(player);
         ServerPlayNetworking.send(player, new HorseRosterSyncPayload(roster));
         if (!roster.isEmpty()) {
@@ -198,12 +205,15 @@ public class IcysBetterHorses implements ModInitializer {
         }
     }
 
-    private void handleManageAction(ServerPlayer player, UUID horseId, HorseManageAction action) {
+    public static void handleManageAction(ServerPlayer player, UUID horseId, HorseManageAction action) {
+        if (action != HorseManageAction.DISOWN && !BhFeature.HORSE_MANAGEMENT.on()) return;
         HorseManagement.Outcome outcome = switch (action) {
             case WHISTLE -> HorseManagement.whistle(player, horseId);
             case SEND_HOME -> HorseManagement.sendHome(player, horseId);
             case DISOWN -> HorseManagement.disown(player, horseId);
             case SET_ACTIVE -> HorseManagement.setActive(player, horseId);
+            case REVIVE -> HorseManagement.revive(player, horseId);
+            case FORGET -> HorseManagement.forget(player, horseId);
         };
 
         ServerPlayNetworking.send(player,
@@ -306,7 +316,7 @@ public class IcysBetterHorses implements ModInitializer {
         HorseManagement.callNearestHorse(player);
     }
 
-    private void playWhistle(ServerPlayer player) {
+    private static void playWhistle(ServerPlayer player) {
         player.level().playSound(
                 null,
                 player.getX(),
@@ -327,7 +337,7 @@ public class IcysBetterHorses implements ModInitializer {
                             BhConfig.classAbilitiesEnabled(),
                             BhConfig.breedAbilitiesEnabled(),
                             BhConfig.disabledAbilities(),
-                            BhConfig.tuning()));
+                            BhConfig.tuning(), BhConfig.breedingFoods()));
                     ServerPlayNetworking.send(handler.getPlayer(), BreedDataPayload.current());
                 });
     }

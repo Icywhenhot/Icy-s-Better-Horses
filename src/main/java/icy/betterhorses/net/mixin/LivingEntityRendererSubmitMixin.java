@@ -25,6 +25,7 @@ public abstract class LivingEntityRendererSubmitMixin {
             horseState.dustOrigin.set(poseStack.last().pose()).invert();
         }
         BhRenderContext.pushCamera(camera);
+        BhRenderContext.pushTint(state instanceof BhHorseRenderState horseState ? horseState.previewTint : 1.0F);
         float opacity = state instanceof IBhEquineStabilizerState bhState ? bhState.bh_getOpacity() : 1.0F;
         BhRenderContext.pushOpacity(opacity);
     }

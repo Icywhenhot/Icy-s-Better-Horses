@@ -3,6 +3,11 @@ package icy.betterhorses.net.mixin;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.client.render.BhMountedHorseVisibility;
+import icy.betterhorses.net.client.render.BhBannerLayer;
+import icy.betterhorses.net.client.render.BhHorseRenderState;
+import icy.betterhorses.net.client.HorsePreviewCache;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemDisplayContext;
 import icy.betterhorses.net.client.render.HorseChestLayer;
 import icy.betterhorses.net.client.render.HorseStabilizerAnimatable;
 import icy.betterhorses.net.client.render.HorseStabilizerLayer;
@@ -47,12 +52,22 @@ public abstract class AbstractHorseRendererMixin<
     private void bh_addStabilizerLayer(EntityRendererProvider.Context context, M adultModel, M babyModel, CallbackInfo ci) {
         this.addLayer(new HorseStabilizerLayer<>(this));
         this.addLayer(new HorseChestLayer<>(this));
+        this.addLayer(new BhBannerLayer<>(this));
     }
 
     @Inject(method = "extractRenderState", at = @At("TAIL"))
     private void bh_captureStabilizerState(T entity, S state, float partialTick, CallbackInfo ci) {
         IBhEquineStabilizerState extState = (IBhEquineStabilizerState) state;
         Minecraft minecraft = Minecraft.getInstance();
+        extState.bh_setBegTilt(entity instanceof IHorseData horseData ? horseData.bh_getBegTilt(partialTick) : 0.0F);
+        if (state instanceof BhHorseRenderState breedState) {
+            breedState.begTilt = extState.bh_getBegTilt();
+            breedState.previewTint = HorsePreviewCache.tint(entity);
+        }
+        minecraft.getItemModelResolver().updateForLiving(extState.bh_getBanner(),
+                entity instanceof IHorseData horseData && !entity.getBodyArmorItem().isEmpty()
+                        ? horseData.bh_getBanner() : ItemStack.EMPTY,
+                ItemDisplayContext.HEAD, entity);
         boolean riddenByPlayerInFirstPerson = minecraft.options.getCameraType() == CameraType.FIRST_PERSON
                 && minecraft.player != null
                 && entity.hasPassenger(minecraft.player);

@@ -21,10 +21,10 @@ class HorseSyncPayloadTest {
     void rosterKeepsTheWireFormat() {
         String bytes = "0100112233445566778899aabbccddeeff07c389636c6169720a6164646f6e3a706f6e79"
                 + "17696379732d6265747465722d686f727365733a6d617265019601000101136d696e656372616674"
-                + "3a6f766572776f726c6400000000000000000a6164646f6e3a706f6e7900040100";
+                + "3a6f766572776f726c6400000000000000000a6164646f6e3a706f6e790004010000";
         var payload = new HorseRosterSyncPayload(List.of(new HorseRosterEntry(ID, "Éclair", "addon:pony",
                 "icys-better-horses:mare", true, 150, false, true, true, "minecraft:overworld",
-                BlockPos.ZERO, "addon:pony", -1, 3, true, -1)));
+                BlockPos.ZERO, "addon:pony", -1, 3, true, -1, false)));
         var codec = new HorseRosterSyncPayload.StreamCodec();
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(HexFormat.of().parseHex(bytes)));
         try {

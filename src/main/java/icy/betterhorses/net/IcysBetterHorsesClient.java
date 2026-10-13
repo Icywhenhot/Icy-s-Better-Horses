@@ -260,7 +260,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                         return;
                     }
                     BhConfig.adoptServer(payload.disabledFeatures(), payload.classAbilities(),
-                            payload.breedAbilities(), payload.disabledAbilities(), payload.tuning());
+                            payload.breedAbilities(), payload.disabledAbilities(), payload.tuning(), payload.breedingFoods());
                 }));
 
         ClientPlayNetworking.registerGlobalReceiver(BreedDataPayload.TYPE, (payload, context) ->
@@ -310,8 +310,11 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         }
 
         while (MANAGE_KEY.consumeClick()) {
-            if (client.gui.screen() == null) {
+            if (client.gui.screen() != null) continue;
+            if (BhFeature.HORSE_MANAGEMENT.on()) {
                 client.setScreenAndShow(new HorseRosterScreen());
+            } else {
+                client.gui.hud.setOverlayMessage(Component.translatable("message.icys-better-horses.manage.disabled"), false);
             }
         }
 

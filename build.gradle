@@ -49,6 +49,7 @@ dependencies {
 	implementation "maven.modrinth:modonomicon:${project.modonomicon_version_id}"
 
 	implementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+	localRuntime "maven.modrinth:im-fast:Utpunxwi"
 	implementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
 		exclude group: "net.fabricmc.fabric-api"
 	}
@@ -124,3 +125,5 @@ publishing {
 
 	}
 }
+
+tasks.withType(AbstractArchiveTask).configureEach { archiveVersion = "${project.mod_version}-fab-${project.minecraft_version}" }

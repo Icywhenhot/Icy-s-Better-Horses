@@ -27,6 +27,7 @@ import icy.betterhorses.net.entity.BhBreedHorse;
 public final class HorsePreviewCache {
 
     private static final Map<UUID, AbstractHorse> cache = new HashMap<>();
+    private static final Map<AbstractHorse, Float> tints = new java.util.IdentityHashMap<>();
 
     private static final AtomicInteger previewIds = new AtomicInteger();
 
@@ -45,6 +46,14 @@ public final class HorsePreviewCache {
             cache.put(entry.horseId(), built);
         }
         return built;
+    }
+
+    public static void tint(AbstractHorse horse, float tint) {
+        tints.put(horse, tint);
+    }
+
+    public static float tint(AbstractHorse horse) {
+        return tints.getOrDefault(horse, 1.0F);
     }
 
     public static void markBroken(UUID horseId, Throwable error) {
@@ -94,6 +103,7 @@ public final class HorsePreviewCache {
 
     public static void clear() {
         cache.clear();
+        tints.clear();
         broken.clear();
     }
 }
