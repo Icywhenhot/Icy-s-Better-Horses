@@ -14,6 +14,8 @@ import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.PlayerEnderChestContainer;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.BannerItem;
+import net.minecraft.world.entity.animal.horse.Llama;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -24,9 +26,12 @@ import icy.betterhorses.net.BhCriteria;
 import icy.betterhorses.net.ModItems;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.world.entity.EquipmentSlot;
 import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Mixin(HorseInventoryMenu.class)
 public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu implements HorseInventoryLayoutAccess {
@@ -39,9 +44,14 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Unique private static final int BH_MAX_CHEST_ROWS = 6;
     @Unique private static final int BH_ROW_HEIGHT = 18;
     @Unique private static final int BH_CHEST_GAP = 7;
+    @Unique private static final int BH_BANNER_SLOT_X = 8;
+    @Unique private static final int BH_BANNER_SLOT_Y = 54;
 
     @Unique private int bh_gearStartIndex = -1;
     @Unique private int bh_chestStartIndex = -1;
+    @Unique private int bh_bannerSlotIndex = -1;
+    @Unique private static final int BH_SCREEN_BOTTOM = 166;
+    @Unique private final Map<Slot, Integer> bh_belowScreenSlots = new IdentityHashMap<>();
     @Unique private int bh_playerInventoryStartIndex = -1;
     @Unique private int bh_playerInventoryEndIndex = -1;
     @Unique private int bh_appliedShift = 0;
@@ -220,7 +230,40 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             }
         }
 
+        this.bh_bannerSlotIndex = this.slots.size();
+        this.addSlot(new Slot(data.bh_getBannerContainer(), 0, BH_BANNER_SLOT_X, BH_BANNER_SLOT_Y) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return stack.getItem() instanceof BannerItem && !HorseInventoryMenuMixin.this.bh_isBannerSlotLocked();
+            }
+
+            @Override
+            public boolean isActive() {
+                return HorseInventoryMenuMixin.this.bh_takesBanner();
+            }
+
+            @Override
+            public int getMaxStackSize() {
+                return 1;
+            }
+        });
+
         this.bh_refreshLayout();
+    }
+
+    @Unique
+    private boolean bh_takesBanner() {
+        return this.bh_horse != null && this.bh_horse.canUseSlot(EquipmentSlot.BODY) && !(this.bh_horse instanceof Llama);
+    }
+
+    @Override
+    public int bh_getBannerSlotIndex() {
+        return this.bh_takesBanner() ? this.bh_bannerSlotIndex : -1;
+    }
+
+    @Override
+    public boolean bh_isBannerSlotLocked() {
+        return this.slots.size() < 2 || !this.slots.get(1).hasItem();
     }
 
     @Override
@@ -236,6 +279,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         }
 
         int wanted = this.bh_hasChestStorageLayout() ? this.bh_chestRows * BH_ROW_HEIGHT + BH_CHEST_GAP : 0;
+        this.bh_placeBelowScreenSlots(wanted);
         if (wanted == this.bh_appliedShift) {
             return;
         }
@@ -247,6 +291,27 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         }
 
         this.bh_appliedShift = wanted;
+    }
+
+    @Unique
+    private void bh_placeBelowScreenSlots(int shift) {
+        for (int slotIndex = this.bh_playerInventoryEndIndex; slotIndex < this.slots.size(); slotIndex++) {
+            if (slotIndex >= this.bh_gearStartIndex && slotIndex <= this.bh_bannerSlotIndex) {
+                continue;
+            }
+            Slot slot = this.slots.get(slotIndex);
+            Integer base = this.bh_belowScreenSlots.get(slot);
+            if (base == null) {
+                if (slot.y < BH_SCREEN_BOTTOM) {
+                    continue;
+                }
+                base = slot.y;
+                this.bh_belowScreenSlots.put(slot, base);
+            }
+            if (slot.y != base + shift) {
+                ((SlotAccessor) slot).bh_setY(base + shift);
+            }
+        }
     }
 
     @Override

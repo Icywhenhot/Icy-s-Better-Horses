@@ -7,9 +7,12 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
@@ -55,6 +58,7 @@ public final class HorseManagement {
     public static final String MSG_FAILED = MSG + "failed";
     public static final String MSG_CART = MSG + "cart_attached";
     public static final String MSG_UNSAFE = MSG + "unsafe";
+    public static final String MSG_NO_LEVELS = MSG + "no_levels";
 
     public static List<HorseRosterEntry> buildRoster(ServerPlayer player) {
         MinecraftServer server = ((ServerLevel) player.level()).getServer();
@@ -73,14 +77,8 @@ public final class HorseManagement {
                         ? null : snapshot.getCompound("BH_Roster");
                 HorseTrackerState.KnownPosition known = HorseTracker.getLastKnownPosition(horseId);
                 if (summary != null && known != null) {
-                    roster.add(new HorseRosterEntry(horseId, summary.getString("name"),
-                            bh_summaryBreed(summary), summary.getString("gender"),
-                            summary.getBoolean("mixed"), summary.getInt("bond"), false,
-                            summary.getBoolean("home"), horseId.equals(activeHorseId),
-                            known.dimension().location().toString(), known.pos(), summary.getString("type"),
-                            summary.contains("variant") ? summary.getInt("variant") : -1,
-                            summary.contains("markings") ? summary.getInt("markings") : -1,
-                            summary.getBoolean("baby"), summary.contains("coat") ? summary.getInt("coat") : -1));
+                    roster.add(fromSummary(horseId, summary, horseId.equals(activeHorseId),
+                            known.dimension().location().toString(), known.pos(), false));
                     continue;
                 }
             }
@@ -113,17 +111,112 @@ public final class HorseManagement {
                     horse instanceof Horse coloured ? coloured.getMarkings().ordinal() : -1,
                     horse.isBaby(),
                     horse instanceof BhBreedHorse breedHorse
-                            ? breedHorse.bhCoat() : -1));
+                            ? breedHorse.bhCoat() : -1,
+                    false));
             if (loaded == null) {
                 HorseTrackerState.get(server).recordHorse(horse);
                 release(horse);
             }
         }
+        if (BhFeature.HORSE_REVIVAL.on()) {
+            for (UUID horseId : HorseTracker.findDeadHorsesOwnedBy(player.getUUID())) {
+                CompoundTag body = HorseTracker.getDeadHorse(horseId);
+                if (body == null || !body.contains("BH_Roster")) continue;
+                CompoundTag death = body.getCompound("BH_Death");
+                roster.add(fromSummary(horseId, body.getCompound("BH_Roster"), false,
+                        death.getString("dimension"), NbtUtils.readBlockPos(death, "pos").orElse(BlockPos.ZERO), true));
+            }
+        }
         roster.sort(Comparator
-                .comparing((HorseRosterEntry entry) -> entry.customName().isEmpty())
+                .comparing(HorseRosterEntry::dead)
+                .thenComparing((HorseRosterEntry entry) -> entry.customName().isEmpty())
                 .thenComparing(entry -> entry.customName(), String.CASE_INSENSITIVE_ORDER)
                 .thenComparing(HorseRosterEntry::horseId));
         return roster;
+    }
+
+    private static HorseRosterEntry fromSummary(UUID horseId, CompoundTag summary, boolean active,
+                                                String dimension, BlockPos pos, boolean dead) {
+        return new HorseRosterEntry(horseId, summary.getString("name"),
+                bh_summaryBreed(summary), summary.getString("gender"),
+                summary.getBoolean("mixed"), summary.getInt("bond"), false,
+                summary.getBoolean("home"), active, dimension, pos, summary.getString("type"),
+                summary.contains("variant") ? summary.getInt("variant") : -1,
+                summary.contains("markings") ? summary.getInt("markings") : -1,
+                summary.getBoolean("baby"), summary.contains("coat") ? summary.getInt("coat") : -1,
+                dead);
+    }
+
+    public static Outcome revive(ServerPlayer player, UUID horseId) {
+        CompoundTag body = HorseTracker.getDeadHorse(horseId);
+        if (!BhFeature.HORSE_REVIVAL.on() || body == null || !ownedBy(body, player)) {
+            return Outcome.fail(MSG_GONE);
+        }
+        if (anyLevel(player, horseId) != null) {
+            HorseTracker.forgetDeadHorse(horseId);
+            return Outcome.fail(MSG_GONE);
+        }
+        int cost = BhConfig.tuning().reviveLevels();
+        boolean free = player.getAbilities().instabuild;
+        if (!free && player.experienceLevel < cost) {
+            return Outcome.fail(MSG_NO_LEVELS);
+        }
+
+        ServerLevel level = player.serverLevel();
+        CompoundTag copy = body.copy();
+        copy.remove("BH_Death");
+        Entity loaded = EntityType.loadEntityRecursive(copy, level, entity -> entity);
+        if (!(loaded instanceof AbstractHorse horse)) {
+            IcysBetterHorses.LOGGER.warn("[revive] death record of horse {} did not load as a horse", horseId);
+            return Outcome.fail(MSG_FAILED);
+        }
+        horse.setHealth(horse.getMaxHealth());
+        horse.deathTime = 0;
+        horse.clearFire();
+        horse.fallDistance = 0.0F;
+        IHorseData data = IHorseData.of(horse);
+        data.bh_setBond(Math.max(0, data.bh_getBond() - BhConfig.tuning().reviveBondLoss()));
+        int generation = HorseTracker.getGeneration(horseId) + 1;
+        data.bh_setGeneration(generation);
+
+        var at = HorsePlacement.find(horse, player.blockPosition().relative(player.getDirection(), 2));
+        if (at == null) {
+            release(horse);
+            return Outcome.fail(MSG_UNSAFE);
+        }
+        horse.moveTo(at.x, at.y, at.z, player.getYRot() + 180.0F, 0.0F);
+        if (!level.tryAddFreshEntityWithPassengers(horse)) {
+            IcysBetterHorses.LOGGER.warn("[revive] could not add revived horse {}", horseId);
+            return Outcome.fail(MSG_FAILED);
+        }
+        HorseTracker.setGeneration(horseId, generation);
+        HorseTracker.forgetDeadHorse(horseId);
+        HorseTracker.register(horse);
+        data.bh_setCommand(BhContent.COMMAND_FOLLOW.getKey());
+        if (!free) {
+            player.giveExperienceLevels(-cost);
+        }
+        level.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, horse.getX(), horse.getY(1.0D), horse.getZ(),
+                40, 0.6D, 0.8D, 0.6D, 0.3D);
+        level.playSound(null, horse.getX(), horse.getY(), horse.getZ(),
+                ModSounds.HORSE_NEIGH, SoundSource.NEUTRAL, 1.0F, 1.0F);
+        IcysBetterHorses.LOGGER.info("[revive] {} brought horse {} back for {} levels (generation {})",
+                player.getName().getString(), horseId, free ? 0 : cost, generation);
+        return Outcome.OK;
+    }
+
+    public static Outcome forget(ServerPlayer player, UUID horseId) {
+        CompoundTag body = HorseTracker.getDeadHorse(horseId);
+        if (!BhFeature.HORSE_REVIVAL.on() || body == null || !ownedBy(body, player)) {
+            return Outcome.fail(MSG_GONE);
+        }
+        HorseTracker.forgetDeadHorse(horseId);
+        IcysBetterHorses.LOGGER.info("[revive] {} let go of dead horse {}", player.getName().getString(), horseId);
+        return Outcome.OK;
+    }
+
+    private static boolean ownedBy(CompoundTag body, ServerPlayer player) {
+        return body.hasUUID("BH_Owner") && player.getUUID().equals(body.getUUID("BH_Owner"));
     }
 
     private static boolean storedIsOurs(UUID horseId) {

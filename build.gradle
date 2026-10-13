@@ -172,6 +172,10 @@ dependencies {
 //    localRuntime "maven.modrinth:stoneycore:FpZHKl6Y"
 //    localRuntime "maven.modrinth:kingdoms-sieges:8oYP0xED"
     localRuntime "maven.modrinth:touhou-little-maid:tXG1TkGx"
+    localRuntime "maven.modrinth:millager:w3btp20m"
+    localRuntime "maven.modrinth:kindred:sVaj1W1z"
+    localRuntime "maven.modrinth:im-fast:FWI4gJ6y"
+    localRuntime "maven.modrinth:vercte-satchels:NSJsKbgX"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"

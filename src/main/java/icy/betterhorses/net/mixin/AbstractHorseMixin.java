@@ -52,6 +52,14 @@ import icy.betterhorses.net.goal.DefendOwnerGoal;
 import icy.betterhorses.net.goal.HorseStayGoal;
 import icy.betterhorses.net.goal.SpookGoal;
 import icy.betterhorses.net.goal.HorseWanderBoundsGoal;
+import icy.betterhorses.net.goal.HorseBegGoal;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.BreedGoal;
+import net.minecraft.world.entity.ai.goal.FollowParentGoal;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.TemptGoal;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -75,6 +83,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.NeoForge;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -113,6 +122,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
 
 @Mixin(AbstractHorse.class)
 public abstract class AbstractHorseMixin extends Animal implements IHorseData, IHorseAbilityHost {
@@ -128,6 +138,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Shadow
     protected abstract void doPlayerRide(Player player);
+
+    @Shadow
+    private void eating() {
+    }
 
     @Shadow
     private @Nullable Vec3 getDismountLocationInDirection(Vec3 direction, LivingEntity passenger) {
@@ -150,6 +164,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             AbstractHorseMixin.this.bh_syncGearFlags();
         }
     };
+    @Unique
+    private final SimpleContainer bh_bannerContainer = new SimpleContainer(1) {
+        @Override
+        public void setChanged() {
+            super.setChanged();
+            AbstractHorseMixin.this.bh_syncBanner();
+        }
+    };
     @Unique private static final int BH_CHEST_MAX_SLOTS = 54;
     @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(BH_CHEST_MAX_SLOTS);
     @Unique private static final int BH_CART_CHEST_SIZE = CartType.CHEST_SLOTS;
@@ -157,7 +179,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private ItemStack bh_cartPlow = ItemStack.EMPTY;
     @Unique private ItemStack bh_cartChestItem = ItemStack.EMPTY;
     @Unique private boolean bh_fedGoldenAppleThisTick = false;
+    @Unique private boolean bh_lovedBeforeEating;
+    @Unique private float bh_begTilt;
+    @Unique private float bh_begTiltO;
+    @Unique private int bh_begLean = 1;
     @Unique private static final int BH_BRUSH_COOLDOWN = 6000;
+    @Unique private static final double BH_IDLE_TROT_SPEED = 0.27D;
     @Unique private long bh_brushReadyAt;
     @Unique private static final float BH_HURT_NEIGH_CHANCE = 0.3F;
     @Unique private static final int BH_GRAZE_ROLL_INTERVAL = 1200;
@@ -448,6 +475,25 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     }
 
     @Override
+    public SimpleContainer bh_getBannerContainer() {
+        return bh_bannerContainer;
+    }
+
+    @Override
+    public ItemStack bh_getBanner() {
+        return ((AbstractHorse) (Object) this).level().isClientSide()
+                ? ((AbstractHorse) (Object) this).getData(BhHorseAttachments.BANNER)
+                : bh_bannerContainer.getItem(0);
+    }
+
+    @Unique
+    private void bh_syncBanner() {
+        if (!((AbstractHorse) (Object) this).level().isClientSide()) {
+            ((AbstractHorse) (Object) this).setData(BhHorseAttachments.BANNER, bh_bannerContainer.getItem(0).copy());
+        }
+    }
+
+    @Override
     public SimpleContainer bh_getChestContainer() {
         return bh_chestContainer;
     }
@@ -617,6 +663,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             return true;
         }
         return !this.inventory.isEmpty() || !bh_gearContainer.isEmpty() || !bh_chestContainer.isEmpty()
+                || !bh_bannerContainer.isEmpty()
                 || bh_hasCartChest() || bh_hasCartPlough();
     }
 
@@ -658,6 +705,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         }
         AbstractHorse self = (AbstractHorse) (Object) this;
         BhHorseStorage.writeContainer(output, "BH_Gear", bh_gearContainer, self.registryAccess());
+        BhHorseStorage.writeContainer(output, "BH_Banner", bh_bannerContainer, self.registryAccess());
         BhHorseStorage.writeContainer(output, "BH_Chest", bh_chestContainer, self.registryAccess());
         output.putBoolean("BH_CartChestOn", ((AbstractHorse) (Object) this).getData(BhHorseAttachments.CART_CHEST));
         if (!bh_cartChestItem.isEmpty()) {
@@ -718,6 +766,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         bh_applyBondAttributes();
         AbstractHorse self = (AbstractHorse) (Object) this;
         BhHorseStorage.readContainer(input, "BH_Gear", bh_gearContainer, self.registryAccess());
+        BhHorseStorage.readContainer(input, "BH_Banner", bh_bannerContainer, self.registryAccess());
+        bh_syncBanner();
         BhHorseStorage.readContainer(input, "BH_Chest", bh_chestContainer, self.registryAccess());
         bh_setCartChest(!input.getBoolean("BH_CartChestOn") ? ItemStack.EMPTY
                 : input.contains("BH_CartChestItem", Tag.TAG_COMPOUND)
@@ -944,6 +994,44 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     }
 
     @Override
+    public int bh_getBegSide() {
+        return ((AbstractHorse) (Object) this).getData(BhHorseAttachments.BEG);
+    }
+
+    @Override
+    public void bh_setBegSide(int side) {
+        ((AbstractHorse) (Object) this).setData(BhHorseAttachments.BEG, side);
+    }
+
+    @Override
+    public double bh_idleSpeedModifier(double requested) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (!this.bh_isOwned() || self.isVehicle() || !bh_idling()) {
+            return requested;
+        }
+        AttributeInstance speed = self.getAttribute(Attributes.MOVEMENT_SPEED);
+        if (speed == null || speed.getValue() <= 0.0D) {
+            return requested;
+        }
+        double ceiling = Math.min(requested * speed.getBaseValue(), BH_IDLE_TROT_SPEED);
+        return Math.min(requested, ceiling / speed.getValue());
+    }
+
+    private boolean bh_idling() {
+        return this.goalSelector.getAvailableGoals().stream().filter(WrappedGoal::isRunning).anyMatch(running ->
+                running.getFlags().contains(Goal.Flag.MOVE) && (running.getGoal() instanceof RandomStrollGoal
+                        || running.getGoal() instanceof TemptGoal
+                        || running.getGoal() instanceof FollowParentGoal
+                        || running.getGoal() instanceof BreedGoal
+                        || running.getGoal() instanceof HorseWanderBoundsGoal));
+    }
+
+    @Override
+    public float bh_getBegTilt(float partialTick) {
+        return Mth.lerp(partialTick, this.bh_begTiltO, this.bh_begTilt) * this.bh_begLean;
+    }
+
+    @Override
     public int bh_getJumpCue() {
         return this.bh_jumpCue;
     }
@@ -1161,6 +1249,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (BhVanillaHorseSwap.trySwap(self) || HorseTracker.discardIfStale(self)) {
             return;
         }
+        if (self.level().isClientSide()) {
+            int side = self.getData(BhHorseAttachments.BEG);
+            if (side != 0) this.bh_begLean = side;
+            this.bh_begTiltO = this.bh_begTilt;
+            this.bh_begTilt += ((side != 0 ? 1.0F : 0.0F) - this.bh_begTilt) * 0.2F;
+        }
         BhSiegeTow.face(self);
         for (HorseFeature feature : this.bh_features()) {
             feature.tick(self, this);
@@ -1191,6 +1285,37 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             bh_setPerkSurge(0);
             bh_setPulse(0);
             bh_setCharge(BhSurge.HIDDEN);
+        }
+    }
+
+    @Inject(method = "isFood", at = @At("RETURN"), cancellable = true)
+    private void bh_breedingFoodIsFood(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+        if (!cir.getReturnValueZ() && bh_ours() && BhConfig.breedingFood(stack)) {
+            cir.setReturnValue(true);
+        }
+    }
+
+    @Inject(method = "handleEating", at = @At("HEAD"))
+    private void bh_noteLoveBeforeEating(Player player, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+        this.bh_lovedBeforeEating = this.isInLove();
+    }
+
+    @Inject(method = "handleEating", at = @At("RETURN"), cancellable = true)
+    private void bh_breedFromConfiguredFood(Player player, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (!bh_ours() || self.level().isClientSide()) return;
+        if (!BhConfig.breedingFood(stack)) {
+            if (!this.bh_lovedBeforeEating && this.isInLove()) {
+                this.resetLove();
+            }
+            return;
+        }
+        if (!self.isTamed() || this.getAge() != 0 || this.isInLove()) return;
+        this.setInLove(player);
+        if (!cir.getReturnValueZ()) {
+            this.eating();
+            this.gameEvent(GameEvent.EAT);
+            cir.setReturnValue(true);
         }
     }
 
@@ -1420,11 +1545,14 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private void bh_dropGearAndChest(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!(self.level() instanceof ServerLevel level)) return;
+        HorseCartEntity.strand(self);
         bh_dropCartChest();
         bh_dropCartPlough();
         BhHorseStorage.dropContainerContents(self, level, bh_gearContainer);
+        BhHorseStorage.dropContainerContents(self, level, bh_bannerContainer);
         BhHorseStorage.dropContainerContents(self, level, bh_chestContainer);
         bh_syncGearFlags();
+        bh_syncBanner();
     }
 
     @Inject(method = "registerGoals", at = @At("TAIL"))
@@ -1436,6 +1564,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         goalSelector.addGoal(3, new HorseFollowOwnerGoal(self));
         goalSelector.addGoal(3, new HorseReturnHomeGoal(self));
         goalSelector.addGoal(3, new HorseWanderBoundsGoal(self));
+        goalSelector.addGoal(5, new HorseBegGoal(self));
     }
 
     @Unique private Vec3 bh_rearSeatShift = Vec3.ZERO;

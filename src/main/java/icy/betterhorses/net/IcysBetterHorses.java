@@ -36,7 +36,9 @@ import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -103,6 +105,7 @@ public class IcysBetterHorses {
         NeoForge.EVENT_BUS.addListener(this::onEntityJoin);
         NeoForge.EVENT_BUS.addListener(this::onEntityLeave);
         NeoForge.EVENT_BUS.addListener(this::onDetonate);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onLivingDeath);
         NeoForge.EVENT_BUS.addListener(this::onServerTick);
         NeoForge.EVENT_BUS.addListener(this::onServerStarted);
         NeoForge.EVENT_BUS.addListener(this::onServerStopping);
@@ -124,8 +127,9 @@ public class IcysBetterHorses {
                 handleCallHorse((ServerPlayer) context.player()));
         registrar.playToServer(HorseRecallPayload.TYPE, new HorseRecallPayload.StreamCodec(), (payload, context) ->
                 handleRecall((ServerPlayer) context.player()));
-        registrar.playToServer(OpenHorseRosterPayload.TYPE, new OpenHorseRosterPayload.StreamCodec(), (payload, context) ->
-                sendRoster((ServerPlayer) context.player()));
+        registrar.playToServer(OpenHorseRosterPayload.TYPE, new OpenHorseRosterPayload.StreamCodec(), (payload, context) -> {
+            if (BhFeature.HORSE_MANAGEMENT.on()) sendRoster((ServerPlayer) context.player());
+        });
         registrar.playToServer(HorseManagePayload.TYPE, new HorseManagePayload.StreamCodec(), (payload, context) ->
                 handleManageAction((ServerPlayer) context.player(), payload.horseId(), HorseManageAction.fromId(payload.actionOrdinal())));
         registrar.playToServer(HorseGearPayload.TYPE, new HorseGearPayload.StreamCodec(), (payload, context) ->
@@ -174,7 +178,7 @@ public class IcysBetterHorses {
                 RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
 
-    private void sendRoster(ServerPlayer player) {
+    private static void sendRoster(ServerPlayer player) {
         List<HorseRosterEntry> roster = HorseManagement.buildRoster(player);
         PacketDistributor.sendToPlayer(player, new HorseRosterSyncPayload(roster));
         if (!roster.isEmpty()) {
@@ -187,12 +191,17 @@ public class IcysBetterHorses {
         }
     }
 
-    private void handleManageAction(ServerPlayer player, UUID horseId, HorseManageAction action) {
+    public static void handleManageAction(ServerPlayer player, UUID horseId, HorseManageAction action) {
+        if (action != HorseManageAction.DISOWN && !BhFeature.HORSE_MANAGEMENT.on()) {
+            return;
+        }
         HorseManagement.Outcome outcome = switch (action) {
             case WHISTLE -> HorseManagement.whistle(player, horseId);
             case SEND_HOME -> HorseManagement.sendHome(player, horseId);
             case DISOWN -> HorseManagement.disown(player, horseId);
             case SET_ACTIVE -> HorseManagement.setActive(player, horseId);
+            case REVIVE -> HorseManagement.revive(player, horseId);
+            case FORGET -> HorseManagement.forget(player, horseId);
         };
 
         PacketDistributor.sendToPlayer(player,
@@ -295,7 +304,7 @@ public class IcysBetterHorses {
         HorseManagement.callNearestHorse(player);
     }
 
-    private void playWhistle(ServerPlayer player) {
+    private static void playWhistle(ServerPlayer player) {
         player.level().playSound(
                 null,
                 player.getX(),
@@ -315,7 +324,8 @@ public class IcysBetterHorses {
                 BhConfig.classAbilitiesEnabled(),
                 BhConfig.breedAbilitiesEnabled(),
                 BhConfig.disabledAbilities(),
-                BhConfig.tuning()));
+                BhConfig.tuning(),
+                BhConfig.breedingFoods()));
         PacketDistributor.sendToPlayer(player, BreedDataPayload.current());
     }
 
@@ -340,6 +350,14 @@ public class IcysBetterHorses {
             } else {
                 HorseTracker.register(horse);
             }
+        }
+    }
+
+    private void onLivingDeath(LivingDeathEvent event) {
+        if (event.getEntity() instanceof AbstractHorse horse && !horse.level().isClientSide()
+                && event.getSource().getEntity() instanceof ServerPlayer killer
+                && killer.getUUID().equals(IHorseData.of(horse).bh_getOwner())) {
+            BhCriteria.fire(killer, BhCriteria.KILL_OWN_HORSE);
         }
     }
 

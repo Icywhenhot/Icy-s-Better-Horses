@@ -3,6 +3,7 @@ package icy.betterhorses.net;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.attachment.AttachmentSyncHandler;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
@@ -45,6 +46,10 @@ public final class BhHorseAttachments {
     public static final AttachmentType<Integer> PULSE = integer(0);
     public static final AttachmentType<Integer> PERK = integer(0);
     public static final AttachmentType<Integer> CHARGE = integer(BhSurge.HIDDEN);
+    public static final AttachmentType<Integer> BEG = integer(0);
+    public static final AttachmentType<ItemStack> BANNER = synced(() -> ItemStack.EMPTY,
+            (buffer, stack) -> ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, stack),
+            ItemStack.OPTIONAL_STREAM_CODEC::decode);
 
     private BhHorseAttachments() {}
 
@@ -78,6 +83,8 @@ public final class BhHorseAttachments {
         register(event, "pulse", PULSE);
         register(event, "perk", PERK);
         register(event, "charge", CHARGE);
+        register(event, "beg", BEG);
+        register(event, "banner", BANNER);
     }
 
     private static void register(RegisterEvent event, String path, AttachmentType<?> type) {

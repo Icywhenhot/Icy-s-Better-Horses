@@ -36,6 +36,7 @@ import net.minecraft.world.entity.animal.horse.ZombieHorse;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Locale;
 import java.util.ArrayList;
 import java.util.function.Supplier;
 import java.util.Collections;
@@ -135,7 +136,7 @@ public enum HorseBreed {
     }
 
     public Component displayName() {
-        return Component.translatable("breed.icys-better-horses." + name().toLowerCase());
+        return Component.translatable("breed.icys-better-horses." + name().toLowerCase(Locale.ROOT));
     }
 
     public Component displayName(boolean mixed) {
@@ -144,7 +145,7 @@ public enum HorseBreed {
         }
         return Component.translatable(
                 "breed.icys-better-horses.mix_format",
-                Component.translatable("breed.icys-better-horses." + name().toLowerCase()));
+                Component.translatable("breed.icys-better-horses." + name().toLowerCase(Locale.ROOT)));
     }
 
     public List<Coat> allowedCoats() {

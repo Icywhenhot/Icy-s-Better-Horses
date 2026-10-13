@@ -15,12 +15,12 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(ServerGamePacketListenerImpl.class)
+@Mixin(value = ServerGamePacketListenerImpl.class, priority = 500)
 public abstract class VehicleStepMixin {
 
     @Shadow public ServerPlayer player;
 
-    @ModifyExpressionValue(method = "handleMoveVehicle", at = @At(value = "CONSTANT", args = "doubleValue=0.0625", ordinal = 1))
+    @ModifyExpressionValue(method = "handleMoveVehicle", at = @At(value = "CONSTANT", args = "doubleValue=0.0625", ordinal = 1), require = 0)
     private double bh_horseMissTolerance(double original) {
         return this.player.getRootVehicle() instanceof AbstractHorse ? 0.36D : original;
     }
