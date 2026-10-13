@@ -2,12 +2,17 @@ package icy.betterhorses.net;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -18,9 +23,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public final class BhConfig {
 
@@ -36,11 +43,14 @@ public final class BhConfig {
     private static final String KEY_GROUP_MIN = "spawn_group_min";
     private static final String KEY_GROUP_MAX = "spawn_group_max";
     private static final String KEY_SPAWN_FLOOR = "spawn_probability_floor";
+    private static final String KEY_REVIVE_LEVELS = "revive_xp_levels";
+    private static final String KEY_REVIVE_BOND_LOSS = "revive_bond_loss";
     private static final String KEY_HUD = "hud";
     private static final String KEY_METER_SIDE = "charge_meter_side";
     private static final String KEY_METER_GAP = "charge_meter_gap";
     private static final String KEY_HARNESS_SIDE = "harness_gauge_side";
     private static final String KEY_HARNESS_GAP = "harness_gauge_gap";
+    private static final String KEY_BREEDING_FOODS = "breeding_foods";
 
     public static final int MAX_HUD_GAP = 100;
 
@@ -54,6 +64,8 @@ public final class BhConfig {
 
     public static final Spot DEFAULT_METER = new Spot(Side.RIGHT, 4);
     public static final Spot DEFAULT_HARNESS = new Spot(Side.LEFT, 4);
+    public static final List<String> DEFAULT_BREEDING_FOODS = List.of(
+            "minecraft:golden_carrot", "minecraft:golden_apple", "minecraft:enchanted_golden_apple");
 
     private static final Path CONFIG_PATH = FMLPaths.CONFIGDIR.get()
             .resolve(IcysBetterHorses.RESOURCE_NAMESPACE + ".json");
@@ -69,12 +81,15 @@ public final class BhConfig {
     private static boolean breedMaster = true;
     private static Spot meter = DEFAULT_METER;
     private static Spot harness = DEFAULT_HARNESS;
+    private static List<String> breedingFoods = DEFAULT_BREEDING_FOODS;
+    private static volatile @Nullable Set<Item> breedingItems;
 
     private static @Nullable EnumMap<BhFeature, Boolean> ownFeatures;
     private static @Nullable EnumMap<BhAbility, Boolean> ownAbilities;
     private static @Nullable BhTuning ownTuning;
     private static boolean ownClassMaster;
     private static boolean ownBreedMaster;
+    private static @Nullable List<String> ownBreedingFoods;
 
     static {
         reset();
@@ -94,6 +109,8 @@ public final class BhConfig {
         breedMaster = true;
         meter = DEFAULT_METER;
         harness = DEFAULT_HARNESS;
+        breedingFoods = DEFAULT_BREEDING_FOODS;
+        breedingItems = null;
     }
 
     public static boolean featureEnabled(BhFeature feature) {
@@ -121,14 +138,18 @@ public final class BhConfig {
     }
 
     public static synchronized void adoptServer(List<String> offFeatures, boolean classOn, boolean breedOn,
-                                                List<String> offAbilities, BhTuning serverTuning) {
+                                                List<String> offAbilities, BhTuning serverTuning,
+                                                List<String> serverFoods) {
         if (ownFeatures == null) {
             ownFeatures = new EnumMap<>(features);
             ownAbilities = new EnumMap<>(abilities);
             ownTuning = tuning;
             ownClassMaster = classMaster;
             ownBreedMaster = breedMaster;
+            ownBreedingFoods = breedingFoods;
         }
+        breedingFoods = List.copyOf(serverFoods);
+        breedingItems = null;
         for (BhFeature feature : BhFeature.values()) {
             features.put(feature, !offFeatures.contains(feature.key()));
         }
@@ -151,9 +172,14 @@ public final class BhConfig {
         tuning = ownTuning;
         classMaster = ownClassMaster;
         breedMaster = ownBreedMaster;
+        if (ownBreedingFoods != null) {
+            breedingFoods = ownBreedingFoods;
+            breedingItems = null;
+        }
         ownFeatures = null;
         ownAbilities = null;
         ownTuning = null;
+        ownBreedingFoods = null;
     }
 
     public static boolean serverManaged() {
@@ -238,6 +264,64 @@ public final class BhConfig {
         save();
     }
 
+    public static List<String> breedingFoods() {
+        return breedingFoods;
+    }
+
+    public static List<String> breedingFoodsView() {
+        return ownBreedingFoods != null ? ownBreedingFoods : breedingFoods;
+    }
+
+    public static synchronized void applyBreedingFoods(List<String> wanted) {
+        List<String> clean = cleanIds(wanted);
+        if (ownBreedingFoods != null) {
+            ownBreedingFoods = clean;
+        } else {
+            breedingFoods = clean;
+            breedingItems = null;
+        }
+        save();
+    }
+
+    public static boolean breedingFood(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return false;
+        }
+        Set<Item> items = breedingItems;
+        if (items == null) {
+            items = resolveFoods(breedingFoods);
+            breedingItems = items;
+        }
+        return items.contains(stack.getItem());
+    }
+
+    public static boolean knownItem(String raw) {
+        ResourceLocation id = ResourceLocation.tryParse(raw.trim());
+        return id != null && ForgeRegistries.ITEMS.containsKey(id);
+    }
+
+    private static Set<Item> resolveFoods(List<String> ids) {
+        Set<Item> out = new HashSet<>();
+        for (String raw : ids) {
+            ResourceLocation id = ResourceLocation.tryParse(raw);
+            if (id == null || !ForgeRegistries.ITEMS.containsKey(id)) {
+                IcysBetterHorses.LOGGER.warn("Breeding food '{}' is not an item, skipping it", raw);
+                continue;
+            }
+            out.add(ForgeRegistries.ITEMS.getValue(id));
+        }
+        return Set.copyOf(out);
+    }
+
+    private static List<String> cleanIds(List<String> raw) {
+        List<String> out = new ArrayList<>();
+        for (String id : raw) {
+            String trimmed = id == null ? "" : id.trim();
+            if (!trimmed.isEmpty() && !out.contains(trimmed)) out.add(trimmed);
+        }
+        return List.copyOf(out);
+    }
+
     public static Spot chargeMeter() {
         return meter;
     }
@@ -298,7 +382,10 @@ public final class BhConfig {
                         readInt(numbers, KEY_SPAWN_WEIGHT, fallback.spawnWeight()),
                         readInt(numbers, KEY_GROUP_MIN, fallback.groupMin()),
                         readInt(numbers, KEY_GROUP_MAX, fallback.groupMax()),
-                        readDouble(numbers, KEY_SPAWN_FLOOR, fallback.spawnFloor())).clamped();
+                        readDouble(numbers, KEY_SPAWN_FLOOR, fallback.spawnFloor()),
+                        readInt(numbers, KEY_REVIVE_LEVELS, fallback.reviveLevels()),
+                        readInt(numbers, KEY_REVIVE_BOND_LOSS, fallback.reviveBondLoss())).clamped();
+                needsRewrite |= !numbers.has(KEY_REVIVE_LEVELS) || !numbers.has(KEY_REVIVE_BOND_LOSS);
             }
 
             needsRewrite |= !root.has(KEY_HUD);
@@ -306,6 +393,15 @@ public final class BhConfig {
             if (hud != null) {
                 meter = readSpot(hud, KEY_METER_SIDE, KEY_METER_GAP, DEFAULT_METER);
                 harness = readSpot(hud, KEY_HARNESS_SIDE, KEY_HARNESS_GAP, DEFAULT_HARNESS);
+            }
+
+            needsRewrite |= !root.has(KEY_BREEDING_FOODS);
+            if (root.get(KEY_BREEDING_FOODS) instanceof JsonArray foods) {
+                List<String> ids = new ArrayList<>();
+                for (JsonElement food : foods) {
+                    if (food.isJsonPrimitive()) ids.add(food.getAsString());
+                }
+                breedingFoods = cleanIds(ids);
             }
         } catch (Exception exception) {
             reset();
@@ -469,6 +565,8 @@ public final class BhConfig {
         numbers.addProperty(KEY_GROUP_MIN, mineTuning.groupMin());
         numbers.addProperty(KEY_GROUP_MAX, mineTuning.groupMax());
         numbers.addProperty(KEY_SPAWN_FLOOR, mineTuning.spawnFloor());
+        numbers.addProperty(KEY_REVIVE_LEVELS, mineTuning.reviveLevels());
+        numbers.addProperty(KEY_REVIVE_BOND_LOSS, mineTuning.reviveBondLoss());
         root.add(KEY_TUNING, numbers);
 
         JsonObject hud = new JsonObject();
@@ -477,6 +575,12 @@ public final class BhConfig {
         hud.addProperty(KEY_HARNESS_SIDE, harness.side().name().toLowerCase(Locale.ROOT));
         hud.addProperty(KEY_HARNESS_GAP, harness.gap());
         root.add(KEY_HUD, hud);
+
+        JsonArray foods = new JsonArray();
+        for (String id : ownBreedingFoods != null ? ownBreedingFoods : breedingFoods) {
+            foods.add(id);
+        }
+        root.add(KEY_BREEDING_FOODS, foods);
 
         try {
             Files.createDirectories(CONFIG_PATH.getParent());

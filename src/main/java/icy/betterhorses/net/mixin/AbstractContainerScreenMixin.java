@@ -42,6 +42,12 @@ public abstract class AbstractContainerScreenMixin {
         if (slotId == BH_SADDLE_SLOT && layoutAccess.bh_isSaddleSlotLocked()) {
             bh_refuse(slotId, "message.icys-better-horses.saddle_cart_attached");
             ci.cancel();
+            return;
+        }
+        if (slotId >= 0 && slotId == layoutAccess.bh_getBannerSlotIndex() && layoutAccess.bh_isBannerSlotLocked()
+                && slot != null && !slot.hasItem()) {
+            bh_refuse(slotId, "message.icys-better-horses.banner_needs_armor");
+            ci.cancel();
         }
     }
 

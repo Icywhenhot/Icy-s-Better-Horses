@@ -14,6 +14,8 @@ import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.PlayerEnderChestContainer;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.BannerItem;
+import net.minecraft.world.entity.animal.horse.Llama;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.spongepowered.asm.mixin.Mixin;
@@ -40,9 +42,12 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
     @Unique private static final int BH_MAX_CHEST_ROWS = 6;
     @Unique private static final int BH_ROW_HEIGHT = 18;
     @Unique private static final int BH_CHEST_GAP = 7;
+    @Unique private static final int BH_BANNER_SLOT_X = 8;
+    @Unique private static final int BH_BANNER_SLOT_Y = 54;
 
     @Unique private int bh_gearStartIndex = -1;
     @Unique private int bh_chestStartIndex = -1;
+    @Unique private int bh_bannerSlotIndex = -1;
     @Unique private int bh_playerInventoryStartIndex = -1;
     @Unique private int bh_playerInventoryEndIndex = -1;
     @Unique private int bh_appliedShift = 0;
@@ -68,7 +73,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return (stack.is(Items.SADDLE) || stack.is(ModItems.UPGRADED_SADDLE.get()))
-                        && !hasItem() && horse.isSaddleable();
+                        && horse.isSaddleable();
             }
 
             @Override
@@ -239,7 +244,40 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
             }
         }
 
+        this.bh_bannerSlotIndex = this.slots.size();
+        this.addSlot(new Slot(data.bh_getBannerContainer(), 0, BH_BANNER_SLOT_X, BH_BANNER_SLOT_Y) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return stack.getItem() instanceof BannerItem && !HorseInventoryMenuMixin.this.bh_isBannerSlotLocked();
+            }
+
+            @Override
+            public boolean isActive() {
+                return HorseInventoryMenuMixin.this.bh_takesBanner();
+            }
+
+            @Override
+            public int getMaxStackSize() {
+                return 1;
+            }
+        });
+
         this.bh_refreshLayout();
+    }
+
+    @Unique
+    private boolean bh_takesBanner() {
+        return this.bh_horse != null && this.bh_horse.canWearArmor() && !(this.bh_horse instanceof Llama);
+    }
+
+    @Override
+    public int bh_getBannerSlotIndex() {
+        return this.bh_takesBanner() ? this.bh_bannerSlotIndex : -1;
+    }
+
+    @Override
+    public boolean bh_isBannerSlotLocked() {
+        return this.slots.size() < 2 || !this.slots.get(1).hasItem();
     }
 
     @Override

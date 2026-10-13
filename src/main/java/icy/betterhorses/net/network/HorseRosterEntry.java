@@ -21,7 +21,8 @@ public record HorseRosterEntry(
         int variantOrdinal,
         int markingsOrdinal,
         boolean baby,
-        int breedCoat) {
+        int breedCoat,
+        boolean dead) {
 
     public static void encode(FriendlyByteBuf buf, HorseRosterEntry entry) {
         buf.writeUUID(entry.horseId());
@@ -40,6 +41,7 @@ public record HorseRosterEntry(
         buf.writeVarInt(entry.markingsOrdinal() + 1);
         buf.writeBoolean(entry.baby());
         buf.writeVarInt(entry.breedCoat() + 1);
+        buf.writeBoolean(entry.dead());
     }
 
     public static HorseRosterEntry decode(FriendlyByteBuf buf) {
@@ -59,6 +61,7 @@ public record HorseRosterEntry(
                 buf.readVarInt() - 1,
                 buf.readVarInt() - 1,
                 buf.readBoolean(),
-                buf.readVarInt() - 1);
+                buf.readVarInt() - 1,
+                buf.readBoolean());
     }
 }

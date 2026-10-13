@@ -169,6 +169,11 @@ dependencies {
 //    runtimeOnly fg.deobf("maven.modrinth:epic-knights-shields-armor-and-weapons:gJ59URg4")
 //    runtimeOnly fg.deobf("maven.modrinth:minecraft-comes-alive-reborn:ip2SUUyf")
     runtimeOnly fg.deobf("maven.modrinth:touhou-little-maid:g1SKoGQJ")
+    runtimeOnly fg.deobf("maven.modrinth:millager:4s3ZoRs2")
+    runtimeOnly fg.deobf("maven.modrinth:kindred:fn04bTCn")
+    runtimeOnly fg.deobf("maven.modrinth:armed-and-varied:itoe4so0")
+    runtimeOnly fg.deobf("maven.modrinth:im-fast:4h9uIxyK")
+//    runtimeOnly fg.deobf("maven.modrinth:yes-steve-model:Zqooxsd2")
     compileOnly fg.deobf("maven.modrinth:curios:IPQlZkz1")
 //    runtimeOnly fg.deobf("maven.modrinth:curios:IPQlZkz1")
 

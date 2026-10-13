@@ -87,6 +87,14 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
                         && this.moveItemStackTo(sourceStack, 0, 1, false);
             }
 
+            int bannerIndex = layoutAccess.bh_getBannerSlotIndex();
+            if (!moved && bannerIndex >= 0) {
+                Slot banner = this.getSlot(bannerIndex);
+                moved = banner.mayPlace(sourceStack)
+                        && !banner.hasItem()
+                        && this.moveItemStackTo(sourceStack, bannerIndex, bannerIndex + 1, false);
+            }
+
             if (!moved && this.bh_hasUpgradedSaddleInMenu()) {
                 moved = this.bh_moveIntoFirstMatchingGearSlot(sourceStack, gearStartIndex, chestStartIndex);
                 if (!moved && this.bh_hasChestGearInMenu(gearStartIndex)) {

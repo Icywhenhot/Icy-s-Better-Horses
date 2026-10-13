@@ -1,0 +1,31 @@
+{
+  "criteria": {
+    "kill_own_horse": {
+      "conditions": {
+        "key": "kill_own_horse"
+      },
+      "trigger": "icys-better-horses:milestone"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.icys-better-horses.desperate_for_leather.description"
+    },
+    "frame": "task",
+    "hidden": true,
+    "icon": {
+      "item": "minecraft:leather"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.icys-better-horses.desperate_for_leather.title"
+    }
+  },
+  "parent": "icys-better-horses:hold_your_horses",
+  "requirements": [
+    [
+      "kill_own_horse"
+    ]
+  ]
+}

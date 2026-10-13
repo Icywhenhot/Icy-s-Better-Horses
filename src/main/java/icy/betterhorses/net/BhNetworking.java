@@ -39,7 +39,7 @@ import java.util.function.Supplier;
 
 public final class BhNetworking {
 
-    private static final String PROTOCOL_VERSION = "8";
+    private static final String PROTOCOL_VERSION = "9";
     private static final ResourceLocation CHANNEL_ID =
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "main");
     private static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
@@ -62,7 +62,9 @@ public final class BhNetworking {
         toServer(HorseRecallPayload.class, HorseRecallPayload::encode, HorseRecallPayload::decode,
                 (payload, player) -> IcysBetterHorses.handleRecall(player));
         toServer(OpenHorseRosterPayload.class, OpenHorseRosterPayload::encode, OpenHorseRosterPayload::decode,
-                (payload, player) -> IcysBetterHorses.sendRoster(player));
+                (payload, player) -> {
+                    if (BhFeature.HORSE_MANAGEMENT.on()) IcysBetterHorses.sendRoster(player);
+                });
         toServer(HorseManagePayload.class, HorseManagePayload::encode, HorseManagePayload::decode,
                 (payload, player) -> IcysBetterHorses.handleManageAction(
                         player, payload.horseId(), HorseManageAction.fromId(payload.actionOrdinal())));

@@ -84,8 +84,14 @@ public final class IcysBetterHorsesClientForgeEvents {
         }
 
         while (IcysBetterHorsesClient.MANAGE_KEY.consumeClick()) {
-            if (client.screen == null) {
+            if (client.screen != null) {
+                continue;
+            }
+            if (BhFeature.HORSE_MANAGEMENT.on()) {
                 client.setScreen(new HorseRosterScreen());
+            } else {
+                client.gui.setOverlayMessage(
+                        Component.translatable("message.icys-better-horses.manage.disabled"), false);
             }
         }
 

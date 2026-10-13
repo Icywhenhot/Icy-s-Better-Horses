@@ -4,7 +4,9 @@ public enum HorseManageAction {
     WHISTLE,
     SEND_HOME,
     DISOWN,
-    SET_ACTIVE;
+    SET_ACTIVE,
+    REVIVE,
+    FORGET;
 
     public static HorseManageAction fromId(int id) {
         HorseManageAction[] values = values();

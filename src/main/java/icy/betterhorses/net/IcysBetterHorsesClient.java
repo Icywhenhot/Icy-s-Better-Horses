@@ -167,7 +167,7 @@ public final class IcysBetterHorsesClient {
     public static void receiveConfig(ConfigSyncPayload payload) {
         if (Minecraft.getInstance().hasSingleplayerServer()) return;
         BhConfig.adoptServer(payload.disabledFeatures(), payload.classAbilities(),
-                payload.breedAbilities(), payload.disabledAbilities(), payload.tuning());
+                payload.breedAbilities(), payload.disabledAbilities(), payload.tuning(), payload.breedingFoods());
     }
 
     public static void receiveBreeds(BreedDataPayload payload) {
