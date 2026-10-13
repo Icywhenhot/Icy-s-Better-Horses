@@ -238,6 +238,11 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
             return;
         }
         AbstractHorse horse = bh_lookedAtHorse(player);
+        // a rider cannot look at the horse under them, so the wheel opens for it
+        if (horse == null && BhHorseKind.managed(player.getVehicle())
+                && player.getVehicle() instanceof AbstractHorse mount) {
+            horse = mount;
+        }
         if (horse == null || !horse.isTamed()) {
             return;
         }
