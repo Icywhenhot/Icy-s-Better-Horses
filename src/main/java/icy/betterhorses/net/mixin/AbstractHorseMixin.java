@@ -137,6 +137,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Unique private volatile @Nullable UUID bh_owner = null;
     @Unique private ResourceKey<CommandType> bh_command = BhContent.COMMAND_FOLLOW.key();
+    @Unique private static final double BH_SADDLE_ORDER_REACH_SQ = 16.0D;
+    @Unique private @Nullable Vec3 bh_saddleOrderAt;
     @Unique private @Nullable BlockPos bh_home = null;
     @Unique private @Nullable ResourceKey<Level> bh_homeDim = null;
     @Unique private @Nullable BlockPos bh_wanderCenter = null;
@@ -367,6 +369,18 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     public void bh_setCommand(ResourceKey<CommandType> command) {
         this.bh_command = command;
         bh_push(BH_COMMAND_ID, command.location().toString());
+    }
+
+    @Override
+    public boolean bh_hasSaddleOrder() {
+        // ridden on from where it was given, the order no longer stands
+        return bh_saddleOrderAt != null
+                && ((AbstractHorse) (Object) this).position().distanceToSqr(bh_saddleOrderAt) <= BH_SADDLE_ORDER_REACH_SQ;
+    }
+
+    @Override
+    public void bh_setSaddleOrder(boolean ordered) {
+        this.bh_saddleOrderAt = ordered ? ((AbstractHorse) (Object) this).position() : null;
     }
 
     @Override
