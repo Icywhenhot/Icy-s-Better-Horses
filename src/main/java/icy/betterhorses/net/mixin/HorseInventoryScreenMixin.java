@@ -2,6 +2,7 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhJumpHeight;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.client.BhAnim;
@@ -270,7 +271,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique
     private void bh_drawStatsLines(GuiGraphics gfx, AbstractHorse horse) {
         double speedBps = horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * 43.2D;
-        double jumpBlk = Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D);
+        double jumpBlk = BhJumpHeight.blocks(horse.getAttributeValue(Attributes.JUMP_STRENGTH));
         String speedText = String.format(Locale.ROOT, "Speed: %.1f blk/s", speedBps);
         String jumpText = String.format(Locale.ROOT, "Jump:  %.1f blk", jumpBlk);
 
