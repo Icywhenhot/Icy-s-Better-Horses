@@ -9,10 +9,12 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +33,7 @@ public final class BhTackTextures {
 
     private final String base;
     private final Map<Item, Identifier> armors = new HashMap<>();
+    private final Map<DyeColor, Identifier> carpets = new EnumMap<>(DyeColor.class);
     private final Identifier saddle;
     private final Identifier saddleUpgraded;
     private final Identifier chest;
@@ -57,6 +60,9 @@ public final class BhTackTextures {
         this.armorDiamond = tex(base, "armor_diamond");
         this.armorNetherite = tex(base, "armor_netherite");
         this.armorGeneric = tex(base, "armor_generic");
+        for (DyeColor color : DyeColor.VALUES) {
+            this.carpets.put(color, tex(base, "carpet/" + color.getName()));
+        }
     }
 
     public static void register() {
@@ -86,6 +92,10 @@ public final class BhTackTextures {
 
     public Identifier saddle(ItemStack stack) {
         return stack.is(ModItems.UPGRADED_SADDLE) ? saddleUpgraded : saddle;
+    }
+
+    public Identifier carpet(DyeColor color) {
+        return carpets.get(color);
     }
 
     public Identifier armor(ItemStack stack) {

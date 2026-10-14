@@ -1,9 +1,12 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.client.render.BhMountedHorseVisibility;
 import icy.betterhorses.net.client.render.BhBannerLayer;
+import icy.betterhorses.net.client.render.BhBreedCarpets;
+import icy.betterhorses.net.entity.BhBreedHorse;
 import icy.betterhorses.net.client.render.BhHorseRenderState;
 import icy.betterhorses.net.client.HorsePreviewCache;
 import net.minecraft.world.item.ItemStack;
@@ -63,6 +66,12 @@ public abstract class AbstractHorseRendererMixin<
         if (state instanceof BhHorseRenderState breedState) {
             breedState.begTilt = extState.bh_getBegTilt();
             breedState.previewTint = HorsePreviewCache.tint(entity);
+            breedState.carpet = entity instanceof IHorseData horseData && state.saddle.is(ModItems.UPGRADED_SADDLE)
+                    ? horseData.bh_getCarpet()
+                    : null;
+            breedState.carpetTexture = breedState.carpet != null && entity instanceof BhBreedHorse breedHorse
+                    ? BhBreedCarpets.carpet(breedHorse, breedState.carpet)
+                    : null;
         }
         minecraft.getItemModelResolver().updateForLiving(extState.bh_getBanner(),
                 entity instanceof IHorseData horseData && !entity.getBodyArmorItem().isEmpty()

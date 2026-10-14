@@ -21,8 +21,14 @@ public class SmallHorseRenderer<T extends SmallHorse>
         this.addLayer(BhTackLayer.<BhHorseRenderState, SmallHorseModel>forItem(this,
                 new SmallHorseModel(context.bakeLayer(BhModelLayers.SMALL_SADDLE)),
                 new SmallHorseModel(context.bakeLayer(BhModelLayers.SMALL_SADDLE_BABY)),
-                state -> state.saddle,
+                state -> state.carpet == null ? state.saddle : null,
                 BhTackTextures.SMALL::saddle));
+
+        this.addLayer(new BhTackLayer<>(this,
+                new SmallHorseModel(context.bakeLayer(BhModelLayers.SMALL_CARPET)),
+                new SmallHorseModel(context.bakeLayer(BhModelLayers.SMALL_CARPET_BABY)),
+                state -> state.carpet == null ? null
+                        : state.carpetTexture != null ? state.carpetTexture : BhTackTextures.SMALL.carpet(state.carpet)));
 
         this.addLayer(BhTackLayer.<BhHorseRenderState, SmallHorseModel>forArmor(this,
                 new SmallHorseModel(context.bakeLayer(BhModelLayers.SMALL_ARMOR)),

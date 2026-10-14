@@ -24,8 +24,14 @@ public class FriesianHorseRenderer
         this.addLayer(BhTackLayer.<BhHorseRenderState, FriesianHorseModel>forItem(this,
                 new FriesianHorseModel(context.bakeLayer(BhModelLayers.FRIESIAN_SADDLE)),
                 new FriesianHorseModel(context.bakeLayer(BhModelLayers.FRIESIAN_SADDLE_BABY)),
-                state -> state.saddle,
+                state -> state.carpet == null ? state.saddle : null,
                 BhTackTextures.FRIESIAN::saddle));
+
+        this.addLayer(new BhTackLayer<>(this,
+                new FriesianHorseModel(context.bakeLayer(BhModelLayers.FRIESIAN_CARPET)),
+                new FriesianHorseModel(context.bakeLayer(BhModelLayers.FRIESIAN_CARPET_BABY)),
+                state -> state.carpet == null ? null
+                        : state.carpetTexture != null ? state.carpetTexture : BhTackTextures.FRIESIAN.carpet(state.carpet)));
 
         this.addLayer(BhTackLayer.<BhHorseRenderState, FriesianHorseModel>forArmor(this,
                 new FriesianHorseModel(context.bakeLayer(BhModelLayers.FRIESIAN_ARMOR)),

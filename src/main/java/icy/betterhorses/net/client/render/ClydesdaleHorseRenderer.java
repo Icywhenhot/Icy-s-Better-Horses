@@ -24,8 +24,14 @@ public class ClydesdaleHorseRenderer
         this.addLayer(BhTackLayer.<BhHorseRenderState, ClydesdaleHorseModel>forItem(this,
                 new ClydesdaleHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_SADDLE)),
                 new ClydesdaleHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_SADDLE_BABY)),
-                state -> state.saddle,
+                state -> state.carpet == null ? state.saddle : null,
                 BhTackTextures.PERCHERON::saddle));
+
+        this.addLayer(new BhTackLayer<>(this,
+                new ClydesdaleHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_CARPET)),
+                new ClydesdaleHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_CARPET_BABY)),
+                state -> state.carpet == null ? null
+                        : state.carpetTexture != null ? state.carpetTexture : BhTackTextures.PERCHERON.carpet(state.carpet)));
 
         this.addLayer(BhTackLayer.<BhHorseRenderState, ClydesdaleHorseModel>forArmor(this,
                 new ClydesdaleHorseModel(context.bakeLayer(BhModelLayers.PERCHERON_ARMOR)),

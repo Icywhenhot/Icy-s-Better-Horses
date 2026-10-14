@@ -24,8 +24,14 @@ public class BelgianHorseRenderer
         this.addLayer(BhTackLayer.<BhHorseRenderState, BelgianHorseModel>forItem(this,
                 new BelgianHorseModel(context.bakeLayer(BhModelLayers.BELGIAN_SADDLE)),
                 new BelgianHorseModel(context.bakeLayer(BhModelLayers.BELGIAN_SADDLE_BABY)),
-                state -> state.saddle,
+                state -> state.carpet == null ? state.saddle : null,
                 BhTackTextures.BELGIAN::saddle));
+
+        this.addLayer(new BhTackLayer<>(this,
+                new BelgianHorseModel(context.bakeLayer(BhModelLayers.BELGIAN_CARPET)),
+                new BelgianHorseModel(context.bakeLayer(BhModelLayers.BELGIAN_CARPET_BABY)),
+                state -> state.carpet == null ? null
+                        : state.carpetTexture != null ? state.carpetTexture : BhTackTextures.BELGIAN.carpet(state.carpet)));
 
         this.addLayer(BhTackLayer.<BhHorseRenderState, BelgianHorseModel>forArmor(this,
                 new BelgianHorseModel(context.bakeLayer(BhModelLayers.BELGIAN_ARMOR)),

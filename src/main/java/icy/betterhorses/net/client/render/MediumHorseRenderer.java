@@ -21,8 +21,14 @@ public class MediumHorseRenderer<T extends MediumHorse>
         this.addLayer(BhTackLayer.<BhHorseRenderState, MediumHorseModel>forItem(this,
                 new MediumHorseModel(context.bakeLayer(BhModelLayers.MEDIUM_SADDLE)),
                 new MediumHorseModel(context.bakeLayer(BhModelLayers.MEDIUM_SADDLE_BABY)),
-                state -> state.saddle,
+                state -> state.carpet == null ? state.saddle : null,
                 BhTackTextures.MEDIUM::saddle));
+
+        this.addLayer(new BhTackLayer<>(this,
+                new MediumHorseModel(context.bakeLayer(BhModelLayers.MEDIUM_CARPET)),
+                new MediumHorseModel(context.bakeLayer(BhModelLayers.MEDIUM_CARPET_BABY)),
+                state -> state.carpet == null ? null
+                        : state.carpetTexture != null ? state.carpetTexture : BhTackTextures.MEDIUM.carpet(state.carpet)));
 
         this.addLayer(BhTackLayer.<BhHorseRenderState, MediumHorseModel>forArmor(this,
                 new MediumHorseModel(context.bakeLayer(BhModelLayers.MEDIUM_ARMOR)),
