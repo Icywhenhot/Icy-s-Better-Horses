@@ -99,6 +99,7 @@ public class IcysBetterHorses {
         BhContent.register(modEventBus);
         modEventBus.addListener(this::onCommonSetup);
         NeoForge.EVENT_BUS.addListener(BhBreedLoader::register);
+        NeoForge.EVENT_BUS.addListener(BhClassLoader::register);
         NeoForge.EVENT_BUS.addListener(BhCommands::register);
         NeoForge.EVENT_BUS.addListener(this::onPlayerJoin);
         NeoForge.EVENT_BUS.addListener(this::onDatapackSync);

@@ -67,6 +67,10 @@
     {
       "id": "caverns_and_chasms:waxed_oxidized_copper_horse_armor",
       "required": false
+    },
+    {
+      "id": "iss_magicfromtheeast:jade_pagoda_horse_armor",
+      "required": false
     }
   ]
 }

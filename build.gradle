@@ -151,7 +151,7 @@ dependencies {
 //    localRuntime "maven.modrinth:zeta:9GjNW2Gf"
 //    localRuntime "maven.modrinth:biolith:EAjbdreT"
     compileOnly "maven.modrinth:curios:yohfFbgD"
-//    localRuntime "maven.modrinth:curios:yohfFbgD"
+    localRuntime "maven.modrinth:curios:yohfFbgD"
 
 //    localRuntime "maven.modrinth:tooltip-overhaul:aclR21OH"
     compileOnly "maven.modrinth:blueprint:FHOjk8Ez"
@@ -176,6 +176,9 @@ dependencies {
     localRuntime "maven.modrinth:kindred:sVaj1W1z"
     localRuntime "maven.modrinth:im-fast:FWI4gJ6y"
     localRuntime "maven.modrinth:vercte-satchels:NSJsKbgX"
+    localRuntime "maven.modrinth:estrogen:jLNES5cw"
+    localRuntime "maven.modrinth:cynosure:lpFSq579"
+    localRuntime "maven.modrinth:kotlin-for-forge:uhJhCT7X"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"

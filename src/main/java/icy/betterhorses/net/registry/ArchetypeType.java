@@ -9,8 +9,10 @@ import java.util.List;
 
 public final class ArchetypeType {
 
-    private final double lowSpeed;
-    private final double highSpeed;
+    private final double builtInLowSpeed;
+    private final double builtInHighSpeed;
+    private double lowSpeed;
+    private double highSpeed;
     private final double lowHealth;
     private final double highHealth;
     private final double lowJump;
@@ -34,6 +36,8 @@ public final class ArchetypeType {
     private final List<ResourceKey<AbilityType>> classPerks;
 
     private ArchetypeType(Builder builder) {
+        this.builtInLowSpeed = builder.lowSpeed;
+        this.builtInHighSpeed = builder.highSpeed;
         this.lowSpeed = builder.lowSpeed;
         this.highSpeed = builder.highSpeed;
         this.lowHealth = builder.lowHealth;
@@ -65,6 +69,18 @@ public final class ArchetypeType {
 
     public double highSpeed() {
         return highSpeed;
+    }
+
+    public void setSpeed(double low, double high) {
+        this.lowSpeed = low;
+        this.highSpeed = high;
+    }
+
+    public static void resetSpeeds() {
+        for (ArchetypeType a : BhRegistries.archetypeTypeRegistry()) {
+            a.lowSpeed = a.builtInLowSpeed;
+            a.highSpeed = a.builtInHighSpeed;
+        }
     }
 
     public double lowHealth() {

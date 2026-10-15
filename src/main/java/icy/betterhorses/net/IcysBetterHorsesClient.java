@@ -31,6 +31,7 @@ import icy.betterhorses.net.network.HorseJumpPayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.BreedDataPayload;
+import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.BhChargePayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
@@ -84,6 +85,7 @@ import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.client.settings.KeyModifier;
 
 import java.util.UUID;
+import com.klikli_dev.modonomicon.data.BookDataManager;
 import com.klikli_dev.modonomicon.client.render.page.PageRendererRegistry;
 import icy.betterhorses.net.book.BhBreedCoatsPage;
 import icy.betterhorses.net.book.BhCartModelsPage;
@@ -280,6 +282,10 @@ public class IcysBetterHorsesClient {
             BhNamedCoats.clearCache();
             BhBreedCarpets.clearCache();
             BhJumpClips.load(manager);
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.level != null && BookDataManager.get().areBooksBuilt()) {
+                BookDataManager.get().prerenderMarkdown(mc.level.registryAccess());
+            }
         });
     }
 
@@ -338,6 +344,7 @@ public class IcysBetterHorsesClient {
     public static void receiveBreeds(BreedDataPayload payload) {
         if (Minecraft.getInstance().hasSingleplayerServer()) return;
         BhBreedData.replaceAll(payload.toMap());
+        payload.applyClassSpeeds();
         tookServerBreeds = true;
     }
 
@@ -345,6 +352,7 @@ public class IcysBetterHorsesClient {
         BhConfig.dropServer();
         if (tookServerBreeds) {
             BhBreedData.resetToBuiltIn();
+            ArchetypeType.resetSpeeds();
             tookServerBreeds = false;
         }
         BhClientCaches.resetAll();
