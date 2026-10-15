@@ -8,6 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.fabricmc.loader.api.FabricLoader;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +19,7 @@ public final class BhRiderSeat {
 
     private static final double LARGE_SEAT_LIFT = 0.25D;
     private static final double PLAYER_SEAT_DROP = 0.6D;
+    private static final boolean TLM = FabricLoader.getInstance().isModLoaded("touhou_little_maid");
     private static final double PLAYER_RIDING_OFFSET = 0.35D;
     private static final float HUMANOID_HEIGHT = 1.2F;
 
@@ -30,7 +32,7 @@ public final class BhRiderSeat {
     }
 
     public static double seatDrop(Entity passenger) {
-        if (passenger instanceof Player) {
+        if (passenger instanceof Player || TLM && BhYsmMaids.ysm(passenger)) {
             return PLAYER_SEAT_DROP;
         }
         double offset = passenger.getMyRidingOffset();

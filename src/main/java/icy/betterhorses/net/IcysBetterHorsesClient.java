@@ -33,6 +33,7 @@ import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.entity.IcelandicHorse;
 import icy.betterhorses.net.network.BhRearPayload;
 import icy.betterhorses.net.network.BreedDataPayload;
+import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.CartMenuPayload;
 import icy.betterhorses.net.network.ConfigSyncPayload;
@@ -114,6 +115,12 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
             GLFW.GLFW_KEY_V,
             KEY_CATEGORY);
 
+    public static final KeyMapping GEAR_DOWN_KEY = new KeyMapping(
+            "key.icys-better-horses.gear_down",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_Z,
+            KEY_CATEGORY);
+
     public static final KeyMapping REAR_KEY = new KeyMapping(
             "key.icys-better-horses.rear",
             InputConstants.Type.KEYSYM,
@@ -189,6 +196,7 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         KeyBindingHelper.registerKeyBinding(RADIAL_KEY);
         KeyBindingHelper.registerKeyBinding(MANAGE_KEY);
         KeyBindingHelper.registerKeyBinding(GEAR_KEY);
+        KeyBindingHelper.registerKeyBinding(GEAR_DOWN_KEY);
         KeyBindingHelper.registerKeyBinding(REAR_KEY);
         KeyBindingHelper.registerKeyBinding(FREE_LOOK_KEY);
         KeyBindingHelper.registerKeyBinding(CART_MENU_KEY);
@@ -271,6 +279,7 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
     public static void receiveBreeds(BreedDataPayload payload) {
         if (Minecraft.getInstance().hasSingleplayerServer()) return;
         BhBreedData.replaceAll(payload.toMap());
+        payload.applyClassSpeeds();
         tookServerBreeds = true;
     }
 
@@ -340,7 +349,11 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         }
 
         while (IcysBetterHorsesClient.GEAR_KEY.consumeClick()) {
-            shiftGear(client);
+            shiftGear(client, 1);
+        }
+
+        while (IcysBetterHorsesClient.GEAR_DOWN_KEY.consumeClick()) {
+            shiftGear(client, -1);
         }
 
         while (IcysBetterHorsesClient.REAR_KEY.consumeClick()) {
@@ -376,7 +389,7 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         }
     }
 
-    private static void shiftGear(Minecraft client) {
+    private static void shiftGear(Minecraft client, int by) {
         LocalPlayer player = client.player;
         if (player == null || client.screen != null) {
             return;
@@ -386,7 +399,7 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
                 || horse.getControllingPassenger() != player) {
             return;
         }
-        int gear = HorseGearController.INSTANCE.shiftUp(horse);
+        int gear = HorseGearController.INSTANCE.shift(horse, by);
         String gait = switch (gear) {
             case BhGears.WALK_GEAR -> "walk";
             case BhGears.TROT_GEAR -> horse instanceof IcelandicHorse ? "tolt" : "trot";
@@ -464,6 +477,7 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
         BhConfig.dropServer();
         if (tookServerBreeds) {
             BhBreedData.resetToBuiltIn();
+            ArchetypeType.resetSpeeds();
             tookServerBreeds = false;
         }
         BhClientCaches.resetAll();

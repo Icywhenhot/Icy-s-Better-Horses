@@ -85,6 +85,7 @@ dependencies {
 	modLocalRuntime "maven.modrinth:millager:HgK4xAV1"
 	modLocalRuntime "maven.modrinth:armed-and-varied:crCKODSE"
 	modLocalRuntime "maven.modrinth:im-fast:cKMTGyMZ"
+	modCompileOnly "maven.modrinth:touhoulittlemaid-orihime:DmTkaW7J"
 	modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
 		exclude group: "net.fabricmc.fabric-api"
 	}

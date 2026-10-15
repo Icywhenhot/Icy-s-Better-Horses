@@ -318,7 +318,9 @@ class PayloadCodecTest {
     void breedDataPayloadRoundTripsWithEntries() {
         BreedDataPayload original = new BreedDataPayload(List.of(
                 new BreedDataPayload.Entry("arabian", "fast", 2, 4, 15),
-                new BreedDataPayload.Entry("clydesdale", "draft", 5, 1, 30)));
+                new BreedDataPayload.Entry("clydesdale", "draft", 5, 1, 30)),
+                List.of(new BreedDataPayload.ClassSpeed("icys_better_horses:race", 0.25D, 0.35D),
+                        new BreedDataPayload.ClassSpeed("icys_better_horses:draft", 0.16D, 0.23D)));
         FriendlyByteBuf buf = buf();
         BreedDataPayload.encode(original, buf);
         assertEquals(original, BreedDataPayload.decode(buf));
@@ -327,7 +329,7 @@ class PayloadCodecTest {
 
     @Test
     void breedDataPayloadRoundTripsWhenEmpty() {
-        BreedDataPayload original = new BreedDataPayload(List.of());
+        BreedDataPayload original = new BreedDataPayload(List.of(), List.of());
         FriendlyByteBuf buf = buf();
         BreedDataPayload.encode(original, buf);
         assertEquals(original, BreedDataPayload.decode(buf));
@@ -340,7 +342,7 @@ class PayloadCodecTest {
         for (int i = 0; i < 150; i++) {
             tooManyEntries.add(new BreedDataPayload.Entry("breed-" + i, "archetype-" + i, i, i + 1, i + 2));
         }
-        BreedDataPayload original = new BreedDataPayload(tooManyEntries);
+        BreedDataPayload original = new BreedDataPayload(tooManyEntries, List.of());
         FriendlyByteBuf buf = buf();
         BreedDataPayload.encode(original, buf);
         BreedDataPayload decoded = BreedDataPayload.decode(buf);

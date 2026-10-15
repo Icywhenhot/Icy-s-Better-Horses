@@ -59,14 +59,17 @@ public abstract class KeyboardInputMixin extends Input {
         boolean forwardDown = output.forwardDown();
         float forwardImpulse = output.forwardImpulse();
         float leftImpulse = output.leftImpulse();
+        boolean geared = false;
         if (output.active()) {
             HorseGearController.INSTANCE.reset();
         } else if (HorseGearController.INSTANCE
                 .tick(mounted, riddenHorse, this.up, this.down)
                 .geared()) {
+            geared = true;
             forwardDown = true;
             forwardImpulse = 1.0F;
         }
+        HorseGearController.INSTANCE.driving(output.active() || geared ? forwardImpulse : Float.NaN);
 
         this.up = forwardDown;
         this.down = output.backDown();

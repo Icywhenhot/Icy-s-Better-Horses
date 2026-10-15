@@ -100,6 +100,7 @@ public final class IcysBetterHorses implements ModInitializer {
         ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register(this::onDatapackSync);
         CommandRegistrationCallback.EVENT.register(BhCommands::register);
         BhBreedLoader.register();
+        BhClassLoader.register();
         ServerLivingEntityEvents.AFTER_DEATH.register(IcysBetterHorses::onLivingDeath);
         bh_registerSpawnEggDispensers();
 
