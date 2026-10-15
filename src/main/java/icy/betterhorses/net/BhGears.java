@@ -30,7 +30,7 @@ public final class BhGears {
         return gear > 0 && gear <= TOP_GEAR ? SPEEDS[gear] : 0.0F;
     }
 
-    public static int next(int gear) {
-        return gear >= TOP_GEAR || gear < 0 ? 0 : gear + 1;
+    public static int shift(int gear, int by) {
+        return Math.clamp(gear + by, 0, TOP_GEAR);
     }
 }

@@ -47,8 +47,6 @@ public class HorseInfoScreen extends Screen {
     private static final double SPEED_DISPLAY_FACTOR = 43.2D;
 
     private static final double BOND_MAX_MULTIPLIER = 1.0D + 5 * 0.15D;
-    private static final double SPEED_MAX =
-            ArchetypeType.topSpeed() * BOND_MAX_MULTIPLIER * SPEED_DISPLAY_FACTOR;
     private static final double JUMP_MAX =
             BhJumpHeight.blocks(ArchetypeType.topJump() * BOND_MAX_MULTIPLIER);
     private static final double HEALTH_MAX = ArchetypeType.topHealth();
@@ -188,7 +186,7 @@ public class HorseInfoScreen extends Screen {
         drawStatRow(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.speed"),
                 String.format(Locale.ROOT, "%.1f blk/s", speedBlocksPerSec),
-                speedBlocksPerSec / SPEED_MAX);
+                speedBlocksPerSec / (ArchetypeType.topSpeed() * BOND_MAX_MULTIPLIER * SPEED_DISPLAY_FACTOR));
         y += ROW_HEIGHT;
 
         double jumpBlocks = BhJumpHeight.blocks(horse.getAttributeValue(Attributes.JUMP_STRENGTH)) * statP;

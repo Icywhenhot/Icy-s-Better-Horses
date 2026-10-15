@@ -19,13 +19,13 @@ public final class HorseGearController {
 
     private HorseGearController() {}
 
-    public int shiftUp(AbstractHorse horse) {
+    public int shift(AbstractHorse horse, int by) {
         if (horse.getId() != gearedHorseId) {
             gearedHorseId = horse.getId();
             selectedGear = 0;
             appliedGear = 0;
         }
-        selectedGear = BhGears.next(selectedGear);
+        selectedGear = BhGears.shift(selectedGear, by);
         apply(horse, selectedGear);
         return selectedGear;
     }
