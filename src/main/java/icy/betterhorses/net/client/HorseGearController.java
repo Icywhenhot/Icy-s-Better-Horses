@@ -16,16 +16,17 @@ public final class HorseGearController {
     private int selectedGear;
     private int appliedGear;
     private int gearedHorseId = NO_HORSE;
+    private float driven = Float.NaN;
 
     private HorseGearController() {}
 
-    public int shiftUp(AbstractHorse horse) {
+    public int shift(AbstractHorse horse, int by) {
         if (horse.getId() != gearedHorseId) {
             gearedHorseId = horse.getId();
             selectedGear = 0;
             appliedGear = 0;
         }
-        selectedGear = BhGears.next(selectedGear);
+        selectedGear = BhGears.shift(selectedGear, by);
         apply(horse, selectedGear);
         return selectedGear;
     }
@@ -34,7 +35,16 @@ public final class HorseGearController {
         return selectedGear > 0;
     }
 
+    public void driving(float forward) {
+        driven = forward;
+    }
+
+    public float driven() {
+        return driven;
+    }
+
     public void reset() {
+        driven = Float.NaN;
         selectedGear = 0;
         appliedGear = 0;
         gearedHorseId = NO_HORSE;

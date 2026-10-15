@@ -38,6 +38,7 @@ dependencies {
     modLocalRuntime "maven.modrinth:epic-knights-shields-armor-and-weapons:dLYqLDl7"
     modLocalRuntime "maven.modrinth:millager:n0GIQp9y"
     modLocalRuntime "maven.modrinth:im-fast:xNGfkEBd"
+    modCompileOnly "maven.modrinth:touhoulittlemaid-orihime:xBOWZa8l"
     modLocalRuntime "maven.modrinth:touhoulittlemaid-orihime:xBOWZa8l"
     modLocalRuntime "maven.modrinth:forge-config-api-port:N5qzq0XV"
     modLocalRuntime "org.ladysnake.cardinal-components-api:cardinal-components-base:6.1.2"

@@ -55,6 +55,7 @@
     "HorseModelAccessor",
     "HorseModelMixin",
     "KeyboardInputMixin",
+    "IhrRawInputMixin",
     "KeyMappingShareMixin",
     "LivingEntityRendererMixin",
     "EntityRenderDispatcherRiderMixin",

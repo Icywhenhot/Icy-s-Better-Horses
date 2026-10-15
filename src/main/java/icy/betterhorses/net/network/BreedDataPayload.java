@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public record BreedDataPayload(List<Entry> entries) implements CustomPacketPayload {
+public record BreedDataPayload(List<Entry> entries, List<ClassSpeed> classes) implements CustomPacketPayload {
 
     public static final Type<BreedDataPayload> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath("icys-better-horses", "breed_data"));
@@ -24,6 +24,8 @@ public record BreedDataPayload(List<Entry> entries) implements CustomPacketPaylo
     private static final int MAX_NAME = 64;
 
     public record Entry(String breed, String archetype, int chestRows, int bondedChestRows, int spawnWeight) {}
+
+    public record ClassSpeed(String archetype, double low, double high) {}
 
     public static BreedDataPayload current() {
         List<Entry> out = new ArrayList<>();
@@ -35,7 +37,25 @@ public record BreedDataPayload(List<Entry> entries) implements CustomPacketPaylo
                     archetypeId != null ? archetypeId.toString() : "",
                     data.chestRows(), data.bondedChestRows(), data.spawnWeight()));
         }
-        return new BreedDataPayload(out);
+        List<ClassSpeed> speeds = new ArrayList<>();
+        for (ArchetypeType arch : archetypes) {
+            ResourceLocation id = archetypes.getKey(arch);
+            if (id != null) {
+                speeds.add(new ClassSpeed(id.toString(), arch.lowSpeed(), arch.highSpeed()));
+            }
+        }
+        return new BreedDataPayload(out, speeds);
+    }
+
+    public void applyClassSpeeds() {
+        ArchetypeType.resetSpeeds();
+        for (ClassSpeed speed : classes) {
+            ResourceLocation id = ResourceLocation.tryParse(speed.archetype());
+            ArchetypeType arch = id != null ? BhRegistries.archetypeTypeRegistry().get(id) : null;
+            if (arch != null && speed.low() <= speed.high()) {
+                arch.setSpeed(speed.low(), speed.high());
+            }
+        }
     }
 
     public Map<ResourceLocation, BhBreedData> toMap() {
@@ -74,7 +94,12 @@ public record BreedDataPayload(List<Entry> entries) implements CustomPacketPaylo
                         buf.readVarInt(),
                         buf.readVarInt()));
             }
-            return new BreedDataPayload(List.copyOf(entries));
+            int classCount = Math.min(buf.readVarInt(), MAX_ENTRIES);
+            List<ClassSpeed> classes = new ArrayList<>(classCount);
+            for (int i = 0; i < classCount; i++) {
+                classes.add(new ClassSpeed(buf.readUtf(MAX_NAME), buf.readDouble(), buf.readDouble()));
+            }
+            return new BreedDataPayload(List.copyOf(entries), List.copyOf(classes));
         }
 
         @Override
@@ -89,6 +114,15 @@ public record BreedDataPayload(List<Entry> entries) implements CustomPacketPaylo
                 buf.writeVarInt(entry.chestRows());
                 buf.writeVarInt(entry.bondedChestRows());
                 buf.writeVarInt(entry.spawnWeight());
+            }
+            List<ClassSpeed> classes = value.classes();
+            int classCount = Math.min(classes.size(), MAX_ENTRIES);
+            buf.writeVarInt(classCount);
+            for (int i = 0; i < classCount; i++) {
+                ClassSpeed speed = classes.get(i);
+                buf.writeUtf(speed.archetype(), MAX_NAME);
+                buf.writeDouble(speed.low());
+                buf.writeDouble(speed.high());
             }
         }
     }
