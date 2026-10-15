@@ -15,6 +15,8 @@ public class PercheronHorseRenderer extends BhHorseRenderer<PercheronHorse> {
                 layer -> new PercheronHorseModel(context.bakeLayer(layer)),
                 BhModelLayers.PERCHERON_SADDLE,
                 BhModelLayers.PERCHERON_SADDLE_BABY,
+                BhModelLayers.PERCHERON_CARPET,
+                BhModelLayers.PERCHERON_CARPET_BABY,
                 BhModelLayers.PERCHERON_ARMOR,
                 BhModelLayers.PERCHERON_ARMOR_BABY,
                 BhModelLayers.PERCHERON_CHEST,

@@ -79,6 +79,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.NeoForge;
@@ -1700,6 +1701,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         ((AbstractHorse) (Object) this).setData(BhHorseAttachments.GEAR_FLAGS, flags);
         boolean hasCart = this.bh_gearContainer.getItem(GearSlot.STABILIZER.ordinal()).is(ModItems.HORSE_CART);
         ((AbstractHorse) (Object) this).setData(BhHorseAttachments.CART, hasCart);
+        DyeColor carpet = GearSlot.carpetColor(this.bh_gearContainer.getItem(GearSlot.CARPET.ordinal()));
+        ((AbstractHorse) (Object) this).setData(BhHorseAttachments.CARPET, carpet == null ? -1 : carpet.getId());
         bh_syncCartType();
         ((AbstractHorse) (Object) this).setData(BhHorseAttachments.ENDER_CHEST,
                 GearSlot.isEnderChest(this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal())));
@@ -1732,6 +1735,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public boolean bh_hasCartGear() {
         return ((AbstractHorse) (Object) this).getData(BhHorseAttachments.CART);
+    }
+
+    @Override
+    public @Nullable DyeColor bh_getCarpet() {
+        int id = ((AbstractHorse) (Object) this).getData(BhHorseAttachments.CARPET);
+        return id < 0 ? null : DyeColor.byId(id);
     }
 
     @Override

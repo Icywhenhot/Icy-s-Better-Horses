@@ -12,6 +12,8 @@ public class SmallHorseRenderer<T extends SmallHorse> extends BhHorseRenderer<T>
                 layer -> new SmallHorseModel<>(context.bakeLayer(layer)),
                 BhModelLayers.SMALL_SADDLE,
                 BhModelLayers.SMALL_SADDLE_BABY,
+                BhModelLayers.SMALL_CARPET,
+                BhModelLayers.SMALL_CARPET_BABY,
                 BhModelLayers.SMALL_ARMOR,
                 BhModelLayers.SMALL_ARMOR_BABY,
                 BhModelLayers.SMALL_CHEST,

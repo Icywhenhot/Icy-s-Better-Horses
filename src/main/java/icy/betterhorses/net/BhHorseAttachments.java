@@ -22,6 +22,7 @@ public final class BhHorseAttachments {
     public static final AttachmentType<Integer> GEAR_FLAGS = integer(0);
     public static final AttachmentType<Integer> STABILIZER_CHARGE = integer(0);
     public static final AttachmentType<Boolean> CART = bool(false);
+    public static final AttachmentType<Integer> CARPET = integer(-1);
     public static final AttachmentType<Boolean> CART_CHEST = bool(false);
     public static final AttachmentType<Boolean> CART_PLOW = bool(false);
     public static final AttachmentType<Boolean> ENDER_CHEST = bool(false);
@@ -59,6 +60,7 @@ public final class BhHorseAttachments {
         register(event, "gear_flags", GEAR_FLAGS);
         register(event, "stabilizer_charge", STABILIZER_CHARGE);
         register(event, "cart", CART);
+        register(event, "carpet", CARPET);
         register(event, "cart_chest", CART_CHEST);
         register(event, "cart_plow", CART_PLOW);
         register(event, "ender_chest", ENDER_CHEST);

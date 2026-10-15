@@ -44,6 +44,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.locale.Language;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import icy.betterhorses.net.client.render.BhJumpClips;
+import icy.betterhorses.net.client.render.BhBreedCarpets;
 import icy.betterhorses.net.client.render.BhNamedCoats;
 import icy.betterhorses.net.client.render.BhTackTextures;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
@@ -277,6 +278,7 @@ public class IcysBetterHorsesClient {
         event.registerReloadListener((ResourceManagerReloadListener) manager -> {
             BhTackTextures.clearCache();
             BhNamedCoats.clearCache();
+            BhBreedCarpets.clearCache();
             BhJumpClips.load(manager);
         });
     }

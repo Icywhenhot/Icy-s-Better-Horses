@@ -1,0 +1,34 @@
+package icy.betterhorses.net.client.render;
+
+import icy.betterhorses.net.entity.BhBreedHorse;
+import icy.betterhorses.net.registry.BreedCoatSet;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public final class BhBreedCarpets {
+
+    private static final Map<ResourceLocation, Boolean> found = new HashMap<>();
+
+    private BhBreedCarpets() {}
+
+    public static void clearCache() {
+        found.clear();
+    }
+
+    public static @Nullable ResourceLocation carpet(BhBreedHorse horse, DyeColor color) {
+        BreedCoatSet coats = horse.bhCoatSet();
+        ResourceLocation texture = ResourceLocation.tryBuild(coats.resourceNamespace(),
+                "textures/entity/horse/" + coats.folder() + "/carpet/" + color.getName() + ".png");
+        if (texture == null) {
+            return null;
+        }
+        boolean ok = found.computeIfAbsent(texture, id -> Minecraft.getInstance()
+                .getResourceManager().getResource(id).isPresent());
+        return ok ? texture : null;
+    }
+}

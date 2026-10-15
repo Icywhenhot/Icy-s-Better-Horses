@@ -12,6 +12,8 @@ public class HaflingerHorseRenderer extends BhHorseRenderer<HaflingerHorse> {
                 layer -> new HaflingerHorseModel(context.bakeLayer(layer)),
                 BhModelLayers.HAFLINGER_SADDLE,
                 BhModelLayers.HAFLINGER_SADDLE_BABY,
+                BhModelLayers.HAFLINGER_CARPET,
+                BhModelLayers.HAFLINGER_CARPET_BABY,
                 BhModelLayers.HAFLINGER_ARMOR,
                 BhModelLayers.HAFLINGER_ARMOR_BABY,
                 BhModelLayers.HAFLINGER_CHEST,
