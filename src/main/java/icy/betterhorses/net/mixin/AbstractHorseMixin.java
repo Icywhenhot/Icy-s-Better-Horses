@@ -66,6 +66,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
+import icy.betterhorses.net.IcysBetterHorses;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.Item;
+import net.minecraft.tags.TagKey;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -1411,7 +1417,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Inject(method = "isFood", at = @At("RETURN"), cancellable = true)
     private void bh_breedingFoodIsFood(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-        if (!cir.getReturnValueZ() && bh_ours() && BhConfig.breedingFood(stack)) {
+        if (!cir.getReturnValueZ() && bh_ours() && (BhConfig.breedingFood(stack) || stack.is(BH_SNACKS))) {
             cir.setReturnValue(true);
         }
     }
@@ -1419,6 +1425,36 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Inject(method = "handleEating", at = @At("HEAD"))
     private void bh_noteLoveBeforeEating(Player player, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         this.bh_lovedBeforeEating = this.isInLove();
+    }
+
+    @Inject(method = "handleEating", at = @At("RETURN"), cancellable = true)
+    private void bh_eatSnack(Player player, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+        if (cir.getReturnValueZ() || !bh_ours() || !stack.is(BH_SNACKS)) return;
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        FoodProperties food = stack.get(DataComponents.FOOD);
+        int heal = Math.max(2, food == null ? 0 : food.nutrition());
+        boolean ate = false;
+        if (self.getHealth() < self.getMaxHealth()) {
+            self.heal(heal);
+            ate = true;
+        }
+        if (self.isBaby()) {
+            self.level().addParticle(ParticleTypes.HAPPY_VILLAGER,
+                    self.getRandomX(1.0D), self.getRandomY() + 0.5D, self.getRandomZ(1.0D), 0.0D, 0.0D, 0.0D);
+            if (!self.level().isClientSide()) {
+                self.ageUp(heal * 20);
+            }
+            ate = true;
+        }
+        if ((ate || !self.isTamed()) && self.getTemper() < self.getMaxTemper() && !self.level().isClientSide()) {
+            self.modifyTemper(3);
+            ate = true;
+        }
+        if (ate) {
+            this.eating();
+            this.gameEvent(GameEvent.EAT);
+            cir.setReturnValue(true);
+        }
     }
 
     @Inject(method = "handleEating", at = @At("RETURN"), cancellable = true)
@@ -1686,6 +1722,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     }
 
     @Unique private Vec3 bh_rearSeatShift = Vec3.ZERO;
+
+    @Unique private static final TagKey<Item> BH_SNACKS = TagKey.create(Registries.ITEM,
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_snacks"));
 
     @Redirect(
             method = "getPassengerAttachmentPoint",

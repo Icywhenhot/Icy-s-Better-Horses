@@ -55,6 +55,7 @@
 		"HorseInventoryScreenMixin",
 		"HorseModelAccessor",
 		"KeyboardInputMixin",
+		"IhrRawInputMixin",
 		"LevelExtractorMixin",
 		"GameRendererMixin",
 		"LivingEntityRenderStateRiderMixin",

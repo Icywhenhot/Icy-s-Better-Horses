@@ -180,6 +180,10 @@ public class BhModMenuIntegration implements ModMenuApi {
                 .setTooltip(Component.translatable("config.icys-better-horses.gear_key.tooltip"))
                 .build());
         keybinds.addEntry(eb.fillKeybindingField(
+                        Component.translatable("config.icys-better-horses.gear_down_key"), IcysBetterHorsesClient.GEAR_DOWN_KEY)
+                .setTooltip(Component.translatable("config.icys-better-horses.gear_down_key.tooltip"))
+                .build());
+        keybinds.addEntry(eb.fillKeybindingField(
                         Component.translatable("config.icys-better-horses.rear_key"), IcysBetterHorsesClient.REAR_KEY)
                 .setTooltip(Component.translatable("config.icys-better-horses.rear_key.tooltip"))
                 .build());
