@@ -308,6 +308,7 @@ public final class IcysBetterHorses {
     @SubscribeEvent
     public void onAddReloadListener(AddReloadListenerEvent event) {
         BhBreedLoader.register(event);
+        BhClassLoader.register(event);
     }
 
     @SubscribeEvent

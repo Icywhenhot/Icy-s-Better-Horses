@@ -96,7 +96,11 @@ public final class IcysBetterHorsesClientForgeEvents {
         }
 
         while (IcysBetterHorsesClient.GEAR_KEY.consumeClick()) {
-            shiftGear(client);
+            shiftGear(client, 1);
+        }
+
+        while (IcysBetterHorsesClient.GEAR_DOWN_KEY.consumeClick()) {
+            shiftGear(client, -1);
         }
 
         while (IcysBetterHorsesClient.REAR_KEY.consumeClick()) {
@@ -195,7 +199,7 @@ public final class IcysBetterHorsesClientForgeEvents {
         }
     }
 
-    private static void shiftGear(Minecraft client) {
+    private static void shiftGear(Minecraft client, int by) {
         LocalPlayer player = client.player;
         if (player == null || client.screen != null) {
             return;
@@ -205,7 +209,7 @@ public final class IcysBetterHorsesClientForgeEvents {
                 || horse.getControllingPassenger() != player) {
             return;
         }
-        int gear = HorseGearController.INSTANCE.shiftUp(horse);
+        int gear = HorseGearController.INSTANCE.shift(horse, by);
         String gait = switch (gear) {
             case BhGears.WALK_GEAR -> "walk";
             case BhGears.TROT_GEAR -> horse instanceof IcelandicHorse ? "tolt" : "trot";

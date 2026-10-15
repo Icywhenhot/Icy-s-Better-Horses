@@ -37,6 +37,7 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import icy.betterhorses.net.network.BreedDataPayload;
+import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.BhChargePayload;
 import net.minecraft.client.KeyMapping;
@@ -89,6 +90,12 @@ public final class IcysBetterHorsesClient {
             GLFW.GLFW_KEY_V,
             KEY_CATEGORY);
 
+    public static final KeyMapping GEAR_DOWN_KEY = new KeyMapping(
+            "key.icys-better-horses.gear_down",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_Z,
+            KEY_CATEGORY);
+
     public static final KeyMapping REAR_KEY = new KeyMapping(
             "key.icys-better-horses.rear",
             InputConstants.Type.KEYSYM,
@@ -129,6 +136,7 @@ public final class IcysBetterHorsesClient {
         event.register(RADIAL_KEY);
         event.register(MANAGE_KEY);
         event.register(GEAR_KEY);
+        event.register(GEAR_DOWN_KEY);
         event.register(REAR_KEY);
         event.register(FREE_LOOK_KEY);
         event.register(CART_MENU_KEY);
@@ -174,6 +182,7 @@ public final class IcysBetterHorsesClient {
     public static void receiveBreeds(BreedDataPayload payload) {
         if (Minecraft.getInstance().hasSingleplayerServer()) return;
         BhBreedData.replaceAll(payload.toMap());
+        payload.applyClassSpeeds();
         tookServerBreeds = true;
     }
 
@@ -277,6 +286,7 @@ public final class IcysBetterHorsesClient {
         BhConfig.dropServer();
         if (tookServerBreeds) {
             BhBreedData.resetToBuiltIn();
+            ArchetypeType.resetSpeeds();
             tookServerBreeds = false;
         }
         BhClientCaches.resetAll();

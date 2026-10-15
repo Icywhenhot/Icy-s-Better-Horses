@@ -72,6 +72,7 @@ public abstract class KeyboardInputMixin extends Input {
             forwardImpulse = 1.0F;
         }
         HccThrottle.tick(riddenHorse, output.active() || geared, held);
+        HorseGearController.INSTANCE.driving(output.active() || geared ? forwardImpulse : Float.NaN);
 
         this.up = forwardDown;
         this.down = output.backDown();

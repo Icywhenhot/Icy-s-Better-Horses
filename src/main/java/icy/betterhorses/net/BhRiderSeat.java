@@ -12,6 +12,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.fml.ModList;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,6 +29,8 @@ public final class BhRiderSeat {
     public static final TagKey<EntityType<?>> SELF_SEATED = TagKey.create(Registries.ENTITY_TYPE,
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "self_seated_riders"));
 
+    private static final boolean TLM = ModList.get().isLoaded("touhou_little_maid");
+
     private static final Map<Integer, Vec3> APPLIED = new ConcurrentHashMap<>();
 
     private BhRiderSeat() {}
@@ -37,7 +40,7 @@ public final class BhRiderSeat {
     }
 
     public static double seatDrop(Entity passenger) {
-        if (passenger instanceof Player) {
+        if (passenger instanceof Player || TLM && BhYsmMaids.ysm(passenger)) {
             return PLAYER_SEAT_DROP;
         }
         if (passenger.getType().is(SELF_SEATED)) {
