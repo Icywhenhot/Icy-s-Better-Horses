@@ -1,6 +1,7 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.client.render.BhJumpClips;
+import icy.betterhorses.net.client.render.BhBreedCarpets;
 import icy.betterhorses.net.client.render.BhNamedCoats;
 import icy.betterhorses.net.client.render.BhTackTextures;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -177,6 +178,7 @@ public final class IcysBetterHorsesClient implements ClientModInitializer {
                     public void onResourceManagerReload(ResourceManager manager) {
                         BhTackTextures.clearCache();
                         BhNamedCoats.clearCache();
+                        BhBreedCarpets.clearCache();
                         BhJumpClips.load(manager);
                     }
                 });

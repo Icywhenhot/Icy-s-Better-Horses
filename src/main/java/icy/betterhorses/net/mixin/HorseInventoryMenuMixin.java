@@ -2,6 +2,7 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.entity.BhBreedHorse;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -197,7 +198,8 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                             && HorseInventoryMenuMixin.this.bh_isCartSlotLocked());
                 }
                 @Override public boolean isActive() {
-                    return type.enabled() && HorseInventoryMenuMixin.this.bh_hasUpgradedSaddleInMenu();
+                    return type.enabled() && HorseInventoryMenuMixin.this.bh_hasUpgradedSaddleInMenu()
+                            && (type != GearSlot.CARPET || horse instanceof BhBreedHorse);
                 }
                 @Override public int getMaxStackSize() { return 1; }
 
