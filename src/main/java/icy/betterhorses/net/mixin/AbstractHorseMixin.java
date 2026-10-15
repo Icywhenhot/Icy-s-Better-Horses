@@ -86,6 +86,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -136,6 +137,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private static final EntityDataAccessor<Integer> bh_DATA_STABILIZER_CHARGE = SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
     @Unique private static final EntityDataAccessor<Integer> bh_DATA_GEAR_FLAGS = SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
     @Unique private static final EntityDataAccessor<Boolean> bh_DATA_CART = SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
+    @Unique private static final EntityDataAccessor<Integer> bh_DATA_CARPET = SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.INT);
     @Unique private static final EntityDataAccessor<Boolean> bh_DATA_CART_CHEST = SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
     @Unique private static final EntityDataAccessor<Boolean> bh_DATA_CART_PLOW = SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
     @Unique private static final EntityDataAccessor<Boolean> bh_DATA_ENDER_CHEST = SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BOOLEAN);
@@ -170,6 +172,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         builder.define(bh_DATA_STABILIZER_CHARGE, 0);
         builder.define(bh_DATA_GEAR_FLAGS, 0);
         builder.define(bh_DATA_CART, false);
+        builder.define(bh_DATA_CARPET, -1);
         builder.define(bh_DATA_CART_CHEST, false);
         builder.define(bh_DATA_CART_PLOW, false);
         builder.define(bh_DATA_ENDER_CHEST, false);
@@ -1819,6 +1822,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         ((AbstractHorse) (Object) this).getEntityData().set(bh_DATA_GEAR_FLAGS, flags);
         boolean hasCart = this.bh_gearContainer.getItem(GearSlot.STABILIZER.ordinal()).is(ModItems.HORSE_CART);
         ((AbstractHorse) (Object) this).getEntityData().set(bh_DATA_CART, hasCart);
+        DyeColor carpet = GearSlot.carpetColor(this.bh_gearContainer.getItem(GearSlot.CARPET.ordinal()));
+        ((AbstractHorse) (Object) this).getEntityData().set(bh_DATA_CARPET, carpet == null ? -1 : carpet.getId());
         if (hasCart) {
             bh_syncCartType();
         }
@@ -1853,6 +1858,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public boolean bh_hasCartGear() {
         return ((AbstractHorse) (Object) this).getEntityData().get(bh_DATA_CART);
+    }
+
+    @Override
+    public @Nullable DyeColor bh_getCarpet() {
+        int id = ((AbstractHorse) (Object) this).getEntityData().get(bh_DATA_CARPET);
+        return id < 0 ? null : DyeColor.byId(id);
     }
 
     @Override

@@ -15,6 +15,8 @@ public class BelgianHorseRenderer extends BhHorseRenderer<BelgianHorse> {
                 layer -> new BelgianHorseModel(context.bakeLayer(layer)),
                 BhModelLayers.BELGIAN_SADDLE,
                 BhModelLayers.BELGIAN_SADDLE_BABY,
+                BhModelLayers.BELGIAN_CARPET,
+                BhModelLayers.BELGIAN_CARPET_BABY,
                 BhModelLayers.BELGIAN_ARMOR,
                 BhModelLayers.BELGIAN_ARMOR_BABY,
                 BhModelLayers.BELGIAN_CHEST,

@@ -15,6 +15,8 @@ public class IcelandicHorseRenderer extends BhHorseRenderer<IcelandicHorse> {
                 layer -> new IcelandicHorseModel(context.bakeLayer(layer)),
                 BhModelLayers.ICELANDIC_SADDLE,
                 BhModelLayers.ICELANDIC_SADDLE_BABY,
+                BhModelLayers.ICELANDIC_CARPET,
+                BhModelLayers.ICELANDIC_CARPET_BABY,
                 BhModelLayers.ICELANDIC_ARMOR,
                 BhModelLayers.ICELANDIC_ARMOR_BABY,
                 BhModelLayers.ICELANDIC_CHEST,

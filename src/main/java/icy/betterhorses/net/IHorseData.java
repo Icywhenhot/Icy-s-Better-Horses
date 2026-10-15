@@ -16,6 +16,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -176,6 +177,8 @@ public interface IHorseData {
 
     default boolean bh_hasGear(GearSlot slot) { return (bh_getGearFlags() & (1 << slot.ordinal())) != 0; }
     boolean bh_hasCartGear();
+
+    @Nullable DyeColor bh_getCarpet();
     int bh_getBondRemainder();
     void bh_setBondRemainder(int value);
     long bh_getRescueReadyAt();

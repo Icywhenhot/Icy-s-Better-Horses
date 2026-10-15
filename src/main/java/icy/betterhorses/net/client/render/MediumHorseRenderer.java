@@ -12,6 +12,8 @@ public class MediumHorseRenderer<T extends MediumHorse> extends BhHorseRenderer<
                 layer -> new MediumHorseModel<>(context.bakeLayer(layer)),
                 BhModelLayers.MEDIUM_SADDLE,
                 BhModelLayers.MEDIUM_SADDLE_BABY,
+                BhModelLayers.MEDIUM_CARPET,
+                BhModelLayers.MEDIUM_CARPET_BABY,
                 BhModelLayers.MEDIUM_ARMOR,
                 BhModelLayers.MEDIUM_ARMOR_BABY,
                 BhModelLayers.MEDIUM_CHEST,

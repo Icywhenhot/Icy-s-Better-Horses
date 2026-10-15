@@ -6,9 +6,13 @@ import icy.betterhorses.net.IcysBetterHorses;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.WoolCarpetBlock;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
@@ -16,7 +20,8 @@ public enum GearSlot {
     CHEST,
     HOOVES,
     MEDKIT,
-    STABILIZER;
+    STABILIZER,
+    CARPET;
 
     public static final int COUNT = values().length;
 
@@ -32,7 +37,7 @@ public enum GearSlot {
         return switch (this) {
             case HOOVES -> BhConfig.hoovesEnabled();
             case MEDKIT -> BhConfig.medkitEnabled();
-            case CHEST, STABILIZER -> true;
+            case CHEST, STABILIZER, CARPET -> true;
         };
     }
 
@@ -44,9 +49,16 @@ public enum GearSlot {
         return isStorageChest(stack) || stack.is(Items.ENDER_CHEST);
     }
 
+    public static @Nullable DyeColor carpetColor(ItemStack stack) {
+        return stack.getItem() instanceof BlockItem item && item.getBlock() instanceof WoolCarpetBlock carpet
+                ? carpet.getColor()
+                : null;
+    }
+
     public boolean accepts(ItemStack stack) {
         if (!enabled()) return false;
         if (stack.isEmpty()) return true;
+        if (this == CARPET) return carpetColor(stack) != null;
         if (stack.is(ModItems.HORSE_STABILIZER) && !BhConfig.stabilizerEnabled()) return false;
         if (stack.is(items)) return true;
         return switch (this) {
@@ -54,6 +66,7 @@ public enum GearSlot {
             case HOOVES -> stack.is(ModItems.HORSE_HOOVES);
             case MEDKIT -> stack.is(ModItems.HORSE_MEDKIT);
             case STABILIZER -> stack.is(ModItems.HORSE_STABILIZER) || stack.is(ModItems.HORSE_CART);
+            case CARPET -> false;
         };
     }
 }

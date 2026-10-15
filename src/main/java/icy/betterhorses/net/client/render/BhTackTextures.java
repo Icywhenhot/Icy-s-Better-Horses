@@ -8,10 +8,12 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +32,7 @@ public final class BhTackTextures {
 
     private final String base;
     private final Map<Item, ResourceLocation> armors = new HashMap<>();
+    private final Map<DyeColor, ResourceLocation> carpets = new EnumMap<>(DyeColor.class);
     private final ResourceLocation saddle;
     private final ResourceLocation saddleUpgraded;
     private final ResourceLocation chest;
@@ -53,6 +56,9 @@ public final class BhTackTextures {
         this.armorDiamond = tex(base, "armor_diamond");
         this.armorNetherite = tex(base, "armor_netherite");
         this.armorGeneric = tex(base, "armor_generic");
+        for (DyeColor color : DyeColor.values()) {
+            this.carpets.put(color, tex(base, "carpet/" + color.getName()));
+        }
     }
 
     public static void register() {
@@ -82,6 +88,10 @@ public final class BhTackTextures {
 
     public ResourceLocation chest(boolean ender) { return ender ? enderChest : chest; }
     public ResourceLocation saddle(boolean upgraded) { return upgraded ? saddleUpgraded : saddle; }
+
+    public ResourceLocation carpet(DyeColor color) {
+        return carpets.get(color);
+    }
     public ResourceLocation armor(ItemStack stack) { return armors.computeIfAbsent(stack.getItem(), this::lookup); }
 
     private ResourceLocation lookup(Item item) {

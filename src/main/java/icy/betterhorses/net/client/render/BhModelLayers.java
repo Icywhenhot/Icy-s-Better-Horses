@@ -10,6 +10,8 @@ public final class BhModelLayers {
     public static final ModelLayerLocation ICELANDIC_HORSE_BABY = layer("icelandic_horse", "baby");
     public static final ModelLayerLocation ICELANDIC_SADDLE = layer("icelandic_horse", "saddle");
     public static final ModelLayerLocation ICELANDIC_SADDLE_BABY = layer("icelandic_horse", "saddle_baby");
+    public static final ModelLayerLocation ICELANDIC_CARPET = layer("icelandic_horse", "carpet");
+    public static final ModelLayerLocation ICELANDIC_CARPET_BABY = layer("icelandic_horse", "carpet_baby");
     public static final ModelLayerLocation ICELANDIC_ARMOR = layer("icelandic_horse", "armor");
     public static final ModelLayerLocation ICELANDIC_ARMOR_BABY = layer("icelandic_horse", "armor_baby");
     public static final ModelLayerLocation ICELANDIC_CHEST = layer("icelandic_horse", "chest");
@@ -19,6 +21,8 @@ public final class BhModelLayers {
     public static final ModelLayerLocation FRIESIAN_HORSE_BABY = layer("friesian_horse", "baby");
     public static final ModelLayerLocation FRIESIAN_SADDLE = layer("friesian_horse", "saddle");
     public static final ModelLayerLocation FRIESIAN_SADDLE_BABY = layer("friesian_horse", "saddle_baby");
+    public static final ModelLayerLocation FRIESIAN_CARPET = layer("friesian_horse", "carpet");
+    public static final ModelLayerLocation FRIESIAN_CARPET_BABY = layer("friesian_horse", "carpet_baby");
     public static final ModelLayerLocation FRIESIAN_ARMOR = layer("friesian_horse", "armor");
     public static final ModelLayerLocation FRIESIAN_ARMOR_BABY = layer("friesian_horse", "armor_baby");
     public static final ModelLayerLocation FRIESIAN_CHEST = layer("friesian_horse", "chest");
@@ -28,6 +32,8 @@ public final class BhModelLayers {
     public static final ModelLayerLocation SMALL_HORSE_BABY = layer("small_horse", "baby");
     public static final ModelLayerLocation SMALL_SADDLE = layer("small_horse", "saddle");
     public static final ModelLayerLocation SMALL_SADDLE_BABY = layer("small_horse", "saddle_baby");
+    public static final ModelLayerLocation SMALL_CARPET = layer("small_horse", "carpet");
+    public static final ModelLayerLocation SMALL_CARPET_BABY = layer("small_horse", "carpet_baby");
     public static final ModelLayerLocation SMALL_ARMOR = layer("small_horse", "armor");
     public static final ModelLayerLocation SMALL_ARMOR_BABY = layer("small_horse", "armor_baby");
     public static final ModelLayerLocation SMALL_CHEST = layer("small_horse", "chest");
@@ -37,6 +43,8 @@ public final class BhModelLayers {
     public static final ModelLayerLocation HAFLINGER_HORSE_BABY = layer("haflinger_horse", "baby");
     public static final ModelLayerLocation HAFLINGER_SADDLE = layer("haflinger_horse", "saddle");
     public static final ModelLayerLocation HAFLINGER_SADDLE_BABY = layer("haflinger_horse", "saddle_baby");
+    public static final ModelLayerLocation HAFLINGER_CARPET = layer("haflinger_horse", "carpet");
+    public static final ModelLayerLocation HAFLINGER_CARPET_BABY = layer("haflinger_horse", "carpet_baby");
     public static final ModelLayerLocation HAFLINGER_ARMOR = layer("haflinger_horse", "armor");
     public static final ModelLayerLocation HAFLINGER_ARMOR_BABY = layer("haflinger_horse", "armor_baby");
     public static final ModelLayerLocation HAFLINGER_CHEST = layer("haflinger_horse", "chest");
@@ -46,6 +54,8 @@ public final class BhModelLayers {
     public static final ModelLayerLocation MEDIUM_HORSE_BABY = layer("medium_horse", "baby");
     public static final ModelLayerLocation MEDIUM_SADDLE = layer("medium_horse", "saddle");
     public static final ModelLayerLocation MEDIUM_SADDLE_BABY = layer("medium_horse", "saddle_baby");
+    public static final ModelLayerLocation MEDIUM_CARPET = layer("medium_horse", "carpet");
+    public static final ModelLayerLocation MEDIUM_CARPET_BABY = layer("medium_horse", "carpet_baby");
     public static final ModelLayerLocation MEDIUM_ARMOR = layer("medium_horse", "armor");
     public static final ModelLayerLocation MEDIUM_ARMOR_BABY = layer("medium_horse", "armor_baby");
     public static final ModelLayerLocation MEDIUM_CHEST = layer("medium_horse", "chest");
@@ -55,6 +65,8 @@ public final class BhModelLayers {
     public static final ModelLayerLocation PERCHERON_HORSE_BABY = layer("percheron_horse", "baby");
     public static final ModelLayerLocation PERCHERON_SADDLE = layer("percheron_horse", "saddle");
     public static final ModelLayerLocation PERCHERON_SADDLE_BABY = layer("percheron_horse", "saddle_baby");
+    public static final ModelLayerLocation PERCHERON_CARPET = layer("percheron_horse", "carpet");
+    public static final ModelLayerLocation PERCHERON_CARPET_BABY = layer("percheron_horse", "carpet_baby");
     public static final ModelLayerLocation PERCHERON_ARMOR = layer("percheron_horse", "armor");
     public static final ModelLayerLocation PERCHERON_ARMOR_BABY = layer("percheron_horse", "armor_baby");
     public static final ModelLayerLocation PERCHERON_CHEST = layer("percheron_horse", "chest");
@@ -64,6 +76,8 @@ public final class BhModelLayers {
     public static final ModelLayerLocation SHIRE_HORSE_BABY = layer("shire_horse", "baby");
     public static final ModelLayerLocation SHIRE_SADDLE = layer("shire_horse", "saddle");
     public static final ModelLayerLocation SHIRE_SADDLE_BABY = layer("shire_horse", "saddle_baby");
+    public static final ModelLayerLocation SHIRE_CARPET = layer("shire_horse", "carpet");
+    public static final ModelLayerLocation SHIRE_CARPET_BABY = layer("shire_horse", "carpet_baby");
     public static final ModelLayerLocation SHIRE_ARMOR = layer("shire_horse", "armor");
     public static final ModelLayerLocation SHIRE_ARMOR_BABY = layer("shire_horse", "armor_baby");
     public static final ModelLayerLocation SHIRE_CHEST = layer("shire_horse", "chest");
@@ -73,6 +87,8 @@ public final class BhModelLayers {
     public static final ModelLayerLocation BELGIAN_HORSE_BABY = layer("belgian_horse", "baby");
     public static final ModelLayerLocation BELGIAN_SADDLE = layer("belgian_horse", "saddle");
     public static final ModelLayerLocation BELGIAN_SADDLE_BABY = layer("belgian_horse", "saddle_baby");
+    public static final ModelLayerLocation BELGIAN_CARPET = layer("belgian_horse", "carpet");
+    public static final ModelLayerLocation BELGIAN_CARPET_BABY = layer("belgian_horse", "carpet_baby");
     public static final ModelLayerLocation BELGIAN_ARMOR = layer("belgian_horse", "armor");
     public static final ModelLayerLocation BELGIAN_ARMOR_BABY = layer("belgian_horse", "armor_baby");
     public static final ModelLayerLocation BELGIAN_CHEST = layer("belgian_horse", "chest");
@@ -94,6 +110,10 @@ public final class BhModelLayers {
         EntityModelLayerRegistry.registerModelLayer(
                 ICELANDIC_SADDLE_BABY, IcelandicSaddleGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
+                ICELANDIC_CARPET, IcelandicCarpetGeometry::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(
+                ICELANDIC_CARPET_BABY, IcelandicCarpetGeometry::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(
                 ICELANDIC_ARMOR, IcelandicArmorGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
                 ICELANDIC_ARMOR_BABY, IcelandicArmorGeometry::createBodyLayer);
@@ -110,6 +130,10 @@ public final class BhModelLayers {
                 FRIESIAN_SADDLE, FriesianSaddleGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
                 FRIESIAN_SADDLE_BABY, FriesianSaddleGeometry::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(
+                FRIESIAN_CARPET, FriesianCarpetGeometry::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(
+                FRIESIAN_CARPET_BABY, FriesianCarpetGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
                 FRIESIAN_ARMOR, FriesianArmorGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
@@ -128,6 +152,10 @@ public final class BhModelLayers {
         EntityModelLayerRegistry.registerModelLayer(
                 SMALL_SADDLE_BABY, SmallSaddleGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
+                SMALL_CARPET, SmallCarpetGeometry::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(
+                SMALL_CARPET_BABY, SmallCarpetGeometry::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(
                 SMALL_ARMOR, SmallArmorGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
                 SMALL_ARMOR_BABY, SmallArmorGeometry::createBodyLayer);
@@ -144,6 +172,10 @@ public final class BhModelLayers {
                 HAFLINGER_SADDLE, HaflingerSaddleGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
                 HAFLINGER_SADDLE_BABY, HaflingerSaddleGeometry::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(
+                HAFLINGER_CARPET, HaflingerCarpetGeometry::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(
+                HAFLINGER_CARPET_BABY, HaflingerCarpetGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
                 HAFLINGER_ARMOR, HaflingerArmorGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
@@ -162,6 +194,10 @@ public final class BhModelLayers {
         EntityModelLayerRegistry.registerModelLayer(
                 MEDIUM_SADDLE_BABY, MediumSaddleGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
+                MEDIUM_CARPET, MediumCarpetGeometry::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(
+                MEDIUM_CARPET_BABY, MediumCarpetGeometry::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(
                 MEDIUM_ARMOR, MediumArmorGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
                 MEDIUM_ARMOR_BABY, MediumArmorGeometry::createBodyLayer);
@@ -178,6 +214,10 @@ public final class BhModelLayers {
                 PERCHERON_SADDLE, PercheronSaddleGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
                 PERCHERON_SADDLE_BABY, PercheronSaddleGeometry::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(
+                PERCHERON_CARPET, PercheronCarpetGeometry::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(
+                PERCHERON_CARPET_BABY, PercheronCarpetGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
                 PERCHERON_ARMOR, PercheronArmorGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
@@ -197,6 +237,10 @@ public final class BhModelLayers {
         EntityModelLayerRegistry.registerModelLayer(
                 SHIRE_SADDLE_BABY, ShireSaddleGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
+                SHIRE_CARPET, ShireCarpetGeometry::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(
+                SHIRE_CARPET_BABY, ShireCarpetGeometry::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(
                 SHIRE_ARMOR, ShireArmorGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
                 SHIRE_ARMOR_BABY, ShireArmorGeometry::createBodyLayer);
@@ -214,6 +258,10 @@ public final class BhModelLayers {
                 BELGIAN_SADDLE, BelgianSaddleGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
                 BELGIAN_SADDLE_BABY, BelgianSaddleGeometry::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(
+                BELGIAN_CARPET, BelgianCarpetGeometry::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(
+                BELGIAN_CARPET_BABY, BelgianCarpetGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
                 BELGIAN_ARMOR, BelgianArmorGeometry::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(
