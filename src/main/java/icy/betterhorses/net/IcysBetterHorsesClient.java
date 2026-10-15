@@ -1,6 +1,7 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.client.render.BhJumpClips;
+import icy.betterhorses.net.client.render.BhBreedCarpets;
 import icy.betterhorses.net.client.render.BhNamedCoats;
 import icy.betterhorses.net.client.render.BhTackTextures;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -261,6 +262,7 @@ public final class IcysBetterHorsesClient {
         event.registerReloadListener((ResourceManagerReloadListener) manager -> {
             BhTackTextures.clearCache();
             BhNamedCoats.clearCache();
+            BhBreedCarpets.clearCache();
             BhJumpClips.load(manager);
         });
     }

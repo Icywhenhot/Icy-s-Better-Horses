@@ -322,6 +322,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
                 ? ModItems.HORSE_STABILIZER.get()
                 : ModItems.HORSE_CART.get();
         this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, stabilizerSlotHint);
+        this.bh_drawGearHint(gfx, x, y, GearSlot.CARPET, Items.WHITE_CARPET);
         this.bh_drawLockedSlotFlash(gfx);
     }
 

@@ -21,9 +21,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModList;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -60,6 +62,8 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
                               Function<ModelLayerLocation, BhHorseModel<T>> models,
                               ModelLayerLocation saddle,
                               ModelLayerLocation saddleBaby,
+                              ModelLayerLocation carpet,
+                              ModelLayerLocation carpetBaby,
                               ModelLayerLocation armor,
                               ModelLayerLocation armorBaby,
                               ModelLayerLocation chest,
@@ -67,9 +71,17 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
                               BhTackTextures textures) {
         this(context, adultModel, babyModel);
         addLayer(new BhTackLayer<>(this, models.apply(saddle), models.apply(saddleBaby), entity ->
-                entity.isSaddled()
+                entity.isSaddled() && carpetOf(entity) == null
                         ? textures.saddle(IHorseData.of(entity).bh_hasUpgradedSaddle())
                         : null));
+        addLayer(new BhTackLayer<>(this, models.apply(carpet), models.apply(carpetBaby), entity -> {
+            DyeColor color = carpetOf(entity);
+            if (color == null) {
+                return null;
+            }
+            ResourceLocation breedCarpet = BhBreedCarpets.carpet(entity, color);
+            return breedCarpet != null ? breedCarpet : textures.carpet(color);
+        }));
         addLayer(new BhTackLayer<>(this, models.apply(armor), models.apply(armorBaby), entity -> {
             ItemStack stack = barding(entity);
             return stack.isEmpty() || BhNeckPlates.of(stack) != null ? null : textures.armor(stack);
@@ -101,6 +113,11 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
             return 0xFF000000 | dyed.getColor(stack);
         }
         return stack.is(Items.LEATHER_HORSE_ARMOR) ? 0xFF000000 | UNDYED_BARDING : -1;
+    }
+
+    private static @Nullable DyeColor carpetOf(BhBreedHorse entity) {
+        IHorseData data = IHorseData.of(entity);
+        return entity.isSaddled() && data.bh_hasUpgradedSaddle() ? data.bh_getCarpet() : null;
     }
 
     @Override

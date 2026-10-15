@@ -15,6 +15,8 @@ public class ShireHorseRenderer extends BhHorseRenderer<ShireHorse> {
                 layer -> new ShireHorseModel(context.bakeLayer(layer)),
                 BhModelLayers.SHIRE_SADDLE,
                 BhModelLayers.SHIRE_SADDLE_BABY,
+                BhModelLayers.SHIRE_CARPET,
+                BhModelLayers.SHIRE_CARPET_BABY,
                 BhModelLayers.SHIRE_ARMOR,
                 BhModelLayers.SHIRE_ARMOR_BABY,
                 BhModelLayers.SHIRE_CHEST,

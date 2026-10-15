@@ -15,6 +15,8 @@ public class FriesianHorseRenderer extends BhHorseRenderer<FriesianHorse> {
                 layer -> new FriesianHorseModel(context.bakeLayer(layer)),
                 BhModelLayers.FRIESIAN_SADDLE,
                 BhModelLayers.FRIESIAN_SADDLE_BABY,
+                BhModelLayers.FRIESIAN_CARPET,
+                BhModelLayers.FRIESIAN_CARPET_BABY,
                 BhModelLayers.FRIESIAN_ARMOR,
                 BhModelLayers.FRIESIAN_ARMOR_BABY,
                 BhModelLayers.FRIESIAN_CHEST,

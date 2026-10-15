@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -138,6 +139,8 @@ public interface IHorseData {
     }
 
     boolean bh_hasCartGear();
+
+    @Nullable DyeColor bh_getCarpet();
 
     int bh_getBondRemainder();
 
