@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhBanners;
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedHorse;
@@ -15,7 +16,6 @@ import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.PlayerEnderChestContainer;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.entity.animal.horse.Llama;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -236,7 +236,7 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         this.addSlot(new Slot(data.bh_getBannerContainer(), 0, BH_BANNER_SLOT_X, BH_BANNER_SLOT_Y) {
             @Override
             public boolean mayPlace(ItemStack stack) {
-                return stack.getItem() instanceof BannerItem && !HorseInventoryMenuMixin.this.bh_isBannerSlotLocked();
+                return BhBanners.fits(stack) && !HorseInventoryMenuMixin.this.bh_isBannerSlotLocked();
             }
 
             @Override

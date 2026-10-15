@@ -179,6 +179,7 @@ dependencies {
     localRuntime "maven.modrinth:estrogen:jLNES5cw"
     localRuntime "maven.modrinth:cynosure:lpFSq579"
     localRuntime "maven.modrinth:kotlin-for-forge:uhJhCT7X"
+    localRuntime "curse.maven:heralds-ii-1062612:7283228"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
