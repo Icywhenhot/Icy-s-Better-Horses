@@ -2,6 +2,8 @@ package icy.betterhorses.net.client.render;
 
 import net.minecraft.client.renderer.entity.state.EquineRenderState;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.DyeColor;
+import org.jetbrains.annotations.Nullable;
 
 public class BhHorseRenderState extends EquineRenderState {
 
@@ -12,6 +14,9 @@ public class BhHorseRenderState extends EquineRenderState {
     public final org.joml.Matrix4f dustOrigin = new org.joml.Matrix4f();
 
     public Identifier coatTexture;
+
+    public @Nullable DyeColor carpet;
+    public @Nullable Identifier carpetTexture;
 
     public float phaseOffset;
     public float begTilt;
