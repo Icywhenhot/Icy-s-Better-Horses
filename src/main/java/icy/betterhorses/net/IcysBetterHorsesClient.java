@@ -107,6 +107,7 @@ public class IcysBetterHorsesClient {
     public static KeyMapping RADIAL_KEY;
     public static KeyMapping MANAGE_KEY;
     public static KeyMapping GEAR_KEY;
+    public static KeyMapping GEAR_DOWN_KEY;
     public static KeyMapping REAR_KEY;
     public static KeyMapping FREE_LOOK_KEY;
     public static KeyMapping CART_MENU_KEY;
@@ -172,6 +173,11 @@ public class IcysBetterHorsesClient {
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_V,
                 CATEGORY);
+        GEAR_DOWN_KEY = new KeyMapping(
+                "key.icys-better-horses.gear_down",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_Z,
+                CATEGORY);
 
         REAR_KEY = new KeyMapping(
                 "key.icys-better-horses.rear",
@@ -209,6 +215,7 @@ public class IcysBetterHorsesClient {
         event.register(RADIAL_KEY);
         event.register(MANAGE_KEY);
         event.register(GEAR_KEY);
+        event.register(GEAR_DOWN_KEY);
         event.register(REAR_KEY);
         event.register(FREE_LOOK_KEY);
         event.register(CART_MENU_KEY);
@@ -408,7 +415,11 @@ public class IcysBetterHorsesClient {
         }
 
         while (GEAR_KEY.consumeClick()) {
-            bh_shiftGear(client);
+            bh_shiftGear(client, 1);
+        }
+
+        while (GEAR_DOWN_KEY.consumeClick()) {
+            bh_shiftGear(client, -1);
         }
 
         while (REAR_KEY.consumeClick()) {
@@ -448,7 +459,7 @@ public class IcysBetterHorsesClient {
         sendChargeChoice();
     }
 
-    private static void bh_shiftGear(Minecraft client) {
+    private static void bh_shiftGear(Minecraft client, int by) {
         LocalPlayer player = client.player;
         if (player == null || client.screen != null) {
             return;
@@ -459,7 +470,7 @@ public class IcysBetterHorsesClient {
             return;
         }
 
-        int gear = HorseGearController.INSTANCE.shiftUp(horse);
+        int gear = HorseGearController.INSTANCE.shift(horse, by);
         String gait = switch (gear) {
             case BhGears.WALK_GEAR -> "walk";
             case BhGears.TROT_GEAR -> horse instanceof IcelandicHorse ? "tolt" : "trot";
