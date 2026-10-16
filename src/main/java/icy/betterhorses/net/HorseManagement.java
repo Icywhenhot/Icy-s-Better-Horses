@@ -60,6 +60,7 @@ public final class HorseManagement {
     public static final String MSG_CART = MSG + "cart_attached";
     public static final String MSG_UNSAFE = MSG + "unsafe";
     public static final String MSG_NO_LEVELS = MSG + "no_levels";
+    public static final String MSG_TOO_FAR = MSG + "too_far";
 
     public static List<HorseRosterEntry> buildRoster(ServerPlayer player) {
         MinecraftServer server = ((ServerLevel) player.level()).getServer();
@@ -250,6 +251,9 @@ public final class HorseManagement {
             if (loaded.level() != player.level()) {
                 return Outcome.fail(MSG_OTHER_DIMENSION);
             }
+            if (!BhConfig.tuning().whistleReaches(loaded.distanceToSqr(player))) {
+                return Outcome.fail(MSG_TOO_FAR);
+            }
             IcysBetterHorses.LOGGER.info("[whistle] {} calls horse {}: body is loaded in {} at {} {} {}, teleporting it",
                     player.getName().getString(), horseId, loaded.level().dimension().identifier(),
                     loaded.getBlockX(), loaded.getBlockY(), loaded.getBlockZ());
@@ -257,6 +261,15 @@ public final class HorseManagement {
         }
 
         HorseTrackerState.KnownPosition seen = HorseTracker.getLastKnownPosition(horseId);
+        BhTuning tuning = BhConfig.tuning();
+        if (tuning.whistleRange() != BhTuning.WHISTLE_ANYWHERE) {
+            if (seen != null && seen.dimension() != player.level().dimension()) {
+                return Outcome.fail(MSG_OTHER_DIMENSION);
+            }
+            if (seen == null || !tuning.whistleReaches(seen.pos().distToCenterSqr(player.position()))) {
+                return Outcome.fail(MSG_TOO_FAR);
+            }
+        }
         IcysBetterHorses.LOGGER.info("[whistle] {} calls horse {}: no loaded body, last seen in {} at {}, respawning from snapshot",
                 player.getName().getString(), horseId,
                 seen == null ? "nowhere" : seen.dimension().identifier(), seen == null ? "-" : seen.pos());
@@ -432,11 +445,13 @@ public final class HorseManagement {
     }
 
     private static @Nullable AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {
+        BhTuning tuning = BhConfig.tuning();
         AbstractHorse lastRidden = HorseTracker.getLastRidden(playerId);
         if (lastRidden != null
                 && playerId.equals(IHorseData.of(lastRidden).bh_getOwner())
                 && lastRidden.level() == player.level()
-                && lastRidden.isAlive()) {
+                && lastRidden.isAlive()
+                && tuning.whistleReaches(lastRidden.distanceToSqr(player))) {
             return lastRidden;
         }
 
@@ -446,7 +461,7 @@ public final class HorseManagement {
             if (!candidate.isAlive() || candidate.level() != player.level()) continue;
             if (!playerId.equals(IHorseData.of(candidate).bh_getOwner())) continue;
             double distSq = candidate.distanceToSqr(player);
-            if (distSq < nearestDistSq) {
+            if (distSq < nearestDistSq && tuning.whistleReaches(distSq)) {
                 nearestDistSq = distSq;
                 nearest = candidate;
             }
