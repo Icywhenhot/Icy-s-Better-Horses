@@ -45,6 +45,7 @@ public final class BhConfig {
     private static final String KEY_SPAWN_FLOOR = "spawn_probability_floor";
     private static final String KEY_REVIVE_LEVELS = "revive_xp_levels";
     private static final String KEY_REVIVE_BOND_LOSS = "revive_bond_loss";
+    private static final String KEY_WHISTLE_RANGE = "whistle_range";
     private static final String KEY_HUD = "hud";
     private static final String KEY_METER_SIDE = "charge_meter_side";
     private static final String KEY_METER_GAP = "charge_meter_gap";
@@ -383,8 +384,10 @@ public final class BhConfig {
                         readInt(numbers, KEY_GROUP_MAX, fallback.groupMax()),
                         readDouble(numbers, KEY_SPAWN_FLOOR, fallback.spawnFloor()),
                         readInt(numbers, KEY_REVIVE_LEVELS, fallback.reviveLevels()),
-                        readInt(numbers, KEY_REVIVE_BOND_LOSS, fallback.reviveBondLoss())).clamped();
-                needsRewrite |= !numbers.has(KEY_REVIVE_LEVELS) || !numbers.has(KEY_REVIVE_BOND_LOSS);
+                        readInt(numbers, KEY_REVIVE_BOND_LOSS, fallback.reviveBondLoss()),
+                        readInt(numbers, KEY_WHISTLE_RANGE, fallback.whistleRange())).clamped();
+                needsRewrite |= !numbers.has(KEY_REVIVE_LEVELS) || !numbers.has(KEY_REVIVE_BOND_LOSS)
+                        || !numbers.has(KEY_WHISTLE_RANGE);
             }
 
             needsRewrite |= !root.has(KEY_HUD);
@@ -566,6 +569,7 @@ public final class BhConfig {
         numbers.addProperty(KEY_SPAWN_FLOOR, mineTuning.spawnFloor());
         numbers.addProperty(KEY_REVIVE_LEVELS, mineTuning.reviveLevels());
         numbers.addProperty(KEY_REVIVE_BOND_LOSS, mineTuning.reviveBondLoss());
+        numbers.addProperty(KEY_WHISTLE_RANGE, mineTuning.whistleRange());
         root.add(KEY_TUNING, numbers);
 
         JsonObject hud = new JsonObject();

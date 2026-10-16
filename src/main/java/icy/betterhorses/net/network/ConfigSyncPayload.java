@@ -33,6 +33,7 @@ public record ConfigSyncPayload(
         buf.writeFloat((float) tuning.spawnFloor());
         buf.writeVarInt(tuning.reviveLevels());
         buf.writeVarInt(tuning.reviveBondLoss());
+        buf.writeVarInt(tuning.whistleRange());
         writeKeys(buf, payload.breedingFoods(), MAX_ID_LENGTH);
     }
 
@@ -48,6 +49,7 @@ public record ConfigSyncPayload(
                 buf.readVarInt(),
                 buf.readVarInt(),
                 buf.readFloat(),
+                buf.readVarInt(),
                 buf.readVarInt(),
                 buf.readVarInt());
         List<String> foods = readKeys(buf, MAX_ID_LENGTH);
