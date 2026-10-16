@@ -77,6 +77,7 @@ public final class CartRig implements HorseFeature {
             }
             cart = null;
             data.bh_setCartId(null);
+            HorseCartEntity.dropBenchCargo(horse);
         }
     }
 

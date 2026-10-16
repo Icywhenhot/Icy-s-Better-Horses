@@ -543,6 +543,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         this.mirrorSetup(this.setupStack());
         this.tillGround();
         this.updateViewers();
+        this.shiftBenchCargo(boundHorse);
         this.tryBoardNearbyMobs();
         this.tendPassengers();
     }
@@ -599,6 +600,31 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
             if (rider != owner && rider.getType().is(BhRiderSeat.SELF_SEATED)
                     && rider instanceof OwnableEntity pet && owner.getUUID().equals(pet.getOwnerUUID())) {
                 this.setDown(rider);
+            }
+        }
+    }
+
+    private void shiftBenchCargo(AbstractHorse boundHorse) {
+        List<Entity> cargo = this.benchCargo();
+        if (cargo.isEmpty() || boundHorse.getPassengers().stream().anyMatch(rider -> rider instanceof Player)) {
+            return;
+        }
+        for (Entity passenger : List.copyOf(cargo)) {
+            if (this.rearSeatsFree() && this.canCarry(passenger)
+                    && !passenger.getType().is(BhRiderSeat.SELF_SEATED)) {
+                passenger.stopRiding();
+                passenger.startRiding(this, true);
+            } else {
+                this.setDown(passenger);
+            }
+        }
+    }
+
+    public static void dropBenchCargo(AbstractHorse horse) {
+        for (Entity passenger : List.copyOf(horse.getPassengers())) {
+            if (!(passenger instanceof Player) && isCarriableCargo(passenger)) {
+                passenger.stopRiding();
+                setSeatedPose(passenger, false);
             }
         }
     }
