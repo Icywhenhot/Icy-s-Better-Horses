@@ -47,6 +47,13 @@
       "title": "book.icys-better-horses.stable_handbook.basics.your_horses.actions.title",
       "show_title_separator": true,
       "text": "book.icys-better-horses.stable_handbook.basics.your_horses.actions.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "fallen",
+      "title": "book.icys-better-horses.stable_handbook.basics.your_horses.fallen.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.your_horses.fallen.text"
     }
   ]
 }

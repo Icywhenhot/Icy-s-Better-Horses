@@ -60,6 +60,6 @@ Medkits can be switched off server-side with the `medkit` config toggle. Disable
 
 ## Related pages
 
-- [Horse Stabilizer](horse-stabilizer): the other emergency system
+- [Glidewing Harness](horse-stabilizer): the other emergency system
 - [Ownership & bonding](../ownership-and-bonding): what you're protecting
 - [Recipes](../recipes)

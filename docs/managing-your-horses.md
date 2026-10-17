@@ -53,13 +53,14 @@ For a horse loaded near you the readout follows it live as it moves. For a **res
 |:---|:---|
 | **Resting** | The horse is in an unloaded chunk. It's safe and will be restored when called. |
 | **Active** | This is the horse your <kbd>P</kbd> whistle calls |
+| **Fallen** | The horse died. It can be [summoned back or forgotten](#bringing-a-horse-back) |
 
 {: .note }
 > **Resting** isn't a problem. The mod stores owned horses persistently, so a horse in an unloaded chunk still exists and still answers the whistle. It gets restored when you call it.
 
 ---
 
-## The four actions
+## The four buttons
 
 ### Set Active
 
@@ -67,7 +68,7 @@ Marks this horse as the one your [whistle](ownership-and-bonding#whistling-for-y
 
 ### Whistle
 
-Calls the horse to you from the screen. Within 32 blocks it walks over; beyond that it teleports.
+Calls the horse to you from the screen. Within 32 blocks it walks over; beyond that it teleports, as long as it's inside the server's [whistle range](ownership-and-bonding#whistling-for-your-horse).
 
 ### Send Home
 
@@ -88,6 +89,27 @@ The horse itself is **not deleted**. It stays exactly where it is, untamed, and 
 >
 > You can't disown a horse that's still carrying gear: *"Take your equipment off this horse before disowning it."* Strip the saddle and gear first, which also means you don't lose your diamonds by accident.
 
+The [Horse Info screen](horse-info-screen) has the same **Disown** button for the horse you're riding.
+
+---
+
+## Bringing a horse back
+
+A horse that dies doesn't vanish from the roster. It stays in the list, darkened and marked **Fallen**, with two buttons instead of the usual four:
+
+| Button | What it does |
+|:---|:---|
+| **Summon** | Brings the horse back a couple of blocks in front of you, for **10 XP levels** by default. Free in Creative |
+| **Forget** | Removes it from the roster for good, after a confirmation |
+
+The preview shows what the horse will come back with, for example *Bond 60 → 40*: it loses **20 bond** by default, never dropping below 0. Everything else about it is the same horse, with the same name, breed, coat, gender and stats.
+
+{: .warning }
+> **Gear doesn't come back.** A horse drops its saddle, armour, chest and everything in it where it dies, the same as vanilla. The summoned horse arrives bare, so go back for the pile.
+
+A horse towing a [cart](equipment/horse-cart) leaves the cart standing where it fell, with its chest and plough still on it.
+
+Both numbers are set by the server with `revive_xp_levels` and `revive_bond_loss`, and `horse_revival` turns the whole thing off, so a dead horse stays dead. See [Configuration](configuration#tuning).
 ---
 
 ## When something doesn't work
@@ -96,8 +118,11 @@ The horse itself is **not deleted**. It stays exactly where it is, untamed, and 
 |:---|:---|
 | *That horse is in another dimension.* | Whistle and Send Home only work within one dimension. Travel to it, or send it home from the same dimension. |
 | *That horse's home is in another dimension.* | Send Home can't cross dimensions either. Ride it through the portal yourself. |
-| *That horse can't be found any more.* | The horse no longer exists, killed while you were away or removed by an admin. |
+| *That horse can't be found any more.* | The horse no longer exists, usually removed by an admin. A horse that died shows as **Fallen** instead. |
+| *That horse is too far away to hear your whistle.* | It's outside the server's [whistle range](ownership-and-bonding#whistling-for-your-horse). Get closer. |
 | *There is no safe space for this horse nearby.* | Nowhere to put it down. Step out of the cave or off the ledge and retry. |
+| *You don't have enough levels to summon this horse.* | [Summoning a fallen horse](#bringing-a-horse-back) costs XP levels. |
+| *The horse management screen is turned off* | The server has switched the roster off with `horse_management`. Whistling and the info screen still work. |
 | *Build some bond with this horse before it will answer your whistle.* | It's still at bond 0. See [bonding](ownership-and-bonding#the-bond-system). |
 | *Unhitch the cart before calling or teleporting this horse.* | A horse towing a [cart](equipment/horse-cart) can't be whistled or sent home. |
 | *Take your equipment off this horse before disowning it.* | Remove the saddle and gear first. |

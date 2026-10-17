@@ -25,10 +25,10 @@ Any of these work as the second ingredient:
 
 - [Upgraded Saddle](upgraded-saddle)
 - Chest *(vanilla)*
-- [Horse Hooves](horse-hooves)
+- [Horseshoes](horse-hooves)
 - [Horse Medkit](horse-medkit)
 - [Canister](canister)
-- [Horse Stabilizer](horse-stabilizer)
+- [Glidewing Harness](horse-stabilizer)
 - [Wheel](wheel)
 - [Horse Cart](horse-cart)
 

@@ -30,7 +30,7 @@ The cart slots into the **stabilizer slot** of an [Upgraded Saddle](upgraded-sad
 Quickest method: **right-click the horse while holding the cart**. It goes straight on, provided the horse wears an Upgraded Saddle and that slot is empty.
 
 {: .warning }
-> The cart **shares its slot with the [Horse Stabilizer](horse-stabilizer)**. A horse tows a cart or wears a stabilizer, never both. Hauling cargo means giving up your fall protection, so pick your route accordingly.
+> The cart **shares its slot with the [Glidewing Harness](horse-stabilizer)**. A horse tows a cart or wears a stabilizer, never both. Hauling cargo means giving up your fall protection, so pick your route accordingly.
 
 ---
 
@@ -53,7 +53,21 @@ The cart accepts **anything a boat would**. Animals that wander into the bed cli
 ### Unloading
 
 - **Sneak + right-click an animal** to set that one down.
-- **Sneak + right-click the cart** to unload everything at once.
+- Press **Unload all** on the cart screen's **Riders** tab to set everything down at once.
+
+---
+
+## The cart screen
+
+**Sneak + right-click the cart**, or press **Open Cart** (default <kbd>Left Alt</kbd>) while riding it or looking at it, to open the cart's own screen. With a cart hitched, the horse's inventory also gets a small cart icon that opens it. It has three tabs:
+
+| Tab | What it's for |
+|:---|:---|
+| **Cargo** | The cart's chest. Locked until a chest is fitted |
+| **Cart** | Pick the model, small **Buggy** or large **Wagon**, see its seats and slots, fit a chest or plough, and fold the wagon's **tarp** away |
+| **Riders** | Whether the cart picks up mobs on its own, and which kinds: **Passive** (cows, sheep, villagers), **Neutral** (wolves, bees, llamas, spiders), **Hostile** (zombies, skeletons, creepers). Plus **Unload all** |
+
+A parked cart opens the same screen.
 
 ---
 
@@ -61,7 +75,7 @@ The cart accepts **anything a boat would**. Animals that wander into the bed cli
 
 **Right-click the cart with a Chest** in hand to mount it in the bed.
 
-**Sneak + right-click the cart** to open it. You get a full **double chest** of storage, and the lid swings up while you're browsing.
+Open the [cart screen](#the-cart-screen) and its **Cargo** tab is the chest. You get a full **double chest** of storage, and the lid swings up while you're browsing.
 
 {: .note }
 > The chest fills the bed, so a cart hauling cargo carries **no back-seat passengers**. The driver's bench still seats two.
@@ -78,7 +92,7 @@ Empty it first, because a loaded chest refuses to come off rather than spilling 
 
 ## The large wagon
 
-The cart has a second size. Put one on a **draft horse** and press the **Cart Size key** (default <kbd>Left Alt</kbd>) while looking at the horse or the cart, and it swaps to a longer wagon on a bigger frame.
+The cart has a second size. Put one on a **draft horse**, open the [cart screen](#the-cart-screen) and pick the **Wagon** on the **Cart** tab, and it swaps to a longer wagon on a bigger frame. A parked cart can switch too, if there's room around it.
 
 | | Small cart | Large wagon |
 |:---|:---:|:---:|
@@ -93,10 +107,10 @@ Only the four draft breeds can pull it: [Percheron](../breeds/percheron), [Clyde
 
 > Only draft horses can pull the large cart.
 
-Press the key again to go back down to the small cart. The swap is refused, with a message saying which, if the wagon is carrying more than the small cart can hold: too many passengers, a plough fitted, or items sitting in the outer chest columns. Clear the problem and it swaps.
+Pick the **Buggy** to go back down to the small cart. The swap is refused, and the tab says why, if the wagon is carrying more than the small cart can hold: too many riders, a plough fitted, or items sitting in the outer chest columns. A parked cart also needs room to grow. Clear the problem and it swaps.
 
 {: .tip }
-> The wagon has a roof, so **undead riding in it don't burn in daylight**. It's a safe way to haul zombies or a zombie villager you're taking home to cure.
+> The wagon has a tarp roof, so **undead riding in it don't burn in daylight**. It's a safe way to haul zombies or a zombie villager you're taking home to cure. Fold the tarp away on the **Cart** tab and the wagon is open to the sky like the small cart.
 
 {: .note }
 > This is the reason to raise a draft horse. They are the slowest class in the mod, and the wagon is what they are for: six seats and ninety slots is a moving base camp.
@@ -105,7 +119,9 @@ Press the key again to go back down to the small cart. The swap is refused, with
 
 ## Fitting a plough
 
-**Right-click the small cart with any hoe** and a plough drops down behind the bed. From then on, driving the cart over **grass, dirt or coarse dirt** turns a **three-block-wide** strip into farmland behind you, one pass, no dismounting.
+**Right-click the small cart with any hoe** and a plough drops down behind the bed. From then on, driving the cart over **grass, dirt, coarse dirt, rooted dirt, podzol or mycelium** turns a **three-block-wide** strip into farmland behind you, one pass, no dismounting. It reaches a block above the furrow, so a step up still gets turned.
+
+Fit a **shovel** instead and the same plough lays a **three-wide dirt path** as you drive.
 
 The block above has to be clear, same as tilling by hand, so the plough skips anything with a plant or a block sitting on it. It also respects claim and spawn protection: anything the driver couldn't till by hand, the plough leaves alone.
 
@@ -155,6 +171,6 @@ The relevant messages:
 ## Related pages
 
 - [Wheel](wheel): the component you need two of
-- [Horse Stabilizer](horse-stabilizer): the alternative use for this slot
+- [Glidewing Harness](horse-stabilizer): the alternative use for this slot
 - [Upgraded Saddle](upgraded-saddle): required to hitch a cart at all
 - [Recipes](../recipes)

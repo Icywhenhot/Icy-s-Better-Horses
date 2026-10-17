@@ -43,7 +43,7 @@ You don't have to choose between "nobody" and "everybody". Trust a specific play
 /horse trust Alex
 ```
 
-Trust is granted per player, so it covers horses you tame later too, and `/horse untrust` takes it back — bucking them off if they happen to be riding at the time. It's a riding permission only: a trusted friend still can't open your horse's gear, shear its saddle, or disown it. See [Commands](commands) for the full breakdown.
+Trust is granted per player, so it covers horses you tame later too, and `/horse untrust` takes it back — bucking them off if they happen to be riding at the time. A trusted friend is treated as you are: they can ride, open the gear screen, use the saddlebags and a cart's chest, shear the saddle and give commands. The one thing they can't do is disown the horse. See [Commands](commands#what-trust-actually-allows) for the full breakdown.
 
 ---
 
@@ -58,8 +58,17 @@ Every owned horse tracks a **bond** value from **0 to 100**. Bond is saved with 
 | Proximity to the owner | **+1 per minute** | Owner must be within **10 blocks**, in the same dimension |
 | Name Tag | **+10** | Once per horse; a second name tag gives nothing |
 | Golden Apple | **+2** | Repeatable, and also triggers breeding |
+| Brush | **+1** | Right-click with a vanilla Brush, once every **five minutes** per horse |
 
-Passive gain ticks once a minute on the server for every owned horse whose owner is nearby, so a horse parked next to your base while you build gains bond the whole time. Going from 0 to 100 on proximity alone takes about **100 minutes**; a name tag and a handful of golden apples cut that down.
+Passive gain ticks once a minute on the server for every owned horse whose owner is nearby, so a horse parked next to your base while you build gains bond the whole time. Going from 0 to 100 on proximity alone takes about **100 minutes**; a name tag, a handful of golden apples and the odd brushing cut that down. A [Morgan](breeds/morgan) bonds half again as fast from every source, and twice as fast from bond 40.
+
+Both passive numbers are adjustable in the [config](configuration#tuning).
+
+### Treats
+
+Horses eat more than vanilla lets them. **Carrots, potatoes, beetroot, melon slices, sweet berries, glow berries** and **sugar cane** all heal a hurt horse, grow a foal, and make a wild horse easier to tame. They don't give bond. The list is the `icys-better-horses:horse_snacks` item tag, so a datapack can add more.
+
+Hold any food a horse likes within 8 blocks of it and it turns to watch you and tilts its head, begging.
 
 {: .warning }
 > Bond resets to **0** if the horse loses its owner. Disowning a horse from the roster discards it for good.
@@ -83,8 +92,8 @@ The mod's ceilings, shown as full bars on the [Horse Info screen](horse-info-scr
 
 | Stat | Maximum |
 |:---|:---|
-| Speed | 26.2 blocks/second |
-| Jump | 9.7 blocks |
+| Speed | 26.25 blocks/second |
+| Jump | 16.45 blocks |
 | Health | 50 HP |
 
 Each ceiling is the best any class can reach, so no single horse hits all three. Speed and jump belong to a fully bonded [Race](breeds/index) horse; the 50 HP belongs to a [Draft](breeds/index) horse, which will never get near the speed bar.
@@ -96,12 +105,15 @@ Each ceiling is the best any class can reach, so no single horse hits all three.
 
 ## Whistling for your horse
 
-Press <kbd>P</kbd> (the Horse Whistle key) and your **active** horse responds. What happens depends on distance:
+Press <kbd>P</kbd> (the Horse Whistle key) and one horse responds: your **active** horse if you've picked one, otherwise the horse you rode last, otherwise your nearest. What happens depends on distance:
 
 | Distance | Behaviour |
 |:---|:---|
 | Within 32 blocks | The horse switches to **Follow** and walks to you |
 | Beyond 32 blocks | The horse **teleports** to you |
+| Beyond the whistle range | It can't hear you: *"That horse is too far away to hear your whistle."* |
+
+The whistle reaches **anywhere** by default. A server can shorten it with `whistle_range` in the [config](configuration#tuning), from 16 blocks up. A horse resting in an unloaded chunk answers too, as long as its last known spot is in range.
 
 While you're already mounted, <kbd>P</kbd> opens the [Horse Info screen](horse-info-screen) instead of whistling.
 
@@ -112,7 +124,7 @@ While you're already mounted, <kbd>P</kbd> opens the [Horse Info screen](horse-i
 >
 > One point of bond is enough. Stand near it for a minute, or hand it a name tag, and the whistle starts working.
 
-The whistle also works in reverse during a fight. If any horse you own is fighting or bolting, <kbd>P</kbd> calls all of them off instead of summoning anything. See [Combat](combat#the-whistle).
+The whistle also works in reverse during a fight. If any horse you own is fighting or bolting, <kbd>P</kbd> calls all of them off instead of summoning anything. See [Combat](combat#calling-them-off).
 
 Which horse answers is set from the [roster](managing-your-horses) using **Set Active**. If you own a dozen horses, the active one is the one that comes when you whistle.
 

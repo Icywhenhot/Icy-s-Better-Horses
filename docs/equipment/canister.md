@@ -22,7 +22,7 @@ You need **two canisters** per stabilizer, so budget 12 copper and 4 gold.
 
 ## What it's for
 
-The canister is the working end of the stabilizer, the part that actually deploys and catches the fall. Craft two, then build the [Horse Stabilizer](horse-stabilizer) around them.
+The canister is the working end of the stabilizer, the part that actually deploys and catches the fall. Craft two, then build the [Glidewing Harness](horse-stabilizer) around them.
 
 It can't be equipped to a horse. Its other job is **fuel**: combine a worn stabilizer with one canister on an **Anvil** and it gets **80%** of its durability back. It's the only thing that can repair a stabilizer. See [Durability and refuelling](horse-stabilizer#durability-and-refuelling).
 
@@ -33,5 +33,5 @@ It can't be equipped to a horse. Its other job is **fuel**: combine a worn stabi
 
 ## Related pages
 
-- [Horse Stabilizer](horse-stabilizer): what you're building toward, and what you'll refuel
+- [Glidewing Harness](horse-stabilizer): what you're building toward, and what you'll refuel
 - [Recipes](../recipes)

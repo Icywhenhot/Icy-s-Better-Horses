@@ -24,13 +24,13 @@ Vanilla horses are an early-game novelty you abandon the moment you find elytra.
 | [Command wheel](command-wheel) | A radial menu to make a horse follow, stay, wander, or return to a saved home. |
 | [Fifteen breeds](breeds/) | Real breeds with their own coat palettes and biome ranges, plus gender and mixed-breed foals. |
 | [Genetics & breeding](genetics) | Gender-gated breeding, 50/50 breed inheritance, and stat rolls that can beat both parents. |
-| [Tack & gear](equipment/) | An upgraded saddle with four gear slots: hooves, medkit, stabilizer, chest. |
+| [Tack & gear](equipment/) | An upgraded saddle with five gear slots: chest, horseshoe, medkit, Glidewing Harness or cart, and a carpet in any colour. Plus a banner slot on any armoured horse. |
 | [Horse carts](equipment/horse-cart) | A four-seat cart your horse tows, with a double chest or a plough. Draft horses upgrade it to a six-seat wagon. |
-| [Riding fixes](riding) | Four gaits, auto-ride, free look, leaf passthrough, water floating, higher step height, two riders per horse. |
-| [Horse roster](managing-your-horses) | A screen listing every horse you own, with its live coordinates, so you can whistle, send home, or disown from anywhere. |
+| [Riding fixes](riding) | Four gaits, auto-ride, free look, an inventory switcher, leaf passthrough, water floating, higher step height, two riders per horse. |
+| [Horse roster](managing-your-horses) | A screen listing every horse you own, with its live coordinates, so you can whistle, send home, or disown from anywhere. A horse that dies stays on the list and can be summoned back for XP. |
 | [Combat](combat) | Horses charge, kick, and defend you. Every breed has a class ability that grows at bond 40 and 100. |
-| [Commands](commands) | `/horse trust <player>` to let a friend ride every horse you own, without giving up the rest of ownership. |
-| [Configuration](configuration) | Eleven toggles, six tuning numbers, a switch for every ability, and datapack hooks for breeds and spawn biomes. |
+| [Commands](commands) | `/horse trust <player>` to let a friend ride every horse you own, `/horse coats` to list a breed's coats, and operator tools to edit and spawn horses. |
+| [Configuration](configuration) | Nineteen toggles, nine tuning numbers, a breeding food list, a switch for every ability, and datapack hooks for breeds, class speeds and spawn biomes. |
 
 ## Requirements
 

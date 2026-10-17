@@ -63,14 +63,15 @@ Open the [roster](managing-your-horses) with <kbd>G</kbd> and select the horse. 
 
 ### My horse won't come when I whistle.
 
-Check three things:
+Check these:
 
 1. **Is its bond above 0?** A freshly tamed horse ignores the whistle entirely: *"Build some bond with this horse before it will answer your whistle."* One point is enough.
-2. **Is it the active horse?** Only the horse marked **Set Active** on the [roster](managing-your-horses) answers the whistle.
+2. **Is it the active horse?** If you've marked one with **Set Active** on the [roster](managing-your-horses), only that one answers. Without one, the horse you rode last comes, then your nearest.
 3. **Same dimension?** *"That horse is in another dimension."*
 4. **Is it towing a cart?** *"Unhitch the cart before calling or teleporting this horse."*
-5. **Are you mounted?** While riding, <kbd>P</kbd> opens the info screen instead of whistling.
-6. **Is one of your horses fighting?** Then <kbd>P</kbd> calls it off instead of summoning anything. Press it again once the fight is over.
+5. **Is it out of range?** *"That horse is too far away to hear your whistle."* The server has set a `whistle_range`. See [Configuration](configuration#tuning).
+6. **Are you mounted?** While riding, <kbd>P</kbd> opens the info screen instead of whistling.
+7. **Is one of your horses fighting?** Then <kbd>P</kbd> calls it off instead of summoning anything. Press it again once the fight is over.
 
 ### What does "Resting" mean on the roster?
 
@@ -118,7 +119,7 @@ If you'd rather not think about it, set `gender_breeding` to `no` in the [config
 
 ### How do I get a better horse?
 
-Foal stats are the **average** of both parents plus one fresh roll from the breed's class range, clamped to that range. So a foal can beat both parents, but a bad pairing drags it down, and no amount of breeding pushes a horse past its class ceiling. Keep only the foals that beat both parents. Full method: [breeding loop](genetics#a-practical-breeding-loop).
+Each foal stat is the **better** parent's value plus a small roll, -0.5 to +1.0, clamped to the breed's class range. So most foals beat both parents, a weak partner doesn't drag them down, and no amount of breeding pushes a horse past its class ceiling. Full method: [breeding loop](genetics#a-practical-breeding-loop).
 
 ### What is the (mix) tag?
 
@@ -140,9 +141,13 @@ Gear comes off in reverse order. If a cart is hitched: *"Unhitch the cart before
 
 It isn't empty. A loaded chest refuses removal rather than spilling its contents.
 
-### My stabilizer won't fit on my mule.
+### My Glidewing Harness won't fit on my mule.
 
-Stabilizers are **horses only**, not mules, donkeys, skeleton horses, or zombie horses.
+Harnesses are **horses only**, not mules, donkeys, skeleton horses, or zombie horses.
+
+### My horse died. Is it gone?
+
+No. It stays on your [roster](managing-your-horses#bringing-a-horse-back), marked **Fallen**, and **Summon** brings it back for 10 XP levels and 20 bond by default. Its gear drops where it died, so go back for it. A server can change the cost, or turn revival off.
 
 ### Where did my medkit go?
 
@@ -150,7 +155,10 @@ It fired. Medkits are **one use**, consumed the moment the horse drops below hal
 
 ### Can I enchant horse gear?
 
-Only [Horse Hooves](equipment/horse-hooves#frost-walker), and only with **Frost Walker**, applied at an anvil from a book.
+Two pieces take enchantments, both from books at an anvil:
+
+- **Horse armour** takes armour enchantments: the Protection family, Thorns, Feather Falling, Depth Strider, Respiration and the curses.
+- **[Horseshoes](equipment/horse-hooves#frost-walker)** take **Frost Walker**.
 
 ---
 
@@ -158,13 +166,13 @@ Only [Horse Hooves](equipment/horse-hooves#frost-walker), and only with **Frost 
 
 ### What are the default keys?
 
-<kbd>P</kbd> whistle/info, <kbd>R</kbd> command wheel, <kbd>G</kbd> manage horses, <kbd>V</kbd> walk cycle, <kbd>H</kbd> rear, <kbd>Left Ctrl</kbd> free look, <kbd>Left Alt</kbd> cart size. All rebindable in **Options → Controls → Icy's Better Horses**.
+<kbd>P</kbd> whistle/info, <kbd>R</kbd> command wheel, <kbd>G</kbd> manage horses, <kbd>V</kbd> gear up, <kbd>Z</kbd> gear down, <kbd>H</kbd> rear, <kbd>Left Ctrl</kbd> free look, <kbd>Left Alt</kbd> open cart, <kbd>B</kbd> toggle charge. All rebindable in **Options → Controls → Icy's Better Horses**.
 
 <kbd>P</kbd>, <kbd>Left Ctrl</kbd> and <kbd>Left Alt</kbd> clash with vanilla Social Interactions, Sprint, and whatever your other mods use. Minecraft flags clashes in red on the controls screen.
 
 ### How do I get the big wagon?
 
-Put a cart on a **draft horse** ([Percheron](breeds/percheron), [Clydesdale](breeds/clydesdale), [Shire](breeds/shire), [Belgian](breeds/belgian)), then press <kbd>Left Alt</kbd> while looking at it. Only draft horses can pull it. See [Horse Cart](equipment/horse-cart#the-large-wagon).
+Put a cart on a **draft horse** ([Percheron](breeds/percheron), [Clydesdale](breeds/clydesdale), [Shire](breeds/shire), [Belgian](breeds/belgian)), then press <kbd>Left Alt</kbd> while looking at it and pick the **Wagon** on the **Cart** tab. Only draft horses can pull it. See [Horse Cart](equipment/horse-cart#the-large-wagon).
 
 ### How do I turn on auto-ride?
 

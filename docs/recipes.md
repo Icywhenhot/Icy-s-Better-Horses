@@ -21,9 +21,9 @@ What it takes to fully equip one horse, from scratch:
 | Item | Materials |
 |:---|:---|
 | [Upgraded Saddle](equipment/upgraded-saddle) | 5 diamonds, 1 saddle, 3 copper |
-| [Horse Hooves](equipment/horse-hooves) | 7 copper, 1 leather |
+| [Horseshoes](equipment/horse-hooves) | 7 copper, 1 leather |
 | [Horse Medkit](equipment/horse-medkit) | 3 wool, 2 golden carrots, 1 regen potion, 3 golden apples |
-| [Horse Stabilizer](equipment/horse-stabilizer) | 18 copper, 4 gold, 1 leather *(includes 2 canisters)* |
+| [Glidewing Harness](equipment/horse-stabilizer) | 18 copper, 4 gold, 1 leather *(includes 2 canisters)* |
 | [Horse Cart](equipment/horse-cart) | 10 planks, 8 sticks, 2 slabs *(includes 2 wheels)* |
 | [Stable Handbook](equipment/stable-handbook) | 1 book, 1 Better Horses item |
 
@@ -39,7 +39,7 @@ Unlocks all five gear slots. → [Details](equipment/upgraded-saddle)
 
 ---
 
-## Horse Hooves
+## Horseshoes
 
 {% include craft.html id="horse_hooves_gear" %}
 
@@ -63,7 +63,7 @@ You need **two** per stabilizer, and one refuels a spent stabilizer on an anvil.
 
 ---
 
-## Horse Stabilizer
+## Glidewing Harness
 
 {% include craft.html id="horse_stabilizer_gear" %}
 
@@ -93,7 +93,7 @@ Four seats and an optional double chest. Any wood type. → [Details](equipment/
 
 **Shapeless:** 1 Book + any one Better Horses item.
 
-Qualifying items: Upgraded Saddle, **Chest** *(vanilla)*, Horse Hooves, Horse Medkit, Canister, Horse Stabilizer, Wheel, Horse Cart.
+Qualifying items: Upgraded Saddle, **Chest** *(vanilla)*, Horseshoes, Horse Medkit, Canister, Glidewing Harness, Wheel, Horse Cart.
 
 Because a plain chest counts, this is craftable on day one. → [Details](equipment/stable-handbook)
 

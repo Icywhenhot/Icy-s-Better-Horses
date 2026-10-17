@@ -1,10 +1,10 @@
 ---
-title: Horse Stabilizer
+title: Glidewing Harness
 parent: Equipment
 nav_order: 5
 ---
 
-# Horse Stabilizer
+# Glidewing Harness
 {: .no_toc }
 
 Cliff insurance. Deploys mid-fall, slows the descent, and can cancel the damage entirely.
@@ -75,7 +75,7 @@ Two ways:
 
 They solve different problems and stack well when you can only bring one:
 
-| | [Horse Hooves](horse-hooves) | Horse Stabilizer |
+| | [Horseshoes](horse-hooves) | Glidewing Harness |
 |:---|:---|:---|
 | Fall damage | Reduced | Can be cancelled entirely |
 | Descent speed | Unchanged | Slowed dramatically |

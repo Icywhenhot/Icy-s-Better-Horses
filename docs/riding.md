@@ -16,7 +16,7 @@ The pile of small fixes that make a horse feel like transport instead of a chore
 
 ## Gaits
 
-Press the **walk cycle key** (default <kbd>V</kbd>) while riding to shift up through four gaits. Footfall pattern, stride length and the way the body rocks all change with the gear, so you can see which one you're in without reading the action bar.
+Press **gear up** (default <kbd>V</kbd>) while riding to shift up through four gaits, and **gear down** (default <kbd>Z</kbd>) to shift back toward a halt. The gait you land on prints over your hotbar. Footfall pattern, stride length and the way the body rocks all change with the gear, so you can see which one you're in without reading it.
 
 | Gear | Gait | Pace | Footfall |
 |:---|:---|:---|:---|
@@ -25,12 +25,12 @@ Press the **walk cycle key** (default <kbd>V</kbd>) while riding to shift up thr
 | 3 | Canter | ~6.8 blk/s | Three beats, with a leading foreleg |
 | 4 | Gallop | Full speed | Four beats, with a moment of suspension |
 
-Shifting past top gear drops you back to a halt.
+Gear up stops at **Gallop** and gear down stops at a **halt**; neither wraps around. Once a gait is set the horse holds it on its own, so you only steer.
 
 {: .note }
 > Gears 1 to 3 are **fixed paces**, not a percentage of the horse. A plodding Shire and a bonded Thoroughbred both trot at the same speed, which is the point: it's a cruise control for riding in company or down a narrow path. Only **Gallop** hands the horse its full stat, so a fast horse is only fast in top gear. If the horse's own top speed is below the gear's pace, the gear can't push it past what it has.
 
-Holding <kbd>W</kbd> or <kbd>S</kbd> hands speed control back to you and the horse animates to whatever pace you actually ride at. Let go and the selected gait takes over again.
+Holding <kbd>W</kbd> or <kbd>S</kbd> hands speed control back to you and the horse animates to whatever pace you actually ride at. Let go and the selected gait takes over again. Double-tapping <kbd>W</kbd> for [auto-ride](#auto-ride) clears the gait outright, and so does getting off the horse or onto another one.
 
 {: .note }
 > The [Icelandic](breeds/icelandic) has no trot. Gear 2 gives you its **tölt** instead -- a four-beat lateral gait that stays smooth in the saddle at a speed where other breeds are bouncing you around. Gears 3 and 4 canter and gallop as normal.
@@ -51,7 +51,26 @@ For the other 270 degrees, **hold the Free Look key** (default <kbd>Left Ctrl</k
 
 ## Rearing
 
-Press the **Rear key** (default <kbd>H</kbd>) to make a horse rear up: the one you're riding, or the one you're looking at within 12 blocks. It needs to be on the ground, and a war horse with its class perk intact refuses to rear when hurt. It's cosmetic, and it's the vanilla rear animation the mod otherwise suppresses so that jumping looks like jumping.
+Press the **Rear key** (default <kbd>H</kbd>) to make a horse rear up: the one you're riding, or the one you're looking at within 12 blocks. It has to be a horse you may handle, yours or one whose owner trusts you, and it ignores you while somebody else holds the reins. It needs to be on the ground, and a war horse with its class perk intact refuses to rear when hurt.
+
+It's cosmetic, and it's the vanilla rear animation the mod otherwise suppresses so that jumping looks like jumping. The horse neighs as it goes up; `rear_neigh` in the [config](configuration) keeps it quiet. A bond-100 [Friesian](breeds/friesian) turns the rear into **Dressage**, throwing back every hostile in front of it.
+
+## Getting off
+
+You dismount on the side you're looking toward, instead of wherever the game finds room first. Look at the bank before stepping off a horse in a river.
+
+## The inventory switcher
+
+Opening your inventory on horseback shows the horse's screen, as in vanilla. A small icon just left of the window jumps between the two without dismounting:
+
+- On the **horse** screen it shows a horse. Click it, or press <kbd>Ctrl</kbd> + your inventory key, to open your **own** inventory, with your armour, offhand and crafting grid.
+- On **your** inventory it shows your face. Click it, or press the same keys, to go back to the horse.
+
+With a [cart](equipment/horse-cart) hitched, a second icon under the first opens the cart's screen.
+
+## The HUD while riding
+
+Your **hunger bar stays visible** in the saddle, with the horse's hearts stacked above it, and the **XP bar** shows unless you're holding jump or winding up a charge. The [charge meter](combat#the-charge-meter) and the [Glidewing Harness](equipment/horse-stabilizer) fuel gauge sit beside the hotbar; both can be moved in the [HUD config](configuration#hud-placement).
 
 ## The horse gets out of your way
 
@@ -75,11 +94,11 @@ Horses **float instead of sinking**, and they cross water noticeably faster than
 
 ### Leaves
 
-Leaf blocks **lose collision while you're riding**. No more grinding to a halt in a forest canopy or taking the long way around a jungle. You ride straight through.
+Leaf blocks **lose collision while you're riding**. No more grinding to a halt in a forest canopy or taking the long way around a jungle. You ride straight through. `leaf_passthrough` in the [config](configuration) puts the collision back.
 
 ### Powder snow
 
-Fit [Horse Hooves](equipment/horse-hooves) and your horse walks on powder snow instead of falling through it. Hooves also soften fall damage, and they accept the **Frost Walker** enchantment for freezing a path across open water.
+Fit [Horseshoes](equipment/horse-hooves) and your horse walks on powder snow instead of falling through it. Hooves also soften fall damage, and they accept the **Frost Walker** enchantment for freezing a path across open water.
 
 ---
 
@@ -104,16 +123,19 @@ Using a saddle, vanilla or [upgraded](equipment/upgraded-saddle), on a horse in 
 
 | Improvement | Detail |
 |:---|:---|
-| Gaits | Four gears on <kbd>V</kbd>: walk, trot, canter, gallop |
+| Gaits | <kbd>V</kbd> shifts up to walk, trot, canter, gallop; <kbd>Z</kbd> shifts down to a halt |
 | Auto-ride | Double-tap <kbd>W</kbd>; any movement key cancels |
 | Free look | Up to 90° while stationary; hold <kbd>Left Ctrl</kbd> for full |
 | Rear | <kbd>H</kbd> on the horse you ride or look at |
+| Dismount | On the side you're looking toward |
+| Inventory switcher | <kbd>Ctrl</kbd> + inventory key swaps the horse screen for your own |
+| HUD | Hunger and XP bars stay visible in the saddle |
 | Camera | Horse fades when you look down; head drops while ridden |
 | Step height | +10% |
 | Mounted mining | 75% of on-foot speed |
 | Water | Floats, and moves faster than vanilla |
 | Leaves | No collision while riding |
-| Powder snow | Walkable with [Horse Hooves](equipment/horse-hooves) |
+| Powder snow | Walkable with [Horseshoes](equipment/horse-hooves) |
 | Passengers | 2 per horse, owner drives |
 | Creative taming | Instant with any saddle |
 
@@ -122,6 +144,6 @@ Using a saddle, vanilla or [upgraded](equipment/upgraded-saddle), on a horse in 
 ## Related pages
 
 - [Horse carts](equipment/horse-cart): four seats and a double chest
-- [Horse Hooves](equipment/horse-hooves): snow walking and Frost Walker
-- [Horse Stabilizer](equipment/horse-stabilizer): surviving the drop off a cliff
+- [Horseshoes](equipment/horse-hooves): snow walking and Frost Walker
+- [Glidewing Harness](equipment/horse-stabilizer): surviving the drop off a cliff
 - [Configuration](configuration): turning multi-riding off

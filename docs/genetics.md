@@ -41,7 +41,13 @@ Two horses of the **same gender won't breed**. Both go into love mode as normal,
 > These horses are the same gender and can't breed.
 
 {: .warning }
-> **Both apples are still consumed.** Love mode is set the moment you feed, before the mod checks gender, so the hearts are not a promise. Check genders on the [info screen](horse-info-screen) *before* spending golden apples. This is the single most common way to waste them.
+> **Both foods are still eaten.** Love mode is set the moment you feed, before the mod checks gender, so the hearts are not a promise. Check genders on the [info screen](horse-info-screen) *before* spending golden apples. This is the single most common way to waste them.
+
+### Breeding foods
+
+A tamed adult horse goes into love mode on a **golden carrot**, **golden apple** or **enchanted golden apple**. A server can change that list with `breeding_foods` in the [config](configuration#breeding-foods), for example to let plain apples breed horses. Foods taken off the list still heal and tame; they just won't start breeding.
+
+A horse that bred recently is on cooldown and won't take a golden apple until it's ready again.
 
 The gate only exists while `gender_breeding` is on. Set it to `no` in the [config](configuration) and any two horses pair up, vanilla style.
 
@@ -52,7 +58,7 @@ The gate only exists while `gender_breeding` is on. Set it to `no` in the [confi
 | **Gender** | A coin flip, 50/50 male or female |
 | **Breed** | Taken from one parent at random, 50/50 |
 | **Coat** | 50/50: either one parent's coat, or a **different** one from its breed's palette |
-| **Health, speed, jump** | The average of both parents and a fresh roll from the foal's class range, then clamped to that range |
+| **Health, speed, jump** | The better parent's value plus a roll from -0.5 to +1.0, then clamped to the foal's class range |
 
 ### Matching vs. mixed pairs
 
@@ -81,26 +87,26 @@ Cross-species pairs such as horse with donkey give the matching species placehol
 Stat inheritance is the part worth planning around:
 
 ```
-foal stat = (parent A + parent B + fresh class roll) / 3, clamped to the class range
+foal stat = the better parent's stat + a roll from -0.5 to +1.0, clamped to the class range
 ```
 
-The fresh roll is drawn from the same range the breed's [class](breeds/index) rolls wild horses from, and it leans toward the middle of that range rather than the edges.
+Each of health, speed and jump is worked out separately. The roll is in the units the [info screen](horse-info-screen) shows: hit points for health, blocks per second for speed, and roughly blocks for jump.
 
 Three consequences:
 
-1. **It is an average, not a jackpot.** Pairing your best mare with a poor stallion drags the foal toward the middle. Breed good stock to good stock or you undo your own work.
-2. **A foal can beat both parents, but only inside its class range.** The random third of the formula is what lets a line climb, and it is also what makes a foal occasionally come out worse. Expect to cull.
+1. **The weaker parent doesn't drag the foal down.** Only the better of the two counts for each stat, so a mare with great speed and a stallion with great health can give a foal that's good at both.
+2. **Most foals beat both parents.** Two thirds of the roll is above zero, so a line climbs a little every generation. The worst a foal can do is half a point under its better parent.
 3. **The class sets the ceiling and the floor.** A [Race](breeds/index) horse cannot be bred past Race top speed, and a [Draft](breeds/index) horse cannot be bred below Draft health. Crossing classes moves the foal onto whichever class its breed landed on, ceiling and all.
 
 {: .note }
-> Because the fresh roll pulls toward the middle of the class range, a line of already-excellent horses trends **down** slightly if you keep the wrong foals. Only keep the ones that beat both parents, and the average carries the line up.
+> Stats bred this way are **base** stats. Bond adds its bonus on top, so a foal's numbers on the info screen jump again as you bond it.
 
 ### A practical breeding loop
 
 1. Scan wild herds holding an [Upgraded Saddle](equipment/upgraded-saddle) and tame the best speed/jump stock you find.
 2. Check genders on the [info screen](horse-info-screen). You need one of each.
-3. Breed with golden apples. Keep the foal **only** if it beat both parents, and retire the weaker parent.
-4. Repeat. Each kept generation nudges the average upward until it presses against the class ceiling.
+3. Breed them with a breeding food: a golden carrot, golden apple or enchanted golden apple by default. Keep the best foal and retire the weaker parent.
+4. Repeat. Each generation nudges the line upward until it presses against the class ceiling.
 5. Then [bond](ownership-and-bonding) the best result to 100 for a further **+75%** on top.
 
 {: .note }

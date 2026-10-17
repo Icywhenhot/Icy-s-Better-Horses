@@ -37,13 +37,19 @@ Each stat bar fills toward the mod's ceiling, not the horse's own maximum:
 
 | Stat | Full bar at |
 |:---|:---|
-| Speed | **26.2 blk/s** |
-| Jump | **9.7 blocks** |
+| Speed | **26.25 blk/s** |
+| Jump | **16.45 blocks** |
 | Health | **50 HP** |
 
 Each ceiling is the best figure any class can reach, not a target for the horse in front of you. Speed and jump belong to a fully bonded [Race](breeds/index) horse; 50 HP belongs to a [Draft](breeds/index) horse. No horse fills all three, and a draft horse showing a third of the speed bar is not a bad draft horse.
 
 A short bar means there's room to grow. Some of that gap closes through [bonding](ownership-and-bonding#what-bond-gives-you), worth up to +75% speed and jump at 100 bond, and the rest through [breeding](genetics) for better stock within the class range.
+
+---
+
+## Disowning from the saddle
+
+A **Disown** button sits at the bottom of the screen. It does the same as the [roster's](managing-your-horses#disown) button: after a confirmation the horse goes back to the wild, and it refuses while the horse still wears gear, with the button flashing red.
 
 ---
 

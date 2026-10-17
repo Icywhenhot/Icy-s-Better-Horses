@@ -1,13 +1,13 @@
 ---
-title: Horse Hooves
+title: Horseshoe
 parent: Equipment
 nav_order: 2
 ---
 
-# Horse Hooves
+# Horseshoe
 {: .no_toc }
 
-Everyday tack for rough country, and the only gear that takes an enchantment.
+Everyday tack for rough country, and the one piece of saddle gear that takes an enchantment.
 {: .fs-5 .fw-300 }
 
 1. TOC
@@ -57,6 +57,6 @@ Hooves can be switched off server-side with the `hooves` config toggle. Disabled
 
 ## Related pages
 
-- [Horse Stabilizer](horse-stabilizer): for falls hooves can't save you from
+- [Glidewing Harness](horse-stabilizer): for falls hooves can't save you from
 - [Riding improvements](../riding): the rest of the terrain handling
 - [Recipes](../recipes)

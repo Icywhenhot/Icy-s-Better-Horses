@@ -6,7 +6,7 @@ nav_order: 14
 # Advancements
 {: .no_toc }
 
-Thirteen goals, from taming your first horse to owning all fifteen breeds.
+Fourteen goals, from taming your first horse to owning all fifteen breeds, and one more that stays hidden until you earn it.
 {: .fs-5 .fw-300 }
 
 1. TOC
@@ -37,6 +37,7 @@ Thirteen goals, from taming your first horse to owning all fifteen breeds.
 | **Ride or Die** | Reach **100 bond**. *It would take an arrow for you. Probably.* |
 | **Built Different** | Ride at **25 blocks/second**. *No need for an elytra now, right? Right??* |
 | **Stable Genius** | Own **ten horses** at once. *Somewhere between a hobby and a problem.* |
+| **Second Chance** | Take a killing blow and let your [Andalusian](breeds/andalusian) take it for you. Needs a bond-100 Andalusian. |
 
 ## Breeding and collecting
 
@@ -58,7 +59,7 @@ Thirteen goals, from taming your first horse to owning all fifteen breeds.
 
 ### Built Different (25 blocks/second)
 
-This needs breeding *and* bonding. The mod's speed ceiling is 26.2 blk/s and only a [Race](breeds/index) horse gets near it, so you need a strong base speed pushed the rest of the way by a full **+75%** bond bonus.
+This needs breeding *and* bonding. The mod's speed ceiling is 26.25 blk/s and only a [Race](breeds/index) horse gets near it, so you need a strong base speed pushed the rest of the way by a full **+75%** bond bonus.
 
 Route: breed a fast line following the [breeding loop](genetics#a-practical-breeding-loop) until stats stop improving, then bond the best foal to 100. Check progress on the [Horse Info screen](horse-info-screen), which displays speed in blk/s directly.
 
@@ -78,7 +79,7 @@ Hold an [Upgraded Saddle](equipment/upgraded-saddle) while scanning so you can r
 
 ### Pegasus, Sort Of (30-block drop)
 
-Fit a [Horse Stabilizer](equipment/horse-stabilizer) and ride off something tall enough. Remember the stabilizer shares its slot with the [cart](equipment/horse-cart), so unhitch any cart first. A mountain edge or a deep ravine does the job.
+Fit a [Glidewing Harness](equipment/horse-stabilizer) and ride off something tall enough. Remember the stabilizer shares its slot with the [cart](equipment/horse-cart), so unhitch any cart first. A mountain edge or a deep ravine does the job.
 
 ---
 

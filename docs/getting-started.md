@@ -16,17 +16,19 @@ From a wild horse to a fully equipped mount.
 
 ## Default controls
 
-Three keys do most of the work, and four more cover riding. All seven are rebindable in **Options → Controls → Icy's Better Horses**, or through Mod Menu if you have it installed.
+Three keys do most of the work, and six more cover riding. All nine are rebindable in **Options → Controls → Icy's Better Horses**, or through Mod Menu if you have it installed.
 
 | Key | Name | What it does |
 |:---|:---|:---|
 | <kbd>P</kbd> | Horse Whistle / Info | Calls your active horse. While mounted, opens the [Horse Info screen](horse-info-screen) instead. Calls horses off a fight. |
 | <kbd>R</kbd> | Horse Command Wheel | Opens the [radial command menu](command-wheel) while looking at a horse you own. |
 | <kbd>G</kbd> | Manage Horses | Opens the [roster](managing-your-horses) of every horse you own, wherever they are. |
-| <kbd>V</kbd> | Walk Cycle | Shifts up through the [gaits](riding#gaits) while riding. |
+| <kbd>V</kbd> | Gear Up | Shifts up through the [gaits](riding#gaits) while riding. |
+| <kbd>Z</kbd> | Gear Down | Shifts back down, all the way to a halt. |
 | <kbd>H</kbd> | Rear | Makes the horse you're riding, or looking at, [rear up](riding#rearing). |
 | <kbd>Left Ctrl</kbd> | Free Look | Held: look anywhere without the horse [turning](riding#free-look). |
-| <kbd>Left Alt</kbd> | Cart Size | Swaps a draft horse's [cart](equipment/horse-cart) between small and large. |
+| <kbd>Left Alt</kbd> | Open Cart | Opens the [cart](equipment/horse-cart#the-cart-screen) you're riding or looking at. |
+| <kbd>B</kbd> | Toggle Horse Charge | Turns your own [charge](combat) on or off. |
 
 {: .warning }
 > <kbd>P</kbd>, <kbd>Left Ctrl</kbd> and <kbd>Left Alt</kbd> clash with vanilla Social Interactions, Sprint, and common third-party binds. Minecraft shows clashes in red on the controls screen; rebind whichever side you use more.
@@ -58,6 +60,7 @@ Bond runs from **0 to 100**, and every 20 points makes your horse faster and jum
 | Standing within 10 blocks of your horse | **+1 per minute** |
 | Feeding it a Name Tag | **+10**, once per horse |
 | Feeding it a Golden Apple | **+2** each |
+| Brushing it with a vanilla Brush | **+1**, once every five minutes |
 
 Full details and the stat tables are on [Ownership & bonding](ownership-and-bonding).
 
@@ -80,11 +83,12 @@ The [Upgraded Saddle](equipment/upgraded-saddle) is the gateway to everything el
 | Slot | Item | Why you want it |
 |:---|:---|:---|
 | Chest | Chest or Ender Chest | 27 storage slots, more on a [draft horse](breeds/index), or your shared ender inventory |
-| Hooves | [Horse Hooves](equipment/horse-hooves) | Walk on powder snow, softer fall damage, takes Frost Walker |
+| Horseshoe | [Horseshoe](equipment/horse-hooves) | Walk on powder snow, softer fall damage, takes Frost Walker |
 | Medkit | [Horse Medkit](equipment/horse-medkit) | Auto-heals your horse the moment it drops below half health |
-| Stabilizer | [Horse Stabilizer](equipment/horse-stabilizer) | Deploys on long falls and cancels the damage |
+| Harness | [Glidewing Harness](equipment/horse-stabilizer) | Deploys on long falls and cancels the damage |
+| Carpet | Any vanilla carpet | Cosmetic: a per-breed blanket in that colour, drawn in place of the saddle |
 
-The **Stabilizer slot is shared with the [Horse Cart](equipment/horse-cart)**, so a horse tows one or wears the other, never both.
+The **harness slot is shared with the [Horse Cart](equipment/horse-cart)**, so a horse tows one or wears the other, never both.
 
 Every recipe is on the [Recipes](recipes) page.
 

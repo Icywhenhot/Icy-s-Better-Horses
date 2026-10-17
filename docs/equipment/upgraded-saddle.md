@@ -30,9 +30,12 @@ Equip it on a horse and the horse's inventory screen gains **five gear slots**:
 | Slot | Accepts |
 |:---|:---|
 | Chest | Chest or Ender Chest |
-| Hooves | [Horse Hooves](horse-hooves) |
+| Horseshoe | [Horseshoe](horse-hooves) |
 | Medkit | [Horse Medkit](horse-medkit) |
-| Stabilizer | [Horse Stabilizer](horse-stabilizer) **or** [Horse Cart](horse-cart) |
+| Harness | [Glidewing Harness](horse-stabilizer) **or** [Horse Cart](horse-cart) |
+| Carpet | Any of the sixteen [carpets](#carpets), on the mod's breeds only |
+
+You can swap saddles by clicking: put a saddle on the cursor and click the saddle slot, and the two trade places. That works between a vanilla saddle and an upgraded one too, unless a cart is hitched.
 
 ---
 
@@ -61,6 +64,22 @@ That means a horse that can reach your base storage from the far side of the wor
 
 {: .tip }
 > Fitting an ender chest earns the **Pocket Dimension, Four Legs** advancement.
+
+---
+
+## Carpets
+
+Any vanilla **carpet** goes in the carpet slot and is drawn on the horse in place of the saddle, over the top of any armour. Every colour has its own design, and each of the fifteen breeds has its own fitted version, so a carpet on a Shire and the same carpet on an Arabian don't look alike.
+
+Carpets are cosmetic. They do nothing else, and they're only for the mod's breeds: donkeys, mules and vanilla-style horses don't get the slot.
+
+---
+
+## Banners
+
+Every horse that can wear armour gets a **banner** slot on its screen, with or without an upgraded saddle. Any banner fits, including ones you've patterned, and it hangs from the horse's armour, so put armour on first:
+
+> Put armor on your horse first. The banner hangs from it.
 
 ---
 
