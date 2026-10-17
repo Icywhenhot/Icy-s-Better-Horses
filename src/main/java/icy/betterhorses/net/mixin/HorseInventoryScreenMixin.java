@@ -2,6 +2,7 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhJumpHeight;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.client.BhAnim;
@@ -36,7 +37,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Locale;
 import net.minecraft.world.entity.animal.equine.Horse;
 
-@Mixin(AbstractMountInventoryScreen.class)
+@Mixin(value = AbstractMountInventoryScreen.class, priority = 1100)
 public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<AbstractMountInventoryMenu> {
 
     @Shadow protected LivingEntity mount;
@@ -69,6 +70,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final int BH_STATS_LINE_SPACING = 10;
     @Unique private static final int BH_TEXT_COLOR = 0xFF404040;
     @Unique private static final float BH_LOCK_FLASH_ALPHA = 0.65F;
+    @Unique private static final int BH_BANNER_HINT_TINT = 0xA0B7AB99;
+    @Unique private static final int BH_BANNER_LOCKED_TINT = 0xD08B8B8B;
     @Unique private static final Identifier BH_BOND_BRONZE =
             Identifier.fromNamespaceAndPath("icys-better-horses", "textures/gui/bond/bronze.png");
     @Unique private static final Identifier BH_BOND_SILVER =
@@ -142,6 +145,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
         this.bh_drawGearPanel(gfx);
         this.bh_drawChestPanel(gfx);
+        this.bh_drawBannerSlot(gfx);
         InventoryScreen.extractEntityInInventoryFollowsMouse(
                 gfx,
                 x + 26,
@@ -161,6 +165,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         if (this.bh_getHorseOrNull() == null) {
             return;
         }
+        this.bh_drawBannerSlot(gfx);
         if (!this.bh_hasUpgradedSaddleInMenu() || this.bh_hasChestStorageLayout()) {
             return;
         }
@@ -270,7 +275,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique
     private void bh_drawStatsLines(GuiGraphicsExtractor gfx, AbstractHorse horse) {
         double speedBps = horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * 43.2D;
-        double jumpBlk = Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D);
+        double jumpBlk = BhJumpHeight.blocks(horse.getAttributeValue(Attributes.JUMP_STRENGTH));
         String speedText = String.format(Locale.ROOT, "Speed: %.1f blk/s", speedBps);
         String jumpText = String.format(Locale.ROOT, "Jump:  %.1f blk", jumpBlk);
 
@@ -307,7 +312,30 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
                 ? ModItems.HORSE_STABILIZER
                 : ModItems.HORSE_CART;
         this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, stabilizerSlotHint);
+        this.bh_drawGearHint(gfx, x, y, GearSlot.CARPET, Items.CARPET.white());
         this.bh_drawLockedSlotFlash(gfx);
+    }
+
+    @Unique
+    private void bh_drawBannerSlot(GuiGraphicsExtractor gfx) {
+        HorseInventoryLayoutAccess layoutAccess = this.bh_getLayoutAccessOrNull();
+        int index = layoutAccess == null ? -1 : layoutAccess.bh_getBannerSlotIndex();
+        if (index < 0) {
+            return;
+        }
+        Slot slot = this.menu.getSlot(index);
+        int x = this.leftPos + slot.x;
+        int y = this.topPos + slot.y;
+        gfx.blitSprite(RenderPipelines.GUI_TEXTURED, BH_SLOT_SPRITE, x - 1, y - 1, 18, 18);
+        if (slot.hasItem()) {
+            return;
+        }
+        gfx.item(new ItemStack(Items.BANNER.white()), x, y);
+        gfx.fill(x, y, x + 16, y + 16,
+                layoutAccess.bh_isBannerSlotLocked() ? BH_BANNER_LOCKED_TINT : BH_BANNER_HINT_TINT);
+        if (BhSlotFlash.flashingSlot() == index && !this.bh_hasUpgradedSaddleInMenu()) {
+            this.bh_drawLockedSlotFlash(gfx);
+        }
     }
 
     @Unique

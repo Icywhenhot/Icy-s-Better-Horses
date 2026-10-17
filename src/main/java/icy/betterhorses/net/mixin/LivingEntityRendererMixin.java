@@ -51,7 +51,7 @@ public abstract class LivingEntityRendererMixin {
                     target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/rendertype/RenderType;IIILnet/minecraft/client/renderer/texture/TextureAtlasSprite;ILnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"),
             index = 6)
     private int bh_applyHorseOpacityToMainModel(int colorArgb) {
-        return BhMountedHorseVisibility.applyOpacity(colorArgb, BhRenderContext.currentOpacity());
+        return BhMountedHorseVisibility.applyOpacity(BhRenderContext.tint(colorArgb), BhRenderContext.currentOpacity());
     }
 
     @Inject(

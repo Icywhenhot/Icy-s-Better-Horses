@@ -25,8 +25,14 @@ public class IcelandicHorseRenderer
         this.addLayer(BhTackLayer.<BhHorseRenderState, IcelandicHorseModel>forItem(this,
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_SADDLE)),
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_SADDLE_BABY)),
-                state -> state.saddle,
+                state -> state.carpet == null ? state.saddle : null,
                 BhTackTextures.ICELANDIC::saddle));
+
+        this.addLayer(new BhTackLayer<>(this,
+                new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_CARPET)),
+                new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_CARPET_BABY)),
+                state -> state.carpet == null ? null
+                        : state.carpetTexture != null ? state.carpetTexture : BhTackTextures.ICELANDIC.carpet(state.carpet)));
 
         this.addLayer(BhTackLayer.<BhHorseRenderState, IcelandicHorseModel>forArmor(this,
                 new IcelandicHorseModel(context.bakeLayer(BhModelLayers.ICELANDIC_ARMOR)),

@@ -2,6 +2,8 @@ package icy.betterhorses.net.client.render;
 
 import net.minecraft.client.renderer.entity.state.EquineRenderState;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.DyeColor;
+import org.jetbrains.annotations.Nullable;
 
 public class BhHorseRenderState extends EquineRenderState {
 
@@ -13,7 +15,12 @@ public class BhHorseRenderState extends EquineRenderState {
 
     public Identifier coatTexture;
 
+    public @Nullable DyeColor carpet;
+    public @Nullable Identifier carpetTexture;
+
     public float phaseOffset;
+    public float begTilt;
+    public float previewTint = 1.0F;
 
     public float random01;
 

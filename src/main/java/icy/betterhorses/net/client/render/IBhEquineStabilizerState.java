@@ -1,6 +1,7 @@
 package icy.betterhorses.net.client.render;
 
 import icy.betterhorses.net.HorseStabilizerState;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 
 public interface IBhEquineStabilizerState {
 
@@ -25,4 +26,10 @@ public interface IBhEquineStabilizerState {
     boolean bh_hasChestGear();
 
     boolean bh_hasEnderChestGear();
+
+    void bh_setBegTilt(float tilt);
+
+    float bh_getBegTilt();
+
+    ItemStackRenderState bh_getBanner();
 }

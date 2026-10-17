@@ -24,8 +24,14 @@ public class ShireHorseRenderer
         this.addLayer(BhTackLayer.<BhHorseRenderState, ShireHorseModel>forItem(this,
                 new ShireHorseModel(context.bakeLayer(BhModelLayers.SHIRE_SADDLE)),
                 new ShireHorseModel(context.bakeLayer(BhModelLayers.SHIRE_SADDLE_BABY)),
-                state -> state.saddle,
+                state -> state.carpet == null ? state.saddle : null,
                 BhTackTextures.SHIRE::saddle));
+
+        this.addLayer(new BhTackLayer<>(this,
+                new ShireHorseModel(context.bakeLayer(BhModelLayers.SHIRE_CARPET)),
+                new ShireHorseModel(context.bakeLayer(BhModelLayers.SHIRE_CARPET_BABY)),
+                state -> state.carpet == null ? null
+                        : state.carpetTexture != null ? state.carpetTexture : BhTackTextures.SHIRE.carpet(state.carpet)));
 
         this.addLayer(BhTackLayer.<BhHorseRenderState, ShireHorseModel>forArmor(this,
                 new ShireHorseModel(context.bakeLayer(BhModelLayers.SHIRE_ARMOR)),

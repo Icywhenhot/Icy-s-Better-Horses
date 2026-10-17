@@ -8,10 +8,16 @@ public record BhTuning(
         int spawnWeight,
         int groupMin,
         int groupMax,
-        double spawnFloor) {
+        double spawnFloor,
+        int reviveLevels,
+        int reviveBondLoss,
+        int whistleRange) {
+
+    public static final int WHISTLE_ANYWHERE = 0;
+    public static final int WHISTLE_MIN = 16;
 
     public static BhTuning defaults() {
-        return new BhTuning(1, 1, 5, 2, 6, 0.10D);
+        return new BhTuning(1, 1, 5, 2, 6, 0.10D, 10, 20, WHISTLE_ANYWHERE);
     }
 
     public BhTuning clamped() {
@@ -22,7 +28,14 @@ public record BhTuning(
                 Mth.clamp(spawnWeight, 0, 1000),
                 min,
                 Mth.clamp(groupMax, min, 32),
-                Mth.clamp(spawnFloor, 0.0D, 1.0D));
+                Mth.clamp(spawnFloor, 0.0D, 1.0D),
+                Mth.clamp(reviveLevels, 0, 1000),
+                Mth.clamp(reviveBondLoss, 0, 100),
+                whistleRange <= 0 ? WHISTLE_ANYWHERE : Math.max(whistleRange, WHISTLE_MIN));
+    }
+
+    public boolean whistleReaches(double distSq) {
+        return whistleRange == WHISTLE_ANYWHERE || distSq <= (double) whistleRange * whistleRange;
     }
 
     public int bondIntervalTicks() {

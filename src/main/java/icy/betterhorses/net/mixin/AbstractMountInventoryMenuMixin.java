@@ -1,7 +1,6 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
-import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.world.Container;
@@ -87,6 +86,14 @@ public abstract class AbstractMountInventoryMenuMixin extends AbstractContainerM
                 moved = this.getSlot(0).mayPlace(sourceStack)
                         && !this.getSlot(0).hasItem()
                         && this.moveItemStackTo(sourceStack, 0, 1, false);
+            }
+
+            int bannerIndex = layoutAccess.bh_getBannerSlotIndex();
+            if (!moved && bannerIndex >= 0) {
+                Slot banner = this.getSlot(bannerIndex);
+                moved = banner.mayPlace(sourceStack)
+                        && !banner.hasItem()
+                        && this.moveItemStackTo(sourceStack, bannerIndex, bannerIndex + 1, false);
             }
 
             if (!moved && this.bh_hasUpgradedSaddleInMenu()) {

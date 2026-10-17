@@ -3,9 +3,9 @@ package icy.betterhorses.net;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import icy.betterhorses.net.inventory.GearSlot;
@@ -87,6 +87,11 @@ public interface IHorseData {
     int bh_getJumpCue();
     void bh_cueJump();
     void bh_setKickTicks(int ticks);
+    int bh_getBegSide();
+    void bh_setBegSide(int side);
+
+    double bh_idleSpeedModifier(double requested);
+    float bh_getBegTilt(float partialTick);
 
     boolean bh_isAbilityPaused();
     void bh_setAbilityPaused(boolean paused);
@@ -129,6 +134,8 @@ public interface IHorseData {
 
     boolean bh_hasCartGear();
 
+    @Nullable DyeColor bh_getCarpet();
+
     int bh_getBondRemainder();
 
     void bh_setBondRemainder(int value);
@@ -136,6 +143,10 @@ public interface IHorseData {
     long bh_getRescueReadyAt();
 
     void bh_setRescueReadyAt(long value);
+
+    long bh_getNpcLockUntil();
+
+    void bh_setNpcLockUntil(long until);
 
     void bh_onRemoved();
 
@@ -189,6 +200,10 @@ public interface IHorseData {
     boolean bh_hasUpgradedSaddle();
 
     SimpleContainer bh_getGearContainer();
+
+    SimpleContainer bh_getBannerContainer();
+
+    ItemStack bh_getBanner();
 
     SimpleContainer bh_getChestContainer();
 

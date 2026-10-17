@@ -1,6 +1,9 @@
 package icy.betterhorses.net.network;
 
+import io.netty.buffer.ByteBuf;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
@@ -18,14 +21,17 @@ public record TrustSyncPayload(List<UUID> trustingOwners) implements CustomPacke
     }
 
     public static class StreamCodec implements net.minecraft.network.codec.StreamCodec<FriendlyByteBuf, TrustSyncPayload> {
+        private static final net.minecraft.network.codec.StreamCodec<ByteBuf, List<UUID>> OWNERS =
+                UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs.list());
+
         @Override
         public TrustSyncPayload decode(FriendlyByteBuf buf) {
-            return new TrustSyncPayload(buf.readList(b -> ((FriendlyByteBuf) b).readUUID()));
+            return new TrustSyncPayload(OWNERS.decode(buf));
         }
 
         @Override
         public void encode(FriendlyByteBuf buf, TrustSyncPayload value) {
-            buf.writeCollection(value.trustingOwners(), (b, id) -> ((FriendlyByteBuf) b).writeUUID(id));
+            OWNERS.encode(buf, value.trustingOwners());
         }
     }
 }

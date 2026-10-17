@@ -1,6 +1,7 @@
 package icy.betterhorses.net.network;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
@@ -17,14 +18,18 @@ public record HorseRosterSyncPayload(List<HorseRosterEntry> entries) implements 
     }
 
     public static class StreamCodec implements net.minecraft.network.codec.StreamCodec<FriendlyByteBuf, HorseRosterSyncPayload> {
+        private static final net.minecraft.network.codec.StreamCodec<FriendlyByteBuf, List<HorseRosterEntry>> ENTRIES =
+                net.minecraft.network.codec.StreamCodec.<FriendlyByteBuf, HorseRosterEntry>of(
+                        HorseRosterEntry::encode, HorseRosterEntry::decode).apply(ByteBufCodecs.list());
+
         @Override
         public HorseRosterSyncPayload decode(FriendlyByteBuf buf) {
-            return new HorseRosterSyncPayload(buf.readList(b -> HorseRosterEntry.decode((FriendlyByteBuf) b)));
+            return new HorseRosterSyncPayload(ENTRIES.decode(buf));
         }
 
         @Override
         public void encode(FriendlyByteBuf buf, HorseRosterSyncPayload value) {
-            buf.writeCollection(value.entries(), (b, entry) -> HorseRosterEntry.encode((FriendlyByteBuf) b, entry));
+            ENTRIES.encode(buf, value.entries());
         }
     }
 }

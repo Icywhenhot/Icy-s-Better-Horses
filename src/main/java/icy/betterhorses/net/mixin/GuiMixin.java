@@ -1,6 +1,7 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhHorseKind;
+import icy.betterhorses.net.BhJumpHeight;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.registry.BreedType;
@@ -54,7 +55,7 @@ public abstract class GuiMixin {
         String speedValue = String.format(Locale.ROOT, "%.1f",
                 horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * 43.2D);
         String jumpValue = String.format(Locale.ROOT, "%.1f",
-                Math.max(0.0D, horse.getAttributeValue(Attributes.JUMP_STRENGTH) * 6.0D - 1.0D));
+                BhJumpHeight.blocks(horse.getAttributeValue(Attributes.JUMP_STRENGTH)));
 
         IHorseData data = IHorseData.of(horse);
         ResourceKey<BreedType> breedKey = data.bh_getBreedKey();

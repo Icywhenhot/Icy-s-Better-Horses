@@ -1,6 +1,7 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.HorseStabilizerState;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import icy.betterhorses.net.client.render.IBhEquineStabilizerState;
 import net.minecraft.client.renderer.entity.state.EquineRenderState;
 import net.minecraft.util.Mth;
@@ -9,6 +10,18 @@ import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(EquineRenderState.class)
 public abstract class EquineRenderStateMixin implements IBhEquineStabilizerState {
+
+    @Unique private float bh_begTilt;
+    @Unique private final ItemStackRenderState bh_banner = new ItemStackRenderState();
+
+    @Override
+    public void bh_setBegTilt(float tilt) { bh_begTilt = tilt; }
+
+    @Override
+    public float bh_getBegTilt() { return bh_begTilt; }
+
+    @Override
+    public ItemStackRenderState bh_getBanner() { return bh_banner; }
 
     @Unique private boolean bh_hasStabilizer;
     @Unique private HorseStabilizerState bh_stabilizerState = HorseStabilizerState.CLOSED;

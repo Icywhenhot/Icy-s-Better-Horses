@@ -19,6 +19,8 @@ public enum BhFeature {
     LEAF_PASSTHROUGH("leaf_passthrough"),
     HOOF_DUST("hoof_dust"),
     REAR_NEIGH("rear_neigh"),
+    HORSE_MANAGEMENT("horse_management"),
+    HORSE_REVIVAL("horse_revival"),
     HORSE_CHARGE("horse_charge", true),
     HORSE_KICK("horse_kick", true),
     HORSE_DEFEND("horse_defend", true),

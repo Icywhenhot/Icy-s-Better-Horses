@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 public final class BhRenderContext {
     private static final ThreadLocal<CameraRenderState> CAMERA = new ThreadLocal<>();
+    private static final ThreadLocal<Float> TINT = ThreadLocal.withInitial(() -> 1.0F);
     private static final ThreadLocal<Float> OPACITY = ThreadLocal.withInitial(() -> 1.0F);
 
     private BhRenderContext() {}
@@ -25,7 +26,20 @@ public final class BhRenderContext {
         OPACITY.set(opacity);
     }
 
+    public static void pushTint(float tint) {
+        TINT.set(tint);
+    }
+
+    public static int tint(int color) {
+        float tint = TINT.get();
+        int red = Math.round(((color >> 16) & 255) * tint);
+        int green = Math.round(((color >> 8) & 255) * tint);
+        int blue = Math.round((color & 255) * tint);
+        return (color & 0xFF000000) | (red << 16) | (green << 8) | blue;
+    }
+
     public static void clearOpacity() {
+        TINT.remove();
         OPACITY.remove();
     }
 

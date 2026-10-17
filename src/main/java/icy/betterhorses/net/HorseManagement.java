@@ -1,8 +1,12 @@
 package icy.betterhorses.net;
 
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundSource;
+
 import icy.betterhorses.net.network.HorseRosterEntry;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.nbt.CompoundTag;
@@ -16,6 +20,7 @@ import net.minecraft.world.entity.EntitySpawnRequest;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 
@@ -31,6 +36,7 @@ import icy.betterhorses.net.entity.BhBreedHorse;
 public final class HorseManagement {
 
     private static final double CALL_TELEPORT_DIST_SQ = 32.0 * 32.0;
+    private static final long NPC_RECALL_LOCK_TICKS = 1200L;
 
     private static final AtomicInteger scratchIds = new AtomicInteger();
 
@@ -54,6 +60,8 @@ public final class HorseManagement {
     public static final String MSG_FAILED = MSG + "failed";
     public static final String MSG_CART = MSG + "cart_attached";
     public static final String MSG_UNSAFE = MSG + "unsafe";
+    public static final String MSG_NO_LEVELS = MSG + "no_levels";
+    public static final String MSG_TOO_FAR = MSG + "too_far";
 
     public static List<HorseRosterEntry> buildRoster(ServerPlayer player) {
         MinecraftServer server = ((ServerLevel) player.level()).getServer();
@@ -77,7 +85,7 @@ public final class HorseManagement {
                             summary.getBooleanOr("home", false), horseId.equals(activeHorseId),
                             known.dimension().identifier().toString(), known.pos(), summary.getStringOr("type", "minecraft:horse"),
                             summary.getIntOr("variant", -1), summary.getIntOr("markings", -1),
-                            summary.getBooleanOr("baby", false), summary.getIntOr("coat", -1)));
+                            summary.getBooleanOr("baby", false), summary.getIntOr("coat", -1), false));
                     continue;
                 }
             }
@@ -110,17 +118,114 @@ public final class HorseManagement {
                     horse instanceof Horse coloured ? coloured.getMarkings().ordinal() : -1,
                     horse.isBaby(),
                     horse instanceof BhBreedHorse breedHorse
-                            ? breedHorse.bhCoat() : -1));
+                            ? breedHorse.bhCoat() : -1,
+                    false));
             if (loaded == null) {
                 HorseTrackerState.get(server).recordHorse(horse);
                 release(horse);
             }
         }
+        if (BhFeature.HORSE_REVIVAL.on()) {
+            for (UUID horseId : HorseTracker.findDeadHorsesOwnedBy(player.getUUID())) {
+                CompoundTag body = HorseTracker.getDeadHorse(horseId);
+                if (body == null || !body.contains("BH_Roster")) continue;
+                CompoundTag death = body.getCompound("BH_Death").orElseGet(CompoundTag::new);
+                roster.add(fromSummary(horseId, body.getCompound("BH_Roster").orElseGet(CompoundTag::new), false,
+                        death.getStringOr("dimension", ""), death.read("pos", BlockPos.CODEC).orElse(BlockPos.ZERO), true));
+            }
+        }
         roster.sort(Comparator
-                .comparing((HorseRosterEntry entry) -> entry.customName().isEmpty())
+                .comparing(HorseRosterEntry::dead)
+                .thenComparing((HorseRosterEntry entry) -> entry.customName().isEmpty())
                 .thenComparing(entry -> entry.customName(), String.CASE_INSENSITIVE_ORDER)
                 .thenComparing(HorseRosterEntry::horseId));
         return roster;
+    }
+
+    private static HorseRosterEntry fromSummary(UUID horseId, CompoundTag summary, boolean active,
+                                                String dimension, BlockPos pos, boolean dead) {
+        return new HorseRosterEntry(horseId, summary.getStringOr("name", ""),
+                bh_summaryBreed(summary), summary.getStringOr("gender", ""),
+                summary.getBooleanOr("mixed", false), summary.getIntOr("bond", 0), false,
+                summary.getBooleanOr("home", false), active, dimension, pos, summary.getStringOr("type", ""),
+                summary.contains("variant") ? summary.getIntOr("variant", 0) : -1,
+                summary.contains("markings") ? summary.getIntOr("markings", 0) : -1,
+                summary.getBooleanOr("baby", false), summary.contains("coat") ? summary.getIntOr("coat", 0) : -1,
+                dead);
+    }
+
+    public static Outcome revive(ServerPlayer player, UUID horseId) {
+        CompoundTag body = HorseTracker.getDeadHorse(horseId);
+        if (!BhFeature.HORSE_REVIVAL.on() || body == null || !ownedBy(body, player)) {
+            return Outcome.fail(MSG_GONE);
+        }
+        if (player.level().getEntityInAnyDimension(horseId) != null) {
+            HorseTracker.forgetDeadHorse(horseId);
+            return Outcome.fail(MSG_GONE);
+        }
+        int cost = BhConfig.tuning().reviveLevels();
+        boolean free = player.getAbilities().instabuild;
+        if (!free && player.experienceLevel < cost) {
+            return Outcome.fail(MSG_NO_LEVELS);
+        }
+
+        ServerLevel level = (ServerLevel) player.level();
+        CompoundTag copy = body.copy();
+        copy.remove("BH_Death");
+        Entity loaded = EntityType.loadEntityRecursive(copy, level, new EntitySpawnRequest(EntitySpawnReason.LOAD, true), EntityProcessor.NOP);
+        if (!(loaded instanceof AbstractHorse horse)) {
+            IcysBetterHorses.LOGGER.warn("[revive] death record of horse {} did not load as a horse", horseId);
+            return Outcome.fail(MSG_FAILED);
+        }
+        horse.setHealth(horse.getMaxHealth());
+        horse.deathTime = 0;
+        horse.clearFire();
+        horse.fallDistance = 0.0F;
+        IHorseData data = IHorseData.of(horse);
+        data.bh_setBond(Math.max(0, data.bh_getBond() - BhConfig.tuning().reviveBondLoss()));
+        int generation = HorseTracker.getGeneration(horseId) + 1;
+        data.bh_setGeneration(generation);
+
+        var at = HorsePlacement.find(horse, player.blockPosition().relative(player.getDirection(), 2));
+        if (at == null) {
+            release(horse);
+            return Outcome.fail(MSG_UNSAFE);
+        }
+        horse.teleportTo(at.x, at.y, at.z);
+        horse.setYRot(player.getYRot() + 180.0F);
+        horse.setXRot(0.0F);
+        if (!level.tryAddFreshEntityWithPassengers(horse)) {
+            IcysBetterHorses.LOGGER.warn("[revive] could not add revived horse {}", horseId);
+            return Outcome.fail(MSG_FAILED);
+        }
+        HorseTracker.setGeneration(horseId, generation);
+        HorseTracker.forgetDeadHorse(horseId);
+        HorseTracker.register(horse);
+        data.bh_setCommand(BhContent.COMMAND_FOLLOW.key());
+        if (!free) {
+            player.giveExperienceLevels(-cost);
+        }
+        level.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, horse.getX(), horse.getY(1.0D), horse.getZ(),
+                40, 0.6D, 0.8D, 0.6D, 0.3D);
+        level.playSound(null, horse.getX(), horse.getY(), horse.getZ(),
+                ModSounds.HORSE_NEIGH, SoundSource.NEUTRAL, 1.0F, 1.0F);
+        IcysBetterHorses.LOGGER.info("[revive] {} brought horse {} back for {} levels (generation {})",
+                player.getName().getString(), horseId, free ? 0 : cost, generation);
+        return Outcome.OK;
+    }
+
+    public static Outcome forget(ServerPlayer player, UUID horseId) {
+        CompoundTag body = HorseTracker.getDeadHorse(horseId);
+        if (!BhFeature.HORSE_REVIVAL.on() || body == null || !ownedBy(body, player)) {
+            return Outcome.fail(MSG_GONE);
+        }
+        HorseTracker.forgetDeadHorse(horseId);
+        IcysBetterHorses.LOGGER.info("[revive] {} let go of dead horse {}", player.getName().getString(), horseId);
+        return Outcome.OK;
+    }
+
+    private static boolean ownedBy(CompoundTag body, ServerPlayer player) {
+        return body.read("BH_Owner", UUIDUtil.CODEC).map(player.getUUID()::equals).orElse(false);
     }
 
     private static boolean storedIsOurs(UUID horseId) {
@@ -147,6 +252,9 @@ public final class HorseManagement {
             if (loaded.level() != player.level()) {
                 return Outcome.fail(MSG_OTHER_DIMENSION);
             }
+            if (!BhConfig.tuning().whistleReaches(loaded.distanceToSqr(player))) {
+                return Outcome.fail(MSG_TOO_FAR);
+            }
             IcysBetterHorses.LOGGER.info("[whistle] {} calls horse {}: body is loaded in {} at {} {} {}, teleporting it",
                     player.getName().getString(), horseId, loaded.level().dimension().identifier(),
                     loaded.getBlockX(), loaded.getBlockY(), loaded.getBlockZ());
@@ -154,6 +262,15 @@ public final class HorseManagement {
         }
 
         HorseTrackerState.KnownPosition seen = HorseTracker.getLastKnownPosition(horseId);
+        BhTuning tuning = BhConfig.tuning();
+        if (tuning.whistleRange() != BhTuning.WHISTLE_ANYWHERE) {
+            if (seen != null && seen.dimension() != player.level().dimension()) {
+                return Outcome.fail(MSG_OTHER_DIMENSION);
+            }
+            if (seen == null || !tuning.whistleReaches(seen.pos().distToCenterSqr(player.position()))) {
+                return Outcome.fail(MSG_TOO_FAR);
+            }
+        }
         IcysBetterHorses.LOGGER.info("[whistle] {} calls horse {}: no loaded body, last seen in {} at {}, respawning from snapshot",
                 player.getName().getString(), horseId,
                 seen == null ? "nowhere" : seen.dimension().identifier(), seen == null ? "-" : seen.pos());
@@ -164,6 +281,8 @@ public final class HorseManagement {
         if (respawned == null) {
             return Outcome.fail(respawnFailureKey(player, horseId));
         }
+        takeBackFromNpcs(respawned);
+        takeBackFromNpcs(respawned);
         IHorseData.of(respawned).bh_setCommand(BhContent.COMMAND_FOLLOW.key());
         return Outcome.OK;
     }
@@ -304,8 +423,17 @@ public final class HorseManagement {
         if (data.bh_getBond() <= 0) return Outcome.fail(MSG_NO_BOND);
         if (horse.distanceToSqr(player) > CALL_TELEPORT_DIST_SQ
                 && !HorsePlacement.teleport(horse, player.blockPosition())) return Outcome.fail(MSG_UNSAFE);
+        takeBackFromNpcs(horse);
+        takeBackFromNpcs(horse);
         data.bh_setCommand(BhContent.COMMAND_FOLLOW.key());
         return Outcome.OK;
+    }
+
+    private static void takeBackFromNpcs(AbstractHorse horse) {
+        for (Entity rider : List.copyOf(horse.getPassengers())) {
+            if (!(rider instanceof Player)) rider.stopRiding();
+        }
+        IHorseData.of(horse).bh_setNpcLockUntil(horse.level().getGameTime() + NPC_RECALL_LOCK_TICKS);
     }
 
     private static boolean hasCart(UUID id) {
@@ -318,11 +446,13 @@ public final class HorseManagement {
     }
 
     private static @Nullable AbstractHorse findCallableHorse(ServerPlayer player, UUID playerId) {
+        BhTuning tuning = BhConfig.tuning();
         AbstractHorse lastRidden = HorseTracker.getLastRidden(playerId);
         if (lastRidden != null
                 && playerId.equals(IHorseData.of(lastRidden).bh_getOwner())
                 && lastRidden.level() == player.level()
-                && lastRidden.isAlive()) {
+                && lastRidden.isAlive()
+                && tuning.whistleReaches(lastRidden.distanceToSqr(player))) {
             return lastRidden;
         }
 
@@ -332,7 +462,7 @@ public final class HorseManagement {
             if (!candidate.isAlive() || candidate.level() != player.level()) continue;
             if (!playerId.equals(IHorseData.of(candidate).bh_getOwner())) continue;
             double distSq = candidate.distanceToSqr(player);
-            if (distSq < nearestDistSq) {
+            if (distSq < nearestDistSq && tuning.whistleReaches(distSq)) {
                 nearestDistSq = distSq;
                 nearest = candidate;
             }
@@ -361,7 +491,7 @@ public final class HorseManagement {
         AbstractHorse loaded = findLoadedOwned(player, horseId);
         if (loaded != null) return true;
         CompoundTag snapshot = HorseTracker.getSnapshot(horseId);
-        return snapshot != null && snapshot.read("BH_Owner", net.minecraft.core.UUIDUtil.CODEC)
+        return snapshot != null && snapshot.read("BH_Owner", UUIDUtil.CODEC)
                 .map(player.getUUID()::equals).orElse(false);
     }
 
@@ -425,8 +555,10 @@ public final class HorseManagement {
             return null;
         }
 
+        CompoundTag body = snapshot.copy();
+        body.remove("Passengers");
         Entity loaded = EntityType.loadEntityRecursive(
-                snapshot, level, new EntitySpawnRequest(EntitySpawnReason.LOAD, true), EntityProcessor.NOP);
+                body, level, new EntitySpawnRequest(EntitySpawnReason.LOAD, true), EntityProcessor.NOP);
         if (!(loaded instanceof AbstractHorse horse)) {
             IcysBetterHorses.LOGGER.warn("[whistle] snapshot of horse {} did not deserialize to a horse", horseId);
             return null;

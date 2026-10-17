@@ -24,8 +24,12 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 public class BhModMenuIntegration implements ModMenuApi {
+
+    private static final int[] WHISTLE_STEPS =
+            {16, 32, 48, 64, 96, 128, 160, 192, 256, 320, 384, 512, 768, 1024, 1536, 2048, 3072, 4096};
 
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
@@ -56,6 +60,21 @@ public class BhModMenuIntegration implements ModMenuApi {
             }
         }
 
+        List<String> foods = new ArrayList<>(BhConfig.breedingFoodsView());
+        general.addEntry(eb.startStrList(
+                        Component.translatable("config.icys-better-horses.breeding_foods"), new ArrayList<>(foods))
+                .setExpanded(true)
+                .setDefaultValue(BhConfig.DEFAULT_BREEDING_FOODS)
+                .setTooltip(Component.translatable("config.icys-better-horses.breeding_foods.tooltip"))
+                .setCellErrorSupplier(id -> BhConfig.knownItem(id)
+                        ? Optional.empty()
+                        : Optional.of(Component.translatable("config.icys-better-horses.breeding_foods.unknown")))
+                .setSaveConsumer(value -> {
+                    foods.clear();
+                    foods.addAll(value);
+                })
+                .build());
+
         ConfigCategory combat = builder.getOrCreateCategory(
                 Component.translatable("config.icys-better-horses.category.horse_combat"));
         if (locked) {
@@ -70,8 +89,9 @@ public class BhModMenuIntegration implements ModMenuApi {
 
         BhTuning start = BhConfig.tuningView();
         int[] nums = {start.bondAmount(), start.bondMinutes(), start.spawnWeight(),
-                start.groupMin(), start.groupMax()};
+                start.groupMin(), start.groupMax(), start.reviveLevels(), start.reviveBondLoss()};
         double[] floor = {start.spawnFloor()};
+        int[] whistle = {start.whistleRange()};
 
         ConfigCategory tuning = builder.getOrCreateCategory(
                 Component.translatable("config.icys-better-horses.category.tuning"));
@@ -84,6 +104,9 @@ public class BhModMenuIntegration implements ModMenuApi {
         tuning.addEntry(bh_number(eb, "spawn_weight", nums, 2, 0, 1000));
         tuning.addEntry(bh_number(eb, "spawn_group_min", nums, 3, 1, 32));
         tuning.addEntry(bh_number(eb, "spawn_group_max", nums, 4, 1, 32));
+        tuning.addEntry(bh_number(eb, "revive_xp_levels", nums, 5, 0, 1000));
+        tuning.addEntry(bh_number(eb, "revive_bond_loss", nums, 6, 0, 100));
+        tuning.addEntry(bh_whistle(eb, whistle));
         tuning.addEntry(eb.startDoubleField(
                         Component.translatable("config.icys-better-horses.spawn_probability_floor"), floor[0])
                 .setMin(0.0D).setMax(1.0D)
@@ -162,6 +185,10 @@ public class BhModMenuIntegration implements ModMenuApi {
                 .setTooltip(Component.translatable("config.icys-better-horses.gear_key.tooltip"))
                 .build());
         keybinds.addEntry(eb.fillKeybindingField(
+                        Component.translatable("config.icys-better-horses.gear_down_key"), IcysBetterHorsesClient.GEAR_DOWN_KEY)
+                .setTooltip(Component.translatable("config.icys-better-horses.gear_down_key.tooltip"))
+                .build());
+        keybinds.addEntry(eb.fillKeybindingField(
                         Component.translatable("config.icys-better-horses.rear_key"), IcysBetterHorsesClient.REAR_KEY)
                 .setTooltip(Component.translatable("config.icys-better-horses.rear_key.tooltip"))
                 .build());
@@ -182,8 +209,10 @@ public class BhModMenuIntegration implements ModMenuApi {
                 .build());
 
         builder.setSavingRunnable(() -> {
-            BhConfig.apply(picks, new BhTuning(nums[0], nums[1], nums[2], nums[3], nums[4], floor[0]));
+            BhConfig.apply(picks, new BhTuning(nums[0], nums[1], nums[2], nums[3], nums[4], floor[0], nums[5], nums[6],
+                    whistle[0]));
             BhConfig.applyAbilities(masters[0], masters[1], abilityPicks);
+            BhConfig.applyBreedingFoods(foods);
             BhConfig.applyHud(new BhConfig.Spot(sides[0], gaps[0]), new BhConfig.Spot(sides[1], gaps[1]));
             IcysBetterHorsesClient.sendChargeChoice();
             KeyMapping.resetMapping();
@@ -240,6 +269,35 @@ public class BhModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(fallback.gap())
                 .setTooltip(Component.translatable(base + ".tooltip"))
                 .setSaveConsumer(value -> gaps[index] = value)
+                .build();
+    }
+
+    private static int bh_whistleStep(int range) {
+        if (range == BhTuning.WHISTLE_ANYWHERE) return WHISTLE_STEPS.length;
+        int best = 0;
+        for (int i = 1; i < WHISTLE_STEPS.length; i++) {
+            if (Math.abs(WHISTLE_STEPS[i] - range) < Math.abs(WHISTLE_STEPS[best] - range)) best = i;
+        }
+        return best;
+    }
+
+    private static AbstractConfigListEntry<Integer> bh_whistle(ConfigEntryBuilder eb, int[] range) {
+        String base = "config.icys-better-horses.whistle_range";
+        int raw = range[0];
+        int first = bh_whistleStep(raw);
+        return eb.startIntSlider(Component.translatable(base), first, 0, WHISTLE_STEPS.length)
+                .setDefaultValue(bh_whistleStep(BhTuning.defaults().whistleRange()))
+                .setTextGetter(step -> {
+                    if (step >= WHISTLE_STEPS.length) return Component.translatable(base + ".anywhere");
+                    int blocks = step == first && raw != BhTuning.WHISTLE_ANYWHERE ? raw : WHISTLE_STEPS[step];
+                    return Component.translatable(base + ".blocks", blocks);
+                })
+                .setTooltip(Component.translatable(base + ".tooltip"))
+                .setSaveConsumer(step -> {
+                    if (step != first) {
+                        range[0] = step >= WHISTLE_STEPS.length ? BhTuning.WHISTLE_ANYWHERE : WHISTLE_STEPS[step];
+                    }
+                })
                 .build();
     }
 
