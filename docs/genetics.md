@@ -71,7 +71,7 @@ Breed **different breeds** and the foal takes one parent's breed at random and g
 Half the time the foal simply wears one of its parents' coats. The other half it comes out in a coat **neither parent wears**, drawn from the rest of its breed's palette. So a matched pair is not a guarantee: two black Shires will often throw a foal that is bay, roan, or something else entirely.
 
 {: .note }
-> The only exception is a breed with nothing left to give. [Friesians](breeds/friesian) have just two coats, so if the parents already wear both, the foal takes one of theirs.
+> The only exception is a breed with nothing left to give: if the parents already wear every coat the breed has, the foal takes one of theirs.
 
 Breeding toward a specific coat therefore takes patience. Keep the foals wearing the coat you want and breed those together, and the half that inherits will hold the line while the other half keeps wandering.
 

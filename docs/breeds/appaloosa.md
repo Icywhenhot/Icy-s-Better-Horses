@@ -41,7 +41,7 @@ Only grown animals that are **ready to breed** get fed. Foals are skipped, and s
 
 ## Coats
 
-4 coats, each its own texture — these breeds don't use vanilla's coat and marking system.
+5 coats, each its own texture — these breeds don't use vanilla's coat and marking system.
 
 | Coat |
 |:---|
@@ -49,6 +49,7 @@ Only grown animals that are **ready to breed** get fed. Foals are skipped, and s
 | Brown |
 | Gray |
 | White |
+| Palomino |
 
 {: .note }
 > The handbook shows these as a live model you can page through. If a coat is added to the mod, it appears there without the page being edited.

@@ -50,7 +50,7 @@ Draft horses are the slowest and by far the toughest, and they are the only clas
 | [Thoroughbred](thoroughbred) | Race | Top End | 3 | Own textures | Plains, Sunflower Plains, Meadow… |
 | [Arabian](arabian) | Race | Endurance | 6 | None | Desert, Badlands, Eroded Badlands… |
 | [Quarter Horse](quarter) | Race | Standstill Burst | 3 | Own textures | Plains, Sunflower Plains, Savanna… |
-| [Friesian](friesian) | War | Presence | 2 | Own textures | Dark Forest, Forest, Old Growth Spruce Taiga… |
+| [Friesian](friesian) | War | Presence | 6 | Own textures | Dark Forest, Forest, Old Growth Spruce Taiga… |
 | [Andalusian](andalusian) | War | Courage | 3 | Own textures | Meadow, Cherry Grove, Flower Forest… |
 | [Percheron](percheron) | Draft | Momentum | 3 | None | Old Growth Spruce Taiga, Forest, Meadow… |
 | [Clydesdale](clydesdale) | Draft | Ironclad | 4 | Always white field | Windswept Hills, Windswept Gravelly Hills, Windswept Forest… |
@@ -61,7 +61,7 @@ Draft horses are the slowest and by far the toughest, and they are the only clas
 | [Haflinger](haflinger) | Pony | Packhorse | 3 | None | Snowy Slopes, Grove, Meadow… |
 | [Morgan](morgan) | Western | Easy Keeper | 5 | None | Plains, Sunflower Plains, Forest… |
 | [American Paint](american-paint) | Western | Trail Blazer, Spoils | 3 | Own textures | Plains, Sunflower Plains, Savanna… |
-| [Appaloosa](appaloosa) | Western | Stock Horse | 4 | Own textures | Plains, Wooded Badlands, Savanna Plateau… |
+| [Appaloosa](appaloosa) | Western | Stock Horse | 5 | Own textures | Plains, Wooded Badlands, Savanna Plateau… |
 
 ---
 

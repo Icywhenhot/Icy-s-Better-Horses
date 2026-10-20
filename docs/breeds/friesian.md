@@ -33,12 +33,16 @@ Neutral mobs lose interest in you. Anything already angry at the horse or its ri
 
 ## Coats
 
-2 coats, each its own texture — these breeds don't use vanilla's coat and marking system.
+6 coats, each its own texture — these breeds don't use vanilla's coat and marking system.
 
 | Coat |
 |:---|
 | Black |
 | Star |
+| Chocolate |
+| Jet Black |
+| Jet Black with Blaze |
+| Brown Black |
 
 {: .note }
 > The handbook shows these as a live model you can page through. If a coat is added to the mod, it appears there without the page being edited.
