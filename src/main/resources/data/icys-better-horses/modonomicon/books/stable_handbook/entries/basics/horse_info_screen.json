@@ -40,6 +40,13 @@
       "title": "book.icys-better-horses.stable_handbook.basics.horse_info_screen.bars.title",
       "show_title_separator": true,
       "text": "book.icys-better-horses.stable_handbook.basics.horse_info_screen.bars.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "disown",
+      "title": "book.icys-better-horses.stable_handbook.basics.horse_info_screen.disown.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.horse_info_screen.disown.text"
     }
   ]
 }

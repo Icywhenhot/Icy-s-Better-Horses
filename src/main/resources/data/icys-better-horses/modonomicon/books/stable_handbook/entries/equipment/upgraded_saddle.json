@@ -49,6 +49,20 @@
       "title": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.stats.title",
       "show_title_separator": true,
       "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.stats.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "carpet",
+      "title": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.carpet.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.carpet.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "banner",
+      "title": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.banner.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.equipment.upgraded_saddle.banner.text"
     }
   ]
 }
