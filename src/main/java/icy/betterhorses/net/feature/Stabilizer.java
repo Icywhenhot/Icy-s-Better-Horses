@@ -1,12 +1,15 @@
 package icy.betterhorses.net.feature;
 
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhCriteria;
 import icy.betterhorses.net.HorseStabilizerLogic;
 import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.inventory.GearSlot;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -22,6 +25,8 @@ public final class Stabilizer implements HorseFeature {
     private double stepY;
     private double previousStepY;
     private double lastY = Double.NaN;
+    private double dropTop = Double.NaN;
+    private boolean glided;
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data) {
@@ -63,6 +68,27 @@ public final class Stabilizer implements HorseFeature {
             if (state == HorseStabilizerState.OPEN || state == HorseStabilizerState.HALF_OPEN) {
                 wear(data);
             }
+            trackDrop(horse, state);
+        }
+    }
+
+    private void trackDrop(AbstractHorse horse, HorseStabilizerState state) {
+        if (horse.onGround() || horse.isInWater() || horse.isInLava()) {
+            if (glided && horse.onGround() && !Double.isNaN(dropTop)) {
+                int drop = (int) (dropTop - horse.getY());
+                for (Entity passenger : horse.getIndirectPassengers()) {
+                    if (passenger instanceof ServerPlayer player) {
+                        BhCriteria.fire(player, BhCriteria.STABILIZER_LANDING, drop);
+                    }
+                }
+            }
+            dropTop = Double.NaN;
+            glided = false;
+            return;
+        }
+        dropTop = Double.isNaN(dropTop) ? horse.getY() : Math.max(dropTop, horse.getY());
+        if (state == HorseStabilizerState.OPEN || state == HorseStabilizerState.HALF_OPEN) {
+            glided = true;
         }
     }
 

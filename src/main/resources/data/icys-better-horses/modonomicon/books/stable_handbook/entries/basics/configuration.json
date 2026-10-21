@@ -40,6 +40,13 @@
       "title": "book.icys-better-horses.stable_handbook.basics.configuration.dummy.title",
       "show_title_separator": true,
       "text": "book.icys-better-horses.stable_handbook.basics.configuration.dummy.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "tuning",
+      "title": "book.icys-better-horses.stable_handbook.basics.configuration.tuning.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.configuration.tuning.text"
     }
   ]
 }
