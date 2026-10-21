@@ -69,7 +69,8 @@ The default file, abbreviated. The `abilities` block holds one entry for every c
     "spawn_probability_floor": 0.1,
     "revive_xp_levels": 10,
     "revive_bond_loss": 20,
-    "whistle_range": 0
+    "whistle_range": 0,
+    "dismount_command": "wander"
   },
   "hud": {
     "charge_meter_side": "right",
@@ -125,7 +126,7 @@ The default file, abbreviated. The `abilities` block holds one entry for every c
 
 ## Tuning
 
-Nine numbers under a `tuning` block. These are the values most servers actually want to move.
+Nine numbers and one choice under a `tuning` block. These are the values most servers actually want to move.
 
 | Key | Default | What it does |
 |:---|:---:|:---|
@@ -138,6 +139,7 @@ Nine numbers under a `tuning` block. These are the values most servers actually 
 | `revive_xp_levels` | `10` | XP levels it costs to [summon a dead horse back](managing-your-horses#bringing-a-horse-back). Always free in Creative |
 | `revive_bond_loss` | `20` | Bond a horse loses when it comes back. It never drops below 0 |
 | `whistle_range` | `0` | How far your [whistle](ownership-and-bonding#whistling-for-your-horse) reaches, in blocks. **`0` means anywhere**; anything else is at least 16 |
+| `dismount_command` | `wander` | What an owned horse does when its owner gets off: `wander` around that spot, `follow` the owner, or `stay` put |
 
 The two bond numbers are a pair. The default pair is "+1 per minute", which is 100 minutes from a fresh tame to full bond. To halve that, either double the gain or halve the interval:
 

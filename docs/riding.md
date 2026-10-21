@@ -59,6 +59,8 @@ It's cosmetic, and it's the vanilla rear animation the mod otherwise suppresses 
 
 You dismount on the side you're looking toward, instead of wherever the game finds room first. Look at the bank before stepping off a horse in a river.
 
+Your own horse then starts to [wander](command-wheel#wander) around where you left it. A server can make it follow you or stay put instead with `dismount_command` in the [config](configuration#tuning).
+
 ## The inventory switcher
 
 Opening your inventory on horseback shows the horse's screen, as in vanilla. A small icon just left of the window jumps between the two without dismounting:
@@ -127,7 +129,7 @@ Using a saddle, vanilla or [upgraded](equipment/upgraded-saddle), on a horse in 
 | Auto-ride | Double-tap <kbd>W</kbd>; any movement key cancels |
 | Free look | Up to 90° while stationary; hold <kbd>Left Ctrl</kbd> for full |
 | Rear | <kbd>H</kbd> on the horse you ride or look at |
-| Dismount | On the side you're looking toward |
+| Dismount | On the side you're looking toward; the horse wanders there by default |
 | Inventory switcher | <kbd>Ctrl</kbd> + inventory key swaps the horse screen for your own |
 | HUD | Hunger and XP bars stay visible in the saddle |
 | Camera | Horse fades when you look down; head drops while ridden |
