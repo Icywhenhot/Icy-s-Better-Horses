@@ -26,6 +26,15 @@
     {
       "type": "icys_better_horses:padded_text_plain",
       "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.whistle_bond.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.treats.title",
+      "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.treats.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.treats.text2"
     }
   ]
 }

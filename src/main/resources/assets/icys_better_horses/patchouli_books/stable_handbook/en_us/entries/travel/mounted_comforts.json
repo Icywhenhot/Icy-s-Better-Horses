@@ -20,9 +20,22 @@
       "text": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.look.text"
     },
     {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.look.text2"
+    },
+    {
       "type": "icys_better_horses:padded_text",
       "title": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.creative.title",
       "text": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.creative.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.dismount.title",
+      "text": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.dismount.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.dismount.text2"
     }
   ]
 }

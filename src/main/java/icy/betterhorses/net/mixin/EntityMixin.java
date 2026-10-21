@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhHorseBackup;
 import icy.betterhorses.net.entity.BhBreedHorse;
 import net.minecraft.nbt.CompoundTag;
@@ -111,8 +112,14 @@ public abstract class EntityMixin {
         IHorseData data = IHorseData.of(horse);
         if (!player.getUUID().equals(data.bh_getOwner())) return;
         HorseTracker.setLastRidden(player.getUUID(), horse);
-        data.bh_setWanderCenter(horse.blockPosition());
-        data.bh_setCommand(BhContent.COMMAND_WANDER.getKey());
+        switch (BhConfig.tuning().dismount()) {
+            case FOLLOW -> data.bh_setCommand(BhContent.COMMAND_FOLLOW.getKey());
+            case STAY -> data.bh_setCommand(BhContent.COMMAND_STAY.getKey());
+            case WANDER -> {
+                data.bh_setWanderCenter(horse.blockPosition());
+                data.bh_setCommand(BhContent.COMMAND_WANDER.getKey());
+            }
+        }
     }
 
     @Inject(method = "isInWall", at = @At("HEAD"), cancellable = true)

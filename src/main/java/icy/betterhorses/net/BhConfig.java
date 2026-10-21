@@ -46,6 +46,7 @@ public final class BhConfig {
     private static final String KEY_REVIVE_LEVELS = "revive_xp_levels";
     private static final String KEY_REVIVE_BOND_LOSS = "revive_bond_loss";
     private static final String KEY_WHISTLE_RANGE = "whistle_range";
+    private static final String KEY_DISMOUNT = "dismount_command";
     private static final String KEY_HUD = "hud";
     private static final String KEY_METER_SIDE = "charge_meter_side";
     private static final String KEY_METER_GAP = "charge_meter_gap";
@@ -386,9 +387,10 @@ public final class BhConfig {
                         readDouble(numbers, KEY_SPAWN_FLOOR, fallback.spawnFloor()),
                         readInt(numbers, KEY_REVIVE_LEVELS, fallback.reviveLevels()),
                         readInt(numbers, KEY_REVIVE_BOND_LOSS, fallback.reviveBondLoss()),
-                        readInt(numbers, KEY_WHISTLE_RANGE, fallback.whistleRange())).clamped();
+                        readInt(numbers, KEY_WHISTLE_RANGE, fallback.whistleRange()),
+                        readDismount(numbers, fallback.dismount())).clamped();
                 needsRewrite |= !numbers.has(KEY_REVIVE_LEVELS) || !numbers.has(KEY_REVIVE_BOND_LOSS)
-                        || !numbers.has(KEY_WHISTLE_RANGE);
+                        || !numbers.has(KEY_WHISTLE_RANGE) || !numbers.has(KEY_DISMOUNT);
             }
 
             needsRewrite |= !root.has(KEY_HUD);
@@ -536,6 +538,23 @@ public final class BhConfig {
         return new Spot(side, readInt(root, gapKey, defaultValue.gap())).clamped();
     }
 
+    private static BhTuning.Dismount readDismount(JsonObject root, BhTuning.Dismount fallback) {
+        JsonElement element = root.get(KEY_DISMOUNT);
+        if (element == null || !element.isJsonPrimitive()) {
+            return fallback;
+        }
+        return switch (element.getAsString().trim().toLowerCase(Locale.ROOT)) {
+            case "wander" -> BhTuning.Dismount.WANDER;
+            case "follow" -> BhTuning.Dismount.FOLLOW;
+            case "stay" -> BhTuning.Dismount.STAY;
+            default -> {
+                IcysBetterHorses.LOGGER.warn("Config key '{}' must be wander, follow or stay. Using default {}.",
+                        KEY_DISMOUNT, fallback.name().toLowerCase(Locale.ROOT));
+                yield fallback;
+            }
+        };
+    }
+
     private static synchronized void save() {
         Map<BhFeature, Boolean> mineFeatures = ownFeatures != null ? ownFeatures : features;
         Map<BhAbility, Boolean> mineAbilities = ownAbilities != null ? ownAbilities : abilities;
@@ -571,6 +590,7 @@ public final class BhConfig {
         numbers.addProperty(KEY_REVIVE_LEVELS, mineTuning.reviveLevels());
         numbers.addProperty(KEY_REVIVE_BOND_LOSS, mineTuning.reviveBondLoss());
         numbers.addProperty(KEY_WHISTLE_RANGE, mineTuning.whistleRange());
+        numbers.addProperty(KEY_DISMOUNT, mineTuning.dismount().name().toLowerCase(Locale.ROOT));
         root.add(KEY_TUNING, numbers);
 
         JsonObject hud = new JsonObject();

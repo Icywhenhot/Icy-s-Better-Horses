@@ -31,6 +31,15 @@
     {
       "type": "icys_better_horses:padded_text_plain",
       "text": "book.icys-better-horses.stable_handbook.genetics.breeding.coat.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.genetics.breeding.foods.title",
+      "text": "book.icys-better-horses.stable_handbook.genetics.breeding.foods.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.genetics.breeding.foods.text2"
     }
   ]
 }
