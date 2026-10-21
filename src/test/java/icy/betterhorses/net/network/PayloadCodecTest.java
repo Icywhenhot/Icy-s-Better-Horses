@@ -253,7 +253,7 @@ class PayloadCodecTest {
                 true,
                 false,
                 List.of("charge_jump"),
-                new BhTuning(42, 17, 250, 3, 9, 0.25D, 10, 20, 64),
+                new BhTuning(42, 17, 250, 3, 9, 0.25D, 10, 20, 64, BhTuning.Dismount.FOLLOW),
                 List.of("minecraft:golden_carrot", "minecraft:apple"));
         FriendlyByteBuf buf = buf();
         ConfigSyncPayload.encode(original, buf);
@@ -268,7 +268,7 @@ class PayloadCodecTest {
                 false,
                 true,
                 List.of("night_vision", "double_jump", "swim_boost"),
-                new BhTuning(63, 200, 777, 5, 20, 0.75D, 10, 20, 0),
+                new BhTuning(63, 200, 777, 5, 20, 0.75D, 10, 20, 0, BhTuning.Dismount.WANDER),
                 List.of("minecraft:golden_carrot", "minecraft:apple"));
         FriendlyByteBuf buf = buf();
         ConfigSyncPayload.encode(original, buf);
@@ -283,7 +283,7 @@ class PayloadCodecTest {
                 true,
                 true,
                 List.of(),
-                new BhTuning(5, 30, 100, 2, 4, 0.5D, 10, 20, 512),
+                new BhTuning(5, 30, 100, 2, 4, 0.5D, 10, 20, 512, BhTuning.Dismount.STAY),
                 List.of("minecraft:golden_carrot", "minecraft:apple"));
         FriendlyByteBuf buf = buf();
         ConfigSyncPayload.encode(original, buf);
@@ -302,7 +302,7 @@ class PayloadCodecTest {
                 true,
                 false,
                 List.of("ability-a", "ability-b"),
-                new BhTuning(11, 22, 33, 4, 8, 0.125D, 10, 20, 16),
+                new BhTuning(11, 22, 33, 4, 8, 0.125D, 10, 20, 16, BhTuning.Dismount.FOLLOW),
                 List.of("minecraft:golden_carrot", "minecraft:apple"));
         FriendlyByteBuf buf = buf();
         ConfigSyncPayload.encode(original, buf);
