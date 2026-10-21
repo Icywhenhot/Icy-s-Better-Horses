@@ -21,12 +21,12 @@ public final class BhBreedCoats {
 
     public static final BhBreedCoats FRIESIAN = new BhBreedCoats(
             "friesian",
-            List.of("black", "star"),
+            List.of("black", "star", "chocolate", "jet_black", "jet_black_blaze", "brown_black"),
             true);
 
     public static final BhBreedCoats APPALOOSA = new BhBreedCoats(
             "appaloosa",
-            List.of("black", "brown", "gray", "white"),
+            List.of("black", "brown", "gray", "white", "palomino"),
             true);
 
     public static final BhBreedCoats THOROUGHBRED = new BhBreedCoats(

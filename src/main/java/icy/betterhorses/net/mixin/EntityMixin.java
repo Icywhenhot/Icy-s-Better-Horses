@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhHorseBackup;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.registry.BhContent;
@@ -151,7 +152,7 @@ public abstract class EntityMixin {
     }
 
     @Inject(method = "removeVehicle", at = @At("HEAD"))
-    private void bh_wanderAfterDismount(CallbackInfo ci) {
+    private void bh_commandAfterDismount(CallbackInfo ci) {
         Entity self = (Entity) (Object) this;
         if (!(self instanceof ServerPlayer player) || !(player.getVehicle() instanceof AbstractHorse horse)) {
             return;
@@ -163,8 +164,14 @@ public abstract class EntityMixin {
         }
 
         HorseTracker.setLastRidden(player.getUUID(), horse);
-        data.bh_setWanderCenter(horse.blockPosition());
-        data.bh_setCommandKey(BhContent.COMMAND_WANDER.key());
+        switch (BhConfig.tuning().dismount()) {
+            case FOLLOW -> data.bh_setCommandKey(BhContent.COMMAND_FOLLOW.key());
+            case STAY -> data.bh_setCommandKey(BhContent.COMMAND_STAY.key());
+            case WANDER -> {
+                data.bh_setWanderCenter(horse.blockPosition());
+                data.bh_setCommandKey(BhContent.COMMAND_WANDER.key());
+            }
+        }
     }
 
 }
