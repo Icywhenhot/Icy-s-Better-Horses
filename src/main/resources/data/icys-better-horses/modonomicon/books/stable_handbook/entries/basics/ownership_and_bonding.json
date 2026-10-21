@@ -40,6 +40,13 @@
       "title": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.whistle_bond.title",
       "show_title_separator": true,
       "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.whistle_bond.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "treats",
+      "title": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.treats.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.basics.ownership_and_bonding.treats.text"
     }
   ]
 }

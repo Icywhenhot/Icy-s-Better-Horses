@@ -47,6 +47,13 @@
       "title": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.creative.title",
       "show_title_separator": true,
       "text": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.creative.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "dismount",
+      "title": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.dismount.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.travel.mounted_comforts.dismount.text"
     }
   ]
 }

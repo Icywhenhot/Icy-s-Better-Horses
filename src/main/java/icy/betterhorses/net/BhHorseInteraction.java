@@ -121,13 +121,6 @@ public final class BhHorseInteraction {
             data.bh_setStabilizerState(landingState);
         }
         horse.fallDistance = 0.0F;
-        if (!horse.level().isClientSide()) {
-            for (Entity passenger : horse.getIndirectPassengers()) {
-                if (passenger instanceof ServerPlayer serverPlayer) {
-                    BhCriteria.fire(serverPlayer, BhCriteria.STABILIZER_LANDING, (int) distance);
-                }
-            }
-        }
         return StabilizerLanding.ABSORBED;
     }
 }
