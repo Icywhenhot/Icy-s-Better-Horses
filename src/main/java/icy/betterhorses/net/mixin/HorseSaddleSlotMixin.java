@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhArmorSlotAccess;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -17,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(targets = "net/minecraft/world/inventory/ArmorSlot")
-public abstract class HorseSaddleSlotMixin extends Slot {
+public abstract class HorseSaddleSlotMixin extends Slot implements BhArmorSlotAccess {
 
     @Shadow @Final
     private LivingEntity owner;
@@ -27,6 +28,16 @@ public abstract class HorseSaddleSlotMixin extends Slot {
 
     private HorseSaddleSlotMixin() {
         super(null, 0, 0, 0);
+    }
+
+    @Override
+    public LivingEntity bh_slotOwner() {
+        return this.owner;
+    }
+
+    @Override
+    public EquipmentSlot bh_equipmentSlot() {
+        return this.slot;
     }
 
     @Inject(method = "mayPickup", at = @At("HEAD"), cancellable = true)

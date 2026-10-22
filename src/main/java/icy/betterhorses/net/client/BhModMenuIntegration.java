@@ -167,6 +167,7 @@ public class BhModMenuIntegration implements ModMenuApi {
 
         BhConfig.Side[] sides = {BhConfig.chargeMeter().side(), BhConfig.harnessGauge().side()};
         int[] gaps = {BhConfig.chargeMeter().gap(), BhConfig.harnessGauge().gap()};
+        BhConfig.RadialStyle[] radial = {BhConfig.radialStyle()};
 
         ConfigCategory hud = builder.getOrCreateCategory(
                 Component.translatable("config.icys-better-horses.category.hud"));
@@ -174,6 +175,7 @@ public class BhModMenuIntegration implements ModMenuApi {
         hud.addEntry(bh_gap(eb, "charge_meter_gap", gaps, 0, BhConfig.DEFAULT_METER));
         hud.addEntry(bh_side(eb, "harness_gauge_side", sides, 1, BhConfig.DEFAULT_HARNESS));
         hud.addEntry(bh_gap(eb, "harness_gauge_gap", gaps, 1, BhConfig.DEFAULT_HARNESS));
+        hud.addEntry(bh_radial(eb, radial));
 
         ConfigCategory keybinds = builder.getOrCreateCategory(
                 Component.translatable("config.icys-better-horses.category.keybinds"));
@@ -222,7 +224,7 @@ public class BhModMenuIntegration implements ModMenuApi {
                     whistle[0], dismount[0]));
             BhConfig.applyAbilities(masters[0], masters[1], abilityPicks);
             BhConfig.applyBreedingFoods(foods);
-            BhConfig.applyHud(new BhConfig.Spot(sides[0], gaps[0]), new BhConfig.Spot(sides[1], gaps[1]));
+            BhConfig.applyHud(new BhConfig.Spot(sides[0], gaps[0]), new BhConfig.Spot(sides[1], gaps[1]), radial[0]);
             IcysBetterHorsesClient.sendChargeChoice();
             KeyMapping.resetMapping();
             Minecraft.getInstance().options.save();
@@ -268,6 +270,18 @@ public class BhModMenuIntegration implements ModMenuApi {
                         "config.icys-better-horses.side." + value.name().toLowerCase(Locale.ROOT)))
                 .setTooltip(Component.translatable(base + ".tooltip"))
                 .setSaveConsumer(value -> sides[index] = value)
+                .build();
+    }
+
+    private static AbstractConfigListEntry<BhConfig.RadialStyle> bh_radial(
+            ConfigEntryBuilder eb, BhConfig.RadialStyle[] pick) {
+        String base = "config.icys-better-horses.radial_style";
+        return eb.startEnumSelector(Component.translatable(base), BhConfig.RadialStyle.class, pick[0])
+                .setDefaultValue(BhConfig.DEFAULT_RADIAL)
+                .setEnumNameProvider(value -> Component.translatable(
+                        base + "." + value.name().toLowerCase(Locale.ROOT)))
+                .setTooltip(Component.translatable(base + ".tooltip"))
+                .setSaveConsumer(value -> pick[0] = value)
                 .build();
     }
 

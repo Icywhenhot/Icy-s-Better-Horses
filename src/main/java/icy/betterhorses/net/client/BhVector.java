@@ -123,6 +123,36 @@ public final class BhVector {
         arc(builder, cx, cy, innerRadius, outerRadius, 0.0D, Math.PI * 2.0D, color, feather, true);
     }
 
+    public static void line(Builder builder, float x0, float y0, float x1, float y1,
+                            float thickness, int color, float feather) {
+        float dx = x1 - x0;
+        float dy = y1 - y0;
+        float length = (float) Math.sqrt(dx * dx + dy * dy);
+        if (length < 0.01F) return;
+
+        float nx = -dy / length;
+        float ny = dx / length;
+        float core = Math.max(0.1F, thickness * 0.5F - feather * 0.5F);
+        float edge = core + feather;
+        int clear = scaleAlpha(color, 0f);
+
+        builder.quad(
+                x0 + nx * edge, y0 + ny * edge, clear,
+                x1 + nx * edge, y1 + ny * edge, clear,
+                x1 + nx * core, y1 + ny * core, color,
+                x0 + nx * core, y0 + ny * core, color);
+        builder.quad(
+                x0 + nx * core, y0 + ny * core, color,
+                x1 + nx * core, y1 + ny * core, color,
+                x1 - nx * core, y1 - ny * core, color,
+                x0 - nx * core, y0 - ny * core, color);
+        builder.quad(
+                x0 - nx * core, y0 - ny * core, color,
+                x1 - nx * core, y1 - ny * core, color,
+                x1 - nx * edge, y1 - ny * edge, clear,
+                x0 - nx * edge, y0 - ny * edge, clear);
+    }
+
     public static void disc(Builder builder, float cx, float cy, float radius, int color, float feather) {
         arc(builder, cx, cy, 0f, radius, 0.0D, Math.PI * 2.0D, color, feather, true);
     }
