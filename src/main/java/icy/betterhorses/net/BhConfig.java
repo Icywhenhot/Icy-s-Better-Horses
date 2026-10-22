@@ -52,11 +52,14 @@ public final class BhConfig {
     private static final String KEY_METER_GAP = "charge_meter_gap";
     private static final String KEY_HARNESS_SIDE = "harness_gauge_side";
     private static final String KEY_HARNESS_GAP = "harness_gauge_gap";
+    private static final String KEY_RADIAL_STYLE = "radial_style";
     private static final String KEY_BREEDING_FOODS = "breeding_foods";
 
     public static final int MAX_HUD_GAP = 100;
 
     public enum Side { LEFT, RIGHT }
+
+    public enum RadialStyle { HORSESHOE, DIAL }
 
     public record Spot(Side side, int gap) {
         public Spot clamped() {
@@ -66,6 +69,7 @@ public final class BhConfig {
 
     public static final Spot DEFAULT_METER = new Spot(Side.RIGHT, 4);
     public static final Spot DEFAULT_HARNESS = new Spot(Side.LEFT, 4);
+    public static final RadialStyle DEFAULT_RADIAL = RadialStyle.HORSESHOE;
 
     public static final List<String> DEFAULT_BREEDING_FOODS = List.of(
             "minecraft:golden_carrot", "minecraft:golden_apple", "minecraft:enchanted_golden_apple");
@@ -85,6 +89,7 @@ public final class BhConfig {
     private static boolean breedMaster = true;
     private static Spot meter = DEFAULT_METER;
     private static Spot harness = DEFAULT_HARNESS;
+    private static RadialStyle radial = DEFAULT_RADIAL;
     private static List<String> breedingFoods = DEFAULT_BREEDING_FOODS;
     private static volatile @Nullable Set<Item> breedingItems;
 
@@ -113,6 +118,7 @@ public final class BhConfig {
         breedMaster = true;
         meter = DEFAULT_METER;
         harness = DEFAULT_HARNESS;
+        radial = DEFAULT_RADIAL;
         breedingFoods = DEFAULT_BREEDING_FOODS;
         breedingItems = null;
     }
@@ -334,9 +340,14 @@ public final class BhConfig {
         return harness;
     }
 
-    public static synchronized void applyHud(Spot meterSpot, Spot harnessSpot) {
+    public static RadialStyle radialStyle() {
+        return radial;
+    }
+
+    public static synchronized void applyHud(Spot meterSpot, Spot harnessSpot, RadialStyle radialPick) {
         meter = meterSpot.clamped();
         harness = harnessSpot.clamped();
+        radial = radialPick;
         save();
     }
 
@@ -400,6 +411,8 @@ public final class BhConfig {
             if (hud != null) {
                 meter = readSpot(hud, KEY_METER_SIDE, KEY_METER_GAP, DEFAULT_METER);
                 harness = readSpot(hud, KEY_HARNESS_SIDE, KEY_HARNESS_GAP, DEFAULT_HARNESS);
+                radial = readRadial(hud);
+                needsRewrite |= !hud.has(KEY_RADIAL_STYLE);
             }
 
             needsRewrite |= !root.has(KEY_BREEDING_FOODS);
@@ -540,6 +553,22 @@ public final class BhConfig {
         return new Spot(side, readInt(root, gapKey, defaultValue.gap())).clamped();
     }
 
+    private static RadialStyle readRadial(JsonObject root) {
+        JsonElement element = root.get(KEY_RADIAL_STYLE);
+        if (element == null || !element.isJsonPrimitive()) {
+            return DEFAULT_RADIAL;
+        }
+        return switch (element.getAsString().trim().toLowerCase(Locale.ROOT)) {
+            case "horseshoe" -> RadialStyle.HORSESHOE;
+            case "dial" -> RadialStyle.DIAL;
+            default -> {
+                IcysBetterHorses.LOGGER.warn("Config key '{}' must be horseshoe or dial. Using default {}.",
+                        KEY_RADIAL_STYLE, DEFAULT_RADIAL.name().toLowerCase(Locale.ROOT));
+                yield DEFAULT_RADIAL;
+            }
+        };
+    }
+
     private static BhTuning.Dismount readDismount(JsonObject root, BhTuning.Dismount fallback) {
         JsonElement element = root.get(KEY_DISMOUNT);
         if (element == null || !element.isJsonPrimitive()) {
@@ -600,6 +629,7 @@ public final class BhConfig {
         hud.addProperty(KEY_METER_GAP, meter.gap());
         hud.addProperty(KEY_HARNESS_SIDE, harness.side().name().toLowerCase(Locale.ROOT));
         hud.addProperty(KEY_HARNESS_GAP, harness.gap());
+        hud.addProperty(KEY_RADIAL_STYLE, radial.name().toLowerCase(Locale.ROOT));
         root.add(KEY_HUD, hud);
 
         JsonArray foods = new JsonArray();
