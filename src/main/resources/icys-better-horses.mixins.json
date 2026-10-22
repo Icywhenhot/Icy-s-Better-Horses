@@ -42,6 +42,7 @@
 	],
 	"client": [
 		"AbstractContainerScreenAccessor",
+		"AbstractMountInventoryScreenAccessor",
 		"AbstractContainerScreenMixin",
 		"AbstractEquineModelMixin",
 		"AbstractHorseRendererMixin",
