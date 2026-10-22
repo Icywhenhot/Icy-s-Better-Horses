@@ -167,7 +167,7 @@ public class RadialMenuScreen extends Screen {
         BhVector.Builder mesh = new BhVector.Builder();
         for (int i = 0; i < this.segmentCount; i++) {
             amount[i] = hover.get(i, i == hoveredIndex, 1f);
-            if (amount[i] <= 0.01F) continue;
+            if (amount[i] <= 0.03F) continue;
 
             float nx = nailX(i, left);
             float ny = nailY(i, top);
@@ -191,7 +191,7 @@ public class RadialMenuScreen extends Screen {
         BhVector.submit(gfx, mesh);
 
         for (int i = 0; i < this.segmentCount; i++) {
-            if (amount[i] <= 0.01F) continue;
+            if (amount[i] <= 0.03F) continue;
             String text = this.commands.get(i).label().getString();
             int color = (Math.round(255f * amount[i]) << 24) | (LABEL_HOVER_COLOR & 0xFFFFFF);
             float pop = BhAnim.easeOutBack(amount[i]);
