@@ -1,8 +1,6 @@
 package icy.betterhorses.net.client;
 
-import icy.betterhorses.net.IHorseAbilityHost;
-import icy.betterhorses.net.IHorseData;
-import icy.betterhorses.net.registry.AbilityType;
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.network.RadialCommandPayload;
 import icy.betterhorses.net.BhNetworking;
@@ -12,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
@@ -37,6 +36,20 @@ public class RadialMenuScreen extends Screen {
     private static final int LABEL_RADIUS = 78;
     private static final double SEGMENT_GAP_RADIANS = Math.toRadians(2.5D);
 
+    private static final ResourceLocation SHOE_TEXTURE =
+            new ResourceLocation("icys-better-horses", "textures/gui/radial_horseshoe.png");
+    private static final int SHOE_TEXTURE_SIZE = 168;
+    private static final int SHOE_SIZE = 168;
+    private static final float SHOE_SCALE = (float) SHOE_SIZE / SHOE_TEXTURE_SIZE;
+
+    private static final float[][] NAIL_UV = {
+            {28.5F, 60.5F},
+            {138.5F, 60.5F},
+            {24.5F, 101.5F},
+            {142.5F, 101.5F},
+            {83.5F, 148.5F},
+    };
+
     private static final int BASE_BACKGROUND_COLOR = 0x55140D07;
     private static final int RING_BACKDROP_COLOR = 0x4C5A3A1C;
     private static final int RING_RIM_COLOR = 0x66A37236;
@@ -52,11 +65,22 @@ public class RadialMenuScreen extends Screen {
     private static final int LABEL_COLOR = 0xFFEBD9BE;
     private static final int LABEL_HOVER_COLOR = 0xFFFFFFFF;
 
+    private static final int NAIL_GLOW_COLOR = 0xFFFFE9BE;
+    private static final int LEADER_COLOR = 0xFFE8D4AE;
+    private static final float NAIL_GLOW_RADIUS = 5.5F;
+    private static final float LEADER_THICKNESS = 1.6F;
+    private static final float LEADER_RISE = 22F;
+    private static final float LEADER_RUN = 26F;
+    private static final float LEADER_TAIL = 30F;
+    private static final float LABEL_POP = 7F;
+    private static final float BOTTOM_LEADER_DROP = 26F;
+
     private static final float RIM_THICKNESS = 1.5F;
     private static final float HOVER_PUSH = 4F;
     private static final float HOVER_TAU = 0.05F;
 
     private final int horseId;
+    private final BhConfig.RadialStyle style;
     private int hoveredIndex = -1;
     private final BhAnim.Lift hover = new BhAnim.Lift();
     private long bhOpenMs;
@@ -67,30 +91,26 @@ public class RadialMenuScreen extends Screen {
     public RadialMenuScreen(int horseId) {
         super(Component.translatable("screen.icys-better-horses.radial"));
         this.horseId = horseId;
-        this.commands = wheelFor(horseId);
+        this.style = BhConfig.radialStyle();
+        this.commands = this.style == BhConfig.RadialStyle.HORSESHOE ? fixedWheel() : wheelFor(horseId);
         this.segmentCount = this.commands.size();
     }
 
     private record Entry(ResourceKey<CommandType> command, String ability, Component label) {}
 
-    private static List<Entry> wheelFor(int horseId) {
+    private static List<Entry> fixedWheel() {
         List<Entry> entries = new ArrayList<>();
         for (ResourceKey<CommandType> command : COMMANDS) {
             entries.add(new Entry(command, "", CommandType.displayName(command)));
         }
+        return entries;
+    }
+
+    private static List<Entry> wheelFor(int horseId) {
+        List<Entry> entries = fixedWheel();
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null
                 || !(mc.level.getEntity(horseId) instanceof AbstractHorse horse)) return entries;
-        IHorseData data = IHorseData.of(horse);
-        if (CommandType.toggleable(data.bh_getBreedKey())) {
-            entries.add(new Entry(BhContent.COMMAND_ABILITY.key(), "",
-                    CommandType.displayName(BhContent.COMMAND_ABILITY.key())));
-        }
-        for (ResourceKey<AbilityType> ability : ((IHorseAbilityHost) horse).bh_activeAbilities()) {
-            entries.add(new Entry(BhContent.COMMAND_ABILITY.key(), ability.location().toString(),
-                    Component.translatable("ability." + ability.location().getNamespace() + "."
-                            + ability.location().getPath())));
-        }
         BhRegistries.commandTypeRegistry().keySet().stream().sorted(Comparator.comparing(Object::toString))
                 .forEach(id -> {
                     CommandType type = BhRegistries.commandTypeRegistry().get(id);
@@ -120,12 +140,7 @@ public class RadialMenuScreen extends Screen {
         }
         int cx = width / 2;
         int cy = height / 2;
-
-        double dx = mouseX - cx;
-        double dy = mouseY - cy;
-        double dist = Math.sqrt(dx * dx + dy * dy);
-        hoveredIndex = (dist >= RING_INNER && dist <= RING_OUTER)
-                ? bh_angleToIndex(Math.atan2(dy, dx)) : -1;
+        hoveredIndex = pick(mouseX, mouseY, cx, cy);
 
         float t = BhAnim.clamp01((System.currentTimeMillis() - bhOpenMs) / 200f);
         gfx.fill(0, 0, width, height, BhAnim.fade(BASE_BACKGROUND_COLOR, t));
@@ -134,7 +149,67 @@ public class RadialMenuScreen extends Screen {
         var pose = gfx.pose();
         pose.pushPose();
         BhAnim.enter(pose, BhAnim.easeOutBack(t), cx, cy, 0f, 0.85f);
+        if (style == BhConfig.RadialStyle.HORSESHOE) {
+            drawShoe(gfx, cx, cy, t);
+        } else {
+            drawDial(gfx, cx, cy);
+        }
+        pose.popPose();
+    }
 
+    private void drawShoe(GuiGraphics gfx, int cx, int cy, float t) {
+        int left = cx - SHOE_SIZE / 2;
+        int top = cy - SHOE_SIZE / 2;
+        BhScreenDraw.panelTexture(gfx, left, top, SHOE_SIZE, SHOE_SIZE, SHOE_TEXTURE, t);
+
+        float[] amount = new float[this.segmentCount];
+        BhVector.Builder mesh = new BhVector.Builder();
+        for (int i = 0; i < this.segmentCount; i++) {
+            amount[i] = hover.get(i, i == hoveredIndex, 1f);
+            if (amount[i] <= 0.03F) continue;
+
+            float nx = nailX(i, left);
+            float ny = nailY(i, top);
+            BhVector.disc(mesh, nx, ny, NAIL_GLOW_RADIUS,
+                    BhVector.scaleAlpha(NAIL_GLOW_COLOR, amount[i]), BhVector.FEATHER);
+
+            int leader = BhVector.scaleAlpha(LEADER_COLOR, amount[i]);
+            float pop = BhAnim.easeOutBack(amount[i]);
+            if (i == 4) {
+                float endY = ny + BOTTOM_LEADER_DROP * pop;
+                BhVector.line(mesh, nx, ny, nx, endY, LEADER_THICKNESS, leader, BhVector.FEATHER);
+            } else {
+                float dir = i == 0 || i == 2 ? -1F : 1F;
+                float elbowX = nx + dir * LEADER_RUN * pop;
+                float elbowY = ny - LEADER_RISE * pop;
+                float tailX = elbowX + dir * LEADER_TAIL * pop;
+                BhVector.line(mesh, nx, ny, elbowX, elbowY, LEADER_THICKNESS, leader, BhVector.FEATHER);
+                BhVector.line(mesh, elbowX, elbowY, tailX, elbowY, LEADER_THICKNESS, leader, BhVector.FEATHER);
+            }
+        }
+        BhVector.submit(gfx, mesh);
+
+        for (int i = 0; i < this.segmentCount; i++) {
+            if (amount[i] <= 0.03F) continue;
+            String text = this.commands.get(i).label().getString();
+            int color = (Math.round(255f * amount[i]) << 24) | (LABEL_HOVER_COLOR & 0xFFFFFF);
+            float pop = BhAnim.easeOutBack(amount[i]);
+            float nx = nailX(i, left);
+            float ny = nailY(i, top);
+            if (i == 4) {
+                float ly = ny + BOTTOM_LEADER_DROP * pop + 3F;
+                gfx.drawCenteredString(font, text, Math.round(nx), Math.round(ly), color);
+            } else {
+                float dir = i == 0 || i == 2 ? -1F : 1F;
+                float tailX = nx + dir * (LEADER_RUN + LEADER_TAIL) * pop + dir * LABEL_POP * (1F - pop);
+                float ly = ny - LEADER_RISE * pop - font.lineHeight / 2F;
+                int tx = Math.round(dir < 0 ? tailX - 3F - font.width(text) : tailX + 3F);
+                gfx.drawString(font, text, tx, Math.round(ly), color, true);
+            }
+        }
+    }
+
+    private void drawDial(GuiGraphics gfx, int cx, int cy) {
         BhVector.Builder mesh = new BhVector.Builder();
         BhVector.ring(mesh, cx, cy, RING_BACKDROP_INNER, RING_BACKDROP_OUTER, RING_BACKDROP_COLOR, BhVector.FEATHER);
         BhVector.ring(mesh, cx, cy, RING_BACKDROP_OUTER - RIM_THICKNESS, RING_BACKDROP_OUTER,
@@ -172,8 +247,44 @@ public class RadialMenuScreen extends Screen {
             int textColor = bh_mixColor(LABEL_COLOR, LABEL_HOVER_COLOR, hoverAmount[i]);
             gfx.drawCenteredString(font, text, lx, ly - font.lineHeight / 2, textColor);
         }
+    }
 
-        pose.popPose();
+    private static float nailX(int index, int left) {
+        return left + NAIL_UV[index][0] * SHOE_SCALE;
+    }
+
+    private static float nailY(int index, int top) {
+        return top + NAIL_UV[index][1] * SHOE_SCALE;
+    }
+
+    private int pick(double mouseX, double mouseY, int cx, int cy) {
+        if (style == BhConfig.RadialStyle.HORSESHOE) {
+            return nearestNail(mouseX, mouseY, cx, cy);
+        }
+        double dx = mouseX - cx;
+        double dy = mouseY - cy;
+        double dist = Math.sqrt(dx * dx + dy * dy);
+        return dist >= RING_INNER && dist <= RING_OUTER ? bh_angleToIndex(Math.atan2(dy, dx)) : -1;
+    }
+
+    private int nearestNail(double mouseX, double mouseY, int cx, int cy) {
+        int left = cx - SHOE_SIZE / 2;
+        int top = cy - SHOE_SIZE / 2;
+        if (mouseX < left || mouseX > left + SHOE_SIZE || mouseY < top || mouseY > top + SHOE_SIZE) {
+            return -1;
+        }
+        int best = -1;
+        double bestDist = Double.MAX_VALUE;
+        for (int i = 0; i < NAIL_UV.length; i++) {
+            double dx = mouseX - nailX(i, left);
+            double dy = mouseY - nailY(i, top);
+            double dist = dx * dx + dy * dy;
+            if (dist < bestDist) {
+                bestDist = dist;
+                best = i;
+            }
+        }
+        return best;
     }
 
     private static int bh_mixColor(int from, int to, float k) {
@@ -198,11 +309,9 @@ public class RadialMenuScreen extends Screen {
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (button == 0) {
-            double dx = mouseX - width / 2.0;
-            double dy = mouseY - height / 2.0;
-            double dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist >= RING_INNER && dist <= RING_OUTER) {
-                sendCommand(this.commands.get(bh_angleToIndex(Math.atan2(dy, dx))));
+            int index = pick(mouseX, mouseY, width / 2, height / 2);
+            if (index >= 0 && index < this.segmentCount) {
+                sendCommand(this.commands.get(index));
             }
             onClose();
             return true;
