@@ -11,6 +11,13 @@ import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.inventory.GearSlot;
+import icy.betterhorses.net.entity.BhBreedHorse;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -55,6 +62,25 @@ public abstract class LivingEntityMixin extends Entity {
         if (self instanceof Mob && (self.getVehicle() instanceof HorseCartEntity
                 || self.getVehicle() instanceof AbstractHorse horse && IHorseData.of(horse).bh_hasCartGear())) {
             cir.setReturnValue(false);
+        }
+    }
+
+    @Inject(method = "isEquippableInSlot", at = @At("RETURN"), cancellable = true)
+    private void bh_breedTackWithoutTag(ItemStack stack, EquipmentSlot slot, CallbackInfoReturnable<Boolean> cir) {
+        if (cir.getReturnValueZ() || !((Object) this instanceof BhBreedHorse horse)) {
+            return;
+        }
+        if (slot != EquipmentSlot.SADDLE && slot != EquipmentSlot.BODY) {
+            return;
+        }
+        Equippable equippable = stack.get(DataComponents.EQUIPPABLE);
+        if (equippable == null || equippable.slot() != slot || !horse.canUseSlot(slot)) {
+            return;
+        }
+        TagKey<EntityType<?>> tag = slot == EquipmentSlot.SADDLE ? EntityTypeTags.CAN_EQUIP_SADDLE : EntityTypeTags.CAN_WEAR_HORSE_ARMOR;
+        if (equippable.canBeEquippedBy(EntityType.HORSE)
+                || equippable.allowedEntities().flatMap(HolderSet::unwrapKey).filter(tag::equals).isPresent()) {
+            cir.setReturnValue(true);
         }
     }
 
