@@ -119,11 +119,11 @@ Pick the **Buggy** to go back down to the small cart. The swap is refused, and t
 
 ## Fitting a plough
 
-**Right-click the small cart with any hoe** and a plough drops down behind the bed. From then on, driving the cart over **grass, dirt, coarse dirt, rooted dirt, podzol or mycelium** turns a **three-block-wide** strip into farmland behind you, one pass, no dismounting. It reaches a block above the furrow, so a step up still gets turned.
+**Right-click the small cart with any hoe** and a plough drops down behind the bed. From then on, driving the cart over **grass, dirt, coarse dirt, rooted dirt, podzol or mycelium** turns a **three-block-wide** strip into farmland behind you, one pass, no dismounting. It reaches two blocks up or down and follows the tilt of the cart, so it keeps working uphill and downhill.
 
 Fit a **shovel** instead and the same plough lays a **three-wide dirt path** as you drive.
 
-The block above has to be clear, same as tilling by hand, so the plough skips anything with a plant or a block sitting on it. It also respects claim and spawn protection: anything the driver couldn't till by hand, the plough leaves alone.
+Grass, ferns, flowers and bushes in the way are cut and dropped, and the ground under them is tilled. Crops are left alone unless `plough_crops` is on in the [config](../configuration). Anything else sitting on the ground, a block or a torch, makes the plough skip that spot. It also respects claim and spawn protection: anything the driver couldn't till by hand, the plough leaves alone.
 
 {: .note }
 > Which blocks it turns is the `icys-better-horses:ploughable` tag, so a pack can add its own soil types. See [datapack hooks](../configuration#datapack-hooks).

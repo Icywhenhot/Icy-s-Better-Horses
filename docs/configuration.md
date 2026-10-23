@@ -37,6 +37,8 @@ The default file, abbreviated. The `abilities` block holds one entry for every c
   "transparent_horses": "yes",
   "gender_breeding": "yes",
   "cart_pickup": "yes",
+  "plough_foliage": "yes",
+  "plough_crops": "no",
   "leaf_passthrough": "yes",
   "hoof_dust": "yes",
   "rear_neigh": "yes",
@@ -76,7 +78,8 @@ The default file, abbreviated. The `abilities` block holds one entry for every c
     "charge_meter_side": "right",
     "charge_meter_gap": 4,
     "harness_gauge_side": "left",
-    "harness_gauge_gap": 4
+    "harness_gauge_gap": 4,
+    "ability_banners": "yes"
   },
   "breeding_foods": [
     "minecraft:golden_carrot",
@@ -100,6 +103,8 @@ The default file, abbreviated. The `abilities` block holds one entry for every c
 | `transparent_horses` | `yes` | The horse stops fading out when you look down while riding it |
 | `gender_breeding` | `yes` | Gender stops gating breeding, so any two horses can pair. See [Genetics](genetics) |
 | `cart_pickup` | `yes` | No [cart](equipment/horse-cart) picks up mobs, whatever its own **Riders** tab says. Players can still ride |
+| `plough_foliage` | `yes` | The [plough](equipment/horse-cart#fitting-a-plough) stops clearing grass, ferns, flowers and bushes, and skips the ground under them |
+| `plough_crops` | `no` | Off by default. Turn it **on** and the plough also breaks crops it drives over, ripe or not, and drops them |
 | `leaf_passthrough` | `yes` | Horses and their riders collide with leaves again |
 | `hoof_dust` | `yes` | No dust puffs where the hooves land |
 | `rear_neigh` | `yes` | The horse rears silently when you use the Rear key |
@@ -162,6 +167,7 @@ The `hud` block moves the two gauges that sit beside your hotbar. These are **yo
 | `charge_meter_gap` | `4` | How far it sits from the edge of the hotbar, 0 to 100 |
 | `harness_gauge_side` | `left` | Which side the [Glidewing Harness](equipment/horse-stabilizer) fuel gauge sits on |
 | `harness_gauge_gap` | `4` | How far it sits from the edge of the hotbar, 0 to 100 |
+| `ability_banners` | `yes` | `no` hides the breed ability banners on the right of the screen, even while an ability is active |
 
 Room for the offhand slot is only kept while your offhand actually holds something.
 

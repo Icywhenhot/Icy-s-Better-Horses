@@ -16,6 +16,8 @@ public enum BhFeature {
     TRANSPARENT_HORSES("transparent_horses"),
     GENDER_BREEDING("gender_breeding"),
     CART_PICKUP("cart_pickup"),
+    PLOUGH_FOLIAGE("plough_foliage"),
+    PLOUGH_CROPS("plough_crops", false, false),
     LEAF_PASSTHROUGH("leaf_passthrough"),
     HOOF_DUST("hoof_dust"),
     REAR_NEIGH("rear_neigh"),
@@ -37,14 +39,20 @@ public enum BhFeature {
 
     private final String key;
     private final boolean combat;
+    private final boolean fresh;
 
     BhFeature(String key) {
         this(key, false);
     }
 
     BhFeature(String key, boolean combat) {
+        this(key, combat, true);
+    }
+
+    BhFeature(String key, boolean combat, boolean fresh) {
         this.key = key;
         this.combat = combat;
+        this.fresh = fresh;
     }
 
     public String key() {
@@ -53,6 +61,10 @@ public enum BhFeature {
 
     public boolean combat() {
         return combat;
+    }
+
+    public boolean fresh() {
+        return fresh;
     }
 
     public boolean on() {
