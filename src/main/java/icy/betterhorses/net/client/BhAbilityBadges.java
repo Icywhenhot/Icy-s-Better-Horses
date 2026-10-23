@@ -125,6 +125,12 @@ public final class BhAbilityBadges {
         if (breedKey == null) {
             return;
         }
+        if (!BhConfig.abilityBanners()) {
+            shown.clear();
+            slide.clear();
+            shield(gfx, screenW, screenH, data.bh_getCharge());
+            return;
+        }
         BreedType type = BhRegistries.breedTypeRegistry().get(breedKey.location());
         if (type == null) {
             return;

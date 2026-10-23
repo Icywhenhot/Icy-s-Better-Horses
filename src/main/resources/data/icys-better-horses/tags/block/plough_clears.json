@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:short_grass",
+    "minecraft:fern",
+    "minecraft:tall_grass",
+    "minecraft:large_fern",
+    "minecraft:dead_bush",
+    "minecraft:sweet_berry_bush",
+    "minecraft:pink_petals",
+    "#minecraft:small_flowers",
+    "#minecraft:tall_flowers"
+  ]
+}
