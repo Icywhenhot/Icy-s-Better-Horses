@@ -122,6 +122,15 @@ public final class BhAbilityBadges {
         IHorseData data = IHorseData.of(horse);
         harness(gfx, screenW, screenH, horse, data);
         ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
+        if (breedKey == null) {
+            return;
+        }
+        if (!BhConfig.abilityBanners()) {
+            shown.clear();
+            slide.clear();
+            shield(gfx, screenW, screenH, data.bh_getCharge());
+            return;
+        }
         if (breedKey == null) return;
         BreedType type = BhRegistries.breedTypeRegistry().get(breedKey.location());
         if (type == null) return;
