@@ -2,6 +2,7 @@ package icy.betterhorses.net.entity;
 
 import icy.betterhorses.net.inventory.GearSlot;
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhFeature;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.BhHorseSteering;
 import icy.betterhorses.net.BhWaterline;
@@ -26,6 +27,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
@@ -116,6 +118,8 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     private static final TagKey<Block> PLOUGHABLE = TagKey.create(Registries.BLOCK,
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "ploughable"));
+    private static final TagKey<Block> PLOUGH_CLEARS = TagKey.create(Registries.BLOCK,
+            new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "plough_clears"));
     private static final TagKey<EntityType<?>> CARGO_BLOCKED = TagKey.create(Registries.ENTITY_TYPE,
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "cart_cargo_blocked"));
     private static final TagKey<EntityType<?>> CARGO_ALLOWED = TagKey.create(Registries.ENTITY_TYPE,
@@ -131,7 +135,7 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     private static final double PLOW_BEHIND = 4.2D;
     private static final int PLOW_HALF_WIDTH = 1;
-    private static final int PLOW_LIFT = 1;
+    private static final int PLOW_REACH = 2;
 
     private static final double SPEED_SMOOTHING_UP = 0.12D;
     private static final int STOP_RAMP_TICKS = 16;
@@ -1157,15 +1161,17 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
         LivingEntity driver = boundHorse == null ? null : boundHorse.getControllingPassenger();
 
         float rad = -this.getYRot() * ((float) Math.PI / 180.0F);
+        float pitch = this.tilt * Mth.DEG_TO_RAD;
         int turned = 0;
         for (int lane = -PLOW_HALF_WIDTH; lane <= PLOW_HALF_WIDTH; lane++) {
-            Vec3 spot = this.position().add(new Vec3(lane, 0.0D, -PLOW_BEHIND).yRot(rad));
-            BlockPos furrow = BlockPos.containing(spot.x, this.getY(), spot.z).below();
-            for (int lift = PLOW_LIFT; lift >= 0; lift--) {
-                if (this.turnOver(level, furrow.above(lift), driver, tool)) {
-                    turned++;
-                    break;
-                }
+            Vec3 spot = this.position().add(new Vec3(lane, 0.0D, -PLOW_BEHIND).xRot(pitch).yRot(rad));
+            BlockPos furrow = BlockPos.containing(spot).below();
+            for (int y = PLOW_REACH; y >= -PLOW_REACH; y--) {
+                BlockPos pos = furrow.above(y);
+                BlockState state = level.getBlockState(pos);
+                if (state.isAir() || clearable(state)) continue;
+                if (this.turnOver(level, pos, driver, tool)) turned++;
+                break;
             }
         }
         if (turned == 0) {
@@ -1184,24 +1190,34 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     private boolean turnOver(ServerLevel level, BlockPos pos, @Nullable LivingEntity driver, ItemStack tool) {
         BlockState ground = level.getBlockState(pos);
-        if (!level.getBlockState(pos.above()).isAir()) {
+        BlockPos up = pos.above();
+        BlockState cover = level.getBlockState(up);
+        boolean bare = cover.isAir();
+        if (!bare && !clearable(cover)) {
             return false;
         }
         if (driver instanceof ServerPlayer sp && !level.mayInteract(sp, pos)) {
             return false;
         }
-        BlockState turned;
+        BlockState turned = null;
         if (tool.is(ItemTags.SHOVELS)) {
             UseOnContext context = new UseOnContext(level, driver instanceof Player player ? player : null,
                     InteractionHand.MAIN_HAND, tool, new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false));
             turned = ground.getToolModifiedState(context, ToolActions.SHOVEL_FLATTEN, false);
-            if (turned == null || turned == ground) return false;
-        } else {
-            if (!tillable(ground)) return false;
-            if (ground.is(Blocks.ROOTED_DIRT)) {
-                Block.popResource(level, pos, new ItemStack(Items.HANGING_ROOTS));
-            }
+            if (turned == ground) turned = null;
+        } else if (tillable(ground)) {
             turned = Blocks.FARMLAND.defaultBlockState();
+        }
+        if (turned == null) {
+            if (bare || !cover.is(BlockTags.CROPS)) return false;
+            level.destroyBlock(up, true, driver);
+            return true;
+        }
+        if (!bare) {
+            level.destroyBlock(up, true, driver);
+        }
+        if (ground.is(Blocks.ROOTED_DIRT) && !tool.is(ItemTags.SHOVELS)) {
+            Block.popResource(level, pos, new ItemStack(Items.HANGING_ROOTS));
         }
         level.setBlockAndUpdate(pos, turned);
         return true;
@@ -1209,6 +1225,11 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
 
     private static boolean tillable(BlockState state) {
         return state.is(PLOUGHABLE);
+    }
+
+    private static boolean clearable(BlockState state) {
+        return BhFeature.PLOUGH_FOLIAGE.on() && state.is(PLOUGH_CLEARS)
+                || BhFeature.PLOUGH_CROPS.on() && state.is(BlockTags.CROPS);
     }
 
     public @Nullable SimpleContainer chestContainer() {

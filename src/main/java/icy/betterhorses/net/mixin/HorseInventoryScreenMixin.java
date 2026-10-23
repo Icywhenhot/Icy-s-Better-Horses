@@ -75,6 +75,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Unique private static final int BH_STATS_TEXT_X = 81;
     @Unique private static final int BH_STATS_TEXT_Y = 38;
     @Unique private static final int BH_STATS_LINE_SPACING = 10;
+    @Unique private static final int BH_STATS_ROOM = 87;
     @Unique private static final int BH_TEXT_COLOR = 0xFF404040;
     @Unique private static final float BH_LOCK_FLASH_ALPHA = 0.65F;
     @Unique private static final int BH_BANNER_HINT_TINT = 0xA0B7AB99;
@@ -286,19 +287,29 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     private void bh_drawStatsLines(GuiGraphics gfx, AbstractHorse horse) {
         double speedBps = horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * 43.2D;
         double jumpBlk = BhJumpHeight.blocks(horse.getAttributeValue(Attributes.JUMP_STRENGTH));
-        String speedText = String.format(Locale.ROOT, "Speed: %.1f blk/s", speedBps);
-        String jumpText = String.format(Locale.ROOT, "Jump:  %.1f blk", jumpBlk);
+        Component speedText = Component.translatable("screen.icys-better-horses.inventory.speed",
+                String.format(Locale.ROOT, "%.1f", speedBps));
+        Component jumpText = Component.translatable("screen.icys-better-horses.inventory.jump",
+                String.format(Locale.ROOT, "%.1f", jumpBlk));
 
-        gfx.drawString(this.font, speedText,
-                this.leftPos + BH_STATS_TEXT_X,
-                this.topPos + BH_STATS_TEXT_Y,
-                BH_TEXT_COLOR,
-                false);
-        gfx.drawString(this.font, jumpText,
-                this.leftPos + BH_STATS_TEXT_X,
-                this.topPos + BH_STATS_TEXT_Y + BH_STATS_LINE_SPACING,
-                BH_TEXT_COLOR,
-                false);
+        bh_drawFitted(gfx, speedText, this.leftPos + BH_STATS_TEXT_X, this.topPos + BH_STATS_TEXT_Y);
+        bh_drawFitted(gfx, jumpText, this.leftPos + BH_STATS_TEXT_X,
+                this.topPos + BH_STATS_TEXT_Y + BH_STATS_LINE_SPACING);
+    }
+
+    @Unique
+    private void bh_drawFitted(GuiGraphics gfx, Component text, int x, int y) {
+        int w = this.font.width(text);
+        if (w <= BH_STATS_ROOM) {
+            gfx.drawString(this.font, text, x, y, BH_TEXT_COLOR, false);
+            return;
+        }
+        float s = BH_STATS_ROOM / (float) w;
+        gfx.pose().pushPose();
+        gfx.pose().translate(x, y + (1.0F - s) * this.font.lineHeight / 2.0F, 0.0F);
+        gfx.pose().scale(s, s, 1.0F);
+        gfx.drawString(this.font, text, 0, 0, BH_TEXT_COLOR, false);
+        gfx.pose().popPose();
     }
 
     @Unique

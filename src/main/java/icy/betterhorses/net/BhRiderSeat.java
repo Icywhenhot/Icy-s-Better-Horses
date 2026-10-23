@@ -9,6 +9,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -25,6 +26,7 @@ public final class BhRiderSeat {
     private static final double PLAYER_SEAT_DROP = 0.6D;
     private static final double PLAYER_RIDING_OFFSET = 0.35D;
     private static final float HUMANOID_HEIGHT = 1.2F;
+    private static final double PLAYER_HIP_HEIGHT = 0.75D;
 
     public static final TagKey<EntityType<?>> SELF_SEATED = TagKey.create(Registries.ENTITY_TYPE,
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "self_seated_riders"));
@@ -41,7 +43,7 @@ public final class BhRiderSeat {
 
     public static double seatDrop(Entity passenger) {
         if (passenger instanceof Player || TLM && BhYsmMaids.ysm(passenger)) {
-            return PLAYER_SEAT_DROP;
+            return PLAYER_SEAT_DROP + PLAYER_HIP_HEIGHT * (heightScale(passenger) - 1.0D);
         }
         if (passenger.getType().is(SELF_SEATED)) {
             return 0.0D;
@@ -54,6 +56,12 @@ public final class BhRiderSeat {
             return passenger.getBbHeight() / 3.0D;
         }
         return 0.0D;
+    }
+
+    private static double heightScale(Entity passenger) {
+        float base = passenger.getType().getDimensions().height;
+        if (base <= 0.0F) return 1.0D;
+        return passenger.getDimensions(Pose.STANDING).height / base;
     }
 
     public static void publish(int horseId, Vec3 shift) {
