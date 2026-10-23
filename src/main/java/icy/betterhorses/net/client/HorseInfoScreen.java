@@ -178,28 +178,31 @@ public class HorseInfoScreen extends Screen {
         int bond = Math.round(data.bh_getBond() * statP);
         drawStatRow(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.bond"),
-                bond + " / 100",
+                Component.translatable("screen.icys-better-horses.info.bond_value", bond),
                 bond / 100.0D);
         y += ROW_HEIGHT;
 
         double speedBlocksPerSec = horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * SPEED_DISPLAY_FACTOR * statP;
         drawStatRow(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.speed"),
-                String.format(Locale.ROOT, "%.1f blk/s", speedBlocksPerSec),
+                Component.translatable("screen.icys-better-horses.info.speed_value",
+                        String.format(Locale.ROOT, "%.1f", speedBlocksPerSec)),
                 speedBlocksPerSec / (ArchetypeType.topSpeed() * BOND_MAX_MULTIPLIER * SPEED_DISPLAY_FACTOR));
         y += ROW_HEIGHT;
 
         double jumpBlocks = BhJumpHeight.blocks(horse.getAttributeValue(Attributes.JUMP_STRENGTH)) * statP;
         drawStatRow(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.jump"),
-                String.format(Locale.ROOT, "%.2f blk", jumpBlocks),
+                Component.translatable("screen.icys-better-horses.info.jump_value",
+                        String.format(Locale.ROOT, "%.2f", jumpBlocks)),
                 jumpBlocks / JUMP_MAX);
         y += ROW_HEIGHT;
 
         double health = horse.getMaxHealth() * statP;
         drawStatRow(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.health"),
-                String.format(Locale.ROOT, "%.1f HP", health),
+                Component.translatable("screen.icys-better-horses.info.health_value",
+                        String.format(Locale.ROOT, "%.1f", health)),
                 health / HEALTH_MAX);
 
         renderDisownSection(gfx, font, left, top, mouseX, mouseY);
@@ -382,7 +385,7 @@ public class HorseInfoScreen extends Screen {
         gfx.text(font, value, x + LABEL_WIDTH, y, VALUE_COLOR, false);
     }
 
-    private void drawStatRow(GuiGraphicsExtractor gfx, Font font, int x, int y, Component label, String value, double normalized) {
+    private void drawStatRow(GuiGraphicsExtractor gfx, Font font, int x, int y, Component label, Component value, double normalized) {
         gfx.text(font, label, x + LABEL_INDENT, y, LABEL_COLOR, false);
         int barX = x + LABEL_WIDTH;
         int barY = y + 3;
@@ -391,7 +394,7 @@ public class HorseInfoScreen extends Screen {
         if (fillWidth > 0) {
             gfx.fill(barX, barY, barX + fillWidth, barY + BAR_HEIGHT, BAR_FILL_COLOR);
         }
-        gfx.text(font, Component.literal(value), barX + BAR_WIDTH + BAR_VALUE_GAP, y, VALUE_COLOR, false);
+        gfx.text(font, value, barX + BAR_WIDTH + BAR_VALUE_GAP, y, VALUE_COLOR, false);
     }
 
 }

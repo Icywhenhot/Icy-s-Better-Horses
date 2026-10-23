@@ -168,6 +168,7 @@ public class BhModMenuIntegration implements ModMenuApi {
         BhConfig.Side[] sides = {BhConfig.chargeMeter().side(), BhConfig.harnessGauge().side()};
         int[] gaps = {BhConfig.chargeMeter().gap(), BhConfig.harnessGauge().gap()};
         BhConfig.RadialStyle[] radial = {BhConfig.radialStyle()};
+        boolean[] banners = {BhConfig.abilityBanners()};
 
         ConfigCategory hud = builder.getOrCreateCategory(
                 Component.translatable("config.icys-better-horses.category.hud"));
@@ -176,6 +177,12 @@ public class BhModMenuIntegration implements ModMenuApi {
         hud.addEntry(bh_side(eb, "harness_gauge_side", sides, 1, BhConfig.DEFAULT_HARNESS));
         hud.addEntry(bh_gap(eb, "harness_gauge_gap", gaps, 1, BhConfig.DEFAULT_HARNESS));
         hud.addEntry(bh_radial(eb, radial));
+        hud.addEntry(eb.startBooleanToggle(
+                        Component.translatable("config.icys-better-horses.ability_banners"), banners[0])
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.icys-better-horses.ability_banners.tooltip"))
+                .setSaveConsumer(value -> banners[0] = value)
+                .build());
 
         ConfigCategory keybinds = builder.getOrCreateCategory(
                 Component.translatable("config.icys-better-horses.category.keybinds"));
@@ -224,7 +231,8 @@ public class BhModMenuIntegration implements ModMenuApi {
                     whistle[0], dismount[0]));
             BhConfig.applyAbilities(masters[0], masters[1], abilityPicks);
             BhConfig.applyBreedingFoods(foods);
-            BhConfig.applyHud(new BhConfig.Spot(sides[0], gaps[0]), new BhConfig.Spot(sides[1], gaps[1]), radial[0]);
+            BhConfig.applyHud(new BhConfig.Spot(sides[0], gaps[0]), new BhConfig.Spot(sides[1], gaps[1]), radial[0],
+                    banners[0]);
             IcysBetterHorsesClient.sendChargeChoice();
             KeyMapping.resetMapping();
             Minecraft.getInstance().options.save();
@@ -254,8 +262,8 @@ public class BhModMenuIntegration implements ModMenuApi {
     private static AbstractConfigListEntry<Boolean> bh_toggle(
             ConfigEntryBuilder eb, BhFeature feature, Map<BhFeature, Boolean> picks) {
         String base = "config.icys-better-horses." + feature.key();
-        return eb.startBooleanToggle(Component.translatable(base), picks.getOrDefault(feature, true))
-                .setDefaultValue(true)
+        return eb.startBooleanToggle(Component.translatable(base), picks.getOrDefault(feature, feature.fresh()))
+                .setDefaultValue(feature.fresh())
                 .setTooltip(Component.translatable(base + ".tooltip"))
                 .setSaveConsumer(value -> picks.put(feature, value))
                 .build();
