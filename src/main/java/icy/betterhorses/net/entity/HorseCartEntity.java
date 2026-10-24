@@ -1049,7 +1049,9 @@ public final class HorseCartEntity extends Entity implements GeoEntity {
                 < BhHorseSteering.bh_seatCount(IHorseData.of(boundHorse));
         if (benchHasRoom && this.playerMayTakeBench(boundHorse, player)) {
             IHorseData.of(boundHorse).bh_ridePlayer(player);
-            return InteractionResult.CONSUME;
+            if (player.getVehicle() == boundHorse) {
+                return InteractionResult.CONSUME;
+            }
         }
         if (this.rearSeatsFree()) {
             player.startRiding(this);
