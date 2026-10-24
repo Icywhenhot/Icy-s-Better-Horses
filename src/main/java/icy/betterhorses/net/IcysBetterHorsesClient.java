@@ -256,6 +256,7 @@ public final class IcysBetterHorsesClient {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
+        icy.betterhorses.net.client.CartKickProbe.install();
         event.enqueueWork(() -> {
             MenuScreens.register(ModMenus.CART.get(), CartScreen::new);
             if (ModList.get().isLoaded("cloth_config")) {
