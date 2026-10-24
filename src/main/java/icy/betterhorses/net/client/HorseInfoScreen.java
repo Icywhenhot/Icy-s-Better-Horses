@@ -8,9 +8,11 @@ import icy.betterhorses.net.BhNetworking;
 import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BreedType;
 import icy.betterhorses.net.registry.GenderType;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -19,6 +21,7 @@ import net.minecraft.world.entity.animal.horse.Markings;
 import net.minecraft.world.entity.animal.horse.Variant;
 import icy.betterhorses.net.entity.BhBreedHorse;
 import java.util.Locale;
+import java.util.UUID;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.glfw.GLFW;
@@ -171,6 +174,11 @@ public class HorseInfoScreen extends Screen {
         drawLabel(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.coat"),
                 coatLabel(horse));
+        y += ROW_HEIGHT;
+
+        drawLabel(gfx, font, left + PADDING, y,
+                Component.translatable("screen.icys-better-horses.info.owner"),
+                ownerLabel(data));
         y += ROW_HEIGHT + 4;
 
         int bond = Math.round(data.bh_getBond() * statP);
@@ -373,6 +381,19 @@ public class HorseInfoScreen extends Screen {
         Component markingsComponent = Component.translatable(
                 "coat.icys-better-horses.markings." + markings.name().toLowerCase(Locale.ROOT));
         return Component.translatable("coat.icys-better-horses.combined", colorComponent, markingsComponent);
+    }
+
+    // The client only knows names of players who are online; anyone else is just not you.
+    private static Component ownerLabel(IHorseData data) {
+        UUID owner = data.bh_getOwner();
+        Minecraft client = Minecraft.getInstance();
+        if (owner == null) return Component.translatable("screen.icys-better-horses.info.owner.none");
+        if (client.player != null && owner.equals(client.player.getUUID())) {
+            return Component.translatable("screen.icys-better-horses.info.owner.you");
+        }
+        PlayerInfo info = client.getConnection() == null ? null : client.getConnection().getPlayerInfo(owner);
+        return info != null ? Component.literal(info.getProfile().getName())
+                : Component.translatable("screen.icys-better-horses.info.owner.other");
     }
 
     private void drawLabel(GuiGraphics gfx, Font font, int x, int y, Component label, Component value) {

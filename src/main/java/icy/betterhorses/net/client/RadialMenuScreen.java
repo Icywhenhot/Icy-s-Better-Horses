@@ -1,5 +1,9 @@
 package icy.betterhorses.net.client;
 
+import com.mojang.blaze3d.platform.InputConstants;
+import icy.betterhorses.net.IcysBetterHorsesClient;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import org.lwjgl.glfw.GLFW;
 import icy.betterhorses.net.IHorseAbilityHost;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.registry.AbilityType;
@@ -13,6 +17,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 import java.util.ArrayList;
@@ -52,6 +57,8 @@ public class RadialMenuScreen extends Screen {
     private static final int LABEL_COLOR = 0xFFEBD9BE;
     private static final int LABEL_HOVER_COLOR = 0xFFFFFFFF;
 
+    private static final int NAME_GAP = 8;
+
     private static final float RIM_THICKNESS = 1.5F;
     private static final float HOVER_PUSH = 4F;
     private static final float HOVER_TAU = 0.05F;
@@ -60,6 +67,7 @@ public class RadialMenuScreen extends Screen {
     private int hoveredIndex = -1;
     private final BhAnim.Lift hover = new BhAnim.Lift();
     private long bhOpenMs;
+    private boolean wheelKeyWasDown = true;
 
     private final List<Entry> commands;
     private final int segmentCount;
@@ -110,6 +118,26 @@ public class RadialMenuScreen extends Screen {
     @Override
     protected void init() {
         bhOpenMs = System.currentTimeMillis();
+    }
+
+    // The key that opened the wheel closes it again. It is still held as the wheel opens, so only
+    // a fresh press counts.
+    @Override
+    public void tick() {
+        boolean down = wheelKeyDown();
+        if (down && !wheelKeyWasDown) onClose();
+        wheelKeyWasDown = down;
+    }
+
+    private boolean wheelKeyDown() {
+        if (minecraft == null) return false;
+        InputConstants.Key key = KeyBindingHelper.getBoundKeyOf(IcysBetterHorsesClient.RADIAL_KEY);
+        long window = minecraft.getWindow().getWindow();
+        return switch (key.getType()) {
+            case KEYSYM -> InputConstants.isKeyDown(window, key.getValue());
+            case MOUSE -> GLFW.glfwGetMouseButton(window, key.getValue()) == GLFW.GLFW_PRESS;
+            default -> false;
+        };
     }
 
     @Override
@@ -172,6 +200,14 @@ public class RadialMenuScreen extends Screen {
             int textColor = bh_mixColor(LABEL_COLOR, LABEL_HOVER_COLOR, hoverAmount[i]);
             gfx.drawCenteredString(font, text, lx, ly - font.lineHeight / 2, textColor);
         }
+
+        // which horse the wheel is for: a rider who looks at no other horse gets the one under them
+        Entity target = minecraft.level.getEntity(horseId);
+        Component name = minecraft.player != null && minecraft.player.getVehicle() == target
+                ? Component.translatable("screen.icys-better-horses.radial.riding", target.getDisplayName())
+                : target.getDisplayName();
+        gfx.drawCenteredString(font, name, cx, cy - RING_BACKDROP_OUTER - NAME_GAP - font.lineHeight,
+                LABEL_HOVER_COLOR);
 
         pose.popPose();
     }
