@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.feature.Bonding;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhGears;
@@ -207,6 +208,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private final CartRig bh_cartRig = new CartRig();
     @Unique private final HorseCombat bh_combat = new HorseCombat();
     @Unique private final BreedAbilities bh_abilities = new BreedAbilities();
+    @Unique private final Bonding bh_bonding = new Bonding();
+    @Unique private boolean bh_feedingTreat;
 
     @Unique
     private boolean bh_ours() {
@@ -230,6 +233,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             new FrostHooves(),
             bh_combat,
             bh_abilities,
+            bh_bonding,
             };
             if (bh_ours()) {
                 HorseFeaturesEvent event = new HorseFeaturesEvent((AbstractHorse) (Object) this);
@@ -551,6 +555,15 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     public void bh_setBondRemainder(int value) { bh_bondRemainder = value; }
 
     @Override
+    public Bonding bh_bonding() { return bh_bonding; }
+
+    @Override
+    public String bh_getShownTreat() { return ((AbstractHorse) (Object) this).getData(BhHorseAttachments.TREAT); }
+
+    @Override
+    public void bh_showTreat(String id) { ((AbstractHorse) (Object) this).setData(BhHorseAttachments.TREAT, id); }
+
+    @Override
     public long bh_getRescueReadyAt() { return bh_rescueReadyAt; }
 
     @Override
@@ -689,6 +702,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
     private void bh_onWrite(CompoundTag output, CallbackInfo ci) {
+        output.put("BH_Bonding", bh_bonding.write());
         if (bh_ours()) output.put("BH_Abilities", bh_abilities.write());
         if (bh_owner != null) {
             output.putUUID("BH_Owner", bh_owner);
@@ -737,6 +751,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
     private void bh_onRead(CompoundTag input, CallbackInfo ci) {
+        bh_bonding.read(this, input.getCompound("BH_Bonding"));
         bh_owner = input.hasUUID("BH_Owner") ? input.getUUID("BH_Owner") : null;
         bh_cartId = input.hasUUID("BH_CartId") ? input.getUUID("BH_CartId") : null;
         bh_abilityPaused = input.getInt("BH_AbilityPaused") != 0;
@@ -1249,6 +1264,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         }
     }
 
+    @Inject(method = "hurt", at = @At("RETURN"))
+    private void bh_loseBondWhenOwnerHits(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (!cir.getReturnValueZ() || !bh_ours() || self.level().isClientSide()) return;
+        if (source.getEntity() instanceof Player player && player.getUUID().equals(this.bh_getOwner())
+                && !self.hasPassenger(player)) {
+            Bonding.hitByOwner(this);
+        }
+    }
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void bh_tick(CallbackInfo ci) {
         if (!bh_ours()) return;
@@ -1382,6 +1407,25 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         } finally {
             this.bh_fedGoldenAppleThisTick = false;
         }
+    }
+
+    @Inject(method = "fedFood", at = @At("HEAD"))
+    private void bh_noteTreat(Player player, ItemStack stack, CallbackInfoReturnable<InteractionResult> cir) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        this.bh_feedingTreat = bh_ours() && !self.level().isClientSide()
+                && player.getUUID().equals(this.bh_getOwner()) && bh_bonding.isTreat(self, stack);
+    }
+
+    @Inject(method = "fedFood", at = @At("RETURN"), cancellable = true)
+    private void bh_eatTreat(Player player, ItemStack stack, CallbackInfoReturnable<InteractionResult> cir) {
+        if (!this.bh_feedingTreat) return;
+        this.bh_feedingTreat = false;
+        if (!cir.getReturnValue().consumesAction()) {
+            this.eating();
+            this.gameEvent(GameEvent.EAT);
+            cir.setReturnValue(InteractionResult.SUCCESS);
+        }
+        bh_bonding.fedTreat((AbstractHorse) (Object) this, this);
     }
 
     @Inject(method = "doPlayerRide", at = @At("HEAD"), cancellable = true)
@@ -1835,6 +1879,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private void bh_shareJump(int power, CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!bh_ours() || self.level().isClientSide()) return;
+        bh_bonding.startJump(self, power);
         PacketDistributor.sendToPlayersTrackingEntity(self, new HorseJumpPayload(self.getId()));
     }
 

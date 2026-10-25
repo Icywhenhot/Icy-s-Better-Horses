@@ -1,5 +1,6 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.feature.Bonding;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
@@ -140,6 +141,12 @@ public interface IHorseData {
     int bh_getBondRemainder();
 
     void bh_setBondRemainder(int value);
+
+    Bonding bh_bonding();
+
+    String bh_getShownTreat();
+
+    void bh_showTreat(String id);
 
     long bh_getRescueReadyAt();
 

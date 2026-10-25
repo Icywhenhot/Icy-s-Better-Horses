@@ -1,5 +1,6 @@
 package icy.betterhorses.net.client.render;
 
+import icy.betterhorses.net.BhConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import icy.betterhorses.net.entity.BhBreedHorse;
 import icy.betterhorses.net.BhFeature;
@@ -155,7 +156,7 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
             BlockState ground = level.getBlockState(pos);
             if (ground.getRenderShape() == RenderShape.INVISIBLE) continue;
             HoofStepEvent step = new HoofStepEvent(entity, i, new Vec3(hx, y, hz), ground, ParticleTypes.POOF);
-            if (NeoForge.EVENT_BUS.post(step).isCanceled() || !BhFeature.HOOF_DUST.on()) continue;
+            if (NeoForge.EVENT_BUS.post(step).isCanceled() || !BhConfig.ownFeature(BhFeature.HOOF_DUST)) continue;
             for (int n = 0; n < HOOF_DUST; n++) {
                 level.addParticle(step.particle(), hx, y + 0.05, hz,
                         random.nextGaussian() * HOOF_DUST_SPREAD, HOOF_DUST_SPREAD,
