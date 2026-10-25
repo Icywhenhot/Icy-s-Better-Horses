@@ -76,6 +76,8 @@
   "screen.icys-better-horses.info.speed_value": "%s blk/s",
   "screen.icys-better-horses.info.jump_value": "%s blk",
   "screen.icys-better-horses.info.health_value": "%s HP",
+  "screen.icys-better-horses.info.treat": "Treat",
+  "screen.icys-better-horses.info.treat_unknown": "???",
   "screen.icys-better-horses.inventory.speed": "Speed: %s blk/s",
   "screen.icys-better-horses.inventory.jump": "Jump:  %s blk",
   "hud.icys-better-horses.ability.top_end": "Top End",

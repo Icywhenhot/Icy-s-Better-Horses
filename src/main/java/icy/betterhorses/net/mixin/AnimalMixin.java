@@ -1,5 +1,7 @@
 package icy.betterhorses.net.mixin;
 
+import java.util.UUID;
+import icy.betterhorses.net.feature.Bonding;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhCriteria;
@@ -90,6 +92,8 @@ public abstract class AnimalMixin {
 
         childData.bh_setGender(self.getRandom().nextBoolean() ? BhContent.MALE.key() : BhContent.FEMALE.key());
 
+        bh_bondFoal(level, selfData, partnerData, childHorse);
+
         if (childHorse instanceof BhBreedHorse) {
             bh_awardFoal(breeder, childData);
             return;
@@ -128,6 +132,23 @@ public abstract class AnimalMixin {
 
         bh_awardFoal(breeder, childData);
     }
+
+    private static void bh_bondFoal(ServerLevel level, IHorseData a, IHorseData b, AbstractHorse foal) {
+        for (UUID owner : new UUID[]{a.bh_getOwner(), b.bh_getOwner()}) {
+            ServerPlayer player = owner == null ? null : level.getServer().getPlayerList().getPlayer(owner);
+            if (player == null || player.level() != level || player.distanceToSqr(foal) > FOAL_WATCH_SQ) {
+                continue;
+            }
+            foal.setTamed(true);
+            foal.setOwner(player);
+            IHorseData data = IHorseData.of(foal);
+            data.bh_setOwner(owner);
+            data.bh_setBond(Bonding.foalBond(a, b));
+            return;
+        }
+    }
+
+    private static final double FOAL_WATCH_SQ = 16.0D * 16.0D;
 
     private static void bh_awardFoal(@Nullable ServerPlayer breeder, IHorseData childData) {
         BhCriteria.fire(breeder, BhCriteria.FOAL);

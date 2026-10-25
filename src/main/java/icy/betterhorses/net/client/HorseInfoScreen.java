@@ -1,5 +1,6 @@
 package icy.betterhorses.net.client;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import icy.betterhorses.net.BhJumpHeight;
 import icy.betterhorses.net.HorseManageAction;
 import icy.betterhorses.net.IHorseData;
@@ -204,6 +205,16 @@ public class HorseInfoScreen extends Screen {
                 Component.translatable("screen.icys-better-horses.info.health_value",
                         String.format(Locale.ROOT, "%.1f", health)),
                 health / HEALTH_MAX);
+
+        y += ROW_HEIGHT;
+
+        String shown = data.bh_getShownTreat();
+        Identifier treat = shown.isEmpty() ? null : Identifier.tryParse(shown);
+        drawLabel(gfx, font, left + PADDING, y,
+                Component.translatable("screen.icys-better-horses.info.treat"),
+                treat == null
+                        ? Component.translatable("screen.icys-better-horses.info.treat_unknown")
+                        : BuiltInRegistries.ITEM.getValue(treat).getDefaultInstance().getHoverName());
 
         renderDisownSection(gfx, font, left, top, mouseX, mouseY);
 
