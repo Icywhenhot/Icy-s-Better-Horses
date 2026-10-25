@@ -7,6 +7,7 @@ import icy.betterhorses.net.BhHorseSpawnRules;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedHorse;
+import icy.betterhorses.net.feature.Bonding;
 import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.registry.GenderType;
 import net.minecraft.core.BlockPos;
@@ -32,6 +33,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.UUID;
 
 @Mixin(Animal.class)
 public abstract class AnimalMixin {
@@ -90,6 +93,8 @@ public abstract class AnimalMixin {
 
         childData.bh_setGender(self.getRandom().nextBoolean() ? BhContent.MALE.getKey() : BhContent.FEMALE.getKey());
 
+        bh_bondFoal(level, selfData, partnerData, childHorse);
+
         if (childHorse instanceof BhBreedHorse) {
             bh_awardFoal(breeder, childData);
             return;
@@ -128,6 +133,23 @@ public abstract class AnimalMixin {
 
         bh_awardFoal(breeder, childData);
     }
+
+    private static void bh_bondFoal(ServerLevel level, IHorseData a, IHorseData b, AbstractHorse foal) {
+        for (UUID owner : new UUID[]{a.bh_getOwner(), b.bh_getOwner()}) {
+            ServerPlayer player = owner == null ? null : level.getServer().getPlayerList().getPlayer(owner);
+            if (player == null || player.level() != level || player.distanceToSqr(foal) > FOAL_WATCH_SQ) {
+                continue;
+            }
+            foal.setTamed(true);
+            foal.setOwnerUUID(owner);
+            IHorseData data = IHorseData.of(foal);
+            data.bh_setOwner(owner);
+            data.bh_setBond(Bonding.foalBond(a, b));
+            return;
+        }
+    }
+
+    private static final double FOAL_WATCH_SQ = 16.0D * 16.0D;
 
     private static void bh_awardFoal(@Nullable ServerPlayer breeder, IHorseData childData) {
         BhCriteria.fire(breeder, BhCriteria.FOAL);
