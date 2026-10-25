@@ -1,5 +1,6 @@
 package icy.betterhorses.net.client.render;
 
+import icy.betterhorses.net.BhConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import icy.betterhorses.net.BhFeature;
 import icy.betterhorses.net.api.HoofStepEvent;
@@ -55,7 +56,7 @@ public class HoofDustLayer<M extends BhHorseModel> extends RenderLayer<BhHorseRe
             if (ground.getRenderShape() == RenderShape.INVISIBLE) continue;
             HoofStepEvent step = new HoofStepEvent(horse, i, new Vec3(hx, state.y, hz), ground, ParticleTypes.POOF);
             HoofStepEvent.EVENT.invoker().onHoofStep(step);
-            if (step.canceled() || !BhFeature.HOOF_DUST.on()) continue;
+            if (step.canceled() || !BhConfig.ownFeature(BhFeature.HOOF_DUST)) continue;
             for (int n = 0; n < HOOF_DUST; n++) {
                 level.addParticle(step.particle(), hx, state.y + 0.05, hz,
                         random.nextGaussian() * HOOF_DUST_SPREAD, HOOF_DUST_SPREAD,

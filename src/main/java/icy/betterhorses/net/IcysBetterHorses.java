@@ -1,5 +1,10 @@
 package icy.betterhorses.net;
 
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.LivingEntity;
+import icy.betterhorses.net.feature.Bonding;
 import icy.betterhorses.net.network.BhRearPayload;
 import net.fabricmc.fabric.api.item.v1.DefaultItemComponentEvents;
 import net.minecraft.core.component.DataComponents;
@@ -96,13 +101,44 @@ public class IcysBetterHorses implements ModInitializer {
         registerJoinSync();
         registerEntityTracking();
         registerTickEvents();
-        net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
-            if (entity instanceof AbstractHorse horse && source.getEntity() instanceof ServerPlayer killer
-                    && killer.getUUID().equals(IHorseData.of(horse).bh_getOwner())) {
-                BhCriteria.fire(killer, BhCriteria.KILL_OWN_HORSE);
-            }
-        });
+        net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents.AFTER_DEATH.register(IcysBetterHorses::onLivingDeath);
         LOGGER.info("Icy's Better Horses initialized.");
+    }
+
+    private static void onLivingDeath(LivingEntity entity, DamageSource source) {
+        if (source.getEntity() instanceof ServerPlayer player && !(entity instanceof AbstractHorse)) {
+            bondOverKill(player, entity);
+        }
+        if (!(entity instanceof AbstractHorse horse) || !(horse.level() instanceof ServerLevel level)) {
+            return;
+        }
+        UUID ownerId = IHorseData.of(horse).bh_getOwner();
+        if (ownerId == null) {
+            return;
+        }
+        if (source.getEntity() instanceof ServerPlayer killer && killer.getUUID().equals(ownerId)) {
+            BhCriteria.fire(killer, BhCriteria.KILL_OWN_HORSE);
+        }
+        ServerPlayer owner = level.getServer().getPlayerList().getPlayer(ownerId);
+        if (owner != null && level.getGameRules().get(GameRules.SHOW_DEATH_MESSAGES)) {
+            owner.sendSystemMessage(horse.getCombatTracker().getDeathMessage());
+        }
+    }
+
+    private static void bondOverKill(ServerPlayer player, LivingEntity victim) {
+        UUID id = player.getUUID();
+        if (victim instanceof Enemy && player.getVehicle() instanceof AbstractHorse mount
+                && BhHorseKind.managed(mount) && id.equals(IHorseData.of(mount).bh_getOwner())) {
+            IHorseData.of(mount).bh_bonding().mountedKill(mount, IHorseData.of(mount));
+        }
+        for (AbstractHorse horse : HorseTracker.getAll()) {
+            IHorseData data = IHorseData.of(horse);
+            if (horse.level() == victim.level() && horse.isAlive() && horse.getLastHurtByMob() == victim
+                    && horse.tickCount - horse.getLastHurtByMobTimestamp() <= Bonding.SAVE_WINDOW
+                    && id.equals(data.bh_getOwner())) {
+                data.bh_bonding().saved(horse, data);
+            }
+        }
     }
 
     private void registerPackets() {

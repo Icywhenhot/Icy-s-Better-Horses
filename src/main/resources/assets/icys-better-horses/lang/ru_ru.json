@@ -77,6 +77,8 @@
   "screen.icys-better-horses.info.speed_value": "%s бл/с",
   "screen.icys-better-horses.info.jump_value": "%s бл",
   "screen.icys-better-horses.info.health_value": "%s ОЗ",
+  "screen.icys-better-horses.info.treat": "Лакомство",
+  "screen.icys-better-horses.info.treat_unknown": "???",
   "screen.icys-better-horses.inventory.speed": "Скорость: %s бл/с",
   "screen.icys-better-horses.inventory.jump": "Прыжок: %s бл",
   "hud.icys-better-horses.ability.top_end": "Высший класс",
