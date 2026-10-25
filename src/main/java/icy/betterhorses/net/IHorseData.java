@@ -11,6 +11,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
+import icy.betterhorses.net.feature.Bonding;
 import icy.betterhorses.net.inventory.GearSlot;
 import icy.betterhorses.net.registry.BreedType;
 import icy.betterhorses.net.registry.CommandType;
@@ -145,6 +146,12 @@ public interface IHorseData {
     int bh_getBondRemainder();
 
     void bh_setBondRemainder(int value);
+
+    Bonding bh_bonding();
+
+    String bh_getShownTreat();
+
+    void bh_showTreat(String id);
 
     long bh_getRescueReadyAt();
 

@@ -1,5 +1,8 @@
 package icy.betterhorses.net;
 
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.entity.monster.Enemy;
+import icy.betterhorses.net.feature.Bonding;
 import net.minecraft.world.item.ItemStack;
 import icy.betterhorses.net.feature.breed.Ironclad;
 import icy.betterhorses.net.network.BreedDataPayload;
@@ -108,10 +111,38 @@ public final class IcysBetterHorses implements ModInitializer {
     }
 
     private static void onLivingDeath(LivingEntity entity, DamageSource source) {
-        if (entity instanceof AbstractHorse horse && !horse.level().isClientSide()
-                && source.getEntity() instanceof ServerPlayer killer
-                && killer.getUUID().equals(IHorseData.of(horse).bh_getOwner())) {
+        if (source.getEntity() instanceof ServerPlayer player && !(entity instanceof AbstractHorse)) {
+            bondOverKill(player, entity);
+        }
+        if (!(entity instanceof AbstractHorse horse) || !(horse.level() instanceof ServerLevel level)) {
+            return;
+        }
+        UUID ownerId = IHorseData.of(horse).bh_getOwner();
+        if (ownerId == null) {
+            return;
+        }
+        if (source.getEntity() instanceof ServerPlayer killer && killer.getUUID().equals(ownerId)) {
             BhCriteria.fire(killer, BhCriteria.KILL_OWN_HORSE);
+        }
+        ServerPlayer owner = level.getServer().getPlayerList().getPlayer(ownerId);
+        if (owner != null && level.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES)) {
+            owner.sendSystemMessage(horse.getCombatTracker().getDeathMessage());
+        }
+    }
+
+    private static void bondOverKill(ServerPlayer player, LivingEntity victim) {
+        UUID id = player.getUUID();
+        if (victim instanceof Enemy && player.getVehicle() instanceof AbstractHorse mount
+                && BhHorseKind.managed(mount) && id.equals(IHorseData.of(mount).bh_getOwner())) {
+            IHorseData.of(mount).bh_bonding().mountedKill(mount, IHorseData.of(mount));
+        }
+        for (AbstractHorse horse : HorseTracker.getAll()) {
+            IHorseData data = IHorseData.of(horse);
+            if (horse.level() == victim.level() && horse.isAlive() && horse.getLastHurtByMob() == victim
+                    && horse.tickCount - horse.getLastHurtByMobTimestamp() <= Bonding.SAVE_WINDOW
+                    && id.equals(data.bh_getOwner())) {
+                data.bh_bonding().saved(horse, data);
+            }
         }
     }
 

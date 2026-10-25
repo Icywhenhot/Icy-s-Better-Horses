@@ -19,7 +19,7 @@ public enum BhFeature {
     PLOUGH_FOLIAGE("plough_foliage"),
     PLOUGH_CROPS("plough_crops", false, false),
     LEAF_PASSTHROUGH("leaf_passthrough"),
-    HOOF_DUST("hoof_dust"),
+    HOOF_DUST("hoof_dust", false, false),
     REAR_NEIGH("rear_neigh"),
     HORSE_MANAGEMENT("horse_management"),
     HORSE_REVIVAL("horse_revival"),

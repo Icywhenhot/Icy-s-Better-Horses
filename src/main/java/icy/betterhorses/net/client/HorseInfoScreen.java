@@ -9,6 +9,7 @@ import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BreedType;
 import icy.betterhorses.net.registry.GenderType;
 import net.minecraft.client.gui.Font;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -202,6 +203,15 @@ public class HorseInfoScreen extends Screen {
                 Component.translatable("screen.icys-better-horses.info.health_value",
                         String.format(Locale.ROOT, "%.1f", health)),
                 health / HEALTH_MAX);
+        y += ROW_HEIGHT;
+
+        String shown = data.bh_getShownTreat();
+        ResourceLocation treat = shown.isEmpty() ? null : ResourceLocation.tryParse(shown);
+        drawLabel(gfx, font, left + PADDING, y,
+                Component.translatable("screen.icys-better-horses.info.treat"),
+                treat == null
+                        ? Component.translatable("screen.icys-better-horses.info.treat_unknown")
+                        : BuiltInRegistries.ITEM.get(treat).getDescription());
 
         renderDisownSection(gfx, font, left, top, mouseX, mouseY);
 
