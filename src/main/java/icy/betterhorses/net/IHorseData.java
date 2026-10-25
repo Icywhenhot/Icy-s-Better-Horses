@@ -1,5 +1,6 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.feature.Bonding;
 import icy.betterhorses.net.entity.CartType;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.inventory.GearSlot;
@@ -181,6 +182,12 @@ public interface IHorseData {
     @Nullable DyeColor bh_getCarpet();
     int bh_getBondRemainder();
     void bh_setBondRemainder(int value);
+    Bonding bh_bonding();
+
+    String bh_getShownTreat();
+
+    void bh_showTreat(String id);
+
     long bh_getRescueReadyAt();
     void bh_setRescueReadyAt(long value);
 
