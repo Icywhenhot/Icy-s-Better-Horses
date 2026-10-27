@@ -38,10 +38,12 @@ public class VanillaSwapFidelityGameTest implements FabricGameTest {
         helper.assertTrue(horse.isLeashed(), "setup: horse should be leashed before conversion");
 
         AABB nearby = horse.getBoundingBox().inflate(4);
+        java.util.Set<BhBreedHorse> before = newBeforeSnapshot(helper, BhBreedHorse.class, nearby);
 
         helper.runAfterDelay(10, () -> {
             helper.assertTrue(horse.isRemoved(), "the vanilla horse should have been swapped");
-            List<BhBreedHorse> swapped = helper.getLevel().getEntitiesOfClass(BhBreedHorse.class, nearby);
+            List<BhBreedHorse> swapped = helper.getLevel().getEntitiesOfClass(BhBreedHorse.class, nearby,
+                    h -> !before.contains(h));
             helper.assertTrue(swapped.size() == 1, "expected exactly one mod breed horse after the swap, found "
                     + swapped.size());
             BhBreedHorse result = swapped.get(0);
@@ -70,11 +72,12 @@ public class VanillaSwapFidelityGameTest implements FabricGameTest {
         Horse horse = helper.spawn(EntityType.HORSE, 2, 2, 2);
         int oldId = horse.getId();
         AABB nearby = horse.getBoundingBox().inflate(4);
+        java.util.Set<Horse> before = newBeforeSnapshot(helper, Horse.class, nearby);
 
         helper.runAfterDelay(10, () -> {
             helper.assertTrue(helper.getLevel().getEntity(oldId) == null,
                     "the old vanilla horse's entity id should no longer resolve to anything");
-            List<Horse> allHorses = helper.getLevel().getEntitiesOfClass(Horse.class, nearby);
+            List<Horse> allHorses = helper.getLevel().getEntitiesOfClass(Horse.class, nearby, h -> !before.contains(h));
             helper.assertTrue(allHorses.size() == 1, "expected exactly one horse entity after the swap, found "
                     + allHorses.size());
             helper.succeed();
@@ -85,14 +88,16 @@ public class VanillaSwapFidelityGameTest implements FabricGameTest {
     public void swapKeepsSameUUID(GameTestHelper helper) {
         floor(helper);
         Horse horse = helper.spawn(EntityType.HORSE, 2, 2, 2);
-        java.util.UUID before = horse.getUUID();
+        java.util.UUID beforeUuid = horse.getUUID();
         AABB nearby = horse.getBoundingBox().inflate(4);
+        java.util.Set<BhBreedHorse> before = newBeforeSnapshot(helper, BhBreedHorse.class, nearby);
 
         helper.runAfterDelay(10, () -> {
-            List<BhBreedHorse> swapped = helper.getLevel().getEntitiesOfClass(BhBreedHorse.class, nearby);
+            List<BhBreedHorse> swapped = helper.getLevel().getEntitiesOfClass(BhBreedHorse.class, nearby,
+                    h -> !before.contains(h));
             helper.assertTrue(swapped.size() == 1, "setup: expected exactly one mod breed horse after the swap");
-            helper.assertTrue(swapped.get(0).getUUID().equals(before),
-                    "the horse's UUID should survive vanilla -> mod breed conversion - was " + before
+            helper.assertTrue(swapped.get(0).getUUID().equals(beforeUuid),
+                    "the horse's UUID should survive vanilla -> mod breed conversion - was " + beforeUuid
                             + ", now " + swapped.get(0).getUUID());
             helper.succeed();
         });
@@ -105,15 +110,23 @@ public class VanillaSwapFidelityGameTest implements FabricGameTest {
         helper.assertFalse(IHorseData.of(horse).bh_getBreed().isRealBreed(),
                 "setup: a freshly test-spawned horse should not have a real breed assigned yet");
         AABB nearby = horse.getBoundingBox().inflate(4);
+        java.util.Set<BhBreedHorse> before = newBeforeSnapshot(helper, BhBreedHorse.class, nearby);
 
         helper.runAfterDelay(10, () -> {
-            List<BhBreedHorse> swapped = helper.getLevel().getEntitiesOfClass(BhBreedHorse.class, nearby);
+            List<BhBreedHorse> swapped = helper.getLevel().getEntitiesOfClass(BhBreedHorse.class, nearby,
+                    h -> !before.contains(h));
             helper.assertTrue(swapped.size() == 1, "setup: expected exactly one mod breed horse after the swap");
             HorseBreed resultBreed = IHorseData.of(swapped.get(0)).bh_getBreed();
             helper.assertTrue(resultBreed.isRealBreed(),
                     "expected the freshly-picked breed to stick, got " + resultBreed);
             helper.succeed();
         });
+    }
+
+    // entities already in the box before the swap, so a neighbouring test's entities can't be counted
+    private static <T extends net.minecraft.world.entity.Entity> java.util.Set<T> newBeforeSnapshot(
+            GameTestHelper helper, Class<T> type, AABB box) {
+        return new java.util.HashSet<>(helper.getLevel().getEntitiesOfClass(type, box));
     }
 
     private static void floor(GameTestHelper helper) {

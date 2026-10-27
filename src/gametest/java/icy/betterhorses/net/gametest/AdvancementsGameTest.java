@@ -4,6 +4,7 @@ import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.registry.BhBreeds;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.ModEntities;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.advancements.Advancement;
@@ -63,6 +64,23 @@ public class AdvancementsGameTest implements FabricGameTest {
 
         helper.assertTrue(isDone(horse.level().getServer(), owner, "icys-better-horses:ride_or_die"),
                 "crossing max bond should award the ride_or_die advancement");
+        helper.succeed();
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void rosterSyncCountsOwnedBreedTowardGottaTameEmAll(GameTestHelper helper) {
+        AbstractHorse horse = helper.spawn(ModEntities.CLYDESDALE_HORSE, 2, 2, 2);
+        IHorseData.of(horse).bh_setBreed(HorseBreed.CLYDESDALE);
+        horse.setTamed(true);
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        IHorseData.of(horse).bh_setOwner(owner.getUUID());
+
+        IcysBetterHorses.sendRoster(owner);
+
+        Advancement all = helper.getLevel().getServer().getAdvancements()
+                .getAdvancement(new ResourceLocation("icys-better-horses:gotta_tame_em_all"));
+        helper.assertTrue(owner.getAdvancements().getOrStartProgress(all).getCriterion("clydesdale").isDone(),
+                "owning a Clydesdale should tick its box in Gotta Tame 'Em All when the roster syncs");
         helper.succeed();
     }
 

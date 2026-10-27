@@ -34,6 +34,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.block.DispenserBlock;
 
 import java.util.ArrayList;
@@ -170,6 +171,7 @@ public final class IcysBetterHorses implements ModInitializer {
     }
 
     private void onPlayerJoin(ServerPlayer player) {
+        unlockModRecipes(player);
         sendTrustList(player);
         BhNetworking.sendToPlayer(player, new ConfigSyncPayload(
                 BhConfig.disabledFeatures(),
@@ -179,6 +181,14 @@ public final class IcysBetterHorses implements ModInitializer {
                 BhConfig.tuning(),
                 BhConfig.breedingFoods()));
         BhNetworking.sendToPlayer(player, BreedDataPayload.current());
+    }
+
+    // No unlock advancements ship with the mod, so doLimitedCrafting worlds could never craft its items.
+    public static void unlockModRecipes(ServerPlayer player) {
+        List<Recipe<?>> ours = player.server.getRecipeManager().getRecipes().stream()
+                .filter(recipe -> RESOURCE_NAMESPACE.equals(recipe.getId().getNamespace()))
+                .toList();
+        player.awardRecipes(ours);
     }
 
     private void onDatapackSync(ServerPlayer player, boolean joined) {
@@ -354,7 +364,9 @@ public final class IcysBetterHorses implements ModInitializer {
             BhCriteria.fire(player, BhCriteria.OWN_HORSE);
             BhCriteria.fire(player, BhCriteria.HORSE_COUNT, roster.size());
             for (HorseRosterEntry entry : roster) {
-                BhCriteria.fireBreed(player, HorseBreed.byId(entry.breedId()));
+                // Roster ids are namespaced, HorseBreed ids aren't.
+                String id = entry.breedId();
+                BhCriteria.fireBreed(player, HorseBreed.byId(id.substring(id.indexOf(':') + 1)));
             }
         }
     }
