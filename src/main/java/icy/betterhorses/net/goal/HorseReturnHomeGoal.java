@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -17,7 +18,14 @@ import java.util.EnumSet;
 public class HorseReturnHomeGoal extends Goal {
 
     private static final double RETURN_SPEED = 1.0;
-    private static final double ARRIVED_DIST_SQ = 4.0;
+    // a share of its own ridden gallop: quick, but a rider on another horse can keep up with it
+    private static final double RETURN_PACE = 0.75;
+    private static final double WALK_PACE = 0.3;
+    private static final double ARRIVED_DIST = 2.0;
+    private static final double ARRIVED_DIST_SQ = ARRIVED_DIST * ARRIVED_DIST;
+    private static final double SLOW_DIST = 7.0;
+    // it sets off at a walk, so a player who sent it by mistake can still get to it on foot
+    private static final int WALK_START_TICKS = 60;
     private static final double NATURAL_WALK_DISTANCE = 32.0;
     private static final double NATURAL_WALK_DIST_SQ = NATURAL_WALK_DISTANCE * NATURAL_WALK_DISTANCE;
     private static final int TICKET_RADIUS = 3;
@@ -32,6 +40,7 @@ public class HorseReturnHomeGoal extends Goal {
     private ChunkPos ticketChunk;
     private int stuckCheckCooldown;
     private Vec3 lastProgressPos;
+    private int setOffAt;
 
     public HorseReturnHomeGoal(AbstractHorse horse) {
         this.horse = horse;
@@ -73,6 +82,7 @@ public class HorseReturnHomeGoal extends Goal {
     @Override
     public void start() {
         walkStartPos = horse.position();
+        setOffAt = horse.tickCount;
         ticketRefreshCooldown = 0;
         ticketChunk = null;
         stuckCheckCooldown = STUCK_CHECK_INTERVAL_TICKS;
@@ -88,6 +98,7 @@ public class HorseReturnHomeGoal extends Goal {
             refreshChunkTicket();
         }
         if (checkStuck()) return;
+        horse.getNavigation().setSpeedModifier(returnSpeed());
         if (hasWalkedNaturalLeg()) {
             teleportHome();
             return;
@@ -113,10 +124,21 @@ public class HorseReturnHomeGoal extends Goal {
             Vec3 direction = homeCenter.subtract(horse.position()).normalize();
             target = horse.position().add(direction.scale(NATURAL_WALK_DISTANCE));
         }
-        boolean reached = horse.getNavigation().moveTo(target.x, target.y, target.z, RETURN_SPEED);
+        boolean reached = horse.getNavigation().moveTo(target.x, target.y, target.z, returnSpeed());
         if (!reached) {
             teleportHome();
         }
+    }
+
+    // eases down to a walk over the last few blocks so it does not run past home
+    private double returnSpeed() {
+        BlockPos home = IHorseData.of(horse).bh_getHome();
+        double pace = horse.tickCount - setOffAt < WALK_START_TICKS ? WALK_PACE : RETURN_PACE;
+        if (home != null) {
+            double dist = Math.sqrt(horse.distanceToSqr(Vec3.atBottomCenterOf(home)));
+            pace = Math.max(WALK_PACE, pace * Mth.clamp((dist - ARRIVED_DIST) / (SLOW_DIST - ARRIVED_DIST), 0.0, 1.0));
+        }
+        return HorsePace.modifier(horse, pace, RETURN_SPEED);
     }
 
     private boolean hasWalkedNaturalLeg() {
