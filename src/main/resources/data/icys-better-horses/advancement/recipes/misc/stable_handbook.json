@@ -1,0 +1,49 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "modonomicon"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_book": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:book"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_stable_handbook_ingredients": {
+      "conditions": {
+        "items": [
+          {
+            "items": "#icys-better-horses:stable_handbook_ingredients"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "icys-better-horses:stable_handbook"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_book",
+      "has_stable_handbook_ingredients"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "icys-better-horses:stable_handbook"
+    ]
+  }
+}
