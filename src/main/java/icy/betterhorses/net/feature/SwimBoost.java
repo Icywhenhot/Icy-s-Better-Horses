@@ -3,9 +3,13 @@ package icy.betterhorses.net.feature;
 import icy.betterhorses.net.BhAttributes;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.SkeletonHorse;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,6 +26,8 @@ public final class SwimBoost implements HorseFeature {
 
     private static final double STEP_RISE = 0.15D;
 
+    private static final double RIDDEN_SWIM_CAP = 0.3D;
+
     @Override
     public void tick(AbstractHorse horse, IHorseData data) {
         if (!horse.isInWater()) {
@@ -33,6 +39,8 @@ public final class SwimBoost implements HorseFeature {
             swimSpeed.addTransientModifier(new AttributeModifier(
                     SWIM_SPEED_ID, "bh_swim_speed", SWIM_BONUS, AttributeModifier.Operation.ADDITION));
         }
+
+        capRiddenCurrent(horse);
 
         if (horse.onGround()) {
             return;
@@ -54,5 +62,24 @@ public final class SwimBoost implements HorseFeature {
         double lift = Math.min((depth - WATERLINE) * LIFT_PER_BLOCK, LIFT_CAP);
         horse.setDeltaMovement(motion.x, Math.min(motion.y + lift, LIFT_CAP), motion.z);
         horse.resetFallDistance();
+    }
+
+    private static void capRiddenCurrent(AbstractHorse horse) {
+        if (!(horse.getControllingPassenger() instanceof Player) || !horse.isControlledByLocalInstance()
+                || horse.isJumping() || swimsFast(horse)) {
+            return;
+        }
+        Vec3 motion = horse.getDeltaMovement();
+        double speed = motion.horizontalDistance();
+        if (speed > RIDDEN_SWIM_CAP) {
+            double scale = RIDDEN_SWIM_CAP / speed;
+            horse.setDeltaMovement(motion.x * scale, motion.y, motion.z * scale);
+        }
+    }
+
+    private static boolean swimsFast(AbstractHorse horse) {
+        return horse instanceof SkeletonHorse
+                || horse.hasEffect(MobEffects.DOLPHINS_GRACE)
+                || EnchantmentHelper.getDepthStrider(horse) > 0;
     }
 }
