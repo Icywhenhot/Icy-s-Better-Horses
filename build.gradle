@@ -53,6 +53,8 @@ dependencies {
 	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.0"
 	modImplementation "maven.modrinth:geckolib:${project.geckolib_version_id}"
+	modCompileOnly "maven.modrinth:jade:swJhAyak"
+	modLocalRuntime "maven.modrinth:jade:swJhAyak"
 
 	modImplementation "maven.modrinth:modonomicon:${project.modonomicon_version_id}"
 	modLocalRuntime "me.zeroeightsix:fiber:0.23.0-2"

@@ -16,6 +16,7 @@
 	"icon": "assets/icys-better-horses/icon.png",
 	"environment": "*",
 	"entrypoints": {
+		"jade": ["icy.betterhorses.net.client.BhJadePlugin"],
 		"main": [
 			"icy.betterhorses.net.IcysBetterHorses"
 		],
