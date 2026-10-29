@@ -73,6 +73,8 @@ dependencies {
 
 	modImplementation "software.bernie.geckolib:geckolib-fabric-1.20.1:${project.geckolib_version}"
 	modImplementation "maven.modrinth:patchouli:${project.patchouli_version}"
+	modCompileOnly "maven.modrinth:jade:ahavHbAT"
+	modLocalRuntime "maven.modrinth:jade:ahavHbAT"
 	modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 	modLocalRuntime "maven.modrinth:vics-point-blank:YSzjIQd7"
 	modCompileOnly "maven.modrinth:galosphere:Jqxb7gnx"

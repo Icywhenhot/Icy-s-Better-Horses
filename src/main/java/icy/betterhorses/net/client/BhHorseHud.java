@@ -73,12 +73,13 @@ public final class BhHorseHud {
         int boxWidth = contentWidth + STATS_PADDING * 2;
         int boxHeight = STATS_PADDING * 2 + lineHeight * (lines.length + 1);
         int left = (client.getWindow().getGuiScaledWidth() - boxWidth) / 2;
+        int top = JadeTooltipBox.clearTop(left, STATS_TOP, boxWidth, boxHeight);
 
-        gfx.fill(left, STATS_TOP, left + boxWidth, STATS_TOP + boxHeight, STATS_BACKGROUND);
-        gfx.fill(left, STATS_TOP, left + boxWidth, STATS_TOP + 2, STATS_ACCENT);
+        gfx.fill(left, top, left + boxWidth, top + boxHeight, STATS_BACKGROUND);
+        gfx.fill(left, top, left + boxWidth, top + 2, STATS_ACCENT);
 
         int textX = left + STATS_PADDING;
-        int textY = STATS_TOP + STATS_PADDING;
+        int textY = top + STATS_PADDING;
         gfx.drawString(client.font, title, textX, textY, STATS_TITLE_COLOR, false);
         for (int i = 0; i < lines.length; i++) {
             gfx.drawString(client.font, lines[i], textX, textY + lineHeight * (i + 1),
