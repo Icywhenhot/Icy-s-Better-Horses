@@ -190,6 +190,8 @@ dependencies {
     compileOnly "maven.modrinth:jade:eYz2YBGT"
     localRuntime "maven.modrinth:modern-companions:Tm7MSuJT"
     compileOnly "maven.modrinth:modern-companions:Tm7MSuJT"
+    localRuntime "maven.modrinth:streams-reflowing:vbJ5meb8"
+    compileOnly "maven.modrinth:streams-reflowing:vbJ5meb8"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
