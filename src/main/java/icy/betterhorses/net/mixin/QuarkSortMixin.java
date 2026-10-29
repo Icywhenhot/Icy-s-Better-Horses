@@ -6,20 +6,27 @@ import net.minecraft.world.entity.player.Player;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 
 @Pseudo
 @Mixin(targets = "org.violetmoon.quark.base.handler.SortingHandler", remap = false)
 public abstract class QuarkSortMixin {
 
-    @Shadow
-    public static void sortInventory(Container container, int from, int to, int[] locked) {
-    }
+    @Unique
+    private static MethodHandle bh_sorter;
 
-    @Inject(method = "sortInventory(Lnet/minecraft/world/entity/player/Player;Z)V",
+    @Unique
+    private static boolean bh_looked;
+
+    @Inject(method = {"sortContainer(Lnet/minecraft/world/entity/player/Player;Z)V",
+            "sortInventory(Lnet/minecraft/world/entity/player/Player;Z)V"},
             at = @At(value = "FIELD",
                     target = "Lnet/minecraft/world/entity/player/Player;containerMenu:Lnet/minecraft/world/inventory/AbstractContainerMenu;",
                     opcode = Opcodes.GETFIELD, ordinal = 0),
@@ -28,9 +35,34 @@ public abstract class QuarkSortMixin {
         if (forcePlayer || !(player.containerMenu instanceof HorseInventoryLayoutAccess access)) {
             return;
         }
-        for (HorseInventoryLayoutAccess.Storage s : access.bh_storage()) {
-            sortInventory(s.container(), s.from(), s.to(), null);
+        MethodHandle sorter = bh_sorter();
+        if (sorter == null) {
+            return;
+        }
+        try {
+            for (HorseInventoryLayoutAccess.Storage s : access.bh_storage()) {
+                sorter.invoke(s.container(), s.from(), s.to(), (int[]) null);
+            }
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
         }
         ci.cancel();
+    }
+
+    @Unique
+    private static MethodHandle bh_sorter() {
+        if (!bh_looked) {
+            bh_looked = true;
+            MethodHandles.Lookup lookup = MethodHandles.lookup();
+            MethodType type = MethodType.methodType(void.class, Container.class, int.class, int.class, int[].class);
+            for (String name : new String[]{"sortContainer", "sortInventory"}) {
+                try {
+                    bh_sorter = lookup.findStatic(lookup.lookupClass(), name, type);
+                    break;
+                } catch (ReflectiveOperationException ignored) {
+                }
+            }
+        }
+        return bh_sorter;
     }
 }
