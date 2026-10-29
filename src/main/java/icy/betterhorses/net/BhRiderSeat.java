@@ -40,16 +40,26 @@ public final class BhRiderSeat {
     }
 
     public static double seatDrop(Entity passenger) {
+        return seatDrop(passenger, passenger.getVehicle());
+    }
+
+    public static double seatDrop(Entity passenger, Entity vehicle) {
         if (TLM && BhYsmMaids.ysm(passenger)) {
             return EntityType.PLAYER.getDimensions().attachments().get(EntityAttachment.VEHICLE, 0, 0.0F).y;
         }
         if (passenger instanceof Player || !(passenger instanceof LivingEntity)
                 || passenger.getBbHeight() < HUMANOID_HEIGHT
                 || passenger.getType().is(SELF_SEATED)
-                || Math.abs(passenger.getAttachments().get(EntityAttachment.VEHICLE, 0, 0.0F).y) > 1.0E-4D) {
+                || Math.abs(ownSeat(passenger, vehicle)) > 1.0E-4D) {
             return 0.0D;
         }
         return passenger.getBbHeight() * PLAYER_SEAT_SHARE;
+    }
+
+    private static double ownSeat(Entity passenger, Entity vehicle) {
+        return vehicle == null
+                ? passenger.getAttachments().get(EntityAttachment.VEHICLE, 0, 0.0F).y
+                : passenger.getVehicleAttachmentPoint(vehicle).y;
     }
 
     public static void publish(int horseId, Vec3 shift) {

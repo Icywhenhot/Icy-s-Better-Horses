@@ -1681,7 +1681,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             }
             cir.setReturnValue(HorseCartEntity
                     .benchSeatOffset(self, BhHorseSteering.benchSeatIndex(self, passenger))
-                    .subtract(0.0D, BhRiderSeat.seatDrop(passenger), 0.0D));
+                    .subtract(0.0D, BhRiderSeat.seatDrop(passenger, self), 0.0D));
             return;
         }
 
@@ -1691,7 +1691,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             cir.setReturnValue(cir.getReturnValue().add(lift));
         }
 
-        double drop = BhRiderSeat.seatDrop(passenger);
+        double drop = BhRiderSeat.seatDrop(passenger, self);
         if (drop != 0.0D) {
             cir.setReturnValue(cir.getReturnValue().subtract(0.0D, drop, 0.0D));
         }

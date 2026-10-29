@@ -188,6 +188,8 @@ dependencies {
     localRuntime "maven.modrinth:yacl:7TVdVtxF"
     localRuntime "maven.modrinth:jade:eYz2YBGT"
     compileOnly "maven.modrinth:jade:eYz2YBGT"
+    localRuntime "maven.modrinth:modern-companions:Tm7MSuJT"
+    compileOnly "maven.modrinth:modern-companions:Tm7MSuJT"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.0"
