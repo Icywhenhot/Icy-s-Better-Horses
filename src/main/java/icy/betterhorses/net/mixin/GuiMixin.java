@@ -2,6 +2,7 @@ package icy.betterhorses.net.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import icy.betterhorses.net.client.JadeTooltipBox;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
@@ -118,7 +119,7 @@ public abstract class GuiMixin {
         int scaledWidth = this.minecraft.getWindow().getGuiScaledWidth();
         int scaledHeight = this.minecraft.getWindow().getGuiScaledHeight();
         int left = (scaledWidth - boxWidth) / 2;
-        int top = BH_STATS_HUD_TOP;
+        int top = JadeTooltipBox.clearTop(left, BH_STATS_HUD_TOP, boxWidth, boxHeight);
 
         gfx.fill(left, top, left + boxWidth, top + boxHeight, BH_STATS_HUD_BACKGROUND);
         gfx.fill(left, top, left + boxWidth, top + 2, BH_STATS_HUD_ACCENT);
