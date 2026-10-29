@@ -30,6 +30,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Locale;
 import icy.betterhorses.net.client.BhAbilityBadges;
 import icy.betterhorses.net.client.BhInventoryEffects;
+import icy.betterhorses.net.client.JadeTooltipBox;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
 
 @Mixin(Gui.class)
@@ -79,6 +80,11 @@ public abstract class GuiMixin {
     @Unique private static final int BH_STATS_HUD_BACKGROUND = 0xA0101010;
     @Unique private static final int BH_STATS_HUD_ACCENT = 0xD06E5324;
 
+    @Inject(method = "render", at = @At("HEAD"))
+    private void bh_forgetJadeTooltip(GuiGraphics gfx, DeltaTracker deltaTracker, CallbackInfo ci) {
+        JadeTooltipBox.clear();
+    }
+
     @Inject(method = "render", at = @At("TAIL"))
     private void bh_renderHorseStatsHud(GuiGraphics gfx, DeltaTracker deltaTracker, CallbackInfo ci) {
         if (this.minecraft.player == null || this.minecraft.level == null || this.minecraft.screen != null) {
@@ -119,7 +125,7 @@ public abstract class GuiMixin {
         int scaledWidth = this.minecraft.getWindow().getGuiScaledWidth();
         int scaledHeight = this.minecraft.getWindow().getGuiScaledHeight();
         int left = (scaledWidth - boxWidth) / 2;
-        int top = BH_STATS_HUD_TOP;
+        int top = JadeTooltipBox.clearTop(left, BH_STATS_HUD_TOP, boxWidth, boxHeight);
 
         gfx.fill(left, top, left + boxWidth, top + boxHeight, BH_STATS_HUD_BACKGROUND);
         gfx.fill(left, top, left + boxWidth, top + 2, BH_STATS_HUD_ACCENT);
