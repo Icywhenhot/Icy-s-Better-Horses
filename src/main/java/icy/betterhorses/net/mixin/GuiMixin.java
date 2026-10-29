@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.client.JadeTooltipBox;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhJumpHeight;
 import icy.betterhorses.net.IHorseData;
@@ -79,7 +80,7 @@ public abstract class GuiMixin {
         int scaledWidth = this.minecraft.getWindow().getGuiScaledWidth();
         int scaledHeight = this.minecraft.getWindow().getGuiScaledHeight();
         int left = (scaledWidth - boxWidth) / 2;
-        int top = BH_STATS_HUD_TOP;
+        int top = JadeTooltipBox.clearTop(left, BH_STATS_HUD_TOP, boxWidth, boxHeight);
 
         GuiGraphicsExtractor gfx = new GuiGraphicsExtractor(this.minecraft, this.guiRenderState, scaledWidth, scaledHeight);
 
