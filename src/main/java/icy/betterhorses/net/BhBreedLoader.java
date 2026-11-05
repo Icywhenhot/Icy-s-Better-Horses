@@ -73,10 +73,12 @@ public final class BhBreedLoader {
         }
         int rows = clampRows(root, "chest_rows", fallback.chestRows());
         int bonded = clampRows(root, "bonded_chest_rows", Math.max(fallback.bondedChestRows(), rows));
+        int mid = clampRows(root, "mid_chest_rows", Math.max(fallback.midChestRows(), rows));
         int weight = root.has("spawn_weight")
                 ? Math.max(0, root.get("spawn_weight").getAsInt())
                 : fallback.spawnWeight();
-        return new BhBreedData(arch, rows, Math.max(bonded, rows), weight);
+        bonded = Math.max(bonded, rows);
+        return new BhBreedData(arch, rows, Math.clamp(mid, rows, bonded), bonded, weight);
     }
 
     private static @Nullable ArchetypeType resolveArchetype(String wanted) {

@@ -1,0 +1,71 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:donkeys/breed_pega_donkey",
+  "category": "icys-better-horses:donkeys",
+  "name": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.name",
+  "icon": {
+    "id": "icys-better-horses:pega_donkey_spawn_egg"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": -6,
+  "y": 2,
+  "sort_number": 5,
+  "parents": [
+    {
+      "entry": "icys-better-horses:donkeys/root"
+    }
+  ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.about.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.about.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "ability",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.ability.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.ability.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "seat",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.seat.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.seat.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "recovery",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.recovery.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.recovery.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "rider_heal",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.rider_heal.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.rider_heal.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "spawns",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.spawns.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.spawns.text"
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "id": "coats",
+      "entity": "icys-better-horses:pega_donkey"
+    }
+  ]
+}

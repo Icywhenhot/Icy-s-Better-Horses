@@ -9,7 +9,10 @@ public enum BreedArchetype {
     WESTERN(0.1852D, 0.3472D, 15.0D, 30.0D, 0.57D, 0.84D),
     DRAFT(0.1620D, 0.2315D, 35.0D, 50.0D, 0.38D, 0.72D),
     PONY(0.1852D, 0.3009D, 25.0D, 40.0D, 0.57D, 0.84D),
-    NONE(0.1125D, 0.3375D, 15.0D, 30.0D, 0.40D, 1.00D);
+    DONKEY(0.1852D, 0.2778D, 35.0D, 50.0D, 0.545D, 0.803D),
+    NONE(0.1125D, 0.3375D, 15.0D, 30.0D, 0.40D, 1.00D),
+    SKELETON(10.0D / 43.2D, 15.0D / 43.2D, 15.0D, 20.0D, BhJumpHeight.strength(3.0D), BhJumpHeight.strength(5.0D)),
+    ZOMBIE(8.0D / 43.2D, 11.0D / 43.2D, 39.0D, 54.0D, BhJumpHeight.strength(2.0D), BhJumpHeight.strength(4.0D));
 
     private final double lowSpeed;
     private final double highSpeed;
@@ -68,9 +71,9 @@ public enum BreedArchetype {
     public double bashDamage() {
         return switch (this) {
             case RACE -> 0.6D;
-            case WAR -> 1.5D;
+            case WAR, ZOMBIE -> 1.5D;
             case DRAFT -> 1.25D;
-            case PONY -> 0.75D;
+            case PONY, SKELETON -> 0.75D;
             default -> 1.0D;
         };
     }

@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
+import java.util.EnumMap;
 import java.util.Map;
 
 public final class HorseStabilizerLayer<T extends AbstractHorse, M extends EntityModel<T>> extends RenderLayer<T, M> {
@@ -43,7 +44,7 @@ public final class HorseStabilizerLayer<T extends AbstractHorse, M extends Entit
             new HorseStabilizerGeoRenderer(new BelgianStabilizerGeoModel()), BREED_FEET_Y, 0.0D);
 
 
-    private static final Map<StabilizerBody, Variant> BY_BODY = Map.of(
+    private static final Map<StabilizerBody, Variant> BY_BODY = new EnumMap<>(Map.of(
             StabilizerBody.ICELANDIC, ICELANDIC,
             StabilizerBody.FRIESIAN, FRIESIAN,
             StabilizerBody.MEDIUM, MEDIUM,
@@ -51,7 +52,24 @@ public final class HorseStabilizerLayer<T extends AbstractHorse, M extends Entit
             StabilizerBody.HAFLINGER, HAFLINGER,
             StabilizerBody.PERCHERON, PERCHERON,
             StabilizerBody.SHIRE, SHIRE,
-            StabilizerBody.BELGIAN, BELGIAN);
+            StabilizerBody.BELGIAN, BELGIAN));
+
+    static {
+        BY_BODY.put(StabilizerBody.ANDALUSIAN_DONKEY, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("andalusian_donkey")), BREED_FEET_Y, 0.0D));
+        BY_BODY.put(StabilizerBody.ASINARA_DONKEY, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("asinara_donkey")), BREED_FEET_Y, 0.0D));
+        BY_BODY.put(StabilizerBody.MAMMOTH_DONKEY, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("mammoth_donkey")), BREED_FEET_Y, 0.0D));
+        BY_BODY.put(StabilizerBody.MINIATURE_DONKEY, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("miniature_donkey")), BREED_FEET_Y, 0.0D));
+        BY_BODY.put(StabilizerBody.PEGA_DONKEY, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("pega_donkey")), BREED_FEET_Y, 0.0D));
+        BY_BODY.put(StabilizerBody.POITOU_DONKEY, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("poitou_donkey")), BREED_FEET_Y, 0.0D));
+        BY_BODY.put(StabilizerBody.ZAMORANO_DONKEY, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("zamorano_donkey")), BREED_FEET_Y, 0.0D));
+    }
 
     private static final float MODEL_ROLL_DEGREES = 180.0F;
 

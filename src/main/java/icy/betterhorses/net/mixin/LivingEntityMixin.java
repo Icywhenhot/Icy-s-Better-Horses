@@ -6,6 +6,7 @@ import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.feature.breed.HardyNorthern;
+import icy.betterhorses.net.feature.breed.ThickHide;
 import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
@@ -13,6 +14,7 @@ import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -60,6 +62,10 @@ public abstract class LivingEntityMixin extends Entity {
             return;
         }
         LivingEntity self = (LivingEntity) (Object) this;
+        if (effect.getEffect().value().getCategory() == MobEffectCategory.HARMFUL && ThickHide.immune(self)) {
+            cir.setReturnValue(false);
+            return;
+        }
         AbstractHorse warden = HardyNorthern.warden(self);
         if (warden == null) {
             return;

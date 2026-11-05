@@ -50,6 +50,10 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
         return type.coats();
     }
 
+    protected boolean bhIsDonkey() {
+        return false;
+    }
+
     public static AttributeSupplier.Builder bhAttributes(ArchetypeType arch) {
         return AbstractHorse.createBaseHorseAttributes()
                 .add(Attributes.MAX_HEALTH, arch.midHealth())
@@ -158,7 +162,17 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
     public AgeableMob getBreedOffspring(
             ServerLevel level,
             AgeableMob partner) {
+        if (partner instanceof AbstractHorse horse && IHorseData.of(horse).bh_getBreed().isUndead()) {
+            return null;
+        }
         if (partner instanceof BhBreedHorse other) {
+            if (bhIsDonkey() != other.bhIsDonkey()) {
+                AbstractHorse mule = EntityType.MULE.create(level);
+                if (mule != null) {
+                    setOffspringAttributes(other, mule);
+                }
+                return mule;
+            }
             boolean sameBreed = other.getType() == this.getType();
             BhBreedHorse source = sameBreed || this.random.nextBoolean() ? this : other;
             Entity created =

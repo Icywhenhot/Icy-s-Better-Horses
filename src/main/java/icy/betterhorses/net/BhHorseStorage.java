@@ -2,6 +2,7 @@ package icy.betterhorses.net;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -9,11 +10,26 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.BundleItem;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import icy.betterhorses.net.entity.BhBreedDonkey;
 import org.jetbrains.annotations.Nullable;
 
 public final class BhHorseStorage {
 
     private BhHorseStorage() {}
+
+    public static int chestLimit(AbstractHorse horse, ItemStack stack) {
+        int limit = stack.getMaxStackSize();
+        if (!(horse instanceof BhBreedDonkey) || stack.isEmpty() || limit != 1 && limit != 16
+                || !stack.canFitInsideContainerItems() || stack.getItem() instanceof BundleItem
+                || stack.has(DataComponents.CONTAINER) || stack.has(DataComponents.BUNDLE_CONTENTS)
+                || stack.has(DataComponents.CONTAINER_LOOT)
+                || stack.getCapability(Capabilities.ItemHandler.ITEM) != null) {
+            return limit;
+        }
+        return limit == 16 ? 32 : 8;
+    }
 
     public static void writeContainer(CompoundTag tag, String key, SimpleContainer container,
                                       HolderLookup.Provider registries) {
@@ -79,8 +95,8 @@ public final class BhHorseStorage {
     public static void dropContainerContents(AbstractHorse horse, ServerLevel level, SimpleContainer container) {
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack stack = container.removeItemNoUpdate(i);
-            if (!stack.isEmpty()) {
-                horse.spawnAtLocation(stack);
+            while (!stack.isEmpty()) {
+                horse.spawnAtLocation(stack.split(stack.getMaxStackSize()));
             }
         }
     }

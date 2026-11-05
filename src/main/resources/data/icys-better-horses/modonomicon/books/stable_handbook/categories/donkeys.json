@@ -1,0 +1,9 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.donkeys.name",
+  "icon": {
+    "id": "minecraft:chest"
+  },
+  "background": "icys-better-horses:textures/gui/handbook_bg.png",
+  "sort_number": 4,
+  "description": "book.icys-better-horses.stable_handbook.donkeys.description"
+}

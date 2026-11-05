@@ -1,5 +1,13 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.feature.breed.FarmCompanion;
+import icy.betterhorses.net.feature.breed.FieldHand;
+import icy.betterhorses.net.feature.breed.MammothWorker;
+import icy.betterhorses.net.feature.breed.ThickHide;
+import icy.betterhorses.net.feature.breed.DrownedRider;
+import icy.betterhorses.net.feature.breed.RottenRations;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingKnockBackEvent;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.LivingEntity;
@@ -103,6 +111,14 @@ public class IcysBetterHorses {
         BhContent.register(modEventBus);
         modEventBus.addListener(this::onCommonSetup);
         NeoForge.EVENT_BUS.addListener(BhBreedLoader::register);
+        NeoForge.EVENT_BUS.addListener(FarmCompanion::onBabySpawn);
+        NeoForge.EVENT_BUS.addListener(FarmCompanion::onAnimalTick);
+        NeoForge.EVENT_BUS.addListener(FieldHand::onTrample);
+        NeoForge.EVENT_BUS.addListener(this::donkeyDamage);
+        NeoForge.EVENT_BUS.addListener(this::donkeyKnockback);
+        NeoForge.EVENT_BUS.addListener(DrownedRider::breathe);
+        NeoForge.EVENT_BUS.addListener(RottenRations::damage);
+        NeoForge.EVENT_BUS.addListener(RottenRations::hit);
         NeoForge.EVENT_BUS.addListener(BhClassLoader::register);
         NeoForge.EVENT_BUS.addListener(BhCommands::register);
         NeoForge.EVENT_BUS.addListener(this::onPlayerJoin);
@@ -168,6 +184,17 @@ public class IcysBetterHorses {
         return loc != null
                 ? ResourceKey.create(BhRegistries.COMMAND_TYPES, loc)
                 : null;
+    }
+
+    private void donkeyDamage(LivingIncomingDamageEvent event) {
+        event.setAmount(event.getAmount() * ThickHide.damageScale(event.getEntity(), event.getSource())
+                * MammothWorker.resistanceScale(event.getEntity()));
+    }
+
+    private void donkeyKnockback(LivingKnockBackEvent event) {
+        if (MammothWorker.braced(event.getEntity())) {
+            event.setCanceled(true);
+        }
     }
 
     public static void sendTrustList(ServerPlayer player) {
@@ -513,6 +540,11 @@ public class IcysBetterHorses {
             return;
         }
         if (horse.getControllingPassenger() != null && horse.getControllingPassenger() != player) {
+            return;
+        }
+        if (horse.getControllingPassenger() == player && horse.isInWater()
+                && IHorseData.of(horse).bh_getBreed().isSkeleton()) {
+            ((IHorseAbilityHost) horse).bh_activateAbility(BhContent.DROWNED_RIDER.getKey());
             return;
         }
         horse.standIfPossible();

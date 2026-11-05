@@ -14,6 +14,19 @@
     "icys-better-horses:shire_horse",
     "icys-better-horses:belgian_horse",
     "icys-better-horses:clydesdale_horse",
-    "icys-better-horses:haflinger_horse"
+    "icys-better-horses:haflinger_horse",
+    "icys-better-horses:andalusian_donkey",
+    "icys-better-horses:asinara_donkey",
+    "icys-better-horses:mammoth_donkey",
+    "icys-better-horses:miniature_donkey",
+    "icys-better-horses:pega_donkey",
+    "icys-better-horses:poitou_donkey",
+    "icys-better-horses:zamorano_donkey",
+    "icys-better-horses:large_skeleton_horse",
+    "icys-better-horses:medium_skeleton_horse",
+    "icys-better-horses:small_skeleton_horse",
+    "icys-better-horses:large_zombie_horse",
+    "icys-better-horses:medium_zombie_horse",
+    "icys-better-horses:small_zombie_horse"
   ]
 }

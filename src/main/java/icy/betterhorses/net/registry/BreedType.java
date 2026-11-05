@@ -14,6 +14,7 @@ public final class BreedType {
     private final BreedCoatSet coats;
     private final ResourceKey<? extends EntityType<?>> entityType;
     private final Integer chestRowsOverride;
+    private final Integer midChestRowsOverride;
     private final Integer bondedChestRowsOverride;
     private final List<ResourceKey<AbilityType>> abilities;
     private final StabilizerBody stabilizerBody;
@@ -23,6 +24,7 @@ public final class BreedType {
         this.coats = builder.coats;
         this.entityType = builder.entityType;
         this.chestRowsOverride = builder.chestRowsOverride;
+        this.midChestRowsOverride = builder.midChestRowsOverride;
         this.bondedChestRowsOverride = builder.bondedChestRowsOverride;
         this.abilities = new ArrayList<>(builder.abilities);
         this.stabilizerBody = builder.stabilizerBody;
@@ -42,6 +44,10 @@ public final class BreedType {
 
     public Integer chestRowsOverride() {
         return chestRowsOverride;
+    }
+
+    public Integer midChestRowsOverride() {
+        return midChestRowsOverride;
     }
 
     public Integer bondedChestRowsOverride() {
@@ -81,6 +87,7 @@ public final class BreedType {
         private BreedCoatSet coats;
         private ResourceKey<? extends EntityType<?>> entityType;
         private Integer chestRowsOverride;
+        private Integer midChestRowsOverride;
         private Integer bondedChestRowsOverride;
         private final List<ResourceKey<AbilityType>> abilities = new ArrayList<>();
         private StabilizerBody stabilizerBody = StabilizerBody.GENERIC;
@@ -101,6 +108,11 @@ public final class BreedType {
 
         public Builder chestRows(int rows) {
             this.chestRowsOverride = rows;
+            return this;
+        }
+
+        public Builder midChestRows(int rows) {
+            this.midChestRowsOverride = rows;
             return this;
         }
 

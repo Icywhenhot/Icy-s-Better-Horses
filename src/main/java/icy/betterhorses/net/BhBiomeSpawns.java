@@ -22,6 +22,9 @@ public final class BhBiomeSpawns {
     private static final TagKey<Biome> MODDED_SPAWNS = TagKey.create(Registries.BIOME,
             ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "spawns_horses_modded"));
 
+    private static final TagKey<Biome> DONKEY_SPAWNS = TagKey.create(Registries.BIOME,
+            ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "spawns_donkeys"));
+
     private BhBiomeSpawns() {}
 
     private static boolean moddedSpawn(Holder<Biome> biome) {
@@ -44,7 +47,13 @@ public final class BhBiomeSpawns {
 
         @Override
         public void modify(Holder<Biome> biome, Phase phase, ModifiableBiomeInfo.BiomeInfo.Builder builder) {
-            if (phase != Phase.ADD || !(biome.is(SPAWNS) || moddedSpawn(biome))) return;
+            if (phase != Phase.ADD) return;
+            if (biome.is(DONKEY_SPAWNS) && biome.value().getMobSettings().getMobs(MobCategory.CREATURE).unwrap().stream()
+                    .noneMatch(spawn -> spawn.type == EntityType.DONKEY)) {
+                builder.getMobSpawnSettings().addSpawn(MobCategory.CREATURE,
+                        new MobSpawnSettings.SpawnerData(EntityType.DONKEY, 1, 1, 3));
+            }
+            if (!(biome.is(SPAWNS) || moddedSpawn(biome))) return;
 
             BhTuning tuning = BhConfig.tuning();
             if (tuning.spawnWeight() <= 0) return;

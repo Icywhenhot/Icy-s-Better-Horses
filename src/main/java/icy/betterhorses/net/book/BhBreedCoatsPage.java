@@ -11,34 +11,68 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 
 import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BhBreedCoatsPage extends BookPage {
 
     public static final ResourceLocation ID =
             ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "breed_coats");
 
-    private final String entityId;
+    private static final int MAX_ENTITIES = 16;
+
+    private final List<String> entityIds;
 
     public BhBreedCoatsPage(String entityId, String anchor, BookCondition condition) {
+        this(List.of(entityId), anchor, condition);
+    }
+
+    public BhBreedCoatsPage(List<String> entityIds, String anchor, BookCondition condition) {
         super(anchor, condition);
-        this.entityId = entityId;
+        if (entityIds.isEmpty() || entityIds.size() > MAX_ENTITIES) {
+            throw new IllegalArgumentException("invalid preview model count");
+        }
+        this.entityIds = List.copyOf(entityIds);
     }
 
     public static BhBreedCoatsPage fromJson(JsonObject json, HolderLookup.Provider registries) {
-        String entityId = GsonHelper.getAsString(json, "entity");
+        List<String> entityIds = new ArrayList<>();
+        if (json.has("entities")) {
+            var entities = GsonHelper.getAsJsonArray(json, "entities");
+            if (entities.isEmpty() || entities.size() > MAX_ENTITIES) {
+                throw new IllegalArgumentException("invalid preview model count");
+            }
+            for (var entity : entities) {
+                entityIds.add(GsonHelper.convertToString(entity, "entity"));
+            }
+        } else {
+            entityIds.add(GsonHelper.getAsString(json, "entity"));
+        }
         String anchor = GsonHelper.getAsString(json, "anchor", GsonHelper.getAsString(json, "id", ""));
         BookCondition condition = json.has("condition")
                 ? BookCondition.fromJson(ID, json.getAsJsonObject("condition"), registries)
                 : new BookNoneCondition();
-        return new BhBreedCoatsPage(entityId, anchor, condition);
+        return new BhBreedCoatsPage(entityIds, anchor, condition);
     }
 
     public static BhBreedCoatsPage fromNetwork(RegistryFriendlyByteBuf buffer) {
-        return new BhBreedCoatsPage(buffer.readUtf(), buffer.readUtf(), BookCondition.fromNetwork(buffer));
+        int count = buffer.readVarInt();
+        if (count < 1 || count > MAX_ENTITIES) {
+            throw new IllegalArgumentException("invalid preview model count");
+        }
+        List<String> entityIds = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            entityIds.add(buffer.readUtf());
+        }
+        return new BhBreedCoatsPage(entityIds, buffer.readUtf(), BookCondition.fromNetwork(buffer));
     }
 
     public String getEntityId() {
-        return entityId;
+        return entityIds.getFirst();
+    }
+
+    public List<String> getEntityIds() {
+        return entityIds;
     }
 
     @Override
@@ -48,12 +82,15 @@ public class BhBreedCoatsPage extends BookPage {
 
     @Override
     public void toNetwork(RegistryFriendlyByteBuf buffer) {
-        buffer.writeUtf(entityId);
+        buffer.writeVarInt(entityIds.size());
+        for (String entityId : entityIds) {
+            buffer.writeUtf(entityId);
+        }
         super.toNetwork(buffer);
     }
 
     @Override
     public boolean matchesQuery(String query) {
-        return entityId.toLowerCase(Locale.ROOT).contains(query);
+        return entityIds.stream().anyMatch(id -> id.toLowerCase(Locale.ROOT).contains(query));
     }
 }

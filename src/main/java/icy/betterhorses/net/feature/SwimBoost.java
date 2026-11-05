@@ -37,6 +37,13 @@ public final class SwimBoost implements HorseFeature {
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data) {
+        if (horse instanceof SkeletonHorse || data.bh_getBreed().isSkeleton()) {
+            AttributeInstance swimSpeed = horse.getAttribute(NeoForgeMod.SWIM_SPEED);
+            if (swimSpeed != null) {
+                swimSpeed.removeModifier(SWIM_SPEED_ID);
+            }
+            return;
+        }
         if (!horse.isInWater()) {
             return;
         }
@@ -98,6 +105,7 @@ public final class SwimBoost implements HorseFeature {
 
     private static boolean swimsFast(AbstractHorse horse) {
         return horse instanceof SkeletonHorse
+                || IHorseData.of(horse).bh_getBreed().isSkeleton()
                 || horse.hasEffect(MobEffects.DOLPHINS_GRACE)
                 || horse.getAttributeValue(Attributes.WATER_MOVEMENT_EFFICIENCY) > 0.0D;
     }

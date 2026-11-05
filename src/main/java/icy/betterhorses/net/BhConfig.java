@@ -213,7 +213,7 @@ public final class BhConfig {
             return false;
         }
         for (BhAbility ability : BhAbility.values()) {
-            if (ability.breed() == breed && abilities.getOrDefault(ability, true)) {
+            if (ability.appliesTo(breed) && abilities.getOrDefault(ability, true)) {
                 return true;
             }
         }

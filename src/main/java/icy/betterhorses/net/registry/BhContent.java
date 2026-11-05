@@ -1,6 +1,9 @@
 package icy.betterhorses.net.registry;
 
 import icy.betterhorses.net.IcysBetterHorses;
+import icy.betterhorses.net.BhJumpHeight;
+import icy.betterhorses.net.feature.breed.DrownedRider;
+import icy.betterhorses.net.feature.breed.RottenRations;
 import icy.betterhorses.net.entity.BhBreedCoats;
 import icy.betterhorses.net.feature.breed.BrickBreak;
 import icy.betterhorses.net.feature.breed.EasyKeeper;
@@ -11,6 +14,14 @@ import icy.betterhorses.net.feature.breed.Hearthlight;
 import icy.betterhorses.net.feature.breed.Intimidation;
 import icy.betterhorses.net.feature.breed.Ironclad;
 import icy.betterhorses.net.feature.breed.SecondChance;
+import icy.betterhorses.net.feature.breed.Skittish;
+import icy.betterhorses.net.feature.breed.FieldHand;
+import icy.betterhorses.net.feature.breed.CoastalScout;
+import icy.betterhorses.net.feature.breed.MammothWorker;
+import icy.betterhorses.net.feature.breed.MiniatureCompanion;
+import icy.betterhorses.net.feature.breed.PegaCompanion;
+import icy.betterhorses.net.feature.breed.ThickHide;
+import icy.betterhorses.net.feature.breed.WinterFeet;
 import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
 import icy.betterhorses.net.feature.breed.StandstillBurst;
 import icy.betterhorses.net.feature.breed.StockHorse;
@@ -23,6 +34,7 @@ import net.minecraft.world.entity.EntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import java.util.List;
 
 public final class BhContent {
 
@@ -64,12 +76,31 @@ public final class BhContent {
             .fallDamageWaiver(15.0D).stepHeight(2.0D)
             .build());
 
+    public static final DeferredHolder<ArchetypeType, ArchetypeType> DONKEY = ARCHETYPES.register("donkey", () -> ArchetypeType.builder()
+            .speed(0.1852D, 0.2778D).health(35.0D, 50.0D).jump(0.545D, 0.803D)
+            .bashDamage(1.5D).bashKnockback(1.0D)
+            .defaultChestRows(4).allowsChestAndRiders(false)
+            .baseSpookChance(0.0D).stepHeight(2.0D)
+            .build());
+
     public static final DeferredHolder<ArchetypeType, ArchetypeType> NONE = ARCHETYPES.register("none", () -> ArchetypeType.builder()
             .speed(0.1125D, 0.3375D).health(15.0D, 30.0D).jump(0.40D, 1.00D)
             .bashDamage(1.0D).bashKnockback(1.0D)
             .defaultChestRows(3).allowsChestAndRiders(false)
             .baseSpookChance(0.0D)
             .build());
+
+    public static final DeferredHolder<ArchetypeType, ArchetypeType> SKELETON = ARCHETYPES.register("skeleton", () -> ArchetypeType.builder()
+            .speed(10.0D / 43.2D, 15.0D / 43.2D).health(15.0D, 20.0D)
+            .jump(BhJumpHeight.strength(3.0D), BhJumpHeight.strength(5.0D))
+            .bashDamage(0.75D).bashKnockback(1.0D).defaultChestRows(3)
+            .baseSpookChance(0.0D).build());
+
+    public static final DeferredHolder<ArchetypeType, ArchetypeType> ZOMBIE = ARCHETYPES.register("zombie", () -> ArchetypeType.builder()
+            .speed(8.0D / 43.2D, 11.0D / 43.2D).health(39.0D, 54.0D)
+            .jump(BhJumpHeight.strength(2.0D), BhJumpHeight.strength(4.0D))
+            .bashDamage(1.5D).bashKnockback(1.0D).defaultChestRows(3)
+            .baseSpookChance(0.0D).build());
 
     public static final DeferredRegister<AbilityType> ABILITIES =
             DeferredRegister.create(BhRegistries.ABILITY_TYPES, IcysBetterHorses.MOD_ID);
@@ -102,6 +133,26 @@ public final class BhContent {
             ABILITIES.register("easy_keeper", () -> new AbilityType(EasyKeeper::new, true));
     public static final DeferredHolder<AbilityType, AbilityType> STOCK_HORSE =
             ABILITIES.register("stock_horse", () -> new AbilityType(StockHorse::new, true));
+    public static final DeferredHolder<AbilityType, AbilityType> SKITTISH =
+            ABILITIES.register("skittish", () -> new AbilityType(Skittish::new, true));
+    public static final DeferredHolder<AbilityType, AbilityType> FIELD_HAND =
+            ABILITIES.register("field_hand", () -> new AbilityType(FieldHand::new, true));
+    public static final DeferredHolder<AbilityType, AbilityType> COASTAL_SCOUT =
+            ABILITIES.register("coastal_scout", () -> new AbilityType(CoastalScout::new, true));
+    public static final DeferredHolder<AbilityType, AbilityType> MAMMOTH_WORKER =
+            ABILITIES.register("mammoth_worker", () -> new AbilityType(MammothWorker::new, true));
+    public static final DeferredHolder<AbilityType, AbilityType> FARM_COMPANION =
+            ABILITIES.register("farm_companion", () -> new AbilityType(MiniatureCompanion::new, true));
+    public static final DeferredHolder<AbilityType, AbilityType> PEGA_COMPANION =
+            ABILITIES.register("pega_companion", () -> new AbilityType(PegaCompanion::new, true));
+    public static final DeferredHolder<AbilityType, AbilityType> THICK_HIDE =
+            ABILITIES.register("thick_hide", () -> new AbilityType(ThickHide::new, true));
+    public static final DeferredHolder<AbilityType, AbilityType> WINTER_FEET =
+            ABILITIES.register("winter_feet", () -> new AbilityType(WinterFeet::new, true));
+    public static final DeferredHolder<AbilityType, AbilityType> DROWNED_RIDER =
+            ABILITIES.register("drowned_rider", () -> new AbilityType(DrownedRider::new, true));
+    public static final DeferredHolder<AbilityType, AbilityType> ROTTEN_RATIONS =
+            ABILITIES.register("rotten_rations", () -> new AbilityType(RottenRations::new, true));
 
     public static final DeferredRegister<BreedType> BREEDS =
             DeferredRegister.create(BhRegistries.BREED_TYPES, IcysBetterHorses.MOD_ID);
@@ -239,6 +290,91 @@ public final class BhContent {
                     .ability(STOCK_HORSE.getKey())
                     .stabilizerBody(StabilizerBody.MEDIUM)
                     .build());
+
+    public static final DeferredHolder<BreedType, BreedType> ANDALUSIAN_DONKEY = BREEDS.register("andalusian_donkey", () ->
+            BreedType.builder(DONKEY.getKey())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.ANDALUSIAN_DONKEY.folder(), BhBreedCoats.ANDALUSIAN_DONKEY.coatIds(), BhBreedCoats.ANDALUSIAN_DONKEY.hasFoalVariant())
+                    .entityType(entity("andalusian_donkey"))
+                    .chestRows(4).midChestRows(5).bondedChestRows(6)
+                    .ability(FIELD_HAND.getKey())
+                    .stabilizerBody(StabilizerBody.ANDALUSIAN_DONKEY)
+                    .build());
+
+    public static final DeferredHolder<BreedType, BreedType> ASINARA_DONKEY = BREEDS.register("asinara_donkey", () ->
+            BreedType.builder(DONKEY.getKey())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.ASINARA_DONKEY.folder(), BhBreedCoats.ASINARA_DONKEY.coatIds(), BhBreedCoats.ASINARA_DONKEY.hasFoalVariant())
+                    .entityType(entity("asinara_donkey"))
+                    .chestRows(4).midChestRows(5).bondedChestRows(6)
+                    .ability(COASTAL_SCOUT.getKey())
+                    .stabilizerBody(StabilizerBody.ASINARA_DONKEY)
+                    .build());
+
+    public static final DeferredHolder<BreedType, BreedType> MAMMOTH_DONKEY = BREEDS.register("mammoth_donkey", () ->
+            BreedType.builder(DONKEY.getKey())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.MAMMOTH_DONKEY.folder(), BhBreedCoats.MAMMOTH_DONKEY.coatIds(), BhBreedCoats.MAMMOTH_DONKEY.hasFoalVariant())
+                    .entityType(entity("mammoth_donkey"))
+                    .chestRows(4).midChestRows(5).bondedChestRows(6)
+                    .ability(MAMMOTH_WORKER.getKey())
+                    .stabilizerBody(StabilizerBody.MAMMOTH_DONKEY)
+                    .build());
+
+    public static final DeferredHolder<BreedType, BreedType> MINIATURE_DONKEY = BREEDS.register("miniature_donkey", () ->
+            BreedType.builder(DONKEY.getKey())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.MINIATURE_DONKEY.folder(), BhBreedCoats.MINIATURE_DONKEY.coatIds(), BhBreedCoats.MINIATURE_DONKEY.hasFoalVariant())
+                    .entityType(entity("miniature_donkey"))
+                    .chestRows(4).midChestRows(5).bondedChestRows(6)
+                    .ability(FARM_COMPANION.getKey())
+                    .ability(SKITTISH.getKey())
+                    .stabilizerBody(StabilizerBody.MINIATURE_DONKEY)
+                    .build());
+
+    public static final DeferredHolder<BreedType, BreedType> PEGA_DONKEY = BREEDS.register("pega_donkey", () ->
+            BreedType.builder(DONKEY.getKey())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.PEGA_DONKEY.folder(), BhBreedCoats.PEGA_DONKEY.coatIds(), BhBreedCoats.PEGA_DONKEY.hasFoalVariant())
+                    .entityType(entity("pega_donkey"))
+                    .chestRows(4).midChestRows(5).bondedChestRows(6)
+                    .ability(PEGA_COMPANION.getKey())
+                    .stabilizerBody(StabilizerBody.PEGA_DONKEY)
+                    .build());
+
+    public static final DeferredHolder<BreedType, BreedType> POITOU_DONKEY = BREEDS.register("poitou_donkey", () ->
+            BreedType.builder(DONKEY.getKey())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.POITOU_DONKEY.folder(), BhBreedCoats.POITOU_DONKEY.coatIds(), BhBreedCoats.POITOU_DONKEY.hasFoalVariant())
+                    .entityType(entity("poitou_donkey"))
+                    .chestRows(4).midChestRows(5).bondedChestRows(6)
+                    .ability(THICK_HIDE.getKey())
+                    .stabilizerBody(StabilizerBody.POITOU_DONKEY)
+                    .build());
+
+    public static final DeferredHolder<BreedType, BreedType> ZAMORANO_DONKEY = BREEDS.register("zamorano_donkey", () ->
+            BreedType.builder(DONKEY.getKey())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.ZAMORANO_DONKEY.folder(), BhBreedCoats.ZAMORANO_DONKEY.coatIds(), BhBreedCoats.ZAMORANO_DONKEY.hasFoalVariant())
+                    .entityType(entity("zamorano_donkey"))
+                    .chestRows(4).midChestRows(5).bondedChestRows(6)
+                    .ability(WINTER_FEET.getKey())
+                    .stabilizerBody(StabilizerBody.ZAMORANO_DONKEY)
+                    .build());
+
+    public static final DeferredHolder<BreedType, BreedType> LARGE_SKELETON_HORSE =
+            undead("large_skeleton_horse", SKELETON, DROWNED_RIDER, StabilizerBody.PERCHERON);
+    public static final DeferredHolder<BreedType, BreedType> MEDIUM_SKELETON_HORSE =
+            undead("medium_skeleton_horse", SKELETON, DROWNED_RIDER, StabilizerBody.MEDIUM);
+    public static final DeferredHolder<BreedType, BreedType> SMALL_SKELETON_HORSE =
+            undead("small_skeleton_horse", SKELETON, DROWNED_RIDER, StabilizerBody.SMALL);
+    public static final DeferredHolder<BreedType, BreedType> LARGE_ZOMBIE_HORSE =
+            undead("large_zombie_horse", ZOMBIE, ROTTEN_RATIONS, StabilizerBody.PERCHERON);
+    public static final DeferredHolder<BreedType, BreedType> MEDIUM_ZOMBIE_HORSE =
+            undead("medium_zombie_horse", ZOMBIE, ROTTEN_RATIONS, StabilizerBody.MEDIUM);
+    public static final DeferredHolder<BreedType, BreedType> SMALL_ZOMBIE_HORSE =
+            undead("small_zombie_horse", ZOMBIE, ROTTEN_RATIONS, StabilizerBody.SMALL);
+
+    private static DeferredHolder<BreedType, BreedType> undead(String path,
+            DeferredHolder<ArchetypeType, ArchetypeType> archetype,
+            DeferredHolder<AbilityType, AbilityType> ability, StabilizerBody body) {
+        return BREEDS.register(path, () -> BreedType.builder(archetype.getKey())
+                .coats(IcysBetterHorses.RESOURCE_NAMESPACE, path, List.of("default"), false)
+                .entityType(entity(path)).ability(ability.getKey()).stabilizerBody(body).build());
+    }
 
     public static final DeferredRegister<GenderType> GENDERS =
             DeferredRegister.create(BhRegistries.GENDER_TYPES, IcysBetterHorses.MOD_ID);

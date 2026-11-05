@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:wool",
+    {
+      "id": "#c:crops",
+      "required": false
+    },
+    "minecraft:egg",
+    "minecraft:feather",
+    "minecraft:leather",
+    "minecraft:rabbit_hide",
+    "minecraft:rabbit_foot",
+    "minecraft:honeycomb"
+  ]
+}

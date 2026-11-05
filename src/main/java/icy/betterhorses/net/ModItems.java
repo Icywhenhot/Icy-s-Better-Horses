@@ -10,6 +10,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.entity.EntityType;
 import icy.betterhorses.net.item.HorseCartItem;
 import net.neoforged.neoforge.registries.RegisterEvent;
 
@@ -108,6 +109,42 @@ public final class ModItems {
             new SpawnEggItem(ModEntities.CLYDESDALE_HORSE, 0x6E4937, 0xF2EFE8,
                     itemProperties("clydesdale_horse_spawn_egg")));
 
+    public static final Item ANDALUSIAN_DONKEY_SPAWN_EGG = register("andalusian_donkey_spawn_egg",
+            new SpawnEggItem(ModEntities.ANDALUSIAN_DONKEY, 0x776F63, 0x4A4441,
+                    itemProperties("andalusian_donkey_spawn_egg")));
+
+    public static final Item ASINARA_DONKEY_SPAWN_EGG = register("asinara_donkey_spawn_egg",
+            new SpawnEggItem(ModEntities.ASINARA_DONKEY, 0xDBD0B5, 0x857664,
+                    itemProperties("asinara_donkey_spawn_egg")));
+
+    public static final Item MAMMOTH_DONKEY_SPAWN_EGG = register("mammoth_donkey_spawn_egg",
+            new SpawnEggItem(ModEntities.MAMMOTH_DONKEY, 0xB19886, 0x4A302C,
+                    itemProperties("mammoth_donkey_spawn_egg")));
+
+    public static final Item MINIATURE_DONKEY_SPAWN_EGG = register("miniature_donkey_spawn_egg",
+            new SpawnEggItem(ModEntities.MINIATURE_DONKEY, 0x8F8E86, 0x615657,
+                    itemProperties("miniature_donkey_spawn_egg")));
+
+    public static final Item PEGA_DONKEY_SPAWN_EGG = register("pega_donkey_spawn_egg",
+            new SpawnEggItem(ModEntities.PEGA_DONKEY, 0x949596, 0x383631,
+                    itemProperties("pega_donkey_spawn_egg")));
+
+    public static final Item POITOU_DONKEY_SPAWN_EGG = register("poitou_donkey_spawn_egg",
+            new SpawnEggItem(ModEntities.POITOU_DONKEY, 0x694E47, 0x433332,
+                    itemProperties("poitou_donkey_spawn_egg")));
+
+    public static final Item ZAMORANO_DONKEY_SPAWN_EGG = register("zamorano_donkey_spawn_egg",
+            new SpawnEggItem(ModEntities.ZAMORANO_DONKEY, 0x614740, 0x412E2B,
+                    itemProperties("zamorano_donkey_spawn_egg")));
+
+    public static final Item SKELETON_HORSE_SPAWN_EGG = register("skeleton_horse_spawn_egg",
+            new SpawnEggItem(EntityType.SKELETON_HORSE, 0xE8E4D4, 0x6D6B61,
+                    itemProperties("skeleton_horse_spawn_egg")));
+
+    public static final Item ZOMBIE_HORSE_SPAWN_EGG = register("zombie_horse_spawn_egg",
+            new SpawnEggItem(EntityType.ZOMBIE_HORSE, 0x526339, 0x2C3424,
+                    itemProperties("zombie_horse_spawn_egg")));
+
     public static final List<Item> BREED_SPAWN_EGGS = List.of(
             ICELANDIC_HORSE_SPAWN_EGG,
             FRIESIAN_HORSE_SPAWN_EGG,
@@ -123,7 +160,16 @@ public final class ModItems {
             SHIRE_HORSE_SPAWN_EGG,
             BELGIAN_HORSE_SPAWN_EGG,
             CLYDESDALE_HORSE_SPAWN_EGG,
-            HAFLINGER_HORSE_SPAWN_EGG);
+            HAFLINGER_HORSE_SPAWN_EGG,
+            ANDALUSIAN_DONKEY_SPAWN_EGG,
+            ASINARA_DONKEY_SPAWN_EGG,
+            MAMMOTH_DONKEY_SPAWN_EGG,
+            MINIATURE_DONKEY_SPAWN_EGG,
+            PEGA_DONKEY_SPAWN_EGG,
+            POITOU_DONKEY_SPAWN_EGG,
+            ZAMORANO_DONKEY_SPAWN_EGG,
+            SKELETON_HORSE_SPAWN_EGG,
+            ZOMBIE_HORSE_SPAWN_EGG);
 
     public static final CreativeModeTab STABLE_SUPPLIES_TAB = CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.icys-better-horses.stable_supplies"))

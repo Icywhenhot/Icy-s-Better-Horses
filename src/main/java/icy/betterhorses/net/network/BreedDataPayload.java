@@ -23,7 +23,7 @@ public record BreedDataPayload(List<Entry> entries, List<ClassSpeed> classes) im
     private static final int MAX_ENTRIES = 128;
     private static final int MAX_NAME = 64;
 
-    public record Entry(String breed, String archetype, int chestRows, int bondedChestRows, int spawnWeight) {}
+    public record Entry(String breed, String archetype, int chestRows, int midChestRows, int bondedChestRows, int spawnWeight) {}
 
     public record ClassSpeed(String archetype, double low, double high) {}
 
@@ -35,7 +35,7 @@ public record BreedDataPayload(List<Entry> entries, List<ClassSpeed> classes) im
             ResourceLocation archetypeId = archetypes.getKey(data.archetype());
             out.add(new Entry(entry.getKey().getPath(),
                     archetypeId != null ? archetypeId.toString() : "",
-                    data.chestRows(), data.bondedChestRows(), data.spawnWeight()));
+                    data.chestRows(), data.midChestRows(), data.bondedChestRows(), data.spawnWeight()));
         }
         List<ClassSpeed> speeds = new ArrayList<>();
         for (ArchetypeType arch : archetypes) {
@@ -70,7 +70,7 @@ public record BreedDataPayload(List<Entry> entries, List<ClassSpeed> classes) im
             if (arch == null) {
                 arch = fallback != null ? fallback.archetype() : BhContent.NONE.get();
             }
-            map.put(breedId, new BhBreedData(arch, entry.chestRows(), entry.bondedChestRows(), entry.spawnWeight()));
+            map.put(breedId, new BhBreedData(arch, entry.chestRows(), entry.midChestRows(), entry.bondedChestRows(), entry.spawnWeight()));
         }
         return map;
     }
@@ -90,6 +90,7 @@ public record BreedDataPayload(List<Entry> entries, List<ClassSpeed> classes) im
                 entries.add(new Entry(
                         buf.readUtf(MAX_NAME),
                         buf.readUtf(MAX_NAME),
+                        buf.readVarInt(),
                         buf.readVarInt(),
                         buf.readVarInt(),
                         buf.readVarInt()));
@@ -112,6 +113,7 @@ public record BreedDataPayload(List<Entry> entries, List<ClassSpeed> classes) im
                 buf.writeUtf(entry.breed(), MAX_NAME);
                 buf.writeUtf(entry.archetype(), MAX_NAME);
                 buf.writeVarInt(entry.chestRows());
+                buf.writeVarInt(entry.midChestRows());
                 buf.writeVarInt(entry.bondedChestRows());
                 buf.writeVarInt(entry.spawnWeight());
             }

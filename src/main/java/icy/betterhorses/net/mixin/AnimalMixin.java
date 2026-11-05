@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.feature.breed.MuleSire;
 import java.util.UUID;
 import icy.betterhorses.net.feature.Bonding;
 import icy.betterhorses.net.BhHorseKind;
@@ -101,7 +102,7 @@ public abstract class AnimalMixin {
 
         HorseBreed selfBreed = selfData.bh_getBreed();
         HorseBreed partnerBreed = partnerData.bh_getBreed();
-        if (selfBreed.isRealBreed() && partnerBreed.isRealBreed()) {
+        if (selfBreed.isRealBreed() && partnerBreed.isRealBreed() && selfBreed.isDonkey() == partnerBreed.isDonkey()) {
             if (selfBreed == partnerBreed) {
                 childData.bh_setBreed(selfBreed);
                 childData.bh_setMixedBreed(false);
@@ -119,6 +120,7 @@ public abstract class AnimalMixin {
         bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.MAX_HEALTH, VANILLA_MAX_HEALTH, HEALTH_DISPLAY_PER_RAW);
         bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.MOVEMENT_SPEED, VANILLA_MAX_SPEED, SPEED_DISPLAY_PER_RAW);
         bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.JUMP_STRENGTH, VANILLA_MAX_JUMP, JUMP_DISPLAY_PER_RAW);
+        MuleSire.apply(selfHorse, partnerHorse, childHorse);
 
         childHorse.setHealth(childHorse.getMaxHealth());
 
