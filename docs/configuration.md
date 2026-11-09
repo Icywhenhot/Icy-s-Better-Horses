@@ -44,6 +44,7 @@ The default file, abbreviated. The `abilities` block holds one entry for every c
   "rear_neigh": "yes",
   "horse_management": "yes",
   "horse_revival": "yes",
+  "horse_death_message": "yes",
   "horse_charge": "yes",
   "horse_kick": "yes",
   "horse_defend": "yes",
@@ -110,6 +111,7 @@ The default file, abbreviated. The `abilities` block holds one entry for every c
 | `rear_neigh` | `yes` | The horse rears silently when you use the Rear key |
 | `horse_management` | `yes` | The Manage Horses key does nothing and the [roster](managing-your-horses) can't be opened. Whistling and the info screen still work |
 | `horse_revival` | `yes` | Dead horses are hidden from the roster and can't be [summoned back](managing-your-horses#bringing-a-horse-back) |
+| `horse_death_message` | `yes` | Owners don't get a chat message when their horse dies |
 
 ### Combat toggles
 
