@@ -1590,6 +1590,22 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         }
     }
 
+    @Inject(method = "tameWithName", at = @At("HEAD"), cancellable = true)
+    private void bh_refuseOverBondLimit(Player player, CallbackInfoReturnable<Boolean> cir) {
+        if (!bh_ours()) return;
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (self.level().isClientSide() || player.getUUID().equals(this.bh_getOwner())
+                || !icy.betterhorses.net.HorseTracker.atBondLimit(player.getUUID())) {
+            return;
+        }
+        self.ejectPassengers();
+        self.makeMad();
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.sendSystemMessage(Component.translatable(icy.betterhorses.net.HorseManagement.MSG_BOND_LIMIT));
+        }
+        cir.setReturnValue(false);
+    }
+
     @Inject(method = "tameWithName", at = @At("RETURN"))
     private void bh_claimHorseOnTame(Player player, CallbackInfoReturnable<Boolean> cir) {
         if (!bh_ours()) return;
