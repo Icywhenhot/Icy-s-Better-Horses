@@ -471,6 +471,8 @@
   "config.icys-better-horses.horse_management.tooltip": "Переключает экран управления лошадьми. При отключении клавиша «Свиток лошадей» ничего не делает, а свист и информация о лошади продолжают работать.",
   "config.icys-better-horses.horse_revival": "Воскрешение лошадей",
   "config.icys-better-horses.horse_revival.tooltip": "Погибшие лошади остаются в свитке затемнёнными, и их можно вернуть за уровни опыта. Снаряжение выпадает на месте гибели. При отключении погибшие лошади скрыты.",
+  "config.icys-better-horses.horse_death_message": "Сообщения о гибели лошадей",
+  "config.icys-better-horses.horse_death_message.tooltip": "Владелец получает сообщение в чате, когда его лошадь погибает. Также требуется правило игры showDeathMessages.",
   "config.icys-better-horses.breeding_foods": "Еда для размножения",
   "config.icys-better-horses.breeding_foods.tooltip": "ID предметов, после которых приручённая взрослая лошадь готова к размножению, например minecraft:golden_carrot. Еда не из этого списка по-прежнему лечит и помогает приручать, но не вызывает размножение.",
   "config.icys-better-horses.breeding_foods.unknown": "Предмета с таким ID нет",

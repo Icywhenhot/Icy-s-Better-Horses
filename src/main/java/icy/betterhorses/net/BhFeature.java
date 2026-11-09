@@ -23,6 +23,7 @@ public enum BhFeature {
     REAR_NEIGH("rear_neigh"),
     HORSE_MANAGEMENT("horse_management"),
     HORSE_REVIVAL("horse_revival"),
+    HORSE_DEATH_MESSAGE("horse_death_message"),
     HORSE_CHARGE("horse_charge", true),
     HORSE_KICK("horse_kick", true),
     HORSE_DEFEND("horse_defend", true),

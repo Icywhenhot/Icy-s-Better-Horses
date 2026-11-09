@@ -140,7 +140,7 @@ public final class IcysBetterHorses {
             BhCriteria.fire(killer, BhCriteria.KILL_OWN_HORSE);
         }
         ServerPlayer owner = level.getServer().getPlayerList().getPlayer(ownerId);
-        if (owner != null && level.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES)) {
+        if (owner != null && BhFeature.HORSE_DEATH_MESSAGE.on() && level.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES)) {
             owner.sendSystemMessage(horse.getCombatTracker().getDeathMessage());
         }
     }

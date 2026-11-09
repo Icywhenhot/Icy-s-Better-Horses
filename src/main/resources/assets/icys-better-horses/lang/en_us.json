@@ -477,6 +477,8 @@
   "config.icys-better-horses.horse_management.tooltip": "Off: the Manage Horses key does nothing and your horse list can't be opened. Whistling and the horse info screen still work.",
   "config.icys-better-horses.horse_revival": "Horse Revival",
   "config.icys-better-horses.horse_revival.tooltip": "Dead horses stay in your horse list, darkened, and can be summoned back for XP levels. Their gear drops where they die. Off: dead horses are hidden from the list.",
+  "config.icys-better-horses.horse_death_message": "Horse Death Messages",
+  "config.icys-better-horses.horse_death_message.tooltip": "On: the owner gets a chat message when their horse dies. Also needs the showDeathMessages game rule.",
   "config.icys-better-horses.breeding_foods": "Breeding Foods",
   "config.icys-better-horses.breeding_foods.tooltip": "Item ids that put a tamed adult horse in love, like minecraft:golden_carrot. Foods missing from this list still heal and tame, they just won't breed.",
   "config.icys-better-horses.breeding_foods.unknown": "No item with this id",
