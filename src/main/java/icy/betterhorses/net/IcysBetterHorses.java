@@ -120,7 +120,7 @@ public class IcysBetterHorses implements ModInitializer {
             BhCriteria.fire(killer, BhCriteria.KILL_OWN_HORSE);
         }
         ServerPlayer owner = level.getServer().getPlayerList().getPlayer(ownerId);
-        if (owner != null && level.getGameRules().get(GameRules.SHOW_DEATH_MESSAGES)) {
+        if (owner != null && BhFeature.HORSE_DEATH_MESSAGE.on() && level.getGameRules().get(GameRules.SHOW_DEATH_MESSAGES)) {
             owner.sendSystemMessage(horse.getCombatTracker().getDeathMessage());
         }
     }
