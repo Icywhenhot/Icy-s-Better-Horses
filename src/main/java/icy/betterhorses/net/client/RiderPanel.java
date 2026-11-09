@@ -105,7 +105,9 @@ public final class RiderPanel {
     }
 
     private static boolean mountedOnHorse() {
-        return Minecraft.getInstance().player.getVehicle() instanceof AbstractHorse horse && horse.isTamed();
+        return Minecraft.getInstance().player != null
+                && Minecraft.getInstance().player.getVehicle() instanceof AbstractHorse horse
+                && horse.isTamed();
     }
 
     private static void openPlayerInventory() {
