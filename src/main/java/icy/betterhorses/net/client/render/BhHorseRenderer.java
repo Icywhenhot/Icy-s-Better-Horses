@@ -99,9 +99,19 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
             return data.bh_hasGear(GearSlot.CHEST) ? textures.chest(data.bh_hasEnderChestGear()) : null;
         }));
         addLayer(new HorseStabilizerLayer<>(this));
-        addLayer(ModList.get().isLoaded("galosphere") ? new BhSterlingBannerLayer<>(this) : new BhBannerLayer<>(this));
+        addLayer(hasSterling() ? new BhSterlingBannerLayer<>(this) : new BhBannerLayer<>(this));
         if (ModList.get().isLoaded("caverns_and_chasms")) {
             addLayer(new BhUnicornHornLayer<>(this));
+        }
+    }
+
+    private static boolean hasSterling() {
+        if (!ModList.get().isLoaded("galosphere")) return false;
+        try {
+            Class.forName("net.orcinus.galosphere.api.SterlingAttachable", false, BhHorseRenderer.class.getClassLoader());
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
         }
     }
 
