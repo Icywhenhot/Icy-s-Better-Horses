@@ -55,7 +55,7 @@ public class HorseWanderBoundsGoal extends Goal {
     @Override
     public void tick() {
         if (wanderCenter == null) return;
-        if (--repathCooldown <= 0 || horse.getNavigation().isDone()) {
+        if (--repathCooldown <= 0) {
             bh_repathTowardBounds();
         }
     }
