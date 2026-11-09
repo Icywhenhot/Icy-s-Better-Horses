@@ -138,7 +138,8 @@ public abstract class AnimalMixin {
     private static void bh_bondFoal(ServerLevel level, IHorseData a, IHorseData b, AbstractHorse foal) {
         for (UUID owner : new UUID[]{a.bh_getOwner(), b.bh_getOwner()}) {
             ServerPlayer player = owner == null ? null : level.getServer().getPlayerList().getPlayer(owner);
-            if (player == null || player.level() != level || player.distanceToSqr(foal) > FOAL_WATCH_SQ) {
+            if (player == null || player.level() != level || player.distanceToSqr(foal) > FOAL_WATCH_SQ
+                    || icy.betterhorses.net.HorseTracker.atBondLimit(owner)) {
                 continue;
             }
             foal.setTamed(true);

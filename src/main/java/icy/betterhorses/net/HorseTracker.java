@@ -234,6 +234,10 @@ public final class HorseTracker {
         return state != null && state.forgetDeadHorse(horseId);
     }
 
+    public static boolean atBondLimit(UUID playerId) {
+        return BhConfig.tuning().bondLimitReached(findAllStoredHorsesOwnedBy(playerId).size());
+    }
+
     public static List<UUID> findDeadHorsesOwnedBy(UUID playerId) {
         HorseTrackerState state = state();
         return state == null ? List.of() : state.findDeadHorsesOwnedBy(playerId);

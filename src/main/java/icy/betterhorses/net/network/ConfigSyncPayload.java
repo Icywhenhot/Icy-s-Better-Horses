@@ -45,6 +45,7 @@ public record ConfigSyncPayload(
                     buf.readVarInt(),
                     buf.readVarInt(),
                     buf.readVarInt(),
+                    buf.readVarInt(),
                     buf.readEnum(BhTuning.Dismount.class));
             List<String> foods = readKeys(buf, MAX_ID_LENGTH);
             return new ConfigSyncPayload(off, classOn, breedOn, offAbilities, tuning.clamped(), foods);
@@ -66,6 +67,7 @@ public record ConfigSyncPayload(
             buf.writeVarInt(tuning.reviveLevels());
             buf.writeVarInt(tuning.reviveBondLoss());
             buf.writeVarInt(tuning.whistleRange());
+            buf.writeVarInt(tuning.maxBondedHorses());
             buf.writeEnum(tuning.dismount());
             writeKeys(buf, value.breedingFoods(), MAX_ID_LENGTH);
         }
