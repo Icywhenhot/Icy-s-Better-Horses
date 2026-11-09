@@ -55,7 +55,7 @@ public class HorseWanderBoundsGoal extends Goal {
     @Override
     public void tick() {
         if (wanderCenter == null) return;
-        if (--repathCooldown <= 0 || horse.getNavigation().isDone()) {
+        if (--repathCooldown <= 0) {
             bh_repathTowardBounds();
         }
     }
@@ -88,6 +88,13 @@ public class HorseWanderBoundsGoal extends Goal {
         if (dx * dx + dz * dz < MIN_TARGET_DISTANCE_SQ) {
             targetX = centerX;
             targetZ = centerZ;
+        }
+
+        BlockPos target = BlockPos.containing(targetX, wanderCenter.getY(), targetZ);
+        if (!horse.level().hasChunkAt(target) || !horse.level().hasChunkAt(wanderCenter)) {
+            wanderCenter = horse.blockPosition();
+            IHorseData.of(horse).bh_setWanderCenter(wanderCenter);
+            return;
         }
 
         if (!horse.getNavigation().moveTo(targetX, wanderCenter.getY(), targetZ, RETURN_SPEED)) {
