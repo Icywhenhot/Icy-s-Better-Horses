@@ -20,6 +20,7 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -113,15 +114,20 @@ public final class RiderPanel {
     private static void openPlayerInventory() {
         Minecraft mc = Minecraft.getInstance();
         rememberCursor();
-        mc.player.closeContainer();
+        closeMenu(mc);
         mc.setScreen(new InventoryScreen(mc.player));
     }
 
     private static void backToHorse() {
         rememberCursor();
         Minecraft mc = Minecraft.getInstance();
-        mc.player.closeContainer();
+        closeMenu(mc);
         mc.player.sendOpenInventory();
+    }
+
+    private static void closeMenu(Minecraft mc) {
+        mc.player.connection.send(new ServerboundContainerClosePacket(mc.player.containerMenu.containerId));
+        mc.player.containerMenu = mc.player.inventoryMenu;
     }
 
     private static final class CartTab extends Button {
