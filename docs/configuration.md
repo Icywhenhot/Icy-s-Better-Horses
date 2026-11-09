@@ -73,6 +73,7 @@ The default file, abbreviated. The `abilities` block holds one entry for every c
     "revive_xp_levels": 10,
     "revive_bond_loss": 20,
     "whistle_range": 0,
+    "max_bonded_horses": 0,
     "dismount_command": "wander"
   },
   "hud": {
@@ -146,6 +147,7 @@ Nine numbers and one choice under a `tuning` block. These are the values most se
 | `revive_xp_levels` | `10` | XP levels it costs to [summon a dead horse back](managing-your-horses#bringing-a-horse-back). Always free in Creative |
 | `revive_bond_loss` | `20` | Bond a horse loses when it comes back. It never drops below 0 |
 | `whistle_range` | `0` | How far your [whistle](ownership-and-bonding#whistling-for-your-horse) reaches, in blocks. **`0` means anywhere**; anything else is at least 16 |
+| `max_bonded_horses` | `0` | How many living horses each player can bond with. **`0` means no limit**. Horses already bonded stay bonded, and a dead horse can't be revived while you're at the limit |
 | `dismount_command` | `wander` | What an owned horse does when its owner gets off: `wander` around that spot, `follow` the owner, or `stay` put |
 
 The two bond numbers are a pair. The default pair is "+1 per minute", which is 100 minutes from a fresh tame to full bond. To halve that, either double the gain or halve the interval:
