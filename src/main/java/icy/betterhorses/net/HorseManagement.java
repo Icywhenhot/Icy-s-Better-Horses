@@ -60,6 +60,7 @@ public final class HorseManagement {
     public static final String MSG_CART = MSG + "cart_attached";
     public static final String MSG_UNSAFE = MSG + "unsafe";
     public static final String MSG_NO_LEVELS = MSG + "no_levels";
+    public static final String MSG_BOND_LIMIT = MSG + "bond_limit";
     public static final String MSG_TOO_FAR = MSG + "too_far";
 
     public static List<HorseRosterEntry> buildRoster(ServerPlayer player) {
@@ -161,6 +162,9 @@ public final class HorseManagement {
         if (player.level().getEntityInAnyDimension(horseId) != null) {
             HorseTracker.forgetDeadHorse(horseId);
             return Outcome.fail(MSG_GONE);
+        }
+        if (HorseTracker.atBondLimit(player.getUUID())) {
+            return Outcome.fail(MSG_BOND_LIMIT);
         }
         int cost = BhConfig.tuning().reviveLevels();
         boolean free = player.getAbilities().instabuild;
