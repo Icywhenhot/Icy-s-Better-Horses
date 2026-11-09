@@ -1419,7 +1419,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
                 return;
             }
 
-            BhHorseTraits.grantBond(this, 2);
+            if (player.getUUID().equals(this.bh_getOwner())) {
+                bh_bonding.fedGapple(self, this);
+            }
         } finally {
             this.bh_fedGoldenAppleThisTick = false;
         }
