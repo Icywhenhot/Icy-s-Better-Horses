@@ -100,7 +100,17 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
             return data.bh_hasGear(GearSlot.CHEST) ? textures.chest(data.bh_hasEnderChestGear()) : null;
         }));
         addLayer(new HorseStabilizerLayer<>(this));
-        addLayer(FabricLoader.getInstance().isModLoaded("galosphere") ? new BhSterlingBannerLayer<>(this) : new BhBannerLayer<>(this));
+        addLayer(hasSterling() ? new BhSterlingBannerLayer<>(this) : new BhBannerLayer<>(this));
+    }
+
+    private static boolean hasSterling() {
+        if (!FabricLoader.getInstance().isModLoaded("galosphere")) return false;
+        try {
+            Class.forName("net.orcinus.galosphere.api.SterlingAttachable", false, BhHorseRenderer.class.getClassLoader());
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     private static @Nullable DyeColor carpetOf(BhBreedHorse entity) {
