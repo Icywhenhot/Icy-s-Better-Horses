@@ -35,6 +35,8 @@ public final class Bonding implements HorseFeature {
     public static final int SAVE_WINDOW = 100;
     private static final int HIT_LOSS = 2;
     private static final int TREAT_COOLDOWN = 6000;
+    private static final int GAPPLE_COOLDOWN = 6000;
+    private static final int GAPPLE_BOND = 2;
     private static final int FOAL_CAP = 50;
     private static final TagKey<Item> SNACKS = TagKey.create(Registries.ITEM,
             Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "horse_snacks"));
@@ -55,6 +57,7 @@ public final class Bonding implements HorseFeature {
     private @Nullable Identifier treat;
     private boolean treatKnown;
     private long treatReadyAt;
+    private long gappleReadyAt;
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data) {
@@ -173,6 +176,14 @@ public final class Bonding implements HorseFeature {
         }
     }
 
+    public void fedGapple(AbstractHorse horse, IHorseData data) {
+        long now = horse.level().getGameTime();
+        if (now >= gappleReadyAt) {
+            gappleReadyAt = now + GAPPLE_COOLDOWN;
+            BhHorseTraits.grantBond(data, GAPPLE_BOND);
+        }
+    }
+
     private Identifier treat(AbstractHorse horse) {
         if (treat == null) {
             List<Item> pool = new ArrayList<>(List.of(TREATS));
@@ -192,6 +203,7 @@ public final class Bonding implements HorseFeature {
         treat = tag.contains("Treat") ? Identifier.tryParse(tag.getStringOr("Treat", "")) : null;
         treatKnown = treat != null && tag.getBooleanOr("TreatKnown", false);
         treatReadyAt = tag.getLongOr("TreatReadyAt", 0L);
+        gappleReadyAt = tag.getLongOr("GappleReadyAt", 0L);
         data.bh_showTreat(treatKnown ? treat.toString() : "");
     }
 
@@ -208,6 +220,7 @@ public final class Bonding implements HorseFeature {
             tag.putBoolean("TreatKnown", treatKnown);
         }
         tag.putLong("TreatReadyAt", treatReadyAt);
+        tag.putLong("GappleReadyAt", gappleReadyAt);
         return tag;
     }
 }
