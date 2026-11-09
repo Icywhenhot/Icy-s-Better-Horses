@@ -55,6 +55,7 @@ public final class HorseCombat implements HorseFeature {
     private static final int CHAIN_VARIANT = 1;
     private static final int COOLDOWN = 100;
     private static final int KICK_TICKS = 8;
+    private static final double KICK_REACH = 1.5D;
     private static final int BOLT_TICKS = 60;
     private static final double LOOSE_CHARGE = 0.8D;
     private static final String SLOW_KEY = "charge_slow";
@@ -283,6 +284,9 @@ public final class HorseCombat implements HorseFeature {
         if (horse.hasIndirectPassenger(attacker)
                 || (data.bh_isOwned() && data.bh_mayHandle(attacker.getUUID()))
                 || !mayTarget(attacker)) {
+            return;
+        }
+        if (!horse.getBoundingBox().inflate(KICK_REACH).intersects(attacker.getBoundingBox())) {
             return;
         }
         Vec3 to = attacker.position().subtract(horse.position());
