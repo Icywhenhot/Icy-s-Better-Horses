@@ -46,6 +46,7 @@ public final class BhConfig {
     private static final String KEY_REVIVE_LEVELS = "revive_xp_levels";
     private static final String KEY_REVIVE_BOND_LOSS = "revive_bond_loss";
     private static final String KEY_WHISTLE_RANGE = "whistle_range";
+    private static final String KEY_MAX_BONDED = "max_bonded_horses";
     private static final String KEY_DISMOUNT = "dismount_command";
     private static final String KEY_HUD = "hud";
     private static final String KEY_METER_SIDE = "charge_meter_side";
@@ -406,9 +407,10 @@ public final class BhConfig {
                         readInt(numbers, KEY_REVIVE_LEVELS, fallback.reviveLevels()),
                         readInt(numbers, KEY_REVIVE_BOND_LOSS, fallback.reviveBondLoss()),
                         readInt(numbers, KEY_WHISTLE_RANGE, fallback.whistleRange()),
+                        readInt(numbers, KEY_MAX_BONDED, fallback.maxBondedHorses()),
                         readDismount(numbers, fallback.dismount())).clamped();
                 needsRewrite |= !numbers.has(KEY_REVIVE_LEVELS) || !numbers.has(KEY_REVIVE_BOND_LOSS)
-                        || !numbers.has(KEY_WHISTLE_RANGE) || !numbers.has(KEY_DISMOUNT);
+                        || !numbers.has(KEY_WHISTLE_RANGE) || !numbers.has(KEY_MAX_BONDED) || !numbers.has(KEY_DISMOUNT);
             }
 
             needsRewrite |= !root.has(KEY_HUD);
@@ -627,6 +629,7 @@ public final class BhConfig {
         numbers.addProperty(KEY_REVIVE_LEVELS, mineTuning.reviveLevels());
         numbers.addProperty(KEY_REVIVE_BOND_LOSS, mineTuning.reviveBondLoss());
         numbers.addProperty(KEY_WHISTLE_RANGE, mineTuning.whistleRange());
+        numbers.addProperty(KEY_MAX_BONDED, mineTuning.maxBondedHorses());
         numbers.addProperty(KEY_DISMOUNT, mineTuning.dismount().name().toLowerCase(Locale.ROOT));
         root.add(KEY_TUNING, numbers);
 

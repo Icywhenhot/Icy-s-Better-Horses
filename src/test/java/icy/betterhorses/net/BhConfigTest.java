@@ -32,8 +32,16 @@ class BhConfigTest {
     }
 
     @Test
+    void bondLimitStopsAtTheCapAndZeroMeansNoLimit() {
+        BhTuning capped = new BhTuning(1, 1, 5, 2, 6, 0.1D, 10, 20, 0, 3, BhTuning.Dismount.WANDER);
+        assertEquals(false, capped.bondLimitReached(2));
+        assertEquals(true, capped.bondLimitReached(3));
+        assertEquals(false, BhTuning.defaults().bondLimitReached(100000));
+    }
+
+    @Test
     void constructorArgumentsMapToFieldsInDeclaredOrder() {
-        BhTuning tuning = new BhTuning(2, 3, 4, 5, 6, 0.25D, 7, 8, 96, BhTuning.Dismount.STAY);
+        BhTuning tuning = new BhTuning(2, 3, 4, 5, 6, 0.25D, 7, 8, 96, 0, BhTuning.Dismount.STAY);
 
         assertEquals(2, tuning.bondAmount());
         assertEquals(3, tuning.bondMinutes());
