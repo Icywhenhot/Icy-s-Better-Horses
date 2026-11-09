@@ -77,7 +77,7 @@ public final class BhConfigScreen {
 
         BhTuning start = BhConfig.tuningView();
         int[] nums = {start.bondAmount(), start.bondMinutes(), start.spawnWeight(),
-                start.groupMin(), start.groupMax(), start.reviveLevels(), start.reviveBondLoss()};
+                start.groupMin(), start.groupMax(), start.reviveLevels(), start.reviveBondLoss(), start.maxBondedHorses()};
         double[] floor = {start.spawnFloor()};
         int[] whistle = {start.whistleRange()};
         BhTuning.Dismount[] dismount = {start.dismount()};
@@ -102,6 +102,7 @@ public final class BhConfigScreen {
                 .build());
         tuning.addEntry(bh_number(eb, "revive_xp_levels", nums, 5, 0, 1000));
         tuning.addEntry(bh_number(eb, "revive_bond_loss", nums, 6, 0, 100));
+        tuning.addEntry(bh_number(eb, "max_bonded_horses", nums, 7, 0, 1000));
         tuning.addEntry(bh_whistle(eb, whistle));
         tuning.addEntry(eb.startEnumSelector(Component.translatable("config.icys-better-horses.dismount_command"),
                         BhTuning.Dismount.class, dismount[0])
@@ -216,7 +217,7 @@ public final class BhConfigScreen {
 
         builder.setSavingRunnable(() -> {
             BhConfig.apply(picks, new BhTuning(nums[0], nums[1], nums[2], nums[3], nums[4], floor[0], nums[5], nums[6],
-                    whistle[0], dismount[0]));
+                    whistle[0], nums[7], dismount[0]));
             BhConfig.applyAbilities(masters[0], masters[1], abilityPicks);
             BhConfig.applyBreedingFoods(foods);
             BhConfig.applyHud(new BhConfig.Spot(sides[0], gaps[0]), new BhConfig.Spot(sides[1], gaps[1]), radial[0],
