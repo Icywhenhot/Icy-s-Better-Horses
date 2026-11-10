@@ -54,6 +54,11 @@ public final class CartRig implements HorseFeature {
             return;
         }
 
+        if (data.bh_hasCartGear() && !data.bh_mayPullCart()) {
+            HorseCartEntity.strand(horse);
+            return;
+        }
+
         boolean wantsCart = data.bh_hasCartGear();
         boolean hasCart = cart != null && cart.isAlive() && !cart.isRemoved();
 

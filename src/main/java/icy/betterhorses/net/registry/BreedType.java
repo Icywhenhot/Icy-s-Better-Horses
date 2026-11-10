@@ -18,6 +18,7 @@ public final class BreedType {
     private final Integer bondedChestRowsOverride;
     private final List<ResourceKey<AbilityType>> abilities;
     private final StabilizerBody stabilizerBody;
+    private final boolean pullsCarts;
 
     private BreedType(Builder builder) {
         this.archetype = builder.archetype;
@@ -28,6 +29,7 @@ public final class BreedType {
         this.bondedChestRowsOverride = builder.bondedChestRowsOverride;
         this.abilities = new ArrayList<>(builder.abilities);
         this.stabilizerBody = builder.stabilizerBody;
+        this.pullsCarts = builder.pullsCarts;
     }
 
     public ResourceKey<ArchetypeType> archetype() {
@@ -67,6 +69,10 @@ public final class BreedType {
         return stabilizerBody;
     }
 
+    public boolean pullsCarts() {
+        return pullsCarts;
+    }
+
     public static Builder builder(ResourceKey<ArchetypeType> archetype) {
         return new Builder(archetype);
     }
@@ -91,6 +97,7 @@ public final class BreedType {
         private Integer bondedChestRowsOverride;
         private final List<ResourceKey<AbilityType>> abilities = new ArrayList<>();
         private StabilizerBody stabilizerBody = StabilizerBody.GENERIC;
+        private boolean pullsCarts = true;
 
         private Builder(ResourceKey<ArchetypeType> archetype) {
             this.archetype = archetype;
@@ -128,6 +135,11 @@ public final class BreedType {
 
         public Builder stabilizerBody(StabilizerBody body) {
             this.stabilizerBody = body;
+            return this;
+        }
+
+        public Builder noCarts() {
+            this.pullsCarts = false;
             return this;
         }
 

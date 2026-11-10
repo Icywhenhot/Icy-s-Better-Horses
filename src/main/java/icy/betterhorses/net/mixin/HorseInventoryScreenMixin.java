@@ -308,11 +308,15 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         this.bh_drawGearHint(gfx, x, y, GearSlot.CHEST, Items.CHEST);
         this.bh_drawGearHint(gfx, x, y, GearSlot.HOOVES, ModItems.HORSE_HOOVES);
         this.bh_drawGearHint(gfx, x, y, GearSlot.MEDKIT, ModItems.HORSE_MEDKIT);
-        Item stabilizerSlotHint = BhConfig.stabilizerEnabled()
-                && this.bh_mountTakesStabilizer() && (System.currentTimeMillis() / 1000L) % 2L == 0L
-                ? ModItems.HORSE_STABILIZER
-                : ModItems.HORSE_CART;
-        this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, stabilizerSlotHint);
+        boolean takesStabilizer = BhConfig.stabilizerEnabled() && this.bh_mountTakesStabilizer();
+        boolean takesCart = IHorseData.of(this.horse).bh_mayPullCart();
+        if (takesStabilizer || takesCart) {
+            Item stabilizerSlotHint = takesStabilizer
+                    && (!takesCart || (System.currentTimeMillis() / 1000L) % 2L == 0L)
+                    ? ModItems.HORSE_STABILIZER
+                    : ModItems.HORSE_CART;
+            this.bh_drawGearHint(gfx, x, y, GearSlot.STABILIZER, stabilizerSlotHint);
+        }
         this.bh_drawGearHint(gfx, x, y, GearSlot.CARPET, Items.WHITE_CARPET);
         this.bh_drawLockedSlotFlash(gfx);
     }

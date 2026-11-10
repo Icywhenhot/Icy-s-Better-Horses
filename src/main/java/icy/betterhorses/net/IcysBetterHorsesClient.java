@@ -55,6 +55,7 @@ import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import java.util.List;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.world.entity.Entity;
@@ -381,6 +382,8 @@ public class IcysBetterHorsesClient {
     private void registerItemColors(RegisterColorHandlersEvent.Item event) {
         event.register((stack, layer) -> -1,
                 ModItems.BREED_SPAWN_EGGS.toArray(new Item[0]));
+        event.register((stack, layer) -> -1,
+                Items.SKELETON_HORSE_SPAWN_EGG, Items.ZOMBIE_HORSE_SPAWN_EGG, Items.MULE_SPAWN_EGG);
     }
 
     public static void receiveHorseRoster(HorseRosterSyncPayload payload) {
