@@ -13,6 +13,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Donkey;
+import net.minecraft.world.entity.animal.horse.Mule;
+import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
+import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.animal.horse.SkeletonHorse;
 import net.minecraft.world.entity.animal.horse.ZombieHorse;
@@ -29,7 +32,7 @@ public final class BhVanillaHorseSwap {
 
     public static boolean trySwap(Entity entity) {
         if (!(entity instanceof AbstractHorse horse)
-                || (horse.getClass() != Horse.class && horse.getClass() != Donkey.class
+                || (horse.getClass() != Horse.class && horse.getClass() != Donkey.class && horse.getClass() != Mule.class
                     && horse.getClass() != SkeletonHorse.class && horse.getClass() != ZombieHorse.class)
                 || !(horse.level() instanceof ServerLevel level)
                 || !horse.isAlive() || horse.isPassenger()
@@ -51,6 +54,10 @@ public final class BhVanillaHorseSwap {
             List<EntityType<BhUndeadHorse>> pool = horse instanceof SkeletonHorse ? ModEntities.SKELETONS : ModEntities.ZOMBIES;
             entityType = pool.get(horse.getRandom().nextInt(pool.size()));
             breedKey = BhBreeds.keyOf(HorseBreed.byId(EntityType.getKey(entityType).getPath()));
+        }
+        if (entityType == null && horse instanceof Mule) {
+            entityType = ModEntities.MEDIUM_MULE;
+            breedKey = BhContent.MEDIUM_MULE.getKey();
         }
         if (entityType == null) {
             breedKey = horse instanceof Donkey ? null : IHorseData.of(horse).bh_getBreedKey();
@@ -94,7 +101,7 @@ public final class BhVanillaHorseSwap {
             return false;
         }
         reseat(riders, swap);
-        if (horse instanceof Donkey donkey && donkey.hasChest()) {
+        if (horse instanceof AbstractChestedHorse chested && chested.hasChest()) {
             ListTag items = tag.getList("Items", Tag.TAG_COMPOUND);
             for (int i = 0; i < items.size(); i++) {
                 ItemStack stack = ItemStack.parseOptional(level.registryAccess(), items.getCompound(i));

@@ -22,6 +22,7 @@ import icy.betterhorses.net.client.render.IcelandicHorseRenderer;
 import icy.betterhorses.net.client.render.MediumHorseRenderer;
 import icy.betterhorses.net.client.render.SmallHorseRenderer;
 import icy.betterhorses.net.entity.IcelandicHorse;
+import icy.betterhorses.net.entity.BhBreedMule;
 import icy.betterhorses.net.entity.BhUndeadHorse;
 import icy.betterhorses.net.ModMenus;
 import icy.betterhorses.net.client.CartScreen;
@@ -327,6 +328,9 @@ public class IcysBetterHorsesClient {
         event.registerEntityRenderer(ModEntities.ANDALUSIAN_HORSE, MediumHorseRenderer::new);
         event.registerEntityRenderer(ModEntities.MUSTANG_HORSE, MediumHorseRenderer::new);
         event.registerEntityRenderer(ModEntities.QUARTER_HORSE, MediumHorseRenderer::new);
+        for (EntityType<BhBreedMule> mule : ModEntities.MULES) {
+            event.registerEntityRenderer(mule, MediumHorseRenderer::new);
+        }
         event.registerEntityRenderer(ModEntities.ARABIAN_HORSE, SmallHorseRenderer::new);
         event.registerEntityRenderer(ModEntities.MORGAN_HORSE, SmallHorseRenderer::new);
 

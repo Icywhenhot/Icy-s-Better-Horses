@@ -17,6 +17,7 @@ import icy.betterhorses.net.entity.QuarterHorse;
 import icy.betterhorses.net.entity.BhBreedHorse;
 import icy.betterhorses.net.entity.BelgianHorse;
 import icy.betterhorses.net.entity.BhBreedDonkey;
+import icy.betterhorses.net.entity.BhBreedMule;
 import icy.betterhorses.net.entity.BhUndeadHorse;
 import icy.betterhorses.net.entity.ClydesdaleHorse;
 import icy.betterhorses.net.entity.ShireHorse;
@@ -184,6 +185,12 @@ public final class ModEntities {
     public static final EntityType<BhUndeadHorse> SMALL_DROWNED_HORSE =
             registerUndead("small_drowned_horse", BhContent.SMALL_DROWNED_HORSE, false, SmallHorse.WIDTH, SmallHorse.HEIGHT);
 
+    public static final EntityType<BhBreedMule> SMALL_MULE = registerMule("small_mule", BhContent.SMALL_MULE);
+    public static final EntityType<BhBreedMule> MEDIUM_MULE = registerMule("medium_mule", BhContent.MEDIUM_MULE);
+    public static final EntityType<BhBreedMule> LARGE_MULE = registerMule("large_mule", BhContent.LARGE_MULE);
+
+    public static final List<EntityType<BhBreedMule>> MULES = List.of(SMALL_MULE, MEDIUM_MULE, LARGE_MULE);
+
     public static final List<EntityType<BhUndeadHorse>> SKELETONS =
             List.of(LARGE_SKELETON_HORSE, MEDIUM_SKELETON_HORSE, SMALL_SKELETON_HORSE);
     public static final List<EntityType<BhUndeadHorse>> ZOMBIES =
@@ -217,6 +224,14 @@ public final class ModEntities {
                 .passengerAttachments(SmallHorse.HEIGHT * 0.90F)
                 .clientTrackingRange(10)
                 .build(key(path)));
+    }
+
+    private static EntityType<BhBreedMule> registerMule(String path, DeferredHolder<BreedType, BreedType> breed) {
+        return register(path, EntityType.Builder.<BhBreedMule>of(
+                        (type, level) -> new BhBreedMule(type, level, breed.getKey()), MobCategory.CREATURE)
+                .sized(MediumHorse.WIDTH, MediumHorse.HEIGHT).eyeHeight(MediumHorse.HEIGHT * 0.95F)
+                .passengerAttachments(MediumHorse.HEIGHT * 0.90F)
+                .clientTrackingRange(10).build(key(path)));
     }
 
     private static EntityType<BhUndeadHorse> registerUndead(String path, DeferredHolder<BreedType, BreedType> breed,
@@ -274,6 +289,7 @@ public final class ModEntities {
         }
         for (EntityType<BhUndeadHorse> horse : SKELETONS) event.put(horse, BhUndeadHorse.createAttributes(true).build());
         for (EntityType<BhUndeadHorse> horse : ZOMBIES) event.put(horse, BhUndeadHorse.createAttributes(false).build());
+        for (EntityType<BhBreedMule> mule : MULES) event.put(mule, BhBreedMule.createAttributes().build());
         for (EntityType<BhUndeadHorse> horse : STRAYS) event.put(horse, BhUndeadHorse.createAttributes(true).build());
         for (EntityType<BhUndeadHorse> horse : SCULKS) event.put(horse, BhUndeadHorse.createAttributes(true).build());
         for (EntityType<BhUndeadHorse> horse : HUSKS) event.put(horse, BhUndeadHorse.createAttributes(false).build());

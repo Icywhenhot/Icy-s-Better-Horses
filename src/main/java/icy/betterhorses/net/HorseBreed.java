@@ -97,7 +97,10 @@ public enum HorseBreed {
     SMALL_HUSK_HORSE(BreedArchetype.ZOMBIE),
     LARGE_DROWNED_HORSE(BreedArchetype.ZOMBIE),
     MEDIUM_DROWNED_HORSE(BreedArchetype.ZOMBIE),
-    SMALL_DROWNED_HORSE(BreedArchetype.ZOMBIE);
+    SMALL_DROWNED_HORSE(BreedArchetype.ZOMBIE),
+    SMALL_MULE(BreedArchetype.MULE),
+    MEDIUM_MULE(BreedArchetype.MULE),
+    LARGE_MULE(BreedArchetype.MULE);
 
     public record Coat(Variant color, Markings markings) {}
 
@@ -162,12 +165,16 @@ public enum HorseBreed {
     }
 
     public boolean isRealBreed() {
-        return ordinal() < HORSE_BREED_COUNT || isDonkey()
+        return ordinal() < HORSE_BREED_COUNT || isDonkey() || isMule()
                 || archetype == BreedArchetype.SKELETON || archetype == BreedArchetype.ZOMBIE;
     }
 
     public boolean isDonkey() {
         return archetype == BreedArchetype.DONKEY;
+    }
+
+    public boolean isMule() {
+        return archetype == BreedArchetype.MULE;
     }
 
     public boolean isSkeleton() {

@@ -4,6 +4,7 @@ import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhJumpHeight;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedDonkey;
+import icy.betterhorses.net.entity.BhBreedMule;
 import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.Holder;
@@ -20,7 +21,7 @@ public final class MuleSire {
     private MuleSire() {}
 
     public static void apply(AbstractHorse a, AbstractHorse b, AbstractHorse child) {
-        if (!(child instanceof Mule) || !(sire(a) || sire(b))) {
+        if (!(child instanceof Mule || child instanceof BhBreedMule) || !(sire(a) || sire(b))) {
             return;
         }
         RandomSource random = child.getRandom();
