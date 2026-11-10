@@ -22,6 +22,7 @@ import icy.betterhorses.net.client.render.IcelandicHorseRenderer;
 import icy.betterhorses.net.client.render.MediumHorseRenderer;
 import icy.betterhorses.net.client.render.SmallHorseRenderer;
 import icy.betterhorses.net.entity.IcelandicHorse;
+import icy.betterhorses.net.entity.BhUndeadHorse;
 import icy.betterhorses.net.ModMenus;
 import icy.betterhorses.net.client.CartScreen;
 import icy.betterhorses.net.network.BhRearPayload;
@@ -56,6 +57,7 @@ import java.util.List;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.world.entity.Entity;
@@ -245,6 +247,18 @@ public class IcysBetterHorsesClient {
         event.registerEntityRenderer(ModEntities.SMALL_ZOMBIE_HORSE, context -> new UndeadHorseRenderer(context,
                 BhModelLayers.SMALL_UNDEAD_HORSE, BhModelLayers.SMALL_SADDLE, BhModelLayers.SMALL_CARPET,
                 BhModelLayers.SMALL_ARMOR, BhModelLayers.SMALL_CHEST, BhTackTextures.SMALL));
+        for (List<EntityType<BhUndeadHorse>> kind : List.of(ModEntities.STRAYS, ModEntities.SCULKS,
+                ModEntities.HUSKS, ModEntities.DROWNEDS)) {
+            event.registerEntityRenderer(kind.get(0), context -> new UndeadHorseRenderer(context,
+                    BhModelLayers.LARGE_UNDEAD_HORSE, BhModelLayers.PERCHERON_SADDLE, BhModelLayers.PERCHERON_CARPET,
+                    BhModelLayers.PERCHERON_ARMOR, BhModelLayers.PERCHERON_CHEST, BhTackTextures.PERCHERON));
+            event.registerEntityRenderer(kind.get(1), context -> new UndeadHorseRenderer(context,
+                    BhModelLayers.MEDIUM_UNDEAD_HORSE, BhModelLayers.MEDIUM_SADDLE, BhModelLayers.MEDIUM_CARPET,
+                    BhModelLayers.MEDIUM_ARMOR, BhModelLayers.MEDIUM_CHEST, BhTackTextures.MEDIUM));
+            event.registerEntityRenderer(kind.get(2), context -> new UndeadHorseRenderer(context,
+                    BhModelLayers.SMALL_UNDEAD_HORSE, BhModelLayers.SMALL_SADDLE, BhModelLayers.SMALL_CARPET,
+                    BhModelLayers.SMALL_ARMOR, BhModelLayers.SMALL_CHEST, BhTackTextures.SMALL));
+        }
         event.registerEntityRenderer(ModEntities.HORSE_CART, HorseCartRenderer::new);
         event.registerEntityRenderer(ModEntities.ICELANDIC_HORSE, context ->
                 new IcelandicHorseRenderer(context,

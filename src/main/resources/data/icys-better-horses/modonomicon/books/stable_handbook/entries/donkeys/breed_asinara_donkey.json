@@ -30,24 +30,10 @@
     },
     {
       "type": "modonomicon:text",
-      "id": "wading",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_asinara_donkey.wading.title",
+      "id": "ability",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_asinara_donkey.ability.title",
       "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_asinara_donkey.wading.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "fishing",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_asinara_donkey.fishing.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_asinara_donkey.fishing.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "treasure",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_asinara_donkey.treasure.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_asinara_donkey.treasure.text"
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_asinara_donkey.ability.text"
     },
     {
       "type": "modonomicon:text",

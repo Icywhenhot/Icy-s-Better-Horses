@@ -1,6 +1,8 @@
 package icy.betterhorses.net.entity;
 
+import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhBreedData;
+import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BhContent;
@@ -14,12 +16,15 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.neoforged.neoforge.common.NeoForgeMod;
@@ -29,11 +34,44 @@ public class BhUndeadHorse extends BhBreedHorse {
 
     private final ResourceKey<BreedType> breed;
     private final boolean skeleton;
+    private final HorseBreed kind;
 
     public BhUndeadHorse(EntityType<? extends Horse> type, Level level, ResourceKey<BreedType> breed, boolean skeleton) {
         super(type, level);
         this.breed = breed;
         this.skeleton = skeleton;
+        this.kind = HorseBreed.byId(breed.location().getPath());
+    }
+
+    public HorseBreed bhKind() {
+        return kind;
+    }
+
+    private boolean swimsDeep() {
+        return kind.isDrowned() && BhAbility.DROWNED_SWIM.on();
+    }
+
+    @Override
+    public void aiStep() {
+        if (isAlive() && !level().isClientSide() && !kind.isHusk() && isSunBurnTick()) {
+            ItemStack armor = getBodyArmorItem();
+            if (armor.isEmpty()) {
+                igniteForSeconds(8.0F);
+            } else if (armor.isDamageableItem()) {
+                Item item = armor.getItem();
+                armor.setDamageValue(armor.getDamageValue() + random.nextInt(2));
+                if (armor.getDamageValue() >= armor.getMaxDamage()) {
+                    onEquippedItemBroken(item, EquipmentSlot.BODY);
+                    setBodyArmorItem(ItemStack.EMPTY);
+                }
+            }
+        }
+        super.aiStep();
+    }
+
+    @Override
+    public boolean dampensVibrations() {
+        return kind.isSculk() && BhAbility.SCULK_HUSH.on() || super.dampensVibrations();
     }
 
     @Override
@@ -144,17 +182,19 @@ public class BhUndeadHorse extends BhBreedHorse {
 
     @Override
     protected float getWaterSlowDown() {
-        return skeleton ? 0.96F : super.getWaterSlowDown();
+        if (skeleton) return 0.96F;
+        return swimsDeep() ? 0.95F : super.getWaterSlowDown();
     }
 
     @Override
     public boolean canBeRiddenUnderFluidType(FluidType type, Entity rider) {
-        return skeleton && type == NeoForgeMod.WATER_TYPE.value() || super.canBeRiddenUnderFluidType(type, rider);
+        return (skeleton || swimsDeep()) && type == NeoForgeMod.WATER_TYPE.value()
+                || super.canBeRiddenUnderFluidType(type, rider);
     }
 
     @Override
     public boolean dismountsUnderwater() {
-        return !skeleton && super.dismountsUnderwater();
+        return !skeleton && !swimsDeep() && super.dismountsUnderwater();
     }
 
     @Override

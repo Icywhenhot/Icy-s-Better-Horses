@@ -29,31 +29,17 @@
     },
     {
       "type": "modonomicon:text",
+      "id": "sire",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_mammoth_donkey.sire.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_mammoth_donkey.sire.text"
+    },
+    {
+      "type": "modonomicon:text",
       "id": "ability",
       "title": "book.icys-better-horses.stable_handbook.donkeys.breed_mammoth_donkey.ability.title",
       "show_title_separator": true,
       "text": "book.icys-better-horses.stable_handbook.donkeys.breed_mammoth_donkey.ability.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "rubble",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_mammoth_donkey.rubble.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_mammoth_donkey.rubble.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "work",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_mammoth_donkey.work.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_mammoth_donkey.work.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "brace",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_mammoth_donkey.brace.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_mammoth_donkey.brace.text"
     },
     {
       "type": "modonomicon:text",

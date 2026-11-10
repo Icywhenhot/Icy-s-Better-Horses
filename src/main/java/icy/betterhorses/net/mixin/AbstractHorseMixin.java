@@ -80,6 +80,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -209,6 +210,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private @Nullable UUID bh_combatTarget = null;
     @Unique private boolean bh_abilityPaused = false;
     @Unique private int bh_spookTicks = 0;
+    @Unique private static final int BH_HAZARD_BOLT_TICKS = 40;
 
     @Unique private final SaddleWatch bh_saddle = new SaddleWatch();
     @Unique private final CartRig bh_cartRig = new CartRig();
@@ -1267,6 +1269,17 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             AbstractHorse self = (AbstractHorse) (Object) this;
             this.bh_grazeBlockedUntilTick = self.tickCount + BH_GRAZE_HURT_COOLDOWN_TICKS;
             this.bh_combat.onHurt(self, this, source);
+        }
+    }
+
+    @Inject(method = "hurt", at = @At("RETURN"))
+    private void bh_boltFromHazard(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        AbstractHorse self = (AbstractHorse) (Object) this;
+        if (!cir.getReturnValueZ() || self.level().isClientSide() || source.getEntity() != null) return;
+        if (source.is(DamageTypes.CACTUS) || source.is(DamageTypes.SWEET_BERRY_BUSH) || source.is(DamageTypes.HOT_FLOOR)
+                || source.is(DamageTypes.IN_FIRE) || source.is(DamageTypes.CAMPFIRE) || source.is(DamageTypes.LAVA)
+                || source.is(DamageTypes.FREEZE) || source.is(DamageTypes.STALAGMITE)) {
+            this.bh_setSpookTicks(Math.max(this.bh_getSpookTicks(), BH_HAZARD_BOLT_TICKS));
         }
     }
 

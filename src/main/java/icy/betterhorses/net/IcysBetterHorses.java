@@ -6,6 +6,9 @@ import icy.betterhorses.net.feature.breed.MammothWorker;
 import icy.betterhorses.net.feature.breed.ThickHide;
 import icy.betterhorses.net.feature.breed.DrownedRider;
 import icy.betterhorses.net.feature.breed.RottenRations;
+import icy.betterhorses.net.feature.breed.DrownedLungs;
+import icy.betterhorses.net.feature.breed.FrostCharge;
+import icy.betterhorses.net.feature.breed.ParchingBite;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingKnockBackEvent;
 import net.minecraft.world.level.GameRules;
@@ -119,6 +122,9 @@ public class IcysBetterHorses {
         NeoForge.EVENT_BUS.addListener(DrownedRider::breathe);
         NeoForge.EVENT_BUS.addListener(RottenRations::damage);
         NeoForge.EVENT_BUS.addListener(RottenRations::hit);
+        NeoForge.EVENT_BUS.addListener(FrostCharge::hit);
+        NeoForge.EVENT_BUS.addListener(ParchingBite::hit);
+        NeoForge.EVENT_BUS.addListener(DrownedLungs::breathe);
         NeoForge.EVENT_BUS.addListener(BhClassLoader::register);
         NeoForge.EVENT_BUS.addListener(BhCommands::register);
         NeoForge.EVENT_BUS.addListener(this::onPlayerJoin);
@@ -442,6 +448,7 @@ public class IcysBetterHorses {
         }
         HorseTracker.tick(server.getTickCount());
         BhTwinWatch.tick(server, server.getTickCount());
+        BhUndeadSpawns.tick(server);
         discardStaleHorses();
         applyPendingReleases();
     }

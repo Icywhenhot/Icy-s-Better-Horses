@@ -24,24 +24,17 @@
     },
     {
       "type": "modonomicon:text",
-      "id": "rations",
-      "title": "book.icys-better-horses.stable_handbook.undead.zombie.rations.title",
+      "id": "ability",
+      "title": "book.icys-better-horses.stable_handbook.undead.zombie.ability.title",
       "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.undead.zombie.rations.text"
+      "text": "book.icys-better-horses.stable_handbook.undead.zombie.ability.text"
     },
     {
       "type": "modonomicon:text",
-      "id": "fuel",
-      "title": "book.icys-better-horses.stable_handbook.undead.zombie.fuel.title",
+      "id": "spawns",
+      "title": "book.icys-better-horses.stable_handbook.undead.zombie.spawns.title",
       "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.undead.zombie.fuel.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "rot",
-      "title": "book.icys-better-horses.stable_handbook.undead.zombie.rot.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.undead.zombie.rot.text"
+      "text": "book.icys-better-horses.stable_handbook.undead.zombie.spawns.text"
     },
     {
       "type": "icys-better-horses:breed_coats",

@@ -97,6 +97,11 @@ public final class BhAbilityBadges {
             Map.entry("rotten_rations", new ItemStack(Items.ROTTEN_FLESH)),
             Map.entry("rotten_rations_1", new ItemStack(Items.BLAZE_POWDER)),
             Map.entry("rotten_rations_2", new ItemStack(Items.FERMENTED_SPIDER_EYE)),
+            Map.entry("frost_charge", new ItemStack(Items.PACKED_ICE)),
+            Map.entry("sculk_hush_1", new ItemStack(Items.ECHO_SHARD)),
+            Map.entry("parching_bite", new ItemStack(Items.DEAD_BUSH)),
+            Map.entry("drowned_lungs", new ItemStack(Items.NAUTILUS_SHELL)),
+            Map.entry("drowned_lungs_1", new ItemStack(Items.HEART_OF_THE_SEA)),
             Map.entry("perk_1", new ItemStack(Items.GOLDEN_APPLE)),
             Map.entry("perk_2", new ItemStack(Items.POWDER_SNOW_BUCKET)),
             Map.entry("perk_3", new ItemStack(Items.FEATHER)));

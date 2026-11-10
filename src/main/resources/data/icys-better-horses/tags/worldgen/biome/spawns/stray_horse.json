@@ -1,0 +1,18 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:snowy_plains",
+    "minecraft:ice_spikes",
+    "minecraft:snowy_taiga",
+    "minecraft:snowy_slopes",
+    "minecraft:grove",
+    "minecraft:frozen_peaks",
+    "minecraft:jagged_peaks",
+    "minecraft:frozen_river",
+    "minecraft:snowy_beach",
+    {
+      "id": "#c:is_snowy",
+      "required": false
+    }
+  ]
+}

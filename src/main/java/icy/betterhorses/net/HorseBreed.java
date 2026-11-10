@@ -81,7 +81,23 @@ public enum HorseBreed {
     SMALL_SKELETON_HORSE(BreedArchetype.SKELETON),
     LARGE_ZOMBIE_HORSE(BreedArchetype.ZOMBIE),
     MEDIUM_ZOMBIE_HORSE(BreedArchetype.ZOMBIE),
-    SMALL_ZOMBIE_HORSE(BreedArchetype.ZOMBIE);
+    SMALL_ZOMBIE_HORSE(BreedArchetype.ZOMBIE),
+    STRAY_SPECIES(BreedArchetype.NONE),
+    SCULK_SPECIES(BreedArchetype.NONE),
+    HUSK_SPECIES(BreedArchetype.NONE),
+    DROWNED_SPECIES(BreedArchetype.NONE),
+    LARGE_STRAY_HORSE(BreedArchetype.SKELETON),
+    MEDIUM_STRAY_HORSE(BreedArchetype.SKELETON),
+    SMALL_STRAY_HORSE(BreedArchetype.SKELETON),
+    LARGE_SCULK_HORSE(BreedArchetype.SKELETON),
+    MEDIUM_SCULK_HORSE(BreedArchetype.SKELETON),
+    SMALL_SCULK_HORSE(BreedArchetype.SKELETON),
+    LARGE_HUSK_HORSE(BreedArchetype.ZOMBIE),
+    MEDIUM_HUSK_HORSE(BreedArchetype.ZOMBIE),
+    SMALL_HUSK_HORSE(BreedArchetype.ZOMBIE),
+    LARGE_DROWNED_HORSE(BreedArchetype.ZOMBIE),
+    MEDIUM_DROWNED_HORSE(BreedArchetype.ZOMBIE),
+    SMALL_DROWNED_HORSE(BreedArchetype.ZOMBIE);
 
     public record Coat(Variant color, Markings markings) {}
 
@@ -164,6 +180,31 @@ public enum HorseBreed {
 
     public boolean isUndead() {
         return isSkeleton() || isZombie();
+    }
+
+    public boolean isStray() {
+        return variantOf("STRAY");
+    }
+
+    public boolean isSculk() {
+        return variantOf("SCULK");
+    }
+
+    public boolean isHusk() {
+        return variantOf("HUSK");
+    }
+
+    public boolean isDrowned() {
+        return variantOf("DROWNED");
+    }
+
+    public boolean sameUndeadVariant(HorseBreed other) {
+        return isStray() && other.isStray() || isSculk() && other.isSculk()
+                || isHusk() && other.isHusk() || isDrowned() && other.isDrowned();
+    }
+
+    private boolean variantOf(String variant) {
+        return name().equals(variant + "_SPECIES") || name().endsWith("_" + variant + "_HORSE");
     }
 
     public Component displayName() {

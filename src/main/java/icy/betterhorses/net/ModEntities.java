@@ -159,11 +159,43 @@ public final class ModEntities {
             registerUndead("medium_zombie_horse", BhContent.MEDIUM_ZOMBIE_HORSE, false, MediumHorse.WIDTH, MediumHorse.HEIGHT);
     public static final EntityType<BhUndeadHorse> SMALL_ZOMBIE_HORSE =
             registerUndead("small_zombie_horse", BhContent.SMALL_ZOMBIE_HORSE, false, SmallHorse.WIDTH, SmallHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> LARGE_STRAY_HORSE =
+            registerUndead("large_stray_horse", BhContent.LARGE_STRAY_HORSE, true, PercheronHorse.WIDTH, PercheronHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> MEDIUM_STRAY_HORSE =
+            registerUndead("medium_stray_horse", BhContent.MEDIUM_STRAY_HORSE, true, MediumHorse.WIDTH, MediumHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> SMALL_STRAY_HORSE =
+            registerUndead("small_stray_horse", BhContent.SMALL_STRAY_HORSE, true, SmallHorse.WIDTH, SmallHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> LARGE_SCULK_HORSE =
+            registerUndead("large_sculk_horse", BhContent.LARGE_SCULK_HORSE, true, PercheronHorse.WIDTH, PercheronHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> MEDIUM_SCULK_HORSE =
+            registerUndead("medium_sculk_horse", BhContent.MEDIUM_SCULK_HORSE, true, MediumHorse.WIDTH, MediumHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> SMALL_SCULK_HORSE =
+            registerUndead("small_sculk_horse", BhContent.SMALL_SCULK_HORSE, true, SmallHorse.WIDTH, SmallHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> LARGE_HUSK_HORSE =
+            registerUndead("large_husk_horse", BhContent.LARGE_HUSK_HORSE, false, PercheronHorse.WIDTH, PercheronHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> MEDIUM_HUSK_HORSE =
+            registerUndead("medium_husk_horse", BhContent.MEDIUM_HUSK_HORSE, false, MediumHorse.WIDTH, MediumHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> SMALL_HUSK_HORSE =
+            registerUndead("small_husk_horse", BhContent.SMALL_HUSK_HORSE, false, SmallHorse.WIDTH, SmallHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> LARGE_DROWNED_HORSE =
+            registerUndead("large_drowned_horse", BhContent.LARGE_DROWNED_HORSE, false, PercheronHorse.WIDTH, PercheronHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> MEDIUM_DROWNED_HORSE =
+            registerUndead("medium_drowned_horse", BhContent.MEDIUM_DROWNED_HORSE, false, MediumHorse.WIDTH, MediumHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> SMALL_DROWNED_HORSE =
+            registerUndead("small_drowned_horse", BhContent.SMALL_DROWNED_HORSE, false, SmallHorse.WIDTH, SmallHorse.HEIGHT);
 
     public static final List<EntityType<BhUndeadHorse>> SKELETONS =
             List.of(LARGE_SKELETON_HORSE, MEDIUM_SKELETON_HORSE, SMALL_SKELETON_HORSE);
     public static final List<EntityType<BhUndeadHorse>> ZOMBIES =
             List.of(LARGE_ZOMBIE_HORSE, MEDIUM_ZOMBIE_HORSE, SMALL_ZOMBIE_HORSE);
+    public static final List<EntityType<BhUndeadHorse>> STRAYS =
+            List.of(LARGE_STRAY_HORSE, MEDIUM_STRAY_HORSE, SMALL_STRAY_HORSE);
+    public static final List<EntityType<BhUndeadHorse>> SCULKS =
+            List.of(LARGE_SCULK_HORSE, MEDIUM_SCULK_HORSE, SMALL_SCULK_HORSE);
+    public static final List<EntityType<BhUndeadHorse>> HUSKS =
+            List.of(LARGE_HUSK_HORSE, MEDIUM_HUSK_HORSE, SMALL_HUSK_HORSE);
+    public static final List<EntityType<BhUndeadHorse>> DROWNEDS =
+            List.of(LARGE_DROWNED_HORSE, MEDIUM_DROWNED_HORSE, SMALL_DROWNED_HORSE);
 
     //No more jankyness!!!!! YIPPYYPYPYPYPPPYPY
     public static @Nullable EntityType<? extends BhBreedHorse> forBreed(ResourceKey<BreedType> breedKey) {
@@ -242,6 +274,10 @@ public final class ModEntities {
         }
         for (EntityType<BhUndeadHorse> horse : SKELETONS) event.put(horse, BhUndeadHorse.createAttributes(true).build());
         for (EntityType<BhUndeadHorse> horse : ZOMBIES) event.put(horse, BhUndeadHorse.createAttributes(false).build());
+        for (EntityType<BhUndeadHorse> horse : STRAYS) event.put(horse, BhUndeadHorse.createAttributes(true).build());
+        for (EntityType<BhUndeadHorse> horse : SCULKS) event.put(horse, BhUndeadHorse.createAttributes(true).build());
+        for (EntityType<BhUndeadHorse> horse : HUSKS) event.put(horse, BhUndeadHorse.createAttributes(false).build());
+        for (EntityType<BhUndeadHorse> horse : DROWNEDS) event.put(horse, BhUndeadHorse.createAttributes(false).build());
     }
 
     private static <T extends Entity> EntityType<T> register(

@@ -29,17 +29,10 @@
     },
     {
       "type": "modonomicon:text",
-      "id": "careful",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.careful.title",
+      "id": "ability",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.ability.title",
       "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.careful.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "planting",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.planting.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.planting.text"
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.ability.text"
     },
     {
       "type": "modonomicon:text",

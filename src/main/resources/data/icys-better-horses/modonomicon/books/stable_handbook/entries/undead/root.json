@@ -21,6 +21,20 @@
       "title": "book.icys-better-horses.stable_handbook.undead.root.about.title",
       "show_title_separator": true,
       "text": "book.icys-better-horses.stable_handbook.undead.root.about.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "kinds",
+      "title": "book.icys-better-horses.stable_handbook.undead.root.kinds.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.undead.root.kinds.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "sun",
+      "title": "book.icys-better-horses.stable_handbook.undead.root.sun.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.undead.root.sun.text"
     }
   ]
 }

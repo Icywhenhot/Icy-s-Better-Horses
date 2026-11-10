@@ -42,6 +42,7 @@
 		"FishingHookMixin",
 		"FoodOnAStickItemMixin",
 		"MobCalmMixin",
+		"WardenMixin",
 		"PathNavigationIdleGaitMixin",
 		"MobCartPassengerMixin",
 		"MobNameTagBondMixin",
