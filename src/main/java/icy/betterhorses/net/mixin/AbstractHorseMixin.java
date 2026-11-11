@@ -3,6 +3,7 @@ package icy.betterhorses.net.mixin;
 import icy.betterhorses.net.feature.Bonding;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhConfig;
+import icy.betterhorses.net.BhFeature;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhGears;
 import icy.betterhorses.net.BhSiegeTow;
@@ -1212,6 +1213,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!cir.getReturnValueZ()
                 || !(self instanceof Horse)
+                || !this.bh_getBreed().neighs()
                 || self.getRandom().nextFloat() >= BH_HURT_NEIGH_CHANCE) {
             return;
         }
@@ -1275,7 +1277,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Inject(method = "hurt", at = @At("RETURN"))
     private void bh_boltFromHazard(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
-        if (!cir.getReturnValueZ() || self.level().isClientSide() || source.getEntity() != null) return;
+        if (!cir.getReturnValueZ() || self.level().isClientSide() || source.getEntity() != null
+                || self.isVehicle() || !BhFeature.HORSE_SPOOK.on()) return;
         if (source.is(DamageTypes.CACTUS) || source.is(DamageTypes.SWEET_BERRY_BUSH) || source.is(DamageTypes.HOT_FLOOR)
                 || source.is(DamageTypes.IN_FIRE) || source.is(DamageTypes.CAMPFIRE) || source.is(DamageTypes.LAVA)
                 || source.is(DamageTypes.FREEZE) || source.is(DamageTypes.STALAGMITE)) {
@@ -1394,7 +1397,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private void bh_breedFromConfiguredFood(Player player, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!bh_ours() || self.level().isClientSide()) return;
-        if (this.bh_getBreed().isUndead()) return;
+        if (this.bh_getBreed().isUndead() || this.bh_getBreed().isMule()) return;
         if (!BhConfig.breedingFood(stack)) {
             if (!this.bh_lovedBeforeEating && this.isInLove()) {
                 this.resetLove();

@@ -1,7 +1,9 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.item.UpgradedSaddleItem;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -11,6 +13,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.gameevent.GameEvent;
 import icy.betterhorses.net.item.HorseCartItem;
 import icy.betterhorses.net.item.UndeadEggItem;
 import net.neoforged.neoforge.registries.RegisterEvent;
@@ -209,6 +214,24 @@ public final class ModItems {
                         UNDEAD_VARIANT_EGGS.forEach(entries::accept);
                     })
                     .build();
+
+    public static void registerEggDispensing() {
+        DispenseItemBehavior spawn = (source, stack) -> {
+            Direction face = source.state().getValue(DispenserBlock.FACING);
+            EntityType<?> type = ((SpawnEggItem) stack.getItem()).getType(stack);
+            try {
+                type.spawn(source.level(), stack, null, source.pos().relative(face), MobSpawnType.DISPENSER, face != Direction.UP, false);
+            } catch (Exception e) {
+                IcysBetterHorses.LOGGER.error("egg dispense failed at {}", source.pos(), e);
+                return ItemStack.EMPTY;
+            }
+            stack.shrink(1);
+            source.level().gameEvent(GameEvent.ENTITY_PLACE, source.pos(), GameEvent.Context.of(source.state()));
+            return stack;
+        };
+        BREED_SPAWN_EGGS.forEach(egg -> DispenserBlock.registerBehavior(egg, spawn));
+        UNDEAD_VARIANT_EGGS.forEach(egg -> DispenserBlock.registerBehavior(egg, spawn));
+    }
 
     public static void register(RegisterEvent event) {
         event.register(Registries.ITEM, helper -> ITEMS.forEach((path, item) ->

@@ -16,6 +16,7 @@ import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 public class BhBreedDonkey extends BhBreedHorse implements ItemSteerable {
 
@@ -89,5 +90,10 @@ public class BhBreedDonkey extends BhBreedHorse implements ItemSteerable {
 
     public static AttributeSupplier.Builder createAttributes() {
         return bhAttributes(BhContent.DONKEY.get());
+    }
+
+    @Override
+    protected ResourceKey<LootTable> getDefaultLootTable() {
+        return EntityType.DONKEY.getDefaultLootTable();
     }
 }

@@ -181,13 +181,13 @@ public final class CoastalScout implements BreedAbility {
 
         @Override
         public boolean canUse() {
-            if (!eligible() || !(horse instanceof IHorseAbilityHost host)) {
+            if (!(horse instanceof IHorseAbilityHost host)) {
                 return false;
             }
             for (BreedAbility ability : host.bh_allAbilities()) {
                 if (ability instanceof CoastalScout coastal && coastal.surface != null) {
                     scout = coastal;
-                    return true;
+                    return eligible();
                 }
             }
             return false;

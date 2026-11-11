@@ -110,6 +110,7 @@ public enum HorseBreed {
             ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "spawns_modded/" + name().toLowerCase(java.util.Locale.ROOT)));
     private final BreedArchetype archetype;
     private final @Nullable Supplier<BreedAbility> ability;
+    private final @Nullable String variant;
 
     HorseBreed(BreedArchetype archetype) {
         this(archetype, null);
@@ -118,6 +119,11 @@ public enum HorseBreed {
     HorseBreed(BreedArchetype archetype, @Nullable Supplier<BreedAbility> ability) {
         this.archetype = archetype;
         this.ability = ability;
+        String found = null;
+        for (String v : new String[]{"STRAY", "SCULK", "HUSK", "DROWNED"}) {
+            if (name().equals(v + "_SPECIES") || name().endsWith("_" + v + "_HORSE")) found = v;
+        }
+        this.variant = found;
     }
 
     public ArchetypeType archetype() {
@@ -173,6 +179,10 @@ public enum HorseBreed {
         return archetype == BreedArchetype.DONKEY;
     }
 
+    public boolean neighs() {
+        return !isDonkey() && !isMule() && !isUndead();
+    }
+
     public boolean isMule() {
         return archetype == BreedArchetype.MULE;
     }
@@ -206,12 +216,11 @@ public enum HorseBreed {
     }
 
     public boolean sameUndeadVariant(HorseBreed other) {
-        return isStray() && other.isStray() || isSculk() && other.isSculk()
-                || isHusk() && other.isHusk() || isDrowned() && other.isDrowned();
+        return variant != null && variant.equals(other.variant);
     }
 
-    private boolean variantOf(String variant) {
-        return name().equals(variant + "_SPECIES") || name().endsWith("_" + variant + "_HORSE");
+    private boolean variantOf(String v) {
+        return v.equals(variant);
     }
 
     public Component displayName() {
@@ -244,14 +253,14 @@ public enum HorseBreed {
     public static List<HorseBreed> breedsForBiome(Holder<Biome> biome) {
         List<HorseBreed> matches = new ArrayList<>();
         for (HorseBreed breed : VALUES) {
-            if (!breed.isRealBreed() || breed.isDonkey() || breed.isUndead()) continue;
+            if (!breed.isRealBreed() || breed.isDonkey() || breed.isMule() || breed.isUndead()) continue;
             if (biome.is(breed.biomeTag())) {
                 matches.add(breed);
             }
         }
         if (matches.isEmpty()) {
             for (HorseBreed breed : VALUES) {
-                if (breed.isRealBreed() && !breed.isDonkey() && !breed.isUndead() && biome.is(breed.moddedTag)) matches.add(breed);
+                if (breed.isRealBreed() && !breed.isDonkey() && !breed.isMule() && !breed.isUndead() && biome.is(breed.moddedTag)) matches.add(breed);
             }
         }
         return matches;

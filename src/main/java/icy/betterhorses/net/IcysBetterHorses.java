@@ -8,6 +8,7 @@ import icy.betterhorses.net.feature.breed.DrownedRider;
 import icy.betterhorses.net.feature.breed.RottenRations;
 import icy.betterhorses.net.feature.breed.DrownedLungs;
 import icy.betterhorses.net.feature.breed.FrostCharge;
+import icy.betterhorses.net.feature.breed.SculkHush;
 import icy.betterhorses.net.feature.breed.ParchingBite;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingKnockBackEvent;
@@ -123,6 +124,7 @@ public class IcysBetterHorses {
         NeoForge.EVENT_BUS.addListener(RottenRations::damage);
         NeoForge.EVENT_BUS.addListener(RottenRations::hit);
         NeoForge.EVENT_BUS.addListener(FrostCharge::hit);
+        NeoForge.EVENT_BUS.addListener(SculkHush::hit);
         NeoForge.EVENT_BUS.addListener(ParchingBite::hit);
         NeoForge.EVENT_BUS.addListener(DrownedLungs::breathe);
         NeoForge.EVENT_BUS.addListener(BhClassLoader::register);
@@ -143,6 +145,7 @@ public class IcysBetterHorses {
     private void onCommonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(BhContent::logSummary);
         event.enqueueWork(BhBreedData::initializeBuiltIns);
+        event.enqueueWork(ModItems::registerEggDispensing);
     }
 
     private void registerPackets(RegisterPayloadHandlersEvent event) {
@@ -306,6 +309,10 @@ public class IcysBetterHorses {
 
     private static void playCommandAnswer(AbstractHorse horse) {
         if (horse.getRandom().nextFloat() >= COMMAND_ANSWER_CHANCE) {
+            return;
+        }
+        if (!IHorseData.of(horse).bh_getBreed().neighs()) {
+            horse.playAmbientSound();
             return;
         }
         SoundEvent sound = horse.getRandom().nextBoolean()
@@ -555,7 +562,7 @@ public class IcysBetterHorses {
             return;
         }
         horse.standIfPossible();
-        if (horse.isStanding() && BhFeature.REAR_NEIGH.on()) {
+        if (horse.isStanding() && BhFeature.REAR_NEIGH.on() && IHorseData.of(horse).bh_getBreed().neighs()) {
             horse.playSound(ModSounds.HORSE_NEIGH, 1.0F, 1.0F);
         }
     }

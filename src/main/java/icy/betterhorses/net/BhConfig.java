@@ -84,6 +84,7 @@ public final class BhConfig {
 
     private static final EnumMap<BhFeature, Boolean> features = new EnumMap<>(BhFeature.class);
     private static final EnumMap<BhAbility, Boolean> abilities = new EnumMap<>(BhAbility.class);
+    private static final EnumMap<HorseBreed, List<BhAbility>> BREED_ABILITIES = byBreed();
     private static BhTuning tuning = BhTuning.defaults();
     private static boolean classMaster = true;
     private static boolean breedMaster = true;
@@ -213,12 +214,24 @@ public final class BhConfig {
         if (!breedMaster) {
             return false;
         }
-        for (BhAbility ability : BhAbility.values()) {
-            if (ability.appliesTo(breed) && abilities.getOrDefault(ability, true)) {
+        for (BhAbility ability : BREED_ABILITIES.get(breed)) {
+            if (abilities.getOrDefault(ability, true)) {
                 return true;
             }
         }
         return false;
+    }
+
+    private static EnumMap<HorseBreed, List<BhAbility>> byBreed() {
+        EnumMap<HorseBreed, List<BhAbility>> out = new EnumMap<>(HorseBreed.class);
+        for (HorseBreed breed : HorseBreed.values()) {
+            List<BhAbility> list = new ArrayList<>();
+            for (BhAbility ability : BhAbility.values()) {
+                if (ability.appliesTo(breed)) list.add(ability);
+            }
+            out.put(breed, List.copyOf(list));
+        }
+        return out;
     }
 
     public static boolean classAbilitiesEnabled() {

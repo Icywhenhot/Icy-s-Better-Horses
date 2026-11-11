@@ -19,6 +19,8 @@ import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.animal.horse.SkeletonHorse;
 import net.minecraft.world.entity.animal.horse.ZombieHorse;
+import net.minecraft.world.SimpleContainer;
+import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.entity.player.Player;
@@ -102,17 +104,42 @@ public final class BhVanillaHorseSwap {
         }
         reseat(riders, swap);
         if (horse instanceof AbstractChestedHorse chested && chested.hasChest()) {
-            ListTag items = tag.getList("Items", Tag.TAG_COMPOUND);
-            for (int i = 0; i < items.size(); i++) {
-                ItemStack stack = ItemStack.parseOptional(level.registryAccess(), items.getCompound(i));
-                if (!stack.isEmpty()) {
-                    swap.spawnAtLocation(stack);
-                }
-            }
-            swap.spawnAtLocation(Items.CHEST);
+            moveChest(swap, level, tag.getList("Items", Tag.TAG_COMPOUND));
         }
         if (IHorseData.of(swap).bh_isOwned()) HorseTracker.register(swap);
         return true;
+    }
+
+    private static void moveChest(BhBreedHorse swap, ServerLevel level, ListTag items) {
+        IHorseData data = IHorseData.of(swap);
+        SimpleContainer gear = data.bh_getGearContainer();
+        ItemStack fitted = gear.getItem(GearSlot.CHEST.ordinal());
+        if (fitted.isEmpty()) {
+            gear.setItem(GearSlot.CHEST.ordinal(), new ItemStack(Items.CHEST));
+        } else if (!GearSlot.isStorageChest(fitted)) {
+            swap.spawnAtLocation(Items.CHEST);
+        }
+        SimpleContainer chest = data.bh_getChestContainer();
+        int slots = GearSlot.isStorageChest(gear.getItem(GearSlot.CHEST.ordinal()))
+                ? Math.min(data.bh_getChestRows() * 9, chest.getContainerSize()) : 0;
+        int slot = 0;
+        for (int i = 0; i < items.size(); i++) {
+            ItemStack stack = ItemStack.parseOptional(level.registryAccess(), items.getCompound(i));
+            if (stack.isEmpty()) {
+                continue;
+            }
+            while (slot < slots && !chest.getItem(slot).isEmpty()) {
+                slot++;
+            }
+            if (slot < slots) {
+                chest.setItem(slot++, stack);
+                continue;
+            }
+            while (!stack.isEmpty()) {
+                swap.spawnAtLocation(stack.split(stack.getMaxStackSize()));
+            }
+        }
+        chest.setChanged();
     }
 
     private static void reseat(List<Entity> riders, Entity mount) {

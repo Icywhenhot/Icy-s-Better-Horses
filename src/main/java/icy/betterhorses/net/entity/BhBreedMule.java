@@ -3,14 +3,18 @@ package icy.betterhorses.net.entity;
 import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 public class BhBreedMule extends MediumHorse {
 
@@ -29,6 +33,25 @@ public class BhBreedMule extends MediumHorse {
     @Override
     public boolean canMate(Animal other) {
         return false;
+    }
+
+    @Override
+    protected boolean canParent() {
+        return false;
+    }
+
+    @Override
+    public void setInLove(Player player) {
+    }
+
+    @Override
+    public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob other) {
+        return null;
+    }
+
+    @Override
+    protected ResourceKey<LootTable> getDefaultLootTable() {
+        return EntityType.MULE.getDefaultLootTable();
     }
 
     @Override

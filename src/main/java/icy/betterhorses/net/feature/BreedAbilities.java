@@ -184,10 +184,9 @@ public final class BreedAbilities implements HorseFeature {
                                       ServerLevel level, int rows) {
         SimpleContainer chest = data.bh_getChestContainer();
         for (int i = rows * 9; i < chest.getContainerSize(); i++) {
-            ItemStack stack = chest.getItem(i);
-            if (!stack.isEmpty()) {
-                chest.setItem(i, ItemStack.EMPTY);
-                horse.spawnAtLocation(stack);
+            ItemStack stack = chest.removeItemNoUpdate(i);
+            while (!stack.isEmpty()) {
+                horse.spawnAtLocation(stack.split(stack.getMaxStackSize()));
             }
         }
         chest.setChanged();

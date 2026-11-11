@@ -11,7 +11,7 @@ import java.util.List;
 
 public class UndeadEggItem extends SpawnEggItem {
 
-    private static final RandomSource RANDOM = RandomSource.create();
+    private static final RandomSource RANDOM = RandomSource.createThreadSafe();
 
     private final List<EntityType<BhUndeadHorse>> sizes;
 

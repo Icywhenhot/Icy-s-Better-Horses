@@ -29,9 +29,13 @@ public final class MuleSire {
         double health = best(a, b, Attributes.MAX_HEALTH) + 2.0D + Math.round(random.nextDouble() * 2.0D);
         double jump = BhJumpHeight.strength(BhJumpHeight.blocks(best(a, b, Attributes.JUMP_STRENGTH))
                 + 0.25D + random.nextDouble() * 0.25D);
-        child.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(Math.max(best(a, b, Attributes.MOVEMENT_SPEED), Math.min(speed, ArchetypeType.topSpeed())));
-        child.getAttribute(Attributes.MAX_HEALTH).setBaseValue(Math.max(best(a, b, Attributes.MAX_HEALTH), Math.min(health, ArchetypeType.topHealth())));
-        child.getAttribute(Attributes.JUMP_STRENGTH).setBaseValue(Math.max(best(a, b, Attributes.JUMP_STRENGTH), Math.min(jump, ArchetypeType.topJump())));
+        ArchetypeType mule = child instanceof BhBreedMule ? BhContent.MULE.get() : null;
+        double topspeed = mule != null ? mule.highSpeed() : ArchetypeType.topSpeed();
+        double tophealth = mule != null ? mule.highHealth() : ArchetypeType.topHealth();
+        double topjump = mule != null ? mule.highJump() : ArchetypeType.topJump();
+        child.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(Math.min(topspeed, Math.max(best(a, b, Attributes.MOVEMENT_SPEED), speed)));
+        child.getAttribute(Attributes.MAX_HEALTH).setBaseValue(Math.min(tophealth, Math.max(best(a, b, Attributes.MAX_HEALTH), health)));
+        child.getAttribute(Attributes.JUMP_STRENGTH).setBaseValue(Math.min(topjump, Math.max(best(a, b, Attributes.JUMP_STRENGTH), jump)));
         child.setHealth(child.getMaxHealth());
     }
 
