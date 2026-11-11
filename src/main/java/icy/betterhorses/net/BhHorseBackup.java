@@ -2,6 +2,7 @@ package icy.betterhorses.net;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import icy.betterhorses.net.entity.BhBreedHorse;
+import icy.betterhorses.net.entity.BhUndeadHorse;
 import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -26,7 +27,8 @@ public final class BhHorseBackup {
 
     public static void write(BhBreedHorse horse, CompoundTag saved) {
         saved.putString(ENTITY_ID, EntityType.getKey(horse.getType()).toString());
-        saved.putString("id", VANILLA_HORSE);
+        saved.putString("id", horse instanceof BhUndeadHorse undead
+                ? undead.bhIsSkeleton() ? "minecraft:skeleton_horse" : "minecraft:zombie_horse" : VANILLA_HORSE);
 
         CompoundTag backup = new CompoundTag();
         for (String key : saved.keySet()) {

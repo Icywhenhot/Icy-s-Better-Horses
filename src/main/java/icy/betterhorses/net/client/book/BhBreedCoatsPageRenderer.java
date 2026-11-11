@@ -42,6 +42,7 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
     private static final float VISUAL_HEIGHT_FACTOR = 1.5F;
 
     private @Nullable BhBreedHorse horse;
+    private int entityIndex;
     private int coatIndex;
     private boolean errored;
 
@@ -54,7 +55,7 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
         super.onBeginDisplayPage(parentScreen, left, top);
 
         loadHorse();
-        if (horse == null || coatCount() <= 1) {
+        if (horse == null || previewCount() <= 1) {
             return;
         }
 
@@ -71,7 +72,8 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
     public void render(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
         centeredFitted(
                 guiGraphics,
-                Component.translatable("book.icys-better-horses.coats.title").getString(),
+                Component.translatable(this.getPage().getEntityIds().size() > 1
+                        ? "book.icys-better-horses.models.title" : "book.icys-better-horses.coats.title").getString(),
                 TITLE_Y,
                 BookEntryScreen.PAGE_WIDTH);
 
@@ -86,9 +88,11 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
 
         renderHorse(guiGraphics, mouseX, mouseY);
 
-        centeredFitted(guiGraphics, horse.bhCoatSet().displayName(coatIndex).getString(),
+        centeredFitted(guiGraphics, (this.getPage().getEntityIds().size() > 1
+                        ? horse.getType().getDescription() : horse.bhCoatSet().displayName(coatIndex)).getString(),
                 NAME_Y, NAME_MAX_WIDTH);
-        centeredFitted(guiGraphics, (coatIndex + 1) + " / " + coatCount(),
+        centeredFitted(guiGraphics, ((this.getPage().getEntityIds().size() > 1 ? entityIndex : coatIndex) + 1)
+                        + " / " + previewCount(),
                 COUNT_Y, BookEntryScreen.PAGE_WIDTH);
     }
 
@@ -133,12 +137,19 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
         } catch (Exception exception) {
             errored = true;
             IcysBetterHorses.LOGGER.warn("[handbook] could not draw the coat preview for {}",
-                    this.getPage().getEntityId(), exception);
+                    entityId(), exception);
         }
     }
 
     private void cycleCoat(int direction) {
         if (horse == null) {
+            return;
+        }
+        if (this.getPage().getEntityIds().size() > 1) {
+            entityIndex = Math.floorMod(entityIndex + direction, this.getPage().getEntityIds().size());
+            horse = null;
+            errored = false;
+            loadHorse();
             return;
         }
         int count = coatCount();
@@ -148,6 +159,14 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
 
     private int coatCount() {
         return horse == null ? 0 : horse.bhCoatSet().count();
+    }
+
+    private int previewCount() {
+        return this.getPage().getEntityIds().size() > 1 ? this.getPage().getEntityIds().size() : coatCount();
+    }
+
+    private String entityId() {
+        return this.getPage().getEntityIds().get(entityIndex);
     }
 
     private void loadHorse() {
@@ -160,10 +179,10 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
             return;
         }
 
-        Identifier typeId = Identifier.tryParse(this.getPage().getEntityId());
+        Identifier typeId = Identifier.tryParse(entityId());
         EntityType<?> type = typeId == null ? null : BuiltInRegistries.ENTITY_TYPE.getValue(typeId);
         if (type == null) {
-            markErrored("unknown entity type " + this.getPage().getEntityId(), null);
+            markErrored("unknown entity type " + entityId(), null);
             return;
         }
 
@@ -171,12 +190,12 @@ public class BhBreedCoatsPageRenderer extends BookPageRenderer<BhBreedCoatsPage>
         try {
             created = type.create(minecraft.level, EntitySpawnReason.LOAD);
         } catch (Exception exception) {
-            markErrored("could not build " + this.getPage().getEntityId(), exception);
+            markErrored("could not build " + entityId(), exception);
             return;
         }
 
         if (!(created instanceof BhBreedHorse breedHorse)) {
-            markErrored(this.getPage().getEntityId() + " is not a breed mob", null);
+            markErrored(entityId() + " is not a breed mob", null);
             return;
         }
 

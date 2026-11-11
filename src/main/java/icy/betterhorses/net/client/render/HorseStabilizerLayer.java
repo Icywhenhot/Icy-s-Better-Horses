@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.entity.state.EquineRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.world.entity.EntityType;
 
@@ -50,7 +51,7 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
     private static final Variant BELGIAN = new Variant(
             new HorseStabilizerGeoRenderer(new BelgianStabilizerGeoModel()), 24.0D / 16.0D, 0.0D);
 
-    private static final Map<StabilizerBody, Variant> BY_BODY = Map.of(
+    private static final Map<StabilizerBody, Variant> BY_BODY = new EnumMap<>(Map.of(
             StabilizerBody.ICELANDIC, ICELANDIC,
             StabilizerBody.FRIESIAN, FRIESIAN,
             StabilizerBody.MEDIUM, MEDIUM,
@@ -58,7 +59,24 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
             StabilizerBody.HAFLINGER, HAFLINGER,
             StabilizerBody.PERCHERON, PERCHERON,
             StabilizerBody.SHIRE, SHIRE,
-            StabilizerBody.BELGIAN, BELGIAN);
+            StabilizerBody.BELGIAN, BELGIAN));
+
+    static {
+        BY_BODY.put(StabilizerBody.ANDALUSIAN_DONKEY, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("andalusian_donkey")), 24.0D / 16.0D, 0.0D));
+        BY_BODY.put(StabilizerBody.ASINARA_DONKEY, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("asinara_donkey")), 24.0D / 16.0D, 0.0D));
+        BY_BODY.put(StabilizerBody.MAMMOTH_DONKEY, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("mammoth_donkey")), 24.0D / 16.0D, 0.0D));
+        BY_BODY.put(StabilizerBody.MINIATURE_DONKEY, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("miniature_donkey")), 24.0D / 16.0D, 0.0D));
+        BY_BODY.put(StabilizerBody.PEGA_DONKEY, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("pega_donkey")), 24.0D / 16.0D, 0.0D));
+        BY_BODY.put(StabilizerBody.POITOU_DONKEY, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("poitou_donkey")), 24.0D / 16.0D, 0.0D));
+        BY_BODY.put(StabilizerBody.ZAMORANO_DONKEY, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("zamorano_donkey")), 24.0D / 16.0D, 0.0D));
+    }
 
     private static Variant variantFor(EquineRenderState state) {
         Identifier type = BuiltInRegistries.ENTITY_TYPE.getKey(state.entityType);

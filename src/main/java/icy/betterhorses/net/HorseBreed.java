@@ -63,7 +63,21 @@ public enum HorseBreed {
     MULE_SPECIES(BreedArchetype.NONE),
     SKELETON_SPECIES(BreedArchetype.NONE),
     ZOMBIE_SPECIES(BreedArchetype.NONE),
-    UNKNOWN_SPECIES(BreedArchetype.NONE);
+    UNKNOWN_SPECIES(BreedArchetype.NONE),
+
+    ANDALUSIAN_DONKEY(BreedArchetype.DONKEY),
+    ASINARA_DONKEY(BreedArchetype.DONKEY),
+    MAMMOTH_DONKEY(BreedArchetype.DONKEY),
+    MINIATURE_DONKEY(BreedArchetype.DONKEY),
+    PEGA_DONKEY(BreedArchetype.DONKEY),
+    POITOU_DONKEY(BreedArchetype.DONKEY),
+    ZAMORANO_DONKEY(BreedArchetype.DONKEY),
+    LARGE_SKELETON_HORSE(BreedArchetype.SKELETON),
+    MEDIUM_SKELETON_HORSE(BreedArchetype.SKELETON),
+    SMALL_SKELETON_HORSE(BreedArchetype.SKELETON),
+    LARGE_ZOMBIE_HORSE(BreedArchetype.ZOMBIE),
+    MEDIUM_ZOMBIE_HORSE(BreedArchetype.ZOMBIE),
+    SMALL_ZOMBIE_HORSE(BreedArchetype.ZOMBIE);
 
     public record Coat(Variant color, Markings markings) {}
 
@@ -128,7 +142,24 @@ public enum HorseBreed {
     }
 
     public boolean isRealBreed() {
-        return ordinal() < HORSE_BREED_COUNT;
+        return ordinal() < HORSE_BREED_COUNT || isDonkey()
+                || archetype == BreedArchetype.SKELETON || archetype == BreedArchetype.ZOMBIE;
+    }
+
+    public boolean isDonkey() {
+        return archetype == BreedArchetype.DONKEY;
+    }
+
+    public boolean isSkeleton() {
+        return this == SKELETON_SPECIES || archetype == BreedArchetype.SKELETON;
+    }
+
+    public boolean isZombie() {
+        return this == ZOMBIE_SPECIES || archetype == BreedArchetype.ZOMBIE;
+    }
+
+    public boolean isUndead() {
+        return isSkeleton() || isZombie();
     }
 
     public Component displayName() {
@@ -161,17 +192,29 @@ public enum HorseBreed {
     public static List<HorseBreed> breedsForBiome(Holder<Biome> biome) {
         List<HorseBreed> matches = new ArrayList<>();
         for (HorseBreed breed : VALUES) {
-            if (!breed.isRealBreed()) continue;
+            if (!breed.isRealBreed() || breed.isDonkey() || breed.isUndead()) continue;
             if (biome.is(breed.biomeTag())) {
                 matches.add(breed);
             }
         }
         if (matches.isEmpty()) {
             for (HorseBreed breed : VALUES) {
-                if (breed.isRealBreed() && biome.is(breed.moddedTag)) matches.add(breed);
+                if (breed.isRealBreed() && !breed.isDonkey() && !breed.isUndead() && biome.is(breed.moddedTag)) matches.add(breed);
             }
         }
         return matches;
+    }
+
+    public static HorseBreed pickDonkey(Holder<Biome> biome, RandomSource random) {
+        List<HorseBreed> donkeys = new ArrayList<>();
+        List<HorseBreed> here = new ArrayList<>();
+        for (HorseBreed breed : VALUES) {
+            if (!breed.isDonkey()) continue;
+            donkeys.add(breed);
+            if (biome.is(breed.biomeTag)) here.add(breed);
+        }
+        List<HorseBreed> pool = here.isEmpty() ? donkeys : here;
+        return pool.get(random.nextInt(pool.size()));
     }
 
     public static @Nullable HorseBreed pickForBiome(Holder<Biome> biome, RandomSource random) {

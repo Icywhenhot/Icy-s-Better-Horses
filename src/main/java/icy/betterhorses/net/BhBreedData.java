@@ -12,11 +12,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public record BhBreedData(ArchetypeType archetype, int chestRows, int bondedChestRows, int spawnWeight) {
+public record BhBreedData(ArchetypeType archetype, int chestRows, int midChestRows, int bondedChestRows, int spawnWeight) {
 
     private static final int DEFAULT_SPAWN_WEIGHT = 5;
     private static final BhBreedData SPECIES_DEFAULT = new BhBreedData(
-            BhContent.NONE.value(), BhContent.NONE.value().defaultChestRows(),
+            BhContent.NONE.value(), BhContent.NONE.value().defaultChestRows(), BhContent.NONE.value().defaultChestRows(),
             BhContent.NONE.value().defaultChestRows(), DEFAULT_SPAWN_WEIGHT);
 
     private static @Nullable Map<Identifier, BhBreedData> BUILT_IN;
@@ -76,7 +76,7 @@ public record BhBreedData(ArchetypeType archetype, int chestRows, int bondedChes
     }
 
     public int rowsAt(int bondTier) {
-        return bondTier >= 2 ? bondedChestRows : chestRows;
+        return bondTier >= 2 ? bondedChestRows : bondTier == 1 ? midChestRows : chestRows;
     }
 
     private static Identifier idOf(HorseBreed breed) {
@@ -94,7 +94,8 @@ public record BhBreedData(ArchetypeType archetype, int chestRows, int bondedChes
             ArchetypeType archetype = resolveArchetype(type.archetype());
             int rows = type.chestRowsOverride() != null ? type.chestRowsOverride() : archetype.defaultChestRows();
             int bonded = type.bondedChestRowsOverride() != null ? type.bondedChestRowsOverride() : rows;
-            map.put(id, new BhBreedData(archetype, rows, bonded, DEFAULT_SPAWN_WEIGHT));
+            int mid = type.midChestRowsOverride() != null ? type.midChestRowsOverride() : rows;
+            map.put(id, new BhBreedData(archetype, rows, mid, bonded, DEFAULT_SPAWN_WEIGHT));
         }
         return Map.copyOf(map);
     }

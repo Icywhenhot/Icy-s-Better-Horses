@@ -1,0 +1,26 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:undead/root",
+  "category": "icys-better-horses:undead",
+  "name": "book.icys-better-horses.stable_handbook.undead.root.name",
+  "icon": {
+    "id": "minecraft:bone"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 0,
+  "y": 0,
+  "sort_number": 4,
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "book.icys-better-horses.stable_handbook.undead.root.about.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.undead.root.about.text"
+    }
+  ]
+}

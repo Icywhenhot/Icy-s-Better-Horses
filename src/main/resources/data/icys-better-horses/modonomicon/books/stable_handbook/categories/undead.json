@@ -1,0 +1,9 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.undead.name",
+  "icon": {
+    "id": "minecraft:bone"
+  },
+  "background": "icys-better-horses:textures/gui/handbook_bg.png",
+  "sort_number": 5,
+  "description": "book.icys-better-horses.stable_handbook.undead.description"
+}

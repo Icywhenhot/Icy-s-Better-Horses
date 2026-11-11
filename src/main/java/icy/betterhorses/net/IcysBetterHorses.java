@@ -511,6 +511,11 @@ public class IcysBetterHorses implements ModInitializer {
         if (horse.getControllingPassenger() != null && horse.getControllingPassenger() != player) {
             return;
         }
+        if (horse.getControllingPassenger() == player && horse.isInWater()
+                && IHorseData.of(horse).bh_getBreed().isSkeleton()) {
+            ((IHorseAbilityHost) horse).bh_activateAbility(BhContent.DROWNED_RIDER.key());
+            return;
+        }
         horse.standIfPossible();
         if (horse.isStanding() && BhFeature.REAR_NEIGH.on()) {
             horse.playSound(ModSounds.HORSE_NEIGH, 1.0F, 1.0F);

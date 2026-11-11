@@ -27,6 +27,8 @@ public final class ArchetypePerks {
     private static final int PATH_INTERVAL = 10;
     private static final int PATH_GRACE = 40;
     private static final double DEFAULT_STEP_HEIGHT = 1.125D;
+    private static final double DONKEY_ARMOR = -0.25D;
+    private static final int GUARD_INTERVAL = 20;
     public static final int MEDKIT_BADGE = 1;
     private static final int SNOW_BADGE = 2;
     public static final int FALL_BADGE = 3;
@@ -40,6 +42,11 @@ public final class ArchetypePerks {
         BhHorseAttributes.apply(horse, Attributes.KNOCKBACK_RESISTANCE,
                 BhHorseAttributes.Source.ARCHETYPE, "mass",
                 knockbackResistance(arch), AttributeModifier.Operation.ADD_VALUE);
+        double armor = arch == BhContent.DONKEY.value() ? DONKEY_ARMOR : 0.0D;
+        BhHorseAttributes.apply(horse, Attributes.ARMOR, BhHorseAttributes.Source.ARCHETYPE, "armor",
+                armor, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+        BhHorseAttributes.apply(horse, Attributes.ARMOR_TOUGHNESS, BhHorseAttributes.Source.ARCHETYPE, "armor",
+                armor, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
     }
 
     public void tick(AbstractHorse horse, IHorseData data, ArchetypeType arch) {
@@ -60,6 +67,9 @@ public final class ArchetypePerks {
 
         if (horse.tickCount % PATH_INTERVAL == 0) {
             updatePath(horse, data, arch);
+        }
+        if (arch == BhContent.DONKEY.value() && horse.tickCount % GUARD_INTERVAL == 0 && BhAbility.DONKEY_GUARD.on()) {
+            Guardian.hunt(horse, data);
         }
     }
 

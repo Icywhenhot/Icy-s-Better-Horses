@@ -16,9 +16,12 @@ import icy.betterhorses.net.entity.PercheronHorse;
 import icy.betterhorses.net.entity.QuarterHorse;
 import icy.betterhorses.net.entity.BhBreedHorse;
 import icy.betterhorses.net.entity.BelgianHorse;
+import icy.betterhorses.net.entity.BhBreedDonkey;
+import icy.betterhorses.net.entity.BhUndeadHorse;
 import icy.betterhorses.net.entity.ClydesdaleHorse;
 import icy.betterhorses.net.entity.ShireHorse;
 import icy.betterhorses.net.entity.ThoroughbredHorse;
+import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedType;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
@@ -31,6 +34,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
+import net.minecraft.core.Holder;
+
+import java.util.List;
 
 public final class ModEntities {
 
@@ -119,6 +125,42 @@ public final class ModEntities {
                     .clientTrackingRange(10)
                     .build(key("clydesdale_horse")));
 
+    public static final EntityType<BhBreedDonkey> ANDALUSIAN_DONKEY =
+            registerDonkey("andalusian_donkey", BhContent.ANDALUSIAN_DONKEY, 1.3964844F, 1.5F);
+    public static final EntityType<BhBreedDonkey> ASINARA_DONKEY =
+            registerDonkey("asinara_donkey", BhContent.ASINARA_DONKEY, 1.2F, 1.3125F);
+    public static final EntityType<BhBreedDonkey> MAMMOTH_DONKEY =
+            registerDonkey("mammoth_donkey", BhContent.MAMMOTH_DONKEY, 1.3964844F, 1.375F);
+    public static final EntityType<BhBreedDonkey> MINIATURE_DONKEY =
+            registerDonkey("miniature_donkey", BhContent.MINIATURE_DONKEY, 0.9F, 1.0625F);
+    public static final EntityType<BhBreedDonkey> PEGA_DONKEY =
+            registerDonkey("pega_donkey", BhContent.PEGA_DONKEY, 1.3964844F, 1.5625F);
+    public static final EntityType<BhBreedDonkey> POITOU_DONKEY =
+            registerDonkey("poitou_donkey", BhContent.POITOU_DONKEY, 1.3964844F, 1.5F);
+    public static final EntityType<BhBreedDonkey> ZAMORANO_DONKEY =
+            registerDonkey("zamorano_donkey", BhContent.ZAMORANO_DONKEY, 1.3964844F, 1.375F);
+
+    public static final List<EntityType<BhBreedDonkey>> DONKEYS = List.of(ANDALUSIAN_DONKEY, ASINARA_DONKEY,
+            MAMMOTH_DONKEY, MINIATURE_DONKEY, PEGA_DONKEY, POITOU_DONKEY, ZAMORANO_DONKEY);
+
+    public static final EntityType<BhUndeadHorse> LARGE_SKELETON_HORSE =
+            registerUndead("large_skeleton_horse", BhContent.LARGE_SKELETON_HORSE, true, PercheronHorse.WIDTH, PercheronHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> MEDIUM_SKELETON_HORSE =
+            registerUndead("medium_skeleton_horse", BhContent.MEDIUM_SKELETON_HORSE, true, MediumHorse.WIDTH, MediumHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> SMALL_SKELETON_HORSE =
+            registerUndead("small_skeleton_horse", BhContent.SMALL_SKELETON_HORSE, true, SmallHorse.WIDTH, SmallHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> LARGE_ZOMBIE_HORSE =
+            registerUndead("large_zombie_horse", BhContent.LARGE_ZOMBIE_HORSE, false, PercheronHorse.WIDTH, PercheronHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> MEDIUM_ZOMBIE_HORSE =
+            registerUndead("medium_zombie_horse", BhContent.MEDIUM_ZOMBIE_HORSE, false, MediumHorse.WIDTH, MediumHorse.HEIGHT);
+    public static final EntityType<BhUndeadHorse> SMALL_ZOMBIE_HORSE =
+            registerUndead("small_zombie_horse", BhContent.SMALL_ZOMBIE_HORSE, false, SmallHorse.WIDTH, SmallHorse.HEIGHT);
+
+    public static final List<EntityType<BhUndeadHorse>> SKELETONS =
+            List.of(LARGE_SKELETON_HORSE, MEDIUM_SKELETON_HORSE, SMALL_SKELETON_HORSE);
+    public static final List<EntityType<BhUndeadHorse>> ZOMBIES =
+            List.of(LARGE_ZOMBIE_HORSE, MEDIUM_ZOMBIE_HORSE, SMALL_ZOMBIE_HORSE);
+
     //No more jankyness!!!!! YIPPYYPYPYPYPPPYPY
     public static @Nullable EntityType<? extends BhBreedHorse> forBreed(ResourceKey<BreedType> breedKey) {
         BreedType type = BhRegistries.breedTypeRegistry().getValue(breedKey.identifier());
@@ -137,6 +179,25 @@ public final class ModEntities {
                 .sized(SmallHorse.WIDTH, SmallHorse.HEIGHT)
                 .eyeHeight(SmallHorse.HEIGHT * 0.95F)
                 .passengerAttachments(SmallHorse.HEIGHT * 0.90F)
+                .clientTrackingRange(10)
+                .build(key(path)));
+    }
+
+    private static EntityType<BhUndeadHorse> registerUndead(String path, Holder.Reference<BreedType> breed,
+                                                          boolean skeleton, float width, float height) {
+        return register(path, EntityType.Builder.<BhUndeadHorse>of(
+                        (type, level) -> new BhUndeadHorse(type, level, breed.key(), skeleton), MobCategory.CREATURE)
+                .sized(width, height).eyeHeight(height * 0.95F).passengerAttachments(height * 0.90F)
+                .clientTrackingRange(10).build(key(path)));
+    }
+
+    private static EntityType<BhBreedDonkey> registerDonkey(
+            String path, Holder.Reference<BreedType> breed, float width, float height) {
+        return register(path, EntityType.Builder.<BhBreedDonkey>of(
+                        (type, level) -> new BhBreedDonkey(type, level, breed.key()), MobCategory.CREATURE)
+                .sized(width, height)
+                .eyeHeight(height * 0.95F)
+                .passengerAttachments(height * 0.90F)
                 .clientTrackingRange(10)
                 .build(key(path)));
     }
@@ -167,6 +228,11 @@ public final class ModEntities {
         FabricDefaultAttributeRegistry.register(SHIRE_HORSE, ShireHorse.createAttributes());
         FabricDefaultAttributeRegistry.register(BELGIAN_HORSE, BelgianHorse.createAttributes());
         FabricDefaultAttributeRegistry.register(CLYDESDALE_HORSE, ClydesdaleHorse.createAttributes());
+        for (EntityType<BhBreedDonkey> donkey : DONKEYS) {
+            FabricDefaultAttributeRegistry.register(donkey, BhBreedDonkey.createAttributes());
+        }
+        for (EntityType<BhUndeadHorse> horse : SKELETONS) FabricDefaultAttributeRegistry.register(horse, BhUndeadHorse.createAttributes(true));
+        for (EntityType<BhUndeadHorse> horse : ZOMBIES) FabricDefaultAttributeRegistry.register(horse, BhUndeadHorse.createAttributes(false));
     }
 
     private static <T extends Entity> EntityType<T> register(

@@ -3,12 +3,17 @@ package icy.betterhorses.net;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.item.BundleItem;
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import icy.betterhorses.net.entity.BhBreedDonkey;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -23,6 +28,18 @@ public final class BhHorseStorage {
                         Codec.INT.fieldOf("Slot").forGetter(SlotEntry::slot),
                         ItemStack.CODEC.fieldOf("Item").forGetter(SlotEntry::stack)
                 ).apply(instance, SlotEntry::new));
+    }
+
+    public static int chestLimit(AbstractHorse horse, ItemStack stack) {
+        int limit = stack.getMaxStackSize();
+        if (!(horse instanceof BhBreedDonkey) || stack.isEmpty() || limit != 1 && limit != 16
+                || !stack.getItem().canFitInsideContainerItems() || stack.getItem() instanceof BundleItem
+                || stack.has(DataComponents.CONTAINER) || stack.has(DataComponents.BUNDLE_CONTENTS)
+                || stack.has(DataComponents.CONTAINER_LOOT)
+                || ItemStorage.ITEM.find(stack, ContainerItemContext.withConstant(stack)) != null) {
+            return limit;
+        }
+        return limit == 16 ? 32 : 8;
     }
 
     public static void writeContainer(ValueOutput.TypedOutputList<SlotEntry> list, SimpleContainer container) {
@@ -70,8 +87,8 @@ public final class BhHorseStorage {
     public static void dropContainerContents(AbstractHorse horse, ServerLevel level, SimpleContainer container) {
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack stack = container.removeItemNoUpdate(i);
-            if (!stack.isEmpty()) {
-                horse.spawnAtLocation(level, stack);
+            while (!stack.isEmpty()) {
+                horse.spawnAtLocation(level, stack.split(stack.getMaxStackSize()));
             }
         }
     }

@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "#icys-better-horses:spawns/andalusian_donkey",
+    "#icys-better-horses:spawns/asinara_donkey",
+    "#icys-better-horses:spawns/mammoth_donkey",
+    "#icys-better-horses:spawns/miniature_donkey",
+    "#icys-better-horses:spawns/pega_donkey",
+    "#icys-better-horses:spawns/poitou_donkey",
+    "#icys-better-horses:spawns/zamorano_donkey"
+  ]
+}

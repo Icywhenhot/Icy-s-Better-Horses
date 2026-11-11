@@ -1,0 +1,61 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:undead/zombie",
+  "category": "icys-better-horses:undead",
+  "name": "book.icys-better-horses.stable_handbook.undead.zombie.name",
+  "icon": {
+    "id": "icys-better-horses:zombie_horse_spawn_egg"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 2,
+  "y": 2,
+  "sort_number": 6,
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "stats",
+      "title": "book.icys-better-horses.stable_handbook.undead.zombie.stats.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.undead.zombie.stats.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "rations",
+      "title": "book.icys-better-horses.stable_handbook.undead.zombie.rations.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.undead.zombie.rations.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "fuel",
+      "title": "book.icys-better-horses.stable_handbook.undead.zombie.fuel.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.undead.zombie.fuel.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "rot",
+      "title": "book.icys-better-horses.stable_handbook.undead.zombie.rot.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.undead.zombie.rot.text"
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "id": "models",
+      "entities": [
+        "icys-better-horses:small_zombie_horse",
+        "icys-better-horses:medium_zombie_horse",
+        "icys-better-horses:large_zombie_horse"
+      ]
+    }
+  ],
+  "parents": [
+    {
+      "entry": "icys-better-horses:undead/root"
+    }
+  ]
+}

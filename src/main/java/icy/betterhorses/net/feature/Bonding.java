@@ -64,6 +64,13 @@ public final class Bonding implements HorseFeature {
         if (horse.level().isClientSide()) {
             return;
         }
+        if (data.bh_getBreed().isZombie()) {
+            treat = BuiltInRegistries.ITEM.getKey(Items.ROTTEN_FLESH);
+            treatKnown = true;
+            if (!treat.toString().equals(data.bh_getShownTreat())) {
+                data.bh_showTreat(treat.toString());
+            }
+        }
         double x = horse.getX();
         double y = horse.getY();
         double z = horse.getZ();
@@ -185,6 +192,10 @@ public final class Bonding implements HorseFeature {
     }
 
     private Identifier treat(AbstractHorse horse) {
+        if (IHorseData.of(horse).bh_getBreed().isZombie()) {
+            treat = BuiltInRegistries.ITEM.getKey(Items.ROTTEN_FLESH);
+            return treat;
+        }
         if (treat == null) {
             List<Item> pool = new ArrayList<>(List.of(TREATS));
             BuiltInRegistries.ITEM.get(SNACKS).ifPresent(set -> set.stream().map(Holder::value).forEach(pool::add));
@@ -202,6 +213,10 @@ public final class Bonding implements HorseFeature {
         saves = tag.getIntOr("Saves", 0);
         treat = tag.contains("Treat") ? Identifier.tryParse(tag.getStringOr("Treat", "")) : null;
         treatKnown = treat != null && tag.getBooleanOr("TreatKnown", false);
+        if (data.bh_getBreed().isZombie()) {
+            treat = BuiltInRegistries.ITEM.getKey(Items.ROTTEN_FLESH);
+            treatKnown = true;
+        }
         treatReadyAt = tag.getLongOr("TreatReadyAt", 0L);
         gappleReadyAt = tag.getLongOr("GappleReadyAt", 0L);
         data.bh_showTreat(treatKnown ? treat.toString() : "");

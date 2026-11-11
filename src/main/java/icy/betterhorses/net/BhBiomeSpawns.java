@@ -21,6 +21,9 @@ public final class BhBiomeSpawns {
     private static final TagKey<Biome> MODDED_SPAWNS = TagKey.create(Registries.BIOME,
             Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "spawns_horses_modded"));
 
+    private static final TagKey<Biome> DONKEY_SPAWNS = TagKey.create(Registries.BIOME,
+            Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "spawns_donkeys"));
+
     private BhBiomeSpawns() {}
 
     public static void register() {
@@ -50,6 +53,15 @@ public final class BhBiomeSpawns {
 
                     if (boostedProbability) {
                         context.getMobSpawnSettings().setCreatureGenerationProbability(floor);
+                    }
+                });
+        BiomeModifications.create(Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID, "donkey_biome_spawns"))
+                .add(ModificationPhase.ADDITIONS, BiomeSelectors.tag(DONKEY_SPAWNS), (selectionContext, context) -> {
+                    boolean has = selectionContext.getBiome().getMobSettings().getMobs(MobCategory.CREATURE).unwrap().stream()
+                            .anyMatch(weighted -> weighted.value().type() == EntityTypes.DONKEY);
+                    if (!has) {
+                        context.getMobSpawnSettings().addSpawn(MobCategory.CREATURE,
+                                new MobSpawnSettings.SpawnerData(EntityTypes.DONKEY, 1, 3), 1);
                     }
                 });
     }

@@ -7,6 +7,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
@@ -50,6 +51,10 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
                     + " - is its DeferredRegister<BreedType> targeting BhRegistries.BREED_TYPES actually registered?");
         }
         return type.coats();
+    }
+
+    protected boolean bhIsDonkey() {
+        return false;
     }
 
     public static AttributeSupplier.Builder bhAttributes(ArchetypeType arch) {
@@ -160,7 +165,17 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
     public AgeableMob getBreedOffspring(
             ServerLevel level,
             AgeableMob partner) {
+        if (partner instanceof AbstractHorse horse && IHorseData.of(horse).bh_getBreed().isUndead()) {
+            return null;
+        }
         if (partner instanceof BhBreedHorse other) {
+            if (bhIsDonkey() != other.bhIsDonkey()) {
+                AbstractHorse mule = EntityTypes.MULE.create(level, EntitySpawnReason.BREEDING);
+                if (mule != null) {
+                    setOffspringAttributes(other, mule);
+                }
+                return mule;
+            }
             boolean sameBreed = other.getType() == this.getType();
             BhBreedHorse source = sameBreed || this.random.nextBoolean() ? this : other;
             Entity created =

@@ -1,0 +1,54 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:donkeys/root",
+  "category": "icys-better-horses:donkeys",
+  "name": "book.icys-better-horses.stable_handbook.donkeys.root.name",
+  "icon": {
+    "id": "minecraft:donkey_spawn_egg"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 0,
+  "y": 0,
+  "sort_number": 0,
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.root.about.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.donkeys.root.about.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "perks",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.root.perks.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.donkeys.root.perks.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "carrot",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.root.carrot.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.donkeys.root.carrot.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "packing",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.root.packing.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.donkeys.root.packing.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "stats",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.root.stats.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.donkeys.root.stats.text"
+    }
+  ]
+}

@@ -12,6 +12,7 @@ import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 
+import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhGears;
@@ -286,7 +287,12 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private static final Codec<ResourceKey<Level>> BH_DIMENSION_CODEC =
             ResourceKey.codec(Registries.DIMENSION);
     @Unique private static final int BH_CHEST_MAX_SLOTS = 54;
-    @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(BH_CHEST_MAX_SLOTS);
+    @Unique private final SimpleContainer bh_chestContainer = new SimpleContainer(BH_CHEST_MAX_SLOTS) {
+        @Override
+        public int getMaxStackSize(ItemStack stack) {
+            return BhHorseStorage.chestLimit((AbstractHorse) (Object) AbstractHorseMixin.this, stack);
+        }
+    };
     @Unique private static final int BH_CART_CHEST_SIZE = CartType.CHEST_SLOTS;
     @Unique private @Nullable SimpleContainer bh_cartChestContainer;
     @Unique private ItemStack bh_cartPlow = ItemStack.EMPTY;
@@ -1445,6 +1451,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Inject(method = "isFood", at = @At("RETURN"), cancellable = true)
     private void bh_breedingFoodIsFood(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+        if (bh_ours() && this.bh_getBreed().isZombie() && BhAbility.ZOMBIE_RATIONS.on() && stack.is(Items.ROTTEN_FLESH)) {
+            cir.setReturnValue(true);
+            return;
+        }
         if (!cir.getReturnValueZ() && bh_ours() && (BhConfig.breedingFood(stack) || stack.is(BH_SNACKS))) {
             cir.setReturnValue(true);
         }
@@ -1457,11 +1467,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Inject(method = "handleEating", at = @At("RETURN"), cancellable = true)
     private void bh_eatSnack(Player player, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-        if (cir.getReturnValueZ() || !bh_ours() || !stack.is(BH_SNACKS)) return;
+        if (!bh_ours()) return;
+        boolean flesh = this.bh_getBreed().isZombie() && BhAbility.ZOMBIE_RATIONS.on() && stack.is(Items.ROTTEN_FLESH);
+        if (cir.getReturnValueZ() || !flesh && !stack.is(BH_SNACKS)) return;
         AbstractHorse self = (AbstractHorse) (Object) this;
         FoodProperties food = stack.get(DataComponents.FOOD);
         int heal = Math.max(2, food == null ? 0 : food.nutrition());
-        boolean ate = false;
+        boolean ate = flesh;
+        if (flesh && !self.level().isClientSide()) {
+            icy.betterhorses.net.feature.breed.RottenRations.feed(self, this);
+        }
         if (self.getHealth() < self.getMaxHealth()) {
             self.heal(heal);
             ate = true;
@@ -1489,6 +1504,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private void bh_breedFromConfiguredFood(Player player, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!bh_ours() || self.level().isClientSide()) return;
+        if (this.bh_getBreed().isUndead()) return;
         if (!BhConfig.breedingFood(stack)) {
             if (!this.bh_lovedBeforeEating && this.isInLove()) {
                 this.resetLove();
@@ -1779,6 +1795,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         AbstractHorse self = (AbstractHorse) (Object) this;
         goalSelector.addGoal(1, new SpookGoal(self));
         goalSelector.addGoal(2, new DefendOwnerGoal(self));
+        goalSelector.addGoal(2, new icy.betterhorses.net.feature.breed.CoastalScout.TreasureGoal(self));
         goalSelector.addGoal(3, new HorseStayGoal(self));
         goalSelector.addGoal(3, new HorseFollowOwnerGoal(self));
         goalSelector.addGoal(3, new HorseReturnHomeGoal(self));

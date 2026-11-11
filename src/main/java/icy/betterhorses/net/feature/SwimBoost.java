@@ -46,6 +46,7 @@ public final class SwimBoost implements HorseFeature {
 
     private static boolean swimsFast(AbstractHorse horse) {
         return horse instanceof SkeletonHorse
+                || IHorseData.of(horse).bh_getBreed().isSkeleton()
                 || horse.hasEffect(MobEffects.DOLPHINS_GRACE)
                 || horse.getAttributeValue(Attributes.WATER_MOVEMENT_EFFICIENCY) > 0.0D;
     }

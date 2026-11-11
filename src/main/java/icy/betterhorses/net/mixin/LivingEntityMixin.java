@@ -6,6 +6,11 @@ import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.feature.breed.HardyNorthern;
+import icy.betterhorses.net.feature.breed.ThickHide;
+import icy.betterhorses.net.entity.BhUndeadHorse;
+import icy.betterhorses.net.feature.breed.MammothWorker;
+import icy.betterhorses.net.feature.breed.RottenRations;
+import icy.betterhorses.net.feature.breed.DrownedRider;
 import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
@@ -22,6 +27,7 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -35,6 +41,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -54,6 +61,32 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Shadow
     protected abstract float getDamageAfterMagicAbsorb(DamageSource source, float amount);
+
+    @ModifyVariable(method = "hurtServer", at = @At("HEAD"), argsOnly = true)
+    private float bh_scaleIncoming(float amount, ServerLevel level, DamageSource source) {
+        LivingEntity self = (LivingEntity) (Object) this;
+        return amount * ThickHide.damageScale(self, source) * MammothWorker.resistanceScale(self)
+                * RottenRations.damageScale(self, source);
+    }
+
+    @Inject(method = "knockback(DDDLnet/minecraft/world/damagesource/DamageSource;FZ)V", at = @At("HEAD"), cancellable = true)
+    private void bh_bracedKnockback(CallbackInfo ci) {
+        if (MammothWorker.braced((LivingEntity) (Object) this)) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "floatInWaterWhileRidden", at = @At("HEAD"), cancellable = true)
+    private void bh_skeletonSinks(CallbackInfo ci) {
+        if ((Object) this instanceof BhUndeadHorse undead && undead.bhIsSkeleton()) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "decreaseAirSupply", at = @At("RETURN"), cancellable = true)
+    private void bh_skeletonRiderAir(int air, CallbackInfoReturnable<Integer> cir) {
+        cir.setReturnValue(DrownedRider.air((LivingEntity) (Object) this, air, cir.getReturnValueI()));
+    }
 
     @Inject(method = "isEquippableInSlot", at = @At("RETURN"), cancellable = true)
     private void bh_breedTackWithoutTag(ItemStack stack, EquipmentSlot slot, CallbackInfoReturnable<Boolean> cir) {
@@ -80,6 +113,10 @@ public abstract class LivingEntityMixin extends Entity {
             return;
         }
         LivingEntity self = (LivingEntity) (Object) this;
+        if (effect.getEffect().value().getCategory() == MobEffectCategory.HARMFUL && ThickHide.immune(self)) {
+            cir.setReturnValue(false);
+            return;
+        }
         AbstractHorse warden = HardyNorthern.warden(self);
         if (warden == null) {
             return;
@@ -120,6 +157,7 @@ public abstract class LivingEntityMixin extends Entity {
     @Inject(method = "actuallyHurt", at = @At("TAIL"))
     private void bh_afterDamage(ServerLevel level, DamageSource source, float amount, CallbackInfo ci) {
         LivingEntity self = (LivingEntity) (Object) this;
+        RottenRations.hit(self, source, amount);
 
         if (!this.bh_triggerHorseMedkitAfterDamage) {
             return;
