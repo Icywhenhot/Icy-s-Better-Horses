@@ -76,7 +76,7 @@ public final class BhContent {
             .speed(0.1852D, 0.2778D).health(35.0D, 50.0D).jump(0.545D, 0.803D)
             .bashDamage(1.5D).bashKnockback(1.0D)
             .defaultChestRows(4).allowsChestAndRiders(false)
-            .baseSpookChance(0.0D).stepHeight(2.0D)
+            .baseSpookChance(0.0D).stepHeight(2.0D).allowsLargeCart(true)
             .build());
 
     public static final Holder.Reference<ArchetypeType> NONE = register(BhRegistries.archetypeTypeRegistry(), "none", ArchetypeType.builder()
@@ -303,6 +303,7 @@ public final class BhContent {
                     .ability(FARM_COMPANION.key())
                     .ability(SKITTISH.key())
                     .stabilizerBody(StabilizerBody.MINIATURE_DONKEY)
+                    .noCarts()
                     .build());
 
     public static final Holder.Reference<BreedType> PEGA_DONKEY = register(BhRegistries.breedTypeRegistry(), "pega_donkey", BreedType.builder(DONKEY.key())

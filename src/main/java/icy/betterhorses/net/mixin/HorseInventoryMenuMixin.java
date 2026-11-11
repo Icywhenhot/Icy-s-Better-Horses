@@ -182,6 +182,11 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                             && !(horse instanceof Horse)) {
                         return false;
                     }
+                    if (type == GearSlot.STABILIZER
+                            && stack.is(ModItems.HORSE_CART)
+                            && !data.bh_mayPullCart()) {
+                        return false;
+                    }
                     return this.isActive() && type.accepts(stack);
                 }
 

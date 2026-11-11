@@ -10,6 +10,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import icy.betterhorses.net.inventory.GearSlot;
+import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedType;
 import icy.betterhorses.net.registry.CommandType;
 import icy.betterhorses.net.registry.GenderType;
@@ -174,6 +175,15 @@ public interface IHorseData {
     float bh_getStabilizerCharge();
 
     void bh_syncStabilizerCharge();
+
+    default boolean bh_mayPullCart() {
+        ResourceKey<BreedType> breedKey = bh_getBreedKey();
+        if (breedKey == null) {
+            return true;
+        }
+        BreedType type = BhRegistries.breedTypeRegistry().getValue(breedKey.identifier());
+        return type == null || type.pullsCarts();
+    }
 
     default boolean bh_mayUseLargeCart() {
         ResourceKey<BreedType> breedKey = bh_getBreedKey();
