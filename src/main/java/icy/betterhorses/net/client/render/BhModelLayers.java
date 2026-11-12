@@ -177,6 +177,8 @@ public final class BhModelLayers {
     public static final ModelLayerLocation ZAMORANO_DONKEY_CHEST = layer("zamorano_donkey", "chest");
     public static final ModelLayerLocation ZAMORANO_DONKEY_CHEST_BABY = layer("zamorano_donkey", "chest_baby");
 
+    public static final ModelLayerLocation MULE_BABY = layer("mule", "baby");
+
     public static void register(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(LARGE_UNDEAD_HORSE, LargeUndeadHorseGeometry::createBodyLayer);
         event.registerLayerDefinition(MEDIUM_UNDEAD_HORSE, MediumUndeadHorseGeometry::createBodyLayer);
@@ -428,6 +430,7 @@ public final class BhModelLayers {
         event.registerLayerDefinition(ZAMORANO_DONKEY_ARMOR_BABY, ZamoranoDonkeyArmorGeometry::createBodyLayer);
         event.registerLayerDefinition(ZAMORANO_DONKEY_CHEST, ZamoranoDonkeyChestGeometry::createBodyLayer);
         event.registerLayerDefinition(ZAMORANO_DONKEY_CHEST_BABY, ZamoranoDonkeyChestGeometry::createBodyLayer);
+        event.registerLayerDefinition(MULE_BABY, SmallDonkeyFoalGeometry::createBodyLayer);
 
         registerPlates(event, ICELANDIC_ARMOR, IcelandicArmorGeometry::createBodyLayer);
         registerPlates(event, FRIESIAN_ARMOR, FriesianArmorGeometry::createBodyLayer);

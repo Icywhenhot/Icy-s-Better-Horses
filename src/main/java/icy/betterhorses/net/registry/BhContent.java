@@ -417,8 +417,7 @@ public final class BhContent {
 
     private static DeferredHolder<BreedType, BreedType> mule(String path) {
         return BREEDS.register(path, () -> BreedType.builder(MULE.getKey())
-                .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.THOROUGHBRED.folder(),
-                        List.of("brown", "dark_brown"), BhBreedCoats.THOROUGHBRED.hasFoalVariant())
+                .coats(IcysBetterHorses.RESOURCE_NAMESPACE, "mule", List.of("brown", "dark_brown"), true)
                 .entityType(entity(path))
                 .stabilizerBody(StabilizerBody.MEDIUM)
                 .build());

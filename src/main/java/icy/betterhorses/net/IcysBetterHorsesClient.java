@@ -10,6 +10,7 @@ import icy.betterhorses.net.client.HorseStabilizerSoundController;
 import icy.betterhorses.net.client.RadialMenuScreen;
 import icy.betterhorses.net.client.render.BhModelLayers;
 import icy.betterhorses.net.client.render.DonkeyRenderer;
+import icy.betterhorses.net.client.render.MuleRenderer;
 import icy.betterhorses.net.client.render.UndeadHorseRenderer;
 import icy.betterhorses.net.client.render.FriesianHorseRenderer;
 import icy.betterhorses.net.client.render.PercheronHorseRenderer;
@@ -329,7 +330,7 @@ public class IcysBetterHorsesClient {
         event.registerEntityRenderer(ModEntities.MUSTANG_HORSE, MediumHorseRenderer::new);
         event.registerEntityRenderer(ModEntities.QUARTER_HORSE, MediumHorseRenderer::new);
         for (EntityType<BhBreedMule> mule : ModEntities.MULES) {
-            event.registerEntityRenderer(mule, MediumHorseRenderer::new);
+            event.registerEntityRenderer(mule, MuleRenderer::new);
         }
         event.registerEntityRenderer(ModEntities.ARABIAN_HORSE, SmallHorseRenderer::new);
         event.registerEntityRenderer(ModEntities.MORGAN_HORSE, SmallHorseRenderer::new);
@@ -400,6 +401,8 @@ public class IcysBetterHorsesClient {
     private void registerItemColors(RegisterColorHandlersEvent.Item event) {
         event.register((stack, layer) -> -1,
                 ModItems.BREED_SPAWN_EGGS.toArray(new Item[0]));
+        event.register((stack, layer) -> -1,
+                ModItems.UNDEAD_VARIANT_EGGS.toArray(new Item[0]));
         event.register((stack, layer) -> -1,
                 Items.SKELETON_HORSE_SPAWN_EGG, Items.ZOMBIE_HORSE_SPAWN_EGG, Items.MULE_SPAWN_EGG);
     }
