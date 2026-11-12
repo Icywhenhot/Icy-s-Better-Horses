@@ -174,6 +174,8 @@ public final class BhModelLayers {
     public static final ModelLayerLocation ZAMORANO_DONKEY_CHEST = layer("zamorano_donkey", "chest");
     public static final ModelLayerLocation ZAMORANO_DONKEY_CHEST_BABY = layer("zamorano_donkey", "chest_baby");
 
+    public static final ModelLayerLocation MULE_BABY = layer("mule", "baby");
+
     public static void register() {
         ModelLayerRegistry.registerModelLayer(LARGE_UNDEAD_HORSE, LargeUndeadHorseGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(MEDIUM_UNDEAD_HORSE, MediumUndeadHorseGeometry::createBodyLayer);
@@ -425,6 +427,7 @@ public final class BhModelLayers {
         ModelLayerRegistry.registerModelLayer(ZAMORANO_DONKEY_ARMOR_BABY, ZamoranoDonkeyArmorGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(ZAMORANO_DONKEY_CHEST, ZamoranoDonkeyChestGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(ZAMORANO_DONKEY_CHEST_BABY, ZamoranoDonkeyChestGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(MULE_BABY, SmallDonkeyFoalGeometry::createBodyLayer);
     }
 
     private static ModelLayerLocation layer(String path, String name) {

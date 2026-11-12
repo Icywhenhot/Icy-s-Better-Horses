@@ -14,6 +14,7 @@ import icy.betterhorses.net.client.render.BhBreedCarpets;
 import icy.betterhorses.net.client.render.BhNamedCoats;
 import icy.betterhorses.net.client.render.BhTackTextures;
 import icy.betterhorses.net.client.render.DonkeyRenderer;
+import icy.betterhorses.net.client.render.MuleRenderer;
 import icy.betterhorses.net.client.render.UndeadHorseRenderer;
 import icy.betterhorses.net.client.render.FriesianHorseRenderer;
 import icy.betterhorses.net.client.render.PercheronHorseRenderer;
@@ -285,7 +286,7 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         EntityRendererRegistry.register(ModEntities.MUSTANG_HORSE, MediumHorseRenderer::new);
         EntityRendererRegistry.register(ModEntities.QUARTER_HORSE, MediumHorseRenderer::new);
         for (EntityType<BhBreedMule> mule : ModEntities.MULES) {
-            EntityRendererRegistry.register(mule, MediumHorseRenderer::new);
+            EntityRendererRegistry.register(mule, MuleRenderer::new);
         }
         EntityRendererRegistry.register(ModEntities.ARABIAN_HORSE, SmallHorseRenderer::new);
         EntityRendererRegistry.register(ModEntities.MORGAN_HORSE, SmallHorseRenderer::new);

@@ -387,8 +387,7 @@ public final class BhContent {
 
     private static Holder.Reference<BreedType> mule(String path) {
         return register(BhRegistries.breedTypeRegistry(), path, BreedType.builder(MULE.key())
-                .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.THOROUGHBRED.folder(),
-                        List.of("brown", "dark_brown"), BhBreedCoats.THOROUGHBRED.hasFoalVariant())
+                .coats(IcysBetterHorses.MOD_ID, "mule", List.of("brown", "dark_brown"), true)
                 .entityType(entity(path))
                 .stabilizerBody(StabilizerBody.MEDIUM)
                 .build());
