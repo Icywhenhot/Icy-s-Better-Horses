@@ -9,6 +9,10 @@ import java.util.List;
 
 public final class BreedType {
 
+    public static final int SMALL = 0;
+    public static final int MEDIUM = 1;
+    public static final int LARGE = 2;
+
     private final ResourceKey<ArchetypeType> archetype;
     private final BreedCoatSet coats;
     private final ResourceKey<? extends EntityType<?>> entityType;
@@ -18,6 +22,7 @@ public final class BreedType {
     private final List<ResourceKey<AbilityType>> abilities;
     private final StabilizerBody stabilizerBody;
     private final boolean pullsCarts;
+    private final int size;
 
     private BreedType(Builder builder) {
         this.archetype = builder.archetype;
@@ -29,6 +34,7 @@ public final class BreedType {
         this.abilities = new ArrayList<>(builder.abilities);
         this.stabilizerBody = builder.stabilizerBody;
         this.pullsCarts = builder.pullsCarts;
+        this.size = builder.size;
     }
 
     public ResourceKey<ArchetypeType> archetype() {
@@ -72,6 +78,10 @@ public final class BreedType {
         return pullsCarts;
     }
 
+    public int size() {
+        return size;
+    }
+
     public static Builder builder(ResourceKey<ArchetypeType> archetype) {
         return new Builder(archetype);
     }
@@ -95,6 +105,7 @@ public final class BreedType {
         private final List<ResourceKey<AbilityType>> abilities = new ArrayList<>();
         private StabilizerBody stabilizerBody = StabilizerBody.GENERIC;
         private boolean pullsCarts = true;
+        private int size = MEDIUM;
 
         private Builder(ResourceKey<ArchetypeType> archetype) {
             this.archetype = archetype;
@@ -137,6 +148,16 @@ public final class BreedType {
 
         public Builder noCarts() {
             this.pullsCarts = false;
+            return this;
+        }
+
+        public Builder small() {
+            this.size = SMALL;
+            return this;
+        }
+
+        public Builder large() {
+            this.size = LARGE;
             return this;
         }
 

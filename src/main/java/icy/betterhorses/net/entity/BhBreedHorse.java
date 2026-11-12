@@ -15,6 +15,8 @@ import net.minecraft.world.level.storage.ValueOutput;
 import icy.betterhorses.net.BreedArchetype;
 import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.IHorseData;
+import icy.betterhorses.net.ModEntities;
+import icy.betterhorses.net.feature.breed.MuleSire;
 import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedCoatSet;
@@ -55,6 +57,11 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
 
     protected boolean bhIsDonkey() {
         return false;
+    }
+
+    public int bhSize() {
+        BreedType type = BhRegistries.breedTypeRegistry().getValue(bhFixedBreed().identifier());
+        return type == null ? BreedType.MEDIUM : type.size();
     }
 
     public static AttributeSupplier.Builder bhAttributes(ArchetypeType arch) {
@@ -170,10 +177,15 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
         }
         if (partner instanceof BhBreedHorse other) {
             if (bhIsDonkey() != other.bhIsDonkey()) {
-                AbstractHorse mule = EntityTypes.MULE.create(level, EntitySpawnReason.BREEDING);
-                if (mule != null) {
-                    setOffspringAttributes(other, mule);
+                int sum = bhSize() + other.bhSize();
+                int size = sum / 2 + (sum % 2 == 0 ? 0 : this.random.nextInt(2));
+                BhBreedMule mule = ModEntities.MULES.get(size).create(level, EntitySpawnReason.BREEDING);
+                if (mule == null) {
+                    return null;
                 }
+                ((BhBreedHorse) mule).bhInheritStats(this, other);
+                MuleSire.apply(this, other, mule);
+                mule.bhSetCoat(mule.bhCoatSet().roll(this.random));
                 return mule;
             }
             boolean sameBreed = other.getType() == this.getType();

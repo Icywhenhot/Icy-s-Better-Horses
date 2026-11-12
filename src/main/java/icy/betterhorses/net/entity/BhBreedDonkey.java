@@ -90,4 +90,5 @@ public class BhBreedDonkey extends BhBreedHorse implements ItemSteerable {
     public static AttributeSupplier.Builder createAttributes() {
         return bhAttributes(BhContent.DONKEY.value());
     }
+
 }

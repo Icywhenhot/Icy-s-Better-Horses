@@ -15,6 +15,7 @@ import icy.betterhorses.net.feature.breed.DrownedRider;
 import icy.betterhorses.net.feature.breed.DrownedLungs;
 import icy.betterhorses.net.feature.breed.FrostCharge;
 import icy.betterhorses.net.feature.breed.ParchingBite;
+import icy.betterhorses.net.feature.breed.SculkHush;
 import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
@@ -166,6 +167,7 @@ public abstract class LivingEntityMixin extends Entity {
         RottenRations.hit(self, source, amount);
         FrostCharge.hit(self, source, amount);
         ParchingBite.hit(self, source, amount);
+        SculkHush.hit(self, source);
 
         if (!this.bh_triggerHorseMedkitAfterDamage) {
             return;

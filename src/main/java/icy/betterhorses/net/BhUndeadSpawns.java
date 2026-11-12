@@ -3,6 +3,7 @@ package icy.betterhorses.net;
 import icy.betterhorses.net.entity.BhUndeadHorse;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
@@ -17,7 +18,10 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,11 +74,12 @@ public final class BhUndeadSpawns {
     private static void trySpawn(ServerLevel level, ServerPlayer player) {
         BlockPos at = player.blockPosition();
         RandomSource rand = level.getRandom();
-        Kind kind = level.getBiome(at).is(SCULK.biomes) ? SCULK
-                : level.getBiome(at).is(STRAY.biomes) ? STRAY
-                : level.getBiome(at).is(HUSK.biomes) ? HUSK
-                : level.getBiome(at).is(DROWNED.biomes) ? DROWNED
-                : level.getBiome(at).is(SKELETON.biomes) ? rand.nextBoolean() ? SKELETON : ZOMBIE
+        Holder<Biome> biome = level.getBiome(at);
+        Kind kind = biome.is(SCULK.biomes) ? SCULK
+                : biome.is(STRAY.biomes) ? STRAY
+                : biome.is(HUSK.biomes) ? HUSK
+                : biome.is(DROWNED.biomes) ? DROWNED
+                : biome.is(SKELETON.biomes) ? rand.nextBoolean() ? SKELETON : ZOMBIE
                 : null;
         if (kind == null || rand.nextInt(kind.odds) != 0 || crowded(level, player, kind)) {
             return;
@@ -119,6 +124,9 @@ public final class BhUndeadSpawns {
 
     private static boolean standable(ServerLevel level, BlockPos pos, boolean wet) {
         BlockPos below = pos.below();
+        if (level.getBlockState(pos).is(Blocks.POWDER_SNOW) || level.getBlockState(pos.above()).is(Blocks.POWDER_SNOW)) {
+            return false;
+        }
         return level.getBlockState(below).isFaceSturdy(level, below, Direction.UP)
                 && level.getFluidState(below).isEmpty()
                 && level.getBlockState(pos).getCollisionShape(level, pos).isEmpty()
@@ -139,11 +147,13 @@ public final class BhUndeadSpawns {
             return false;
         }
         horse.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), EntitySpawnReason.NATURAL, null);
+        horse.bhMarkWild();
         if (kind.rider != null && level.getDifficulty() != Difficulty.PEACEFUL && rand.nextInt(kind.riderOdds) == 0) {
             Mob rider = kind.rider.create(level, EntitySpawnReason.JOCKEY);
             if (rider != null) {
                 rider.snapTo(horse.getX(), horse.getY(), horse.getZ(), horse.getYRot(), 0.0F);
-                rider.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), EntitySpawnReason.JOCKEY, null);
+                SpawnGroupData data = rider instanceof Zombie ? new Zombie.ZombieGroupData(false, false) : null;
+                rider.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), EntitySpawnReason.JOCKEY, data);
                 rider.startRiding(horse, true, true);
             }
         }

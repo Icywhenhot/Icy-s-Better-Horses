@@ -38,9 +38,12 @@ public final class FieldHand implements BreedAbility {
         SimpleContainer chest = data.bh_getChestContainer();
         BlockPos centre = horse.blockPosition();
         ServerPlayer owner = level.getServer().getPlayerList().getPlayer(data.bh_getOwner());
+        if (owner == null) {
+            return;
+        }
         for (BlockPos pos : BlockPos.betweenClosed(centre.offset(-2, -1, -2), centre.offset(2, 1, 2))) {
             if (!level.hasChunkAt(pos) || !level.getBlockState(pos.below()).is(Blocks.FARMLAND)
-                    || owner != null && !level.mayInteract(owner, pos)) {
+                    || !level.mayInteract(owner, pos)) {
                 continue;
             }
             BlockState crop = level.getBlockState(pos);

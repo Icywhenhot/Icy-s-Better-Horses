@@ -2,7 +2,9 @@ package icy.betterhorses.net;
 
 import icy.betterhorses.net.item.UpgradedSaddleItem;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -15,6 +17,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.core.dispenser.DispenseItemBehavior;
 import icy.betterhorses.net.item.HorseCartItem;
 import icy.betterhorses.net.item.UndeadEggItem;
 import java.util.List;
@@ -206,6 +213,28 @@ public final class ModItems {
                         UNDEAD_VARIANT_EGGS.forEach(entries::accept);
                     })
                     .build());
+
+    public static void registerEggDispensing() {
+        DispenseItemBehavior spawn = (source, stack) -> {
+            Direction face = source.state().getValue(DispenserBlock.FACING);
+            EntityType<?> type = stack.getItem() instanceof UndeadEggItem undead
+                    ? undead.roll(stack, source.level().getRandom()) : SpawnEggItem.getType(stack);
+            if (type == null) {
+                return stack;
+            }
+            try {
+                type.spawn(source.level(), stack, null, source.pos().relative(face), EntitySpawnReason.DISPENSER, face != Direction.UP, false);
+            } catch (Exception e) {
+                IcysBetterHorses.LOGGER.error("egg dispense failed at {}", source.pos(), e);
+                return ItemStack.EMPTY;
+            }
+            stack.shrink(1);
+            source.level().gameEvent(GameEvent.ENTITY_PLACE, source.pos(), GameEvent.Context.of(source.state()));
+            return stack;
+        };
+        BREED_SPAWN_EGGS.forEach(egg -> DispenserBlock.registerBehavior(egg, spawn));
+        UNDEAD_VARIANT_EGGS.forEach(egg -> DispenserBlock.registerBehavior(egg, spawn));
+    }
 
     public static void init() {
     }

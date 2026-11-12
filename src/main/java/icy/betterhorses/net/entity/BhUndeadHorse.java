@@ -7,6 +7,8 @@ import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.registry.BreedType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -31,6 +33,8 @@ public class BhUndeadHorse extends BhBreedHorse {
     private final ResourceKey<BreedType> breed;
     private final boolean skeleton;
     private final HorseBreed kind;
+    private static final String WILD_TAG = "BH_WildUndead";
+    private boolean wild;
 
     public BhUndeadHorse(EntityType<? extends Horse> type, Level level, ResourceKey<BreedType> breed, boolean skeleton) {
         super(type, level);
@@ -41,6 +45,27 @@ public class BhUndeadHorse extends BhBreedHorse {
 
     public HorseBreed bhKind() {
         return kind;
+    }
+
+    public void bhMarkWild() {
+        wild = true;
+    }
+
+    @Override
+    public boolean removeWhenFarAway(double dist) {
+        return wild && !isTamed() && !isLeashed() && !hasCustomName() && IHorseData.of(this).bh_getOwner() == null;
+    }
+
+    @Override
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        if (wild) output.putBoolean(WILD_TAG, true);
+    }
+
+    @Override
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        wild = input.getBooleanOr(WILD_TAG, false);
     }
 
     private boolean swimsDeep() {

@@ -18,6 +18,12 @@ import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.entity.animal.equine.SkeletonHorse;
 import net.minecraft.world.entity.animal.equine.ZombieHorse;
 import net.minecraft.world.ItemStackWithSlot;
+import net.minecraft.world.entity.animal.equine.Mule;
+import net.minecraft.world.entity.animal.equine.AbstractChestedHorse;
+import icy.betterhorses.net.registry.BhContent;
+import net.minecraft.world.SimpleContainer;
+import icy.betterhorses.net.inventory.GearSlot;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,7 +36,7 @@ public final class BhVanillaHorseSwap {
 
     public static boolean trySwap(Entity entity) {
         if (!(entity instanceof AbstractHorse horse)
-                || (horse.getClass() != Horse.class && horse.getClass() != Donkey.class
+                || (horse.getClass() != Horse.class && horse.getClass() != Donkey.class && horse.getClass() != Mule.class
                     && horse.getClass() != SkeletonHorse.class && horse.getClass() != ZombieHorse.class)
                 || !(horse.level() instanceof ServerLevel level)
                 || !horse.isAlive() || horse.isPassenger()
@@ -52,6 +58,10 @@ public final class BhVanillaHorseSwap {
             List<EntityType<BhUndeadHorse>> pool = horse instanceof SkeletonHorse ? ModEntities.SKELETONS : ModEntities.ZOMBIES;
             entityType = pool.get(horse.getRandom().nextInt(pool.size()));
             breedKey = BhBreeds.keyOf(HorseBreed.byId(EntityType.getKey(entityType).getPath()));
+        }
+        if (entityType == null && horse instanceof Mule) {
+            entityType = ModEntities.MEDIUM_MULE;
+            breedKey = BhContent.MEDIUM_MULE.key();
         }
         if (entityType == null) {
             breedKey = horse instanceof Donkey ? null : IHorseData.of(horse).bh_getBreedKey();
@@ -99,18 +109,45 @@ public final class BhVanillaHorseSwap {
             return false;
         }
         reseat(riders, swap);
-        if (horse instanceof Donkey donkey && donkey.hasChest()) {
+        if (horse instanceof AbstractChestedHorse chested && chested.hasChest()) {
             var in = net.minecraft.world.level.storage.TagValueInput.create(
                     net.minecraft.util.ProblemReporter.DISCARDING, level.registryAccess(), tag);
-            for (ItemStackWithSlot item : in.listOrEmpty("Items", ItemStackWithSlot.CODEC)) {
-                if (!item.stack().isEmpty()) {
-                    swap.spawnAtLocation(level, item.stack());
-                }
-            }
-            swap.spawnAtLocation(level, Items.CHEST);
+            moveChest(swap, level, in.listOrEmpty("Items", ItemStackWithSlot.CODEC));
         }
         if (IHorseData.of(swap).bh_isOwned()) HorseTracker.register(swap);
         return true;
+    }
+
+    private static void moveChest(BhBreedHorse swap, ServerLevel level, Iterable<ItemStackWithSlot> items) {
+        IHorseData data = IHorseData.of(swap);
+        SimpleContainer gear = data.bh_getGearContainer();
+        ItemStack fitted = gear.getItem(GearSlot.CHEST.ordinal());
+        if (fitted.isEmpty()) {
+            gear.setItem(GearSlot.CHEST.ordinal(), new ItemStack(Items.CHEST));
+        } else if (!GearSlot.isStorageChest(fitted)) {
+            swap.spawnAtLocation(level, Items.CHEST);
+        }
+        SimpleContainer chest = data.bh_getChestContainer();
+        int slots = GearSlot.isStorageChest(gear.getItem(GearSlot.CHEST.ordinal()))
+                ? Math.min(data.bh_getChestRows() * 9, chest.getContainerSize()) : 0;
+        int slot = 0;
+        for (ItemStackWithSlot item : items) {
+            ItemStack stack = item.stack().copy();
+            if (stack.isEmpty()) {
+                continue;
+            }
+            while (slot < slots && !chest.getItem(slot).isEmpty()) {
+                slot++;
+            }
+            if (slot < slots) {
+                chest.setItem(slot++, stack);
+                continue;
+            }
+            while (!stack.isEmpty()) {
+                swap.spawnAtLocation(level, stack.split(stack.getMaxStackSize()));
+            }
+        }
+        chest.setChanged();
     }
 
     private static void reseat(List<Entity> riders, Entity mount) {

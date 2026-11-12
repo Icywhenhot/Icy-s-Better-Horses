@@ -83,6 +83,12 @@ public final class BhContent {
             .baseSpookChance(0.0D).stepHeight(2.0D).allowsLargeCart(true)
             .build());
 
+    public static final Holder.Reference<ArchetypeType> MULE = register(BhRegistries.archetypeTypeRegistry(), "mule", ArchetypeType.builder()
+            .speed(0.1620D, 0.3472D).health(15.0D, 50.0D).jump(0.38D, 1.02D)
+            .bashDamage(1.25D).bashKnockback(1.0D)
+            .defaultChestRows(4).allowsChestAndRiders(false)
+            .build());
+
     public static final Holder.Reference<ArchetypeType> NONE = register(BhRegistries.archetypeTypeRegistry(), "none", ArchetypeType.builder()
             .speed(0.1125D, 0.3375D).health(15.0D, 30.0D).jump(0.40D, 1.00D)
             .bashDamage(1.0D).bashKnockback(1.0D)
@@ -156,7 +162,7 @@ public final class BhContent {
                     .build());
 
     public static final Holder.Reference<BreedType> ARABIAN = register(BhRegistries.breedTypeRegistry(), "arabian",
-            BreedType.builder(RACE.key())
+            BreedType.builder(RACE.key()).small()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.ARABIAN.folder(), BhBreedCoats.ARABIAN.coatIds(), BhBreedCoats.ARABIAN.hasFoalVariant())
                     .entityType(entity("arabian_horse"))
                     .chestRows(3).bondedChestRows(3)
@@ -192,7 +198,7 @@ public final class BhContent {
                     .build());
 
     public static final Holder.Reference<BreedType> PERCHERON = register(BhRegistries.breedTypeRegistry(), "percheron",
-            BreedType.builder(DRAFT.key())
+            BreedType.builder(DRAFT.key()).large()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.PERCHERON.folder(), BhBreedCoats.PERCHERON.coatIds(), BhBreedCoats.PERCHERON.hasFoalVariant())
                     .entityType(entity("percheron_horse"))
                     .chestRows(4).bondedChestRows(4)
@@ -201,7 +207,7 @@ public final class BhContent {
                     .build());
 
     public static final Holder.Reference<BreedType> CLYDESDALE = register(BhRegistries.breedTypeRegistry(), "clydesdale",
-            BreedType.builder(DRAFT.key())
+            BreedType.builder(DRAFT.key()).large()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.CLYDESDALE.folder(), BhBreedCoats.CLYDESDALE.coatIds(), BhBreedCoats.CLYDESDALE.hasFoalVariant())
                     .entityType(entity("clydesdale_horse"))
                     .chestRows(4).bondedChestRows(4)
@@ -210,7 +216,7 @@ public final class BhContent {
                     .build());
 
     public static final Holder.Reference<BreedType> SHIRE = register(BhRegistries.breedTypeRegistry(), "shire",
-            BreedType.builder(DRAFT.key())
+            BreedType.builder(DRAFT.key()).large()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.SHIRE.folder(), BhBreedCoats.SHIRE.coatIds(), BhBreedCoats.SHIRE.hasFoalVariant())
                     .entityType(entity("shire_horse"))
                     .chestRows(4).bondedChestRows(4)
@@ -219,7 +225,7 @@ public final class BhContent {
                     .build());
 
     public static final Holder.Reference<BreedType> BELGIAN = register(BhRegistries.breedTypeRegistry(), "belgian",
-            BreedType.builder(DRAFT.key())
+            BreedType.builder(DRAFT.key()).large()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.BELGIAN.folder(), BhBreedCoats.BELGIAN.coatIds(), BhBreedCoats.BELGIAN.hasFoalVariant())
                     .entityType(entity("belgian_horse"))
                     .chestRows(6).bondedChestRows(6)
@@ -228,7 +234,7 @@ public final class BhContent {
                     .build());
 
     public static final Holder.Reference<BreedType> ICELANDIC = register(BhRegistries.breedTypeRegistry(), "icelandic",
-            BreedType.builder(PONY.key())
+            BreedType.builder(PONY.key()).small()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.ICELANDIC.folder(), BhBreedCoats.ICELANDIC.coatIds(), BhBreedCoats.ICELANDIC.hasFoalVariant())
                     .entityType(entity("icelandic_horse"))
                     .chestRows(3).bondedChestRows(3)
@@ -246,7 +252,7 @@ public final class BhContent {
                     .build());
 
     public static final Holder.Reference<BreedType> HAFLINGER = register(BhRegistries.breedTypeRegistry(), "haflinger",
-            BreedType.builder(PONY.key())
+            BreedType.builder(PONY.key()).small()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.HAFLINGER.folder(), BhBreedCoats.HAFLINGER.coatIds(), BhBreedCoats.HAFLINGER.hasFoalVariant())
                     .entityType(entity("haflinger_horse"))
                     .chestRows(4).bondedChestRows(6)
@@ -255,7 +261,7 @@ public final class BhContent {
                     .build());
 
     public static final Holder.Reference<BreedType> MORGAN = register(BhRegistries.breedTypeRegistry(), "morgan",
-            BreedType.builder(WESTERN.key())
+            BreedType.builder(WESTERN.key()).small()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.MORGAN.folder(), BhBreedCoats.MORGAN.coatIds(), BhBreedCoats.MORGAN.hasFoalVariant())
                     .entityType(entity("morgan_horse"))
                     .chestRows(3).bondedChestRows(4)
@@ -288,7 +294,7 @@ public final class BhContent {
                     .stabilizerBody(StabilizerBody.ANDALUSIAN_DONKEY)
                     .build());
 
-    public static final Holder.Reference<BreedType> ASINARA_DONKEY = register(BhRegistries.breedTypeRegistry(), "asinara_donkey", BreedType.builder(DONKEY.key())
+    public static final Holder.Reference<BreedType> ASINARA_DONKEY = register(BhRegistries.breedTypeRegistry(), "asinara_donkey", BreedType.builder(DONKEY.key()).small()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.ASINARA_DONKEY.folder(), BhBreedCoats.ASINARA_DONKEY.coatIds(), BhBreedCoats.ASINARA_DONKEY.hasFoalVariant())
                     .entityType(entity("asinara_donkey"))
                     .chestRows(4).midChestRows(5).bondedChestRows(6)
@@ -296,7 +302,7 @@ public final class BhContent {
                     .stabilizerBody(StabilizerBody.ASINARA_DONKEY)
                     .build());
 
-    public static final Holder.Reference<BreedType> MAMMOTH_DONKEY = register(BhRegistries.breedTypeRegistry(), "mammoth_donkey", BreedType.builder(DONKEY.key())
+    public static final Holder.Reference<BreedType> MAMMOTH_DONKEY = register(BhRegistries.breedTypeRegistry(), "mammoth_donkey", BreedType.builder(DONKEY.key()).large()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.MAMMOTH_DONKEY.folder(), BhBreedCoats.MAMMOTH_DONKEY.coatIds(), BhBreedCoats.MAMMOTH_DONKEY.hasFoalVariant())
                     .entityType(entity("mammoth_donkey"))
                     .chestRows(4).midChestRows(5).bondedChestRows(6)
@@ -304,7 +310,7 @@ public final class BhContent {
                     .stabilizerBody(StabilizerBody.MAMMOTH_DONKEY)
                     .build());
 
-    public static final Holder.Reference<BreedType> MINIATURE_DONKEY = register(BhRegistries.breedTypeRegistry(), "miniature_donkey", BreedType.builder(DONKEY.key())
+    public static final Holder.Reference<BreedType> MINIATURE_DONKEY = register(BhRegistries.breedTypeRegistry(), "miniature_donkey", BreedType.builder(DONKEY.key()).small()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.MINIATURE_DONKEY.folder(), BhBreedCoats.MINIATURE_DONKEY.coatIds(), BhBreedCoats.MINIATURE_DONKEY.hasFoalVariant())
                     .entityType(entity("miniature_donkey"))
                     .chestRows(4).midChestRows(5).bondedChestRows(6)
@@ -314,7 +320,7 @@ public final class BhContent {
                     .noCarts()
                     .build());
 
-    public static final Holder.Reference<BreedType> PEGA_DONKEY = register(BhRegistries.breedTypeRegistry(), "pega_donkey", BreedType.builder(DONKEY.key())
+    public static final Holder.Reference<BreedType> PEGA_DONKEY = register(BhRegistries.breedTypeRegistry(), "pega_donkey", BreedType.builder(DONKEY.key()).large()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.PEGA_DONKEY.folder(), BhBreedCoats.PEGA_DONKEY.coatIds(), BhBreedCoats.PEGA_DONKEY.hasFoalVariant())
                     .entityType(entity("pega_donkey"))
                     .chestRows(4).midChestRows(5).bondedChestRows(6)
@@ -322,7 +328,7 @@ public final class BhContent {
                     .stabilizerBody(StabilizerBody.PEGA_DONKEY)
                     .build());
 
-    public static final Holder.Reference<BreedType> POITOU_DONKEY = register(BhRegistries.breedTypeRegistry(), "poitou_donkey", BreedType.builder(DONKEY.key())
+    public static final Holder.Reference<BreedType> POITOU_DONKEY = register(BhRegistries.breedTypeRegistry(), "poitou_donkey", BreedType.builder(DONKEY.key()).large()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.POITOU_DONKEY.folder(), BhBreedCoats.POITOU_DONKEY.coatIds(), BhBreedCoats.POITOU_DONKEY.hasFoalVariant())
                     .entityType(entity("poitou_donkey"))
                     .chestRows(4).midChestRows(5).bondedChestRows(6)
@@ -374,6 +380,19 @@ public final class BhContent {
             undead("medium_drowned_horse", ZOMBIE, ROTTEN_RATIONS, DROWNED_LUNGS, StabilizerBody.MEDIUM);
     public static final Holder.Reference<BreedType> SMALL_DROWNED_HORSE =
             undead("small_drowned_horse", ZOMBIE, ROTTEN_RATIONS, DROWNED_LUNGS, StabilizerBody.SMALL);
+
+    public static final Holder.Reference<BreedType> SMALL_MULE = mule("small_mule");
+    public static final Holder.Reference<BreedType> MEDIUM_MULE = mule("medium_mule");
+    public static final Holder.Reference<BreedType> LARGE_MULE = mule("large_mule");
+
+    private static Holder.Reference<BreedType> mule(String path) {
+        return register(BhRegistries.breedTypeRegistry(), path, BreedType.builder(MULE.key())
+                .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.THOROUGHBRED.folder(),
+                        List.of("brown", "dark_brown"), BhBreedCoats.THOROUGHBRED.hasFoalVariant())
+                .entityType(entity(path))
+                .stabilizerBody(StabilizerBody.MEDIUM)
+                .build());
+    }
 
     private static Holder.Reference<BreedType> undead(String path,
             Holder.Reference<ArchetypeType> archetype,

@@ -76,6 +76,7 @@ public class IcysBetterHorses implements ModInitializer {
         ModBlocks.init();
         ModEntities.init();
         ModItems.init();
+        ModItems.registerEggDispensing();
         DefaultItemComponentEvents.MODIFY.register(context -> {
             context.modify(Items.LEATHER_HORSE_ARMOR, builder -> builder.set(DataComponents.ENCHANTABLE, new Enchantable(15)));
             context.modify(Items.COPPER_HORSE_ARMOR, builder -> builder.set(DataComponents.ENCHANTABLE, new Enchantable(8)));
@@ -319,6 +320,10 @@ public class IcysBetterHorses implements ModInitializer {
         if (horse.getRandom().nextFloat() >= COMMAND_ANSWER_CHANCE) {
             return;
         }
+        if (!IHorseData.of(horse).bh_getBreed().neighs()) {
+            horse.playAmbientSound();
+            return;
+        }
         SoundEvent sound = horse.getRandom().nextBoolean()
                 ? ModSounds.HORSE_NEIGH
                 : ModSounds.HORSE_SNORT;
@@ -518,7 +523,7 @@ public class IcysBetterHorses implements ModInitializer {
             return;
         }
         horse.standIfPossible();
-        if (horse.isStanding() && BhFeature.REAR_NEIGH.on()) {
+        if (horse.isStanding() && BhFeature.REAR_NEIGH.on() && IHorseData.of(horse).bh_getBreed().neighs()) {
             horse.playSound(ModSounds.HORSE_NEIGH, 1.0F, 1.0F);
         }
     }
