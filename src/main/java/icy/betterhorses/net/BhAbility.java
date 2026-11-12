@@ -73,7 +73,15 @@ public enum BhAbility {
     SKELETON_DASH(HorseBreed.SKELETON_SPECIES),
     ZOMBIE_RATIONS(HorseBreed.ZOMBIE_SPECIES),
     ZOMBIE_FUEL(HorseBreed.ZOMBIE_SPECIES),
-    ZOMBIE_ROT(HorseBreed.ZOMBIE_SPECIES);
+    ZOMBIE_ROT(HorseBreed.ZOMBIE_SPECIES),
+    STRAY_CHILL(HorseBreed.STRAY_SPECIES),
+    SCULK_HUSH(HorseBreed.SCULK_SPECIES),
+    SCULK_KIN(HorseBreed.SCULK_SPECIES),
+    SCULK_LULL(HorseBreed.SCULK_SPECIES),
+    HUSK_THIRST(HorseBreed.HUSK_SPECIES),
+    DROWNED_BREATH(HorseBreed.DROWNED_SPECIES),
+    DROWNED_GILLS(HorseBreed.DROWNED_SPECIES),
+    DROWNED_SWIM(HorseBreed.DROWNED_SPECIES);
 
     private final @Nullable BreedArchetype archetype;
     private final @Nullable HorseBreed breed;
@@ -114,7 +122,8 @@ public enum BhAbility {
     public boolean appliesTo(HorseBreed breed) {
         return this.breed == breed
                 || this.breed == HorseBreed.SKELETON_SPECIES && breed.isSkeleton()
-                || this.breed == HorseBreed.ZOMBIE_SPECIES && breed.isZombie();
+                || this.breed == HorseBreed.ZOMBIE_SPECIES && breed.isZombie()
+                || this.breed != null && this.breed.sameUndeadVariant(breed);
     }
 
     public String key() {

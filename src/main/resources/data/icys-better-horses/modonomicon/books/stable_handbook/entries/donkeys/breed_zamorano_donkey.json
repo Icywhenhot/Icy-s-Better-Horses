@@ -29,24 +29,10 @@
     },
     {
       "type": "modonomicon:text",
-      "id": "ice",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_zamorano_donkey.ice.title",
+      "id": "ability",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_zamorano_donkey.ability.title",
       "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_zamorano_donkey.ice.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "snow",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_zamorano_donkey.snow.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_zamorano_donkey.snow.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "winter",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_zamorano_donkey.winter.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_zamorano_donkey.winter.text"
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_zamorano_donkey.ability.text"
     },
     {
       "type": "modonomicon:text",

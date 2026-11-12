@@ -410,6 +410,7 @@ public class IcysBetterHorses implements ModInitializer {
             }
             HorseTracker.tick(server.getTickCount());
             BhTwinWatch.tick(server, server.getTickCount());
+            BhUndeadSpawns.tick(server);
             discardStaleHorses();
             applyPendingReleases();
         });

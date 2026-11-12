@@ -1,6 +1,8 @@
 package icy.betterhorses.net.entity;
 
+import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhBreedData;
+import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BhContent;
@@ -14,23 +16,45 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class BhUndeadHorse extends BhBreedHorse {
 
     private final ResourceKey<BreedType> breed;
     private final boolean skeleton;
+    private final HorseBreed kind;
 
     public BhUndeadHorse(EntityType<? extends Horse> type, Level level, ResourceKey<BreedType> breed, boolean skeleton) {
         super(type, level);
         this.breed = breed;
         this.skeleton = skeleton;
+        this.kind = HorseBreed.byId(breed.identifier().getPath());
+    }
+
+    public HorseBreed bhKind() {
+        return kind;
+    }
+
+    private boolean swimsDeep() {
+        return kind.isDrowned() && BhAbility.DROWNED_SWIM.on();
+    }
+
+    @Override
+    protected EquipmentSlot sunProtectionSlot() {
+        return EquipmentSlot.BODY;
+    }
+
+    @Override
+    public boolean dampensVibrations() {
+        return kind.isSculk() && BhAbility.SCULK_HUSH.on() || super.dampensVibrations();
     }
 
     @Override
@@ -136,11 +160,12 @@ public class BhUndeadHorse extends BhBreedHorse {
 
     @Override
     protected float getWaterSlowDown() {
-        return skeleton ? 0.96F : super.getWaterSlowDown();
+        if (skeleton) return 0.96F;
+        return swimsDeep() ? 0.95F : super.getWaterSlowDown();
     }
 
     @Override
     public boolean dismountsUnderwater() {
-        return !skeleton && super.dismountsUnderwater();
+        return !skeleton && !swimsDeep() && super.dismountsUnderwater();
     }
 }

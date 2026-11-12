@@ -2,6 +2,7 @@ package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhBreedData;
+import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
@@ -11,6 +12,9 @@ import icy.betterhorses.net.entity.BhUndeadHorse;
 import icy.betterhorses.net.feature.breed.MammothWorker;
 import icy.betterhorses.net.feature.breed.RottenRations;
 import icy.betterhorses.net.feature.breed.DrownedRider;
+import icy.betterhorses.net.feature.breed.DrownedLungs;
+import icy.betterhorses.net.feature.breed.FrostCharge;
+import icy.betterhorses.net.feature.breed.ParchingBite;
 import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModItems;
@@ -78,14 +82,16 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Inject(method = "floatInWaterWhileRidden", at = @At("HEAD"), cancellable = true)
     private void bh_skeletonSinks(CallbackInfo ci) {
-        if ((Object) this instanceof BhUndeadHorse undead && undead.bhIsSkeleton()) {
+        if ((Object) this instanceof BhUndeadHorse undead
+                && (undead.bhIsSkeleton() || undead.bhKind().isDrowned() && BhAbility.DROWNED_SWIM.on())) {
             ci.cancel();
         }
     }
 
     @Inject(method = "decreaseAirSupply", at = @At("RETURN"), cancellable = true)
     private void bh_skeletonRiderAir(int air, CallbackInfoReturnable<Integer> cir) {
-        cir.setReturnValue(DrownedRider.air((LivingEntity) (Object) this, air, cir.getReturnValueI()));
+        LivingEntity self = (LivingEntity) (Object) this;
+        cir.setReturnValue(DrownedLungs.air(self, air, DrownedRider.air(self, air, cir.getReturnValueI())));
     }
 
     @Inject(method = "isEquippableInSlot", at = @At("RETURN"), cancellable = true)
@@ -158,6 +164,8 @@ public abstract class LivingEntityMixin extends Entity {
     private void bh_afterDamage(ServerLevel level, DamageSource source, float amount, CallbackInfo ci) {
         LivingEntity self = (LivingEntity) (Object) this;
         RottenRations.hit(self, source, amount);
+        FrostCharge.hit(self, source, amount);
+        ParchingBite.hit(self, source, amount);
 
         if (!this.bh_triggerHorseMedkitAfterDamage) {
             return;

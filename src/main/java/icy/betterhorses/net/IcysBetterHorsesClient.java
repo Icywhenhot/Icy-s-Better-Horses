@@ -26,6 +26,7 @@ import icy.betterhorses.net.client.render.IcelandicHorseRenderer;
 import icy.betterhorses.net.client.render.MediumHorseRenderer;
 import icy.betterhorses.net.client.render.SmallHorseRenderer;
 import icy.betterhorses.net.entity.IcelandicHorse;
+import icy.betterhorses.net.entity.BhUndeadHorse;
 import icy.betterhorses.net.ModMenus;
 import icy.betterhorses.net.client.CartScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -58,6 +59,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.EntityType;
+import java.util.List;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import net.minecraft.world.entity.Entity;
@@ -201,6 +204,18 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         EntityRendererRegistry.register(ModEntities.SMALL_ZOMBIE_HORSE, context -> new UndeadHorseRenderer(context,
                 BhModelLayers.SMALL_UNDEAD_HORSE, BhModelLayers.SMALL_SADDLE, BhModelLayers.SMALL_CARPET,
                 BhModelLayers.SMALL_ARMOR, BhModelLayers.SMALL_CHEST, BhTackTextures.SMALL));
+        for (List<EntityType<BhUndeadHorse>> kind : List.of(ModEntities.STRAYS, ModEntities.SCULKS,
+                ModEntities.HUSKS, ModEntities.DROWNEDS)) {
+            EntityRendererRegistry.register(kind.get(0), context -> new UndeadHorseRenderer(context,
+                    BhModelLayers.LARGE_UNDEAD_HORSE, BhModelLayers.PERCHERON_SADDLE, BhModelLayers.PERCHERON_CARPET,
+                    BhModelLayers.PERCHERON_ARMOR, BhModelLayers.PERCHERON_CHEST, BhTackTextures.PERCHERON));
+            EntityRendererRegistry.register(kind.get(1), context -> new UndeadHorseRenderer(context,
+                    BhModelLayers.MEDIUM_UNDEAD_HORSE, BhModelLayers.MEDIUM_SADDLE, BhModelLayers.MEDIUM_CARPET,
+                    BhModelLayers.MEDIUM_ARMOR, BhModelLayers.MEDIUM_CHEST, BhTackTextures.MEDIUM));
+            EntityRendererRegistry.register(kind.get(2), context -> new UndeadHorseRenderer(context,
+                    BhModelLayers.SMALL_UNDEAD_HORSE, BhModelLayers.SMALL_SADDLE, BhModelLayers.SMALL_CARPET,
+                    BhModelLayers.SMALL_ARMOR, BhModelLayers.SMALL_CHEST, BhTackTextures.SMALL));
+        }
         EntityRendererRegistry.register(ModEntities.ICELANDIC_HORSE, context ->
                 new IcelandicHorseRenderer(context,
                         BhModelLayers.ICELANDIC_HORSE,

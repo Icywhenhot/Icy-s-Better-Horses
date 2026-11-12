@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature;
 
+import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -47,7 +48,12 @@ public final class SwimBoost implements HorseFeature {
     private static boolean swimsFast(AbstractHorse horse) {
         return horse instanceof SkeletonHorse
                 || IHorseData.of(horse).bh_getBreed().isSkeleton()
+                || sinks(IHorseData.of(horse))
                 || horse.hasEffect(MobEffects.DOLPHINS_GRACE)
                 || horse.getAttributeValue(Attributes.WATER_MOVEMENT_EFFICIENCY) > 0.0D;
+    }
+
+    private static boolean sinks(IHorseData data) {
+        return data.bh_getBreed().isDrowned() && BhAbility.DROWNED_SWIM.on();
     }
 }

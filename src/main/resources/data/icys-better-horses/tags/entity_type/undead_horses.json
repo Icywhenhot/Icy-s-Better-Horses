@@ -5,6 +5,18 @@
     "icys-better-horses:small_skeleton_horse",
     "icys-better-horses:large_zombie_horse",
     "icys-better-horses:medium_zombie_horse",
-    "icys-better-horses:small_zombie_horse"
+    "icys-better-horses:small_zombie_horse",
+    "icys-better-horses:large_stray_horse",
+    "icys-better-horses:medium_stray_horse",
+    "icys-better-horses:small_stray_horse",
+    "icys-better-horses:large_sculk_horse",
+    "icys-better-horses:medium_sculk_horse",
+    "icys-better-horses:small_sculk_horse",
+    "icys-better-horses:large_husk_horse",
+    "icys-better-horses:medium_husk_horse",
+    "icys-better-horses:small_husk_horse",
+    "icys-better-horses:large_drowned_horse",
+    "icys-better-horses:medium_drowned_horse",
+    "icys-better-horses:small_drowned_horse"
   ]
 }

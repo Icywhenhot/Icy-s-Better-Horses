@@ -29,24 +29,10 @@
     },
     {
       "type": "modonomicon:text",
-      "id": "hide",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_poitou_donkey.hide.title",
+      "id": "ability",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_poitou_donkey.ability.title",
       "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_poitou_donkey.hide.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "thicker",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_poitou_donkey.thicker.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_poitou_donkey.thicker.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "clear",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_poitou_donkey.clear.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_poitou_donkey.clear.text"
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_poitou_donkey.ability.text"
     },
     {
       "type": "modonomicon:text",

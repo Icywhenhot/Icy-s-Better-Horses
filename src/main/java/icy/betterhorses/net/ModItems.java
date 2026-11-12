@@ -16,6 +16,7 @@ import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.entity.EntityTypes;
 import icy.betterhorses.net.item.HorseCartItem;
+import icy.betterhorses.net.item.UndeadEggItem;
 import java.util.List;
 
 public final class ModItems {
@@ -139,6 +140,28 @@ public final class ModItems {
             new SpawnEggItem(itemProperties("zombie_horse_spawn_egg")
                     .spawnEgg(EntityTypes.ZOMBIE_HORSE)));
 
+    public static final Item STRAY_HORSE_SPAWN_EGG = register("stray_horse_spawn_egg",
+            new UndeadEggItem(ModEntities.STRAYS,
+                    itemProperties("stray_horse_spawn_egg")));
+
+    public static final Item SCULK_HORSE_SPAWN_EGG = register("sculk_horse_spawn_egg",
+            new UndeadEggItem(ModEntities.SCULKS,
+                    itemProperties("sculk_horse_spawn_egg")));
+
+    public static final Item HUSK_HORSE_SPAWN_EGG = register("husk_horse_spawn_egg",
+            new UndeadEggItem(ModEntities.HUSKS,
+                    itemProperties("husk_horse_spawn_egg")));
+
+    public static final Item DROWNED_HORSE_SPAWN_EGG = register("drowned_horse_spawn_egg",
+            new UndeadEggItem(ModEntities.DROWNEDS,
+                    itemProperties("drowned_horse_spawn_egg")));
+
+    public static final List<Item> UNDEAD_VARIANT_EGGS = List.of(
+            STRAY_HORSE_SPAWN_EGG,
+            SCULK_HORSE_SPAWN_EGG,
+            HUSK_HORSE_SPAWN_EGG,
+            DROWNED_HORSE_SPAWN_EGG);
+
     public static final List<Item> BREED_SPAWN_EGGS = List.of(
             ICELANDIC_HORSE_SPAWN_EGG,
             FRIESIAN_HORSE_SPAWN_EGG,
@@ -180,6 +203,7 @@ public final class ModItems {
                         entries.accept(WHEEL);
                         entries.accept(HORSE_CART);
                         BREED_SPAWN_EGGS.forEach(entries::accept);
+                        UNDEAD_VARIANT_EGGS.forEach(entries::accept);
                     })
                     .build());
 

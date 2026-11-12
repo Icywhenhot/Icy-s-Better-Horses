@@ -29,31 +29,17 @@
     },
     {
       "type": "modonomicon:text",
+      "id": "sire",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.sire.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.sire.text"
+    },
+    {
+      "type": "modonomicon:text",
       "id": "ability",
       "title": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.ability.title",
       "show_title_separator": true,
       "text": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.ability.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "seat",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.seat.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.seat.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "recovery",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.recovery.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.recovery.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "rider_heal",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.rider_heal.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.rider_heal.text"
     },
     {
       "type": "modonomicon:text",

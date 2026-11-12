@@ -29,24 +29,17 @@
     },
     {
       "type": "modonomicon:text",
-      "id": "nursery",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.nursery.title",
+      "id": "ability",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.ability.title",
       "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.nursery.text"
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.ability.text"
     },
     {
       "type": "modonomicon:text",
-      "id": "basket",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.basket.title",
+      "id": "small",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.small.title",
       "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.basket.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "twins",
-      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.twins.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.twins.text"
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.small.text"
     },
     {
       "type": "modonomicon:text",

@@ -33,6 +33,7 @@
 		"FoodOnAStickItemMixin",
 		"FarmlandBlockMixin",
 		"ItemEntityAccessor",
+		"WardenMixin",
 		"MobCartPassengerMixin",
 		"MobNameTagBondMixin",
 		"MoveControlStepMixin",

@@ -4,6 +4,10 @@ import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.BhJumpHeight;
 import icy.betterhorses.net.feature.breed.DrownedRider;
 import icy.betterhorses.net.feature.breed.RottenRations;
+import icy.betterhorses.net.feature.breed.DrownedLungs;
+import icy.betterhorses.net.feature.breed.FrostCharge;
+import icy.betterhorses.net.feature.breed.ParchingBite;
+import icy.betterhorses.net.feature.breed.SculkHush;
 import icy.betterhorses.net.entity.BhBreedCoats;
 import icy.betterhorses.net.feature.breed.BrickBreak;
 import icy.betterhorses.net.feature.breed.EasyKeeper;
@@ -137,6 +141,10 @@ public final class BhContent {
     public static final Holder.Reference<AbilityType> WINTER_FEET = register(BhRegistries.abilityTypeRegistry(), "winter_feet", new AbilityType(WinterFeet::new, true));
     public static final Holder.Reference<AbilityType> DROWNED_RIDER = register(BhRegistries.abilityTypeRegistry(), "drowned_rider", new AbilityType(DrownedRider::new, true));
     public static final Holder.Reference<AbilityType> ROTTEN_RATIONS = register(BhRegistries.abilityTypeRegistry(), "rotten_rations", new AbilityType(RottenRations::new, true));
+    public static final Holder.Reference<AbilityType> FROST_CHARGE = register(BhRegistries.abilityTypeRegistry(), "frost_charge", new AbilityType(FrostCharge::new, true));
+    public static final Holder.Reference<AbilityType> SCULK_HUSH = register(BhRegistries.abilityTypeRegistry(), "sculk_hush", new AbilityType(SculkHush::new, true));
+    public static final Holder.Reference<AbilityType> PARCHING_BITE = register(BhRegistries.abilityTypeRegistry(), "parching_bite", new AbilityType(ParchingBite::new, true));
+    public static final Holder.Reference<AbilityType> DROWNED_LUNGS = register(BhRegistries.abilityTypeRegistry(), "drowned_lungs", new AbilityType(DrownedLungs::new, true));
 
     public static final Holder.Reference<BreedType> THOROUGHBRED = register(BhRegistries.breedTypeRegistry(), "thoroughbred",
             BreedType.builder(RACE.key())
@@ -342,6 +350,30 @@ public final class BhContent {
             undead("medium_zombie_horse", ZOMBIE, ROTTEN_RATIONS, StabilizerBody.MEDIUM);
     public static final Holder.Reference<BreedType> SMALL_ZOMBIE_HORSE =
             undead("small_zombie_horse", ZOMBIE, ROTTEN_RATIONS, StabilizerBody.SMALL);
+    public static final Holder.Reference<BreedType> LARGE_STRAY_HORSE =
+            undead("large_stray_horse", SKELETON, DROWNED_RIDER, FROST_CHARGE, StabilizerBody.PERCHERON);
+    public static final Holder.Reference<BreedType> MEDIUM_STRAY_HORSE =
+            undead("medium_stray_horse", SKELETON, DROWNED_RIDER, FROST_CHARGE, StabilizerBody.MEDIUM);
+    public static final Holder.Reference<BreedType> SMALL_STRAY_HORSE =
+            undead("small_stray_horse", SKELETON, DROWNED_RIDER, FROST_CHARGE, StabilizerBody.SMALL);
+    public static final Holder.Reference<BreedType> LARGE_SCULK_HORSE =
+            undead("large_sculk_horse", SKELETON, DROWNED_RIDER, SCULK_HUSH, StabilizerBody.PERCHERON);
+    public static final Holder.Reference<BreedType> MEDIUM_SCULK_HORSE =
+            undead("medium_sculk_horse", SKELETON, DROWNED_RIDER, SCULK_HUSH, StabilizerBody.MEDIUM);
+    public static final Holder.Reference<BreedType> SMALL_SCULK_HORSE =
+            undead("small_sculk_horse", SKELETON, DROWNED_RIDER, SCULK_HUSH, StabilizerBody.SMALL);
+    public static final Holder.Reference<BreedType> LARGE_HUSK_HORSE =
+            undead("large_husk_horse", ZOMBIE, ROTTEN_RATIONS, PARCHING_BITE, StabilizerBody.PERCHERON);
+    public static final Holder.Reference<BreedType> MEDIUM_HUSK_HORSE =
+            undead("medium_husk_horse", ZOMBIE, ROTTEN_RATIONS, PARCHING_BITE, StabilizerBody.MEDIUM);
+    public static final Holder.Reference<BreedType> SMALL_HUSK_HORSE =
+            undead("small_husk_horse", ZOMBIE, ROTTEN_RATIONS, PARCHING_BITE, StabilizerBody.SMALL);
+    public static final Holder.Reference<BreedType> LARGE_DROWNED_HORSE =
+            undead("large_drowned_horse", ZOMBIE, ROTTEN_RATIONS, DROWNED_LUNGS, StabilizerBody.PERCHERON);
+    public static final Holder.Reference<BreedType> MEDIUM_DROWNED_HORSE =
+            undead("medium_drowned_horse", ZOMBIE, ROTTEN_RATIONS, DROWNED_LUNGS, StabilizerBody.MEDIUM);
+    public static final Holder.Reference<BreedType> SMALL_DROWNED_HORSE =
+            undead("small_drowned_horse", ZOMBIE, ROTTEN_RATIONS, DROWNED_LUNGS, StabilizerBody.SMALL);
 
     private static Holder.Reference<BreedType> undead(String path,
             Holder.Reference<ArchetypeType> archetype,
@@ -349,6 +381,16 @@ public final class BhContent {
         return register(BhRegistries.breedTypeRegistry(), path, BreedType.builder(archetype.key())
                 .coats(IcysBetterHorses.MOD_ID, path, List.of("default"), false)
                 .entityType(entity(path)).ability(ability.key()).stabilizerBody(body).build());
+    }
+
+    private static Holder.Reference<BreedType> undead(String path,
+            Holder.Reference<ArchetypeType> archetype,
+            Holder.Reference<AbilityType> ability,
+            Holder.Reference<AbilityType> variant, StabilizerBody body) {
+        return register(BhRegistries.breedTypeRegistry(), path, BreedType.builder(archetype.key())
+                .coats(IcysBetterHorses.MOD_ID, path, List.of("default"), false)
+                .entityType(entity(path)).ability(ability.key()).ability(variant.key())
+                .stabilizerBody(body).build());
     }
 
     public static final Holder.Reference<GenderType> MALE = register(BhRegistries.genderTypeRegistry(), "male", new GenderType());

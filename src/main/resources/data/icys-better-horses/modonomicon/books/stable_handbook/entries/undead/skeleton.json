@@ -24,24 +24,17 @@
     },
     {
       "type": "modonomicon:text",
-      "id": "breath",
-      "title": "book.icys-better-horses.stable_handbook.undead.skeleton.breath.title",
+      "id": "ability",
+      "title": "book.icys-better-horses.stable_handbook.undead.skeleton.ability.title",
       "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.undead.skeleton.breath.text"
+      "text": "book.icys-better-horses.stable_handbook.undead.skeleton.ability.text"
     },
     {
       "type": "modonomicon:text",
-      "id": "dive",
-      "title": "book.icys-better-horses.stable_handbook.undead.skeleton.dive.title",
+      "id": "spawns",
+      "title": "book.icys-better-horses.stable_handbook.undead.skeleton.spawns.title",
       "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.undead.skeleton.dive.text"
-    },
-    {
-      "type": "modonomicon:text",
-      "id": "dash",
-      "title": "book.icys-better-horses.stable_handbook.undead.skeleton.dash.title",
-      "show_title_separator": true,
-      "text": "book.icys-better-horses.stable_handbook.undead.skeleton.dash.text"
+      "text": "book.icys-better-horses.stable_handbook.undead.skeleton.spawns.text"
     },
     {
       "type": "icys-better-horses:breed_coats",
