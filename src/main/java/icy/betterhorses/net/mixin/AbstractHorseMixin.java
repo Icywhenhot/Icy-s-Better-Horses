@@ -1696,6 +1696,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         goalSelector.addGoal(3, new HorseFollowOwnerGoal(self));
         goalSelector.addGoal(3, new HorseReturnHomeGoal(self));
         goalSelector.addGoal(3, new HorseWanderBoundsGoal(self));
+        goalSelector.addGoal(4, new icy.betterhorses.net.feature.breed.FieldHand.TendGoal(self));
+        goalSelector.addGoal(4, new icy.betterhorses.net.feature.breed.MiniatureCompanion.FetchGoal(self));
         goalSelector.addGoal(5, new HorseBegGoal(self));
     }
 

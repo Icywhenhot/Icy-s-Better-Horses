@@ -69,6 +69,8 @@ public final class HorseStabilizerLayer<T extends AbstractHorse, M extends Entit
                 new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("poitou_donkey")), BREED_FEET_Y, 0.0D));
         BY_BODY.put(StabilizerBody.ZAMORANO_DONKEY, new Variant(
                 new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("zamorano_donkey")), BREED_FEET_Y, 0.0D));
+        BY_BODY.put(StabilizerBody.MULE, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("mule")), BREED_FEET_Y, 0.0D));
     }
 
     private static final float MODEL_ROLL_DEGREES = 180.0F;

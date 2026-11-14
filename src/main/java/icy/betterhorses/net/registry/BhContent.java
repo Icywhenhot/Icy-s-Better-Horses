@@ -419,7 +419,7 @@ public final class BhContent {
         return BREEDS.register(path, () -> BreedType.builder(MULE.getKey())
                 .coats(IcysBetterHorses.RESOURCE_NAMESPACE, "mule", List.of("brown", "dark_brown"), true)
                 .entityType(entity(path))
-                .stabilizerBody(StabilizerBody.MEDIUM)
+                .stabilizerBody(StabilizerBody.MULE)
                 .build());
     }
 

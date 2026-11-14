@@ -71,6 +71,10 @@
     {
       "id": "iss_magicfromtheeast:jade_pagoda_horse_armor",
       "required": false
+    },
+    {
+      "id": "obsidianequipmentrework:obsidian_horse_armor",
+      "required": false
     }
   ]
 }

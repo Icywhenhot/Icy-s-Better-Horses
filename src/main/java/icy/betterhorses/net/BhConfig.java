@@ -55,6 +55,8 @@ public final class BhConfig {
     private static final String KEY_HARNESS_GAP = "harness_gauge_gap";
     private static final String KEY_RADIAL_STYLE = "radial_style";
     private static final String KEY_BANNERS = "ability_banners";
+    private static final String KEY_CUSTOM_SCREENS = "custom_inventory_screens";
+    private static final String KEY_SWITCHER_DESTINATION = "switcher_shows_destination";
     private static final String KEY_BREEDING_FOODS = "breeding_foods";
 
     public static final int MAX_HUD_GAP = 100;
@@ -92,6 +94,8 @@ public final class BhConfig {
     private static Spot harness = DEFAULT_HARNESS;
     private static RadialStyle radial = DEFAULT_RADIAL;
     private static boolean banners = true;
+    private static boolean customScreens = true;
+    private static boolean switcherDestination = false;
     private static List<String> breedingFoods = DEFAULT_BREEDING_FOODS;
     private static volatile @Nullable Set<Item> breedingItems;
 
@@ -122,6 +126,8 @@ public final class BhConfig {
         harness = DEFAULT_HARNESS;
         radial = DEFAULT_RADIAL;
         banners = true;
+        customScreens = true;
+        switcherDestination = false;
         breedingFoods = DEFAULT_BREEDING_FOODS;
         breedingItems = null;
     }
@@ -363,11 +369,22 @@ public final class BhConfig {
         return banners;
     }
 
-    public static synchronized void applyHud(Spot meterSpot, Spot harnessSpot, RadialStyle radialPick, boolean showBanners) {
+    public static boolean customInventoryScreens() {
+        return customScreens;
+    }
+
+    public static boolean switcherShowsDestination() {
+        return switcherDestination;
+    }
+
+    public static synchronized void applyHud(Spot meterSpot, Spot harnessSpot, RadialStyle radialPick, boolean showBanners,
+                                              boolean customInventory, boolean switcherToDestination) {
         meter = meterSpot.clamped();
         harness = harnessSpot.clamped();
         radial = radialPick;
         banners = showBanners;
+        customScreens = customInventory;
+        switcherDestination = switcherToDestination;
         save();
     }
 
@@ -434,7 +451,10 @@ public final class BhConfig {
                 harness = readSpot(hud, KEY_HARNESS_SIDE, KEY_HARNESS_GAP, DEFAULT_HARNESS);
                 radial = readRadial(hud);
                 banners = readToggle(hud, KEY_BANNERS, true);
-                needsRewrite |= !hud.has(KEY_RADIAL_STYLE) || !hud.has(KEY_BANNERS);
+                customScreens = readToggle(hud, KEY_CUSTOM_SCREENS, true);
+                switcherDestination = readToggle(hud, KEY_SWITCHER_DESTINATION, false);
+                needsRewrite |= !hud.has(KEY_RADIAL_STYLE) || !hud.has(KEY_BANNERS) || !hud.has(KEY_CUSTOM_SCREENS)
+                        || !hud.has(KEY_SWITCHER_DESTINATION);
             }
 
             needsRewrite |= !root.has(KEY_BREEDING_FOODS);
@@ -654,6 +674,8 @@ public final class BhConfig {
         hud.addProperty(KEY_HARNESS_GAP, harness.gap());
         hud.addProperty(KEY_RADIAL_STYLE, radial.name().toLowerCase(Locale.ROOT));
         hud.addProperty(KEY_BANNERS, yesNo(banners));
+        hud.addProperty(KEY_CUSTOM_SCREENS, yesNo(customScreens));
+        hud.addProperty(KEY_SWITCHER_DESTINATION, yesNo(switcherDestination));
         root.add(KEY_HUD, hud);
 
         JsonArray foods = new JsonArray();

@@ -674,7 +674,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
     private final class BackToHorse extends AbstractButton {
 
         BackToHorse(int x, int y) {
-            super(x, y, 16, 21, Component.translatable("gui.icys-better-horses.cart.to_horse"));
+            super(x, y, 16, 22, Component.translatable("gui.icys-better-horses.cart.to_horse"));
             this.setTooltip(Tooltip.create(this.getMessage()));
         }
 
@@ -688,7 +688,7 @@ public class CartScreen extends AbstractContainerScreen<CartMenu> {
         protected void renderWidget(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
-            gfx.blit(HORSE_ICON, this.getX(), this.getY(), 0.0F, 0.0F, 16, 21, 16, 21);
+            gfx.blit(HORSE_ICON, this.getX(), this.getY(), 0.0F, 0.0F, 16, 22, 16, 22);
             RenderSystem.disableBlend();
         }
 

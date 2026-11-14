@@ -43,6 +43,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     @Shadow @Final private AbstractHorse horse;
     @Shadow private float xMouse;
     @Shadow private float yMouse;
+    @Shadow @Final private int inventoryColumns;
 
     @Unique private static final ResourceLocation BH_SLOT_SPRITE =
             ResourceLocation.withDefaultNamespace("container/slot");
@@ -80,6 +81,17 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
             ResourceLocation.fromNamespaceAndPath("icys-better-horses", "textures/gui/bond/silver.png");
     @Unique private static final ResourceLocation BH_BOND_GOLD =
             ResourceLocation.fromNamespaceAndPath("icys-better-horses", "textures/gui/bond/gold.png");
+    @Unique private static final String BH_SCREEN_DIR = "textures/gui/inventory/";
+    @Unique private static final ResourceLocation BH_SCREEN_PLAIN = bh_screen("horse_plain");
+    @Unique private static final ResourceLocation BH_SCREEN_GEAR = bh_screen("horse_gear");
+    @Unique private static final int BH_SCREEN_CELL_U = 79;
+    @Unique private static final int BH_SCREEN_CELL_V = 17;
+    @Unique private static final int BH_SCREEN_MIN_ROWS = 1;
+    @Unique private static final int BH_SCREEN_MAX_ROWS = 6;
+    @Unique private static final int BH_ART_GEAR_HINT_TINT = 0xA06A4426;
+    @Unique private static final int BH_ART_BANNER_HINT_TINT = 0xA08A6038;
+    @Unique private static final int BH_ART_BANNER_LOCKED_TINT = 0xD05A3818;
+    @Unique private static final String BH_QUARK_PACKAGE = "org.violetmoon.quark";
     @Unique private static final int BH_STAR_SIZE = 16;
     @Unique private static final int BH_STAR_GAP = 2;
     @Unique private static final int BH_STAR_HOVER_REACH = 40;
@@ -108,6 +120,72 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         this.inventoryLabelY = layoutAccess.bh_hasUpgradedSaddleLayout()
                 ? this.imageHeight + 1000
                 : BH_DEFAULT_INVENTORY_LABEL_Y;
+    }
+
+    @Inject(method = "renderBg", at = @At("HEAD"), cancellable = true)
+    private void bh_renderCustomScreen(GuiGraphics gfx, float partialTick, int mouseX, int mouseY, CallbackInfo ci) {
+        AbstractHorse horse = this.bh_getHorseOrNull();
+        if (horse == null || !BhConfig.customInventoryScreens()) {
+            return;
+        }
+
+        this.bh_applyLayoutState();
+        this.inventoryLabelY = this.imageHeight + 1000;
+        int x = this.leftPos;
+        int y = this.topPos;
+        ResourceLocation screen = this.bh_pickScreen();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        gfx.blit(screen, x, y, 0.0F, 0.0F, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
+        if (!this.bh_hasUpgradedSaddleInMenu()) {
+            for (int row = 0; row < 3 && this.inventoryColumns > 0; row++) {
+                for (int col = 0; col < this.inventoryColumns; col++) {
+                    gfx.blit(BH_SCREEN_GEAR, x + BH_GEAR_PANEL_X + col * 18, y + BH_GEAR_PANEL_Y + row * 18,
+                            (float) BH_SCREEN_CELL_U, (float) BH_SCREEN_CELL_V, 18, 18,
+                            this.imageWidth, BH_VANILLA_IMAGE_HEIGHT);
+                }
+            }
+        }
+        RenderSystem.disableBlend();
+
+        this.bh_drawGearHints(gfx);
+        this.bh_drawBannerHint(gfx, false);
+        InventoryScreen.renderEntityInInventoryFollowsMouse(
+                gfx,
+                x + 26,
+                y + 18,
+                x + 78,
+                y + 70,
+                17,
+                0.25F,
+                this.xMouse,
+                this.yMouse,
+                horse);
+        ci.cancel();
+    }
+
+    @Unique
+    private ResourceLocation bh_pickScreen() {
+        if (this.bh_hasChestStorageLayout()) {
+            int rows = Math.clamp(this.bh_chestRows(), BH_SCREEN_MIN_ROWS, BH_SCREEN_MAX_ROWS);
+            return bh_screen("horse_chest_" + rows + (this.bh_quarkButtonsShown() ? "_quark" : ""));
+        }
+        return this.bh_hasUpgradedSaddleInMenu() ? BH_SCREEN_GEAR : BH_SCREEN_PLAIN;
+    }
+
+    @Unique
+    private boolean bh_quarkButtonsShown() {
+        for (var widget : this.renderables) {
+            if (widget.getClass().getName().startsWith(BH_QUARK_PACKAGE)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Unique
+    private static ResourceLocation bh_screen(String name) {
+        return ResourceLocation.fromNamespaceAndPath("icys-better-horses", BH_SCREEN_DIR + name + ".png");
     }
 
     @Inject(method = "renderBg", at = @At("HEAD"), cancellable = true)
@@ -302,6 +380,13 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
                 gfx.blitSprite(BH_SLOT_SPRITE, x + i * 18, y, 18, 18);
             }
         }
+        this.bh_drawGearHints(gfx);
+    }
+
+    @Unique
+    private void bh_drawGearHints(GuiGraphics gfx) {
+        int x = this.leftPos + BH_GEAR_PANEL_X;
+        int y = this.topPos + BH_GEAR_PANEL_Y;
         if (!this.bh_hasUpgradedSaddleInMenu()) {
             return;
         }
@@ -323,6 +408,11 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
 
     @Unique
     private void bh_drawBannerSlot(GuiGraphics gfx) {
+        this.bh_drawBannerHint(gfx, true);
+    }
+
+    @Unique
+    private void bh_drawBannerHint(GuiGraphics gfx, boolean withSlot) {
         HorseInventoryLayoutAccess layoutAccess = this.bh_getLayoutAccessOrNull();
         int index = layoutAccess == null ? -1 : layoutAccess.bh_getBannerSlotIndex();
         if (index < 0) {
@@ -331,13 +421,17 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         Slot slot = this.menu.getSlot(index);
         int x = this.leftPos + slot.x;
         int y = this.topPos + slot.y;
-        gfx.blitSprite(BH_SLOT_SPRITE, x - 1, y - 1, 18, 18);
+        if (withSlot) {
+            gfx.blitSprite(BH_SLOT_SPRITE, x - 1, y - 1, 18, 18);
+        }
         if (slot.hasItem()) {
             return;
         }
         gfx.renderItem(new ItemStack(Items.WHITE_BANNER), x, y);
         gfx.fill(x, y, x + 16, y + 16, BH_SLOT_OVERLAY_Z,
-                layoutAccess.bh_isBannerSlotLocked() ? BH_BANNER_LOCKED_TINT : BH_BANNER_HINT_TINT);
+                layoutAccess.bh_isBannerSlotLocked()
+                        ? (withSlot ? BH_BANNER_LOCKED_TINT : BH_ART_BANNER_LOCKED_TINT)
+                        : (withSlot ? BH_BANNER_HINT_TINT : BH_ART_BANNER_HINT_TINT));
         if (BhSlotFlash.flashingSlot() == index && !this.bh_hasUpgradedSaddleInMenu()) {
             this.bh_drawLockedSlotFlash(gfx);
         }
@@ -407,7 +501,8 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         int iconX = x + slot.ordinal() * 18 + 1;
         int iconY = y + 1;
         gfx.renderItem(new ItemStack(item), iconX, iconY);
-        gfx.fill(iconX, iconY, iconX + 16, iconY + 16, BH_SLOT_OVERLAY_Z, 0xA0B7AB99);
+        gfx.fill(iconX, iconY, iconX + 16, iconY + 16, BH_SLOT_OVERLAY_Z,
+                BhConfig.customInventoryScreens() ? BH_ART_GEAR_HINT_TINT : 0xA0B7AB99);
     }
 
     @Unique

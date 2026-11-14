@@ -37,6 +37,19 @@ public final class DonkeyForaging {
         return picked;
     }
 
+    public static boolean fits(IHorseData data, ItemStack stack) {
+        var chest = data.bh_getChestContainer();
+        int size = Math.min(chest.getContainerSize(), data.bh_getChestRows() * 9);
+        for (int i = 0; i < size; i++) {
+            ItemStack stored = chest.getItem(i);
+            if (stored.isEmpty() || ItemStack.isSameItemSameComponents(stored, stack)
+                    && stored.getCount() < chest.getMaxStackSize(stored)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static ItemStack insert(IHorseData data, ItemStack stack) {
         var chest = data.bh_getChestContainer();
         int size = Math.min(chest.getContainerSize(), data.bh_getChestRows() * 9);

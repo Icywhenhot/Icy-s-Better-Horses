@@ -30,10 +30,11 @@ public final class BhTackTextures {
     public static final BhTackTextures PEGA_DONKEY = new BhTackTextures("pega_donkey");
     public static final BhTackTextures POITOU_DONKEY = new BhTackTextures("poitou_donkey");
     public static final BhTackTextures ZAMORANO_DONKEY = new BhTackTextures("zamorano_donkey");
+    public static final BhTackTextures MULE = new BhTackTextures("mule");
 
     private static final BhTackTextures[] ALL = {BELGIAN, FRIESIAN, HAFLINGER, ICELANDIC, MEDIUM, PERCHERON, SHIRE, SMALL,
             ANDALUSIAN_DONKEY, ASINARA_DONKEY, MAMMOTH_DONKEY, MINIATURE_DONKEY,
-            PEGA_DONKEY, POITOU_DONKEY, ZAMORANO_DONKEY};
+            PEGA_DONKEY, POITOU_DONKEY, ZAMORANO_DONKEY, MULE};
 
     private final String base;
     private final Map<Item, ResourceLocation> armors = new HashMap<>();

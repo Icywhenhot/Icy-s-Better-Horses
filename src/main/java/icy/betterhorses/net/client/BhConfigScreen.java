@@ -158,6 +158,8 @@ public final class BhConfigScreen {
         int[] gaps = {BhConfig.chargeMeter().gap(), BhConfig.harnessGauge().gap()};
         BhConfig.RadialStyle[] radial = {BhConfig.radialStyle()};
         boolean[] banners = {BhConfig.abilityBanners()};
+        boolean[] customScreens = {BhConfig.customInventoryScreens()};
+        boolean[] switcherDestination = {BhConfig.switcherShowsDestination()};
 
         ConfigCategory hud = builder.getOrCreateCategory(
                 Component.translatable("config.icys-better-horses.category.hud"));
@@ -171,6 +173,18 @@ public final class BhConfigScreen {
                 .setDefaultValue(true)
                 .setTooltip(Component.translatable("config.icys-better-horses.ability_banners.tooltip"))
                 .setSaveConsumer(value -> banners[0] = value)
+                .build());
+        hud.addEntry(eb.startBooleanToggle(
+                        Component.translatable("config.icys-better-horses.custom_inventory_screens"), customScreens[0])
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.icys-better-horses.custom_inventory_screens.tooltip"))
+                .setSaveConsumer(value -> customScreens[0] = value)
+                .build());
+        hud.addEntry(eb.startBooleanToggle(
+                        Component.translatable("config.icys-better-horses.switcher_shows_destination"), switcherDestination[0])
+                .setDefaultValue(false)
+                .setTooltip(Component.translatable("config.icys-better-horses.switcher_shows_destination.tooltip"))
+                .setSaveConsumer(value -> switcherDestination[0] = value)
                 .build());
 
         ConfigCategory keybinds = builder.getOrCreateCategory(
@@ -221,7 +235,7 @@ public final class BhConfigScreen {
             BhConfig.applyAbilities(masters[0], masters[1], abilityPicks);
             BhConfig.applyBreedingFoods(foods);
             BhConfig.applyHud(new BhConfig.Spot(sides[0], gaps[0]), new BhConfig.Spot(sides[1], gaps[1]), radial[0],
-                    banners[0]);
+                    banners[0], customScreens[0], switcherDestination[0]);
             IcysBetterHorsesClient.sendChargeChoice();
             KeyMapping.resetMapping();
             Minecraft.getInstance().options.save();

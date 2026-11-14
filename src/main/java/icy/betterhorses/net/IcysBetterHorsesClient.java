@@ -10,6 +10,7 @@ import icy.betterhorses.net.client.HorseStabilizerSoundController;
 import icy.betterhorses.net.client.RadialMenuScreen;
 import icy.betterhorses.net.client.render.BhModelLayers;
 import icy.betterhorses.net.client.render.DonkeyRenderer;
+import icy.betterhorses.net.client.render.MiniatureDonkeyModel;
 import icy.betterhorses.net.client.render.MuleRenderer;
 import icy.betterhorses.net.client.render.UndeadHorseRenderer;
 import icy.betterhorses.net.client.render.FriesianHorseRenderer;
@@ -295,7 +296,7 @@ public class IcysBetterHorsesClient {
                 BhModelLayers.MAMMOTH_DONKEY_CHEST, BhModelLayers.MAMMOTH_DONKEY_CHEST_BABY,
                 BhTackTextures.MAMMOTH_DONKEY));
         event.registerEntityRenderer(ModEntities.MINIATURE_DONKEY, context -> new DonkeyRenderer(context,
-                BhModelLayers.MINIATURE_DONKEY, BhModelLayers.MINIATURE_DONKEY_BABY,
+                MiniatureDonkeyModel::new, BhModelLayers.MINIATURE_DONKEY, BhModelLayers.MINIATURE_DONKEY_BABY,
                 BhModelLayers.MINIATURE_DONKEY_SADDLE, BhModelLayers.MINIATURE_DONKEY_SADDLE_BABY,
                 BhModelLayers.MINIATURE_DONKEY_CARPET, BhModelLayers.MINIATURE_DONKEY_CARPET_BABY,
                 BhModelLayers.MINIATURE_DONKEY_ARMOR, BhModelLayers.MINIATURE_DONKEY_ARMOR_BABY,

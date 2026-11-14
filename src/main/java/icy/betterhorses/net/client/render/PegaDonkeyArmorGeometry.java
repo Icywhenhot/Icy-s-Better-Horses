@@ -87,7 +87,7 @@ public final class PegaDonkeyArmorGeometry {
         PartDefinition p_front_right_leg = root.addOrReplaceChild(
                 "front_right_leg",
                 CubeListBuilder.create()
-                        .mirror().texOffs(77, 0).addBox(-2.0F, -10.8462F, -2.0F, 4.0F, 8.0F, 4.0F, new CubeDeformation(0.0800F)),
+                        .mirror().texOffs(62, 80).addBox(-2.0F, -10.8462F, -2.0F, 4.0F, 8.0F, 4.0F, new CubeDeformation(0.0800F)),
                 PartPose.offset(-3.0F, 23.0F, -8.9000F));
 
         PartDefinition p_front_left_leg = root.addOrReplaceChild(

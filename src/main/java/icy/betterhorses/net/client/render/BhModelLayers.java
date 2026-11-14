@@ -177,6 +177,15 @@ public final class BhModelLayers {
     public static final ModelLayerLocation ZAMORANO_DONKEY_CHEST = layer("zamorano_donkey", "chest");
     public static final ModelLayerLocation ZAMORANO_DONKEY_CHEST_BABY = layer("zamorano_donkey", "chest_baby");
 
+    public static final ModelLayerLocation MULE = layer("mule", "main");
+    public static final ModelLayerLocation MULE_SADDLE = layer("mule", "saddle");
+    public static final ModelLayerLocation MULE_SADDLE_BABY = layer("mule", "saddle_baby");
+    public static final ModelLayerLocation MULE_CARPET = layer("mule", "carpet");
+    public static final ModelLayerLocation MULE_CARPET_BABY = layer("mule", "carpet_baby");
+    public static final ModelLayerLocation MULE_ARMOR = layer("mule", "armor");
+    public static final ModelLayerLocation MULE_ARMOR_BABY = layer("mule", "armor_baby");
+    public static final ModelLayerLocation MULE_CHEST = layer("mule", "chest");
+    public static final ModelLayerLocation MULE_CHEST_BABY = layer("mule", "chest_baby");
     public static final ModelLayerLocation MULE_BABY = layer("mule", "baby");
 
     public static void register(EntityRenderersEvent.RegisterLayerDefinitions event) {
@@ -430,6 +439,15 @@ public final class BhModelLayers {
         event.registerLayerDefinition(ZAMORANO_DONKEY_ARMOR_BABY, ZamoranoDonkeyArmorGeometry::createBodyLayer);
         event.registerLayerDefinition(ZAMORANO_DONKEY_CHEST, ZamoranoDonkeyChestGeometry::createBodyLayer);
         event.registerLayerDefinition(ZAMORANO_DONKEY_CHEST_BABY, ZamoranoDonkeyChestGeometry::createBodyLayer);
+        event.registerLayerDefinition(MULE, MuleGeometry::createBodyLayer);
+        event.registerLayerDefinition(MULE_SADDLE, MuleSaddleGeometry::createBodyLayer);
+        event.registerLayerDefinition(MULE_SADDLE_BABY, MuleSaddleGeometry::createBodyLayer);
+        event.registerLayerDefinition(MULE_CARPET, MuleCarpetGeometry::createBodyLayer);
+        event.registerLayerDefinition(MULE_CARPET_BABY, MuleCarpetGeometry::createBodyLayer);
+        event.registerLayerDefinition(MULE_ARMOR, MuleArmorGeometry::createBodyLayer);
+        event.registerLayerDefinition(MULE_ARMOR_BABY, MuleArmorGeometry::createBodyLayer);
+        event.registerLayerDefinition(MULE_CHEST, MuleChestGeometry::createBodyLayer);
+        event.registerLayerDefinition(MULE_CHEST_BABY, MuleChestGeometry::createBodyLayer);
         event.registerLayerDefinition(MULE_BABY, SmallDonkeyFoalGeometry::createBodyLayer);
 
         registerPlates(event, ICELANDIC_ARMOR, IcelandicArmorGeometry::createBodyLayer);
@@ -447,6 +465,7 @@ public final class BhModelLayers {
         registerPlates(event, PEGA_DONKEY_ARMOR, PegaDonkeyArmorGeometry::createBodyLayer);
         registerPlates(event, POITOU_DONKEY_ARMOR, PoitouDonkeyArmorGeometry::createBodyLayer);
         registerPlates(event, ZAMORANO_DONKEY_ARMOR, ZamoranoDonkeyArmorGeometry::createBodyLayer);
+        registerPlates(event, MULE_ARMOR, MuleArmorGeometry::createBodyLayer);
     }
 
     private static void registerPlates(EntityRenderersEvent.RegisterLayerDefinitions event,

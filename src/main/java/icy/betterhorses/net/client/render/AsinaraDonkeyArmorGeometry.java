@@ -87,7 +87,7 @@ public final class AsinaraDonkeyArmorGeometry {
         PartDefinition p_front_right_leg = root.addOrReplaceChild(
                 "front_right_leg",
                 CubeListBuilder.create()
-                        .mirror().texOffs(57, 0).addBox(-1.5000F, -7.8846F, -1.5000F, 3.0F, 6.0F, 3.0F, new CubeDeformation(0.0800F)),
+                        .mirror().texOffs(62, 80).addBox(-1.5000F, -7.8846F, -1.5000F, 3.0F, 6.0F, 3.0F, new CubeDeformation(0.0800F)),
                 PartPose.offset(-2.5000F, 23.0F, -9.4000F));
 
         PartDefinition p_front_left_leg = root.addOrReplaceChild(

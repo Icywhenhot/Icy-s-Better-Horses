@@ -87,7 +87,7 @@ public final class MiniatureDonkeyArmorGeometry {
         PartDefinition p_front_right_leg = root.addOrReplaceChild(
                 "front_right_leg",
                 CubeListBuilder.create()
-                        .mirror().texOffs(0, 0).addBox(-1.0F, -6.0769F, -1.0F, 2.0F, 5.0F, 2.0F, new CubeDeformation(0.0800F)),
+                        .mirror().texOffs(62, 80).addBox(-1.0F, -6.0769F, -1.0F, 2.0F, 5.0F, 2.0F, new CubeDeformation(0.0800F)),
                 PartPose.offset(-1.5000F, 23.0F, -6.9000F));
 
         PartDefinition p_front_left_leg = root.addOrReplaceChild(
