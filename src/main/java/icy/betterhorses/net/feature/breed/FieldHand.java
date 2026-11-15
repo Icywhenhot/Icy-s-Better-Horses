@@ -1,10 +1,10 @@
 package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhAbility;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.IHorseAbilityHost;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedDonkey;
+import icy.betterhorses.net.entity.BhBreedMule;
 import icy.betterhorses.net.goal.HorseWanderBoundsGoal;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.BlockPos;
@@ -43,7 +43,7 @@ public final class FieldHand implements BreedAbility {
             return;
         }
         ServerLevel level = (ServerLevel) horse.level();
-        int tier = BhHorseTraits.bondTier(data.bh_getBond());
+        int tier = BhAbility.ANDALUSIAN_FARM.tier(data);
         BlockPos centre = horse.blockPosition();
         for (BlockPos pos : BlockPos.betweenClosed(centre.offset(-2, -1, -2), centre.offset(2, 1, 2))) {
             if (tend(level, pos, horse, data, owner, tier)) {
@@ -54,9 +54,9 @@ public final class FieldHand implements BreedAbility {
 
     private static @Nullable ServerPlayer farmer(AbstractHorse horse, IHorseData data) {
         if (!(horse.level() instanceof ServerLevel level) || horse.isBaby() || data.bh_getOwner() == null
-                || !BhAbility.ANDALUSIAN_FARM.on() || data.bh_isAbilityPaused()
+                || data.bh_isAbilityPaused()
                 || !data.bh_hasChestGear() || data.bh_hasEnderChestGear()
-                || !EventHooks.canEntityGrief(level, horse) || BhHorseTraits.bondTier(data.bh_getBond()) < 1) {
+                || !EventHooks.canEntityGrief(level, horse) || BhAbility.ANDALUSIAN_FARM.tier(data) < 1) {
             return null;
         }
         return level.getServer().getPlayerList().getPlayer(data.bh_getOwner());
@@ -173,7 +173,8 @@ public final class FieldHand implements BreedAbility {
 
     public static void onTrample(BlockEvent.FarmlandTrampleEvent event) {
         if (BhAbility.ANDALUSIAN_FARM.on() && event.getEntity() instanceof BhBreedDonkey donkey
-                && donkey.bhFixedBreed().equals(BhContent.ANDALUSIAN_DONKEY.getKey())) {
+                && donkey.bhFixedBreed().equals(BhContent.ANDALUSIAN_DONKEY.getKey())
+                || event.getEntity() instanceof BhBreedMule mule && BhAbility.ANDALUSIAN_FARM.on(IHorseData.of(mule))) {
             event.setCanceled(true);
         }
     }
@@ -228,7 +229,7 @@ public final class FieldHand implements BreedAbility {
                 return null;
             }
             ServerLevel level = (ServerLevel) horse.level();
-            int tier = BhHorseTraits.bondTier(data.bh_getBond());
+            int tier = BhAbility.ANDALUSIAN_FARM.tier(data);
             BlockPos here = horse.blockPosition();
             BlockPos best = null;
             double closest = Double.MAX_VALUE;
@@ -275,7 +276,7 @@ public final class FieldHand implements BreedAbility {
                 IHorseData data = IHorseData.of(horse);
                 ServerPlayer owner = farmer(horse, data);
                 ServerLevel level = (ServerLevel) horse.level();
-                int tier = BhHorseTraits.bondTier(data.bh_getBond());
+                int tier = BhAbility.ANDALUSIAN_FARM.tier(data);
                 if (owner != null && job(level, target, data, tier)
                         && !tend(level, target, horse, data, owner, tier)) {
                     skipped.add(target);

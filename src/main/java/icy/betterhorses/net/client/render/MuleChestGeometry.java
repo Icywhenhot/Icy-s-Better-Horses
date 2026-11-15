@@ -21,7 +21,7 @@ public final class MuleChestGeometry {
                 "body",
                 CubeListBuilder.create()
                         .texOffs(86, 102).addBox(-3.0F, -11.0F, 4.2273F, 6.0F, 6.0F, 5.0F),
-                PartPose.offset(0.0F, 8.0F, 0.0F));
+                PartPose.offset(0.0F, 7.0F, 0.0F));
         return LayerDefinition.create(mesh, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     }
 }

@@ -1,7 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhAbility;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.IHorseAbilityHost;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.IcysBetterHorses;
@@ -49,8 +48,8 @@ public final class MiniatureCompanion implements BreedAbility {
                 || !data.bh_hasChestGear()) {
             return null;
         }
-        boolean eggs = BhAbility.MINIATURE_PICKUP.on();
-        boolean basket = BhAbility.MINIATURE_BASKET.on() && BhHorseTraits.bondTier(data.bh_getBond()) >= 1;
+        boolean eggs = BhAbility.MINIATURE_PICKUP.on(data);
+        boolean basket = BhAbility.MINIATURE_BASKET.tier(data) >= 1;
         if (!eggs && !basket) {
             return null;
         }

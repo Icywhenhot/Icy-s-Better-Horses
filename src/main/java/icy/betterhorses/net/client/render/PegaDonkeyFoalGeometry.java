@@ -80,25 +80,25 @@ public final class PegaDonkeyFoalGeometry {
         PartDefinition p_front_right_leg = root.addOrReplaceChild(
                 "front_right_leg",
                 CubeListBuilder.create()
-                        .texOffs(0, 54).addBox(-1.0F, -9.0F, -1.0F, 2.0F, 10.0F, 2.0F),
+                        .texOffs(0, 54).addBox(-1.0F, -9.0F, -1.0F, 2.0F, 10.0F, 2.0F, new CubeDeformation(-0.0100F)),
                 PartPose.offset(-2.0F, 23.0F, -8.9000F));
 
         PartDefinition p_front_left_leg = root.addOrReplaceChild(
                 "front_left_leg",
                 CubeListBuilder.create()
-                        .texOffs(28, 53).addBox(-1.0F, -9.0F, -1.0F, 2.0F, 10.0F, 2.0F),
+                        .texOffs(28, 53).addBox(-1.0F, -9.0F, -1.0F, 2.0F, 10.0F, 2.0F, new CubeDeformation(-0.0100F)),
                 PartPose.offset(2.0F, 23.0F, -8.9000F));
 
         PartDefinition p_back_right_leg = root.addOrReplaceChild(
                 "back_right_leg",
                 CubeListBuilder.create()
-                        .texOffs(54, 32).addBox(-1.0F, -9.0F, -2.0F, 2.0F, 10.0F, 2.0F),
+                        .texOffs(54, 32).addBox(-1.0F, -9.0F, -2.0F, 2.0F, 10.0F, 2.0F, new CubeDeformation(-0.0100F)),
                 PartPose.offset(-2.0F, 23.0F, 4.0F));
 
         PartDefinition p_back_left_leg = root.addOrReplaceChild(
                 "back_left_leg",
                 CubeListBuilder.create()
-                        .texOffs(8, 54).addBox(-1.0F, -9.0F, -2.0F, 2.0F, 10.0F, 2.0F),
+                        .texOffs(8, 54).addBox(-1.0F, -9.0F, -2.0F, 2.0F, 10.0F, 2.0F, new CubeDeformation(-0.0100F)),
                 PartPose.offset(2.0F, 23.0F, 4.0F));
 
         PartDefinition p_tail = root.addOrReplaceChild(

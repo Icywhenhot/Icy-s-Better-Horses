@@ -2,11 +2,10 @@ package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhHorseAttributes;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.IHorseAbilityHost;
 import icy.betterhorses.net.IHorseData;
-import icy.betterhorses.net.entity.BhBreedDonkey;
+import icy.betterhorses.net.entity.BhBreedHorse;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -28,7 +27,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
-import java.util.Objects;
 import java.util.Set;
 
 public final class CoastalScout implements BreedAbility {
@@ -45,7 +43,7 @@ public final class CoastalScout implements BreedAbility {
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
-        double bonus = BhAbility.ASINARA_WATER.on() ? 0.5D : 0.0D;
+        double bonus = BhAbility.ASINARA_WATER.on(data) ? 0.5D : 0.0D;
         if (bonus != water) {
             water = bonus;
             BhHorseAttributes.apply(horse, Attributes.WATER_MOVEMENT_EFFICIENCY,
@@ -54,8 +52,7 @@ public final class CoastalScout implements BreedAbility {
         if (!(horse.level() instanceof ServerLevel level)) {
             return;
         }
-        if (horse.isBaby() || !data.bh_isOwned() || BhHorseTraits.bondTier(data.bh_getBond()) < 2
-                || !BhAbility.ASINARA_TREASURE.on()) {
+        if (horse.isBaby() || !data.bh_isOwned() || BhAbility.ASINARA_TREASURE.tier(data) < 2) {
             clearTarget();
             return;
         }
@@ -134,11 +131,10 @@ public final class CoastalScout implements BreedAbility {
         if (!BhAbility.ASINARA_FISH.on()) {
             return false;
         }
-        return !player.level().getEntitiesOfClass(BhBreedDonkey.class, player.getBoundingBox().inflate(12.0D), horse -> {
+        return !player.level().getEntitiesOfClass(BhBreedHorse.class, player.getBoundingBox().inflate(12.0D), horse -> {
             IHorseData data = IHorseData.of(horse);
             return horse.isAlive() && !horse.isBaby() && horse.distanceToSqr(player) <= 144.0D
-                    && Objects.equals(data.bh_getBreedKey(), BhContent.ASINARA_DONKEY.getKey())
-                    && data.bh_isOwned() && BhHorseTraits.bondTier(data.bh_getBond()) >= 1;
+                    && data.bh_isOwned() && BhAbility.ASINARA_FISH.tier(data, BhContent.ASINARA_DONKEY.getKey()) >= 1;
         }).isEmpty();
     }
 
@@ -194,12 +190,12 @@ public final class CoastalScout implements BreedAbility {
         }
 
         private boolean eligible() {
-            if (horse.isVehicle() || !horse.isAlive() || !BhAbility.ASINARA_TREASURE.on()) {
+            if (horse.isVehicle() || !horse.isAlive()) {
                 return false;
             }
             IHorseData data = IHorseData.of(horse);
             Player owner = data.bh_getOwner() == null ? null : horse.level().getPlayerByUUID(data.bh_getOwner());
-            return data.bh_getCombatTarget() == null && BhHorseTraits.bondTier(data.bh_getBond()) >= 2
+            return data.bh_getCombatTarget() == null && BhAbility.ASINARA_TREASURE.tier(data) >= 2
                     && owner != null && horse.distanceToSqr(owner) <= 2304.0D
                     && (data.bh_getCommand().equals(BhContent.COMMAND_FOLLOW.getKey())
                     || data.bh_getCommand().equals(BhContent.COMMAND_WANDER.getKey()));

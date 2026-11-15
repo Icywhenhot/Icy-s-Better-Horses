@@ -1,6 +1,5 @@
 package icy.betterhorses.net.feature.breed;
 
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
@@ -58,13 +57,13 @@ public final class Intimidation implements BreedAbility {
             return;
         }
 
-        LivingEntity ward = BhAbility.SHIRE_INTIMIDATE.on() ? ward(horse, data) : null;
+        LivingEntity ward = BhAbility.SHIRE_INTIMIDATE.on(data) ? ward(horse, data) : null;
         if (ward == null) {
             feared.clear();
             return;
         }
 
-        double radius = BhHorseTraits.bondTier(data.bh_getBond()) >= 1 ? WIDE_RADIUS : RADIUS;
+        double radius = BhAbility.SHIRE_INTIMIDATE.tier(data) >= 1 ? WIDE_RADIUS : RADIUS;
         AABB box = horse.getBoundingBox().inflate(radius);
         Mob fresh = null;
         int held = 0;

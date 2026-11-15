@@ -158,7 +158,8 @@ public final class ArchetypePerks {
     }
 
     public static double fallDamageWaiver(ArchetypeType arch) {
-        if (arch == BhContent.PONY.get() && !BhAbility.PONY_FALL.on()) {
+        if (arch == BhContent.PONY.get() && !BhAbility.PONY_FALL.on()
+                || arch == BhContent.MULE.get() && !BhAbility.MULE_SURE_FOOT.on()) {
             return 0.0D;
         }
         return arch.fallDamageWaiver();

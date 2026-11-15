@@ -2,7 +2,6 @@ package icy.betterhorses.net.feature;
 
 import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.BhHorseAttributes;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.HorseCartEntity;
@@ -19,7 +18,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
 
 public final class CartRig implements HorseFeature {
 
@@ -107,9 +105,7 @@ public final class CartRig implements HorseFeature {
         if (BhBreedData.of(breedKey).archetype() == BhContent.DRAFT.get()) {
             return BhAbility.DRAFT_HAUL.on();
         }
-        return Objects.equals(breedKey, BhContent.HAFLINGER.getKey())
-                && BhHorseTraits.bondTier(data.bh_getBond()) >= 1
-                && BhAbility.HAFLINGER_HAUL.on();
+        return BhAbility.HAFLINGER_HAUL.tier(data, BhContent.HAFLINGER.getKey()) >= 1;
     }
 
     private void freezeWhenUnridden(AbstractHorse horse, IHorseData data) {

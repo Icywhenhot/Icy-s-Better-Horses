@@ -21,7 +21,7 @@ public final class MuleCarpetGeometry {
         PartDefinition p_body = root.addOrReplaceChild(
                 "body",
                 CubeListBuilder.create(),
-                PartPose.offset(0.0F, 8.0F, 0.0F));
+                PartPose.offset(0.0F, 7.0F, 0.0F));
 
         PartDefinition p_saddle2 = p_body.addOrReplaceChild(
                 "saddle2",
@@ -32,7 +32,7 @@ public final class MuleCarpetGeometry {
         PartDefinition p_neck2 = p_body.addOrReplaceChild(
                 "neck2",
                 CubeListBuilder.create(),
-                PartPose.offset(0.0F, -5.0F, -9.0F));
+                PartPose.offset(0.0F, -4.0F, -9.0F));
 
         PartDefinition p_neck3 = p_neck2.addOrReplaceChild(
                 "neck3",

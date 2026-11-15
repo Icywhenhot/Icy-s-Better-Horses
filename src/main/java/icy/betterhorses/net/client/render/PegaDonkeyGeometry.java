@@ -82,28 +82,28 @@ public final class PegaDonkeyGeometry {
         PartDefinition p_front_right_leg = root.addOrReplaceChild(
                 "front_right_leg",
                 CubeListBuilder.create()
-                        .texOffs(20, 52).addBox(-2.0F, -11.0F, -2.0F, 4.0F, 12.0F, 4.0F)
+                        .texOffs(20, 52).addBox(-2.0F, -11.0F, -2.0F, 4.0F, 12.0F, 4.0F, new CubeDeformation(-0.0100F))
                         .texOffs(68, 0).addBox(-2.0F, -3.0F, -2.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(-3.0F, 23.0F, -8.9000F));
 
         PartDefinition p_front_left_leg = root.addOrReplaceChild(
                 "front_left_leg",
                 CubeListBuilder.create()
-                        .texOffs(46, 46).addBox(-2.0F, -11.0F, -2.0F, 4.0F, 12.0F, 4.0F)
+                        .texOffs(46, 46).addBox(-2.0F, -11.0F, -2.0F, 4.0F, 12.0F, 4.0F, new CubeDeformation(-0.0100F))
                         .texOffs(68, 16).addBox(-2.0F, -3.0F, -2.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(3.0F, 23.0F, -8.9000F));
 
         PartDefinition p_back_right_leg = root.addOrReplaceChild(
                 "back_right_leg",
                 CubeListBuilder.create()
-                        .texOffs(62, 46).addBox(-2.0F, -11.0F, -3.0F, 4.0F, 12.0F, 4.0F)
+                        .texOffs(62, 46).addBox(-2.0F, -11.0F, -3.0F, 4.0F, 12.0F, 4.0F, new CubeDeformation(-0.0100F))
                         .texOffs(14, 68).addBox(-2.0F, -3.0F, -3.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(-3.0F, 23.0F, 12.0F));
 
         PartDefinition p_back_left_leg = root.addOrReplaceChild(
                 "back_left_leg",
                 CubeListBuilder.create()
-                        .texOffs(36, 62).addBox(-2.0F, -11.0F, -3.0F, 4.0F, 12.0F, 4.0F)
+                        .texOffs(36, 62).addBox(-2.0F, -11.0F, -3.0F, 4.0F, 12.0F, 4.0F, new CubeDeformation(-0.0100F))
                         .texOffs(68, 8).addBox(-2.0F, -3.0F, -3.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(3.0F, 23.0F, 12.0F));
 

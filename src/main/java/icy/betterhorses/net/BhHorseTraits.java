@@ -13,7 +13,6 @@ import icy.betterhorses.net.entity.BhBreedEntity;
 import icy.betterhorses.net.registry.BhContent;
 
 import java.util.List;
-import java.util.Objects;
 
 public final class BhHorseTraits {
 
@@ -30,8 +29,9 @@ public final class BhHorseTraits {
 
     public static void grantBond(IHorseData data, int amount) {
         int gain = amount;
-        if (Objects.equals(data.bh_getBreedKey(), BhContent.MORGAN.getKey()) && BhAbility.MORGAN_BOND.on()) {
-            int halves = amount * (bondTier(data.bh_getBond()) >= 1 ? 4 : 3) + data.bh_getBondRemainder();
+        int quick = BhAbility.MORGAN_BOND.tier(data, BhContent.MORGAN.getKey());
+        if (quick >= 0) {
+            int halves = amount * (quick >= 1 ? 4 : 3) + data.bh_getBondRemainder();
             gain = halves / 2;
             data.bh_setBondRemainder(halves % 2);
         }

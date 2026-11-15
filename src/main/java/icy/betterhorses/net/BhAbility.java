@@ -1,8 +1,12 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.feature.breed.MuleLine;
+import icy.betterhorses.net.registry.BreedType;
+import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
+import java.util.Objects;
 
 public enum BhAbility {
 
@@ -16,6 +20,7 @@ public enum BhAbility {
     PONY_SNOW(BreedArchetype.PONY),
     PONY_HEAL(BreedArchetype.PONY),
     DONKEY_GUARD(BreedArchetype.DONKEY),
+    MULE_SURE_FOOT(BreedArchetype.MULE),
 
     THOROUGHBRED_TOP_END(HorseBreed.THOROUGHBRED),
     ARABIAN_ENDURANCE(HorseBreed.ARABIAN),
@@ -132,5 +137,20 @@ public enum BhAbility {
 
     public boolean on() {
         return BhConfig.abilityEnabled(this);
+    }
+
+    public boolean on(IHorseData data) {
+        return tier(data) >= 0;
+    }
+
+    public int tier(IHorseData data) {
+        if (!on()) return -1;
+        int bond = BhHorseTraits.bondTier(data.bh_getBond());
+        MuleLine line = MuleLine.of(data);
+        return line == null ? bond : line.tier(this, bond);
+    }
+
+    public int tier(IHorseData data, ResourceKey<BreedType> breed) {
+        return Objects.equals(data.bh_getBreedKey(), breed) || MuleLine.of(data) != null ? tier(data) : -1;
     }
 }

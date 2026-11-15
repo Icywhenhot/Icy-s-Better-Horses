@@ -13,6 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModEntities;
+import icy.betterhorses.net.feature.breed.MuleLine;
 import icy.betterhorses.net.feature.breed.MuleSire;
 import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BhRegistries;
@@ -182,6 +183,7 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
                 }
                 ((BhBreedHorse) mule).bhInheritStats(this, other);
                 MuleSire.apply(this, other, mule);
+                mule.bhSetLine(MuleLine.born(IHorseData.of(this).bh_getBreed(), IHorseData.of(other).bh_getBreed(), this.random));
                 mule.bhSetCoat(mule.bhCoatSet().roll(this.random));
                 return mule;
             }

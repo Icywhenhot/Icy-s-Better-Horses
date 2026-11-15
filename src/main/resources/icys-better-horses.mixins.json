@@ -50,6 +50,7 @@
 		"PanicGoalMixin",
 		"PlayerHurtMixin",
 		"EntitySlowBlockMixin",
+		"EntitySureFootMixin",
 		"PowderSnowBlockMixin",
 		"SpawnPlacementsAccessor",
 		"SlotAccessor"

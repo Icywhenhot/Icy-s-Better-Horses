@@ -330,8 +330,9 @@ public class IcysBetterHorsesClient {
         event.registerEntityRenderer(ModEntities.ANDALUSIAN_HORSE, MediumHorseRenderer::new);
         event.registerEntityRenderer(ModEntities.MUSTANG_HORSE, MediumHorseRenderer::new);
         event.registerEntityRenderer(ModEntities.QUARTER_HORSE, MediumHorseRenderer::new);
-        for (EntityType<BhBreedMule> mule : ModEntities.MULES) {
-            event.registerEntityRenderer(mule, MuleRenderer::new);
+        for (int i = 0; i < ModEntities.MULES.size(); i++) {
+            int size = i;
+            event.registerEntityRenderer(ModEntities.MULES.get(i), ctx -> new MuleRenderer(ctx, size));
         }
         event.registerEntityRenderer(ModEntities.ARABIAN_HORSE, SmallHorseRenderer::new);
         event.registerEntityRenderer(ModEntities.MORGAN_HORSE, SmallHorseRenderer::new);

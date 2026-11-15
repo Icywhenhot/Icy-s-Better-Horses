@@ -8,6 +8,8 @@ import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.util.Mth;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.IcysBetterHorses;
+import icy.betterhorses.net.feature.breed.MuleLine;
+import icy.betterhorses.net.registry.AbilityType;
 import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.client.Minecraft;
@@ -156,12 +158,13 @@ public final class BhAbilityBadges {
         if (type == null) {
             return;
         }
-        ResourceLocation basis = type.abilities().isEmpty() ? breedKey.location() : type.abilities().get(0).location();
+        List<ResourceKey<AbilityType>> owned = MuleLine.abilitiesOf(data);
+        ResourceLocation basis = owned.isEmpty() ? breedKey.location() : owned.get(0).location();
 
         List<Badge> badges = new ArrayList<>();
         badges.add(read(basis, data.bh_getSurge(), false));
-        for (int slot = 1; slot < Math.min(type.abilities().size(), BhSurge.ABILITY_SLOTS); slot++) {
-            badges.add(read(type.abilities().get(slot).location(), data.bh_getAbilitySurge(slot), false));
+        for (int slot = 1; slot < Math.min(owned.size(), BhSurge.ABILITY_SLOTS); slot++) {
+            badges.add(read(owned.get(slot).location(), data.bh_getAbilitySurge(slot), false));
         }
         badges.add(read(basis, data.bh_getPulse(), false));
         badges.add(read(basis, data.bh_getPerkSurge(), true));

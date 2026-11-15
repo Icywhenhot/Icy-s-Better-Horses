@@ -185,9 +185,12 @@ public final class ModEntities {
     public static final EntityType<BhUndeadHorse> SMALL_DROWNED_HORSE =
             registerUndead("small_drowned_horse", BhContent.SMALL_DROWNED_HORSE, false, SmallHorse.WIDTH, SmallHorse.HEIGHT);
 
-    public static final EntityType<BhBreedMule> SMALL_MULE = registerMule("small_mule", BhContent.SMALL_MULE);
-    public static final EntityType<BhBreedMule> MEDIUM_MULE = registerMule("medium_mule", BhContent.MEDIUM_MULE);
-    public static final EntityType<BhBreedMule> LARGE_MULE = registerMule("large_mule", BhContent.LARGE_MULE);
+    public static final EntityType<BhBreedMule> SMALL_MULE = registerMule("small_mule", BhContent.SMALL_MULE,
+            SmallHorse.WIDTH, SmallHorse.HEIGHT);
+    public static final EntityType<BhBreedMule> MEDIUM_MULE = registerMule("medium_mule", BhContent.MEDIUM_MULE,
+            MediumHorse.WIDTH, MediumHorse.HEIGHT);
+    public static final EntityType<BhBreedMule> LARGE_MULE = registerMule("large_mule", BhContent.LARGE_MULE,
+            PercheronHorse.WIDTH, PercheronHorse.HEIGHT);
 
     public static final List<EntityType<BhBreedMule>> MULES = List.of(SMALL_MULE, MEDIUM_MULE, LARGE_MULE);
 
@@ -226,11 +229,12 @@ public final class ModEntities {
                 .build(key(path)));
     }
 
-    private static EntityType<BhBreedMule> registerMule(String path, DeferredHolder<BreedType, BreedType> breed) {
+    private static EntityType<BhBreedMule> registerMule(String path, DeferredHolder<BreedType, BreedType> breed,
+                                                        float width, float height) {
         return register(path, EntityType.Builder.<BhBreedMule>of(
                         (type, level) -> new BhBreedMule(type, level, breed.getKey()), MobCategory.CREATURE)
-                .sized(MediumHorse.WIDTH, MediumHorse.HEIGHT).eyeHeight(MediumHorse.HEIGHT * 0.95F)
-                .passengerAttachments(MediumHorse.HEIGHT * 0.90F)
+                .sized(width, height).eyeHeight(height * 0.95F)
+                .passengerAttachments(height * 0.90F)
                 .clientTrackingRange(10).build(key(path)));
     }
 

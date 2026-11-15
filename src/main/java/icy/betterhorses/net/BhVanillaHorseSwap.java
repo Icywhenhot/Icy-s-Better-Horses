@@ -58,8 +58,9 @@ public final class BhVanillaHorseSwap {
             breedKey = BhBreeds.keyOf(HorseBreed.byId(EntityType.getKey(entityType).getPath()));
         }
         if (entityType == null && horse instanceof Mule) {
-            entityType = ModEntities.MEDIUM_MULE;
-            breedKey = BhContent.MEDIUM_MULE.getKey();
+            int size = horse.getRandom().nextInt(ModEntities.MULES.size());
+            entityType = ModEntities.MULES.get(size);
+            breedKey = List.of(BhContent.SMALL_MULE, BhContent.MEDIUM_MULE, BhContent.LARGE_MULE).get(size).getKey();
         }
         if (entityType == null) {
             breedKey = horse instanceof Donkey ? null : IHorseData.of(horse).bh_getBreedKey();

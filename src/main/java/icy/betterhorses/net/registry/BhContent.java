@@ -91,6 +91,7 @@ public final class BhContent {
             .speed(0.1620D, 0.3472D).health(15.0D, 50.0D).jump(0.38D, 1.02D)
             .bashDamage(1.25D).bashKnockback(1.0D)
             .defaultChestRows(4).allowsChestAndRiders(false)
+            .fallDamageWaiver(8.0D)
             .build());
 
     public static final DeferredHolder<ArchetypeType, ArchetypeType> NONE = ARCHETYPES.register("none", () -> ArchetypeType.builder()
@@ -411,16 +412,26 @@ public final class BhContent {
     public static final DeferredHolder<BreedType, BreedType> SMALL_DROWNED_HORSE =
             undead("small_drowned_horse", ZOMBIE, ROTTEN_RATIONS, DROWNED_LUNGS, StabilizerBody.SMALL);
 
-    public static final DeferredHolder<BreedType, BreedType> SMALL_MULE = mule("small_mule");
-    public static final DeferredHolder<BreedType, BreedType> MEDIUM_MULE = mule("medium_mule");
-    public static final DeferredHolder<BreedType, BreedType> LARGE_MULE = mule("large_mule");
+    public static final DeferredHolder<BreedType, BreedType> SMALL_MULE = mule("small_mule", "small_mule",
+            BreedType.SMALL, StabilizerBody.SMALL_MULE);
+    public static final DeferredHolder<BreedType, BreedType> MEDIUM_MULE = mule("medium_mule", "mule",
+            BreedType.MEDIUM, StabilizerBody.MULE);
+    public static final DeferredHolder<BreedType, BreedType> LARGE_MULE = mule("large_mule", "large_mule",
+            BreedType.LARGE, StabilizerBody.LARGE_MULE);
 
-    private static DeferredHolder<BreedType, BreedType> mule(String path) {
-        return BREEDS.register(path, () -> BreedType.builder(MULE.getKey())
-                .coats(IcysBetterHorses.RESOURCE_NAMESPACE, "mule", List.of("brown", "dark_brown"), true)
-                .entityType(entity(path))
-                .stabilizerBody(StabilizerBody.MULE)
-                .build());
+    private static final List<String> MULE_COATS = List.of("brown", "dark_brown", "sorrel", "black", "grey",
+            "palomino", "buckskin", "grullo", "flaxen_sorrel", "appaloosa", "pinto", "roan");
+
+    private static DeferredHolder<BreedType, BreedType> mule(String path, String folder, int size, StabilizerBody body) {
+        return BREEDS.register(path, () -> {
+            BreedType.Builder b = BreedType.builder(MULE.getKey())
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, folder, MULE_COATS, true)
+                    .entityType(entity(path))
+                    .stabilizerBody(body);
+            if (size == BreedType.SMALL) b.small();
+            if (size == BreedType.LARGE) b.large();
+            return b.build();
+        });
     }
 
     private static DeferredHolder<BreedType, BreedType> undead(String path,

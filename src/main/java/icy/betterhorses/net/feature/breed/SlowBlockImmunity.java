@@ -20,7 +20,7 @@ public final class SlowBlockImmunity implements BreedAbility {
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
-        show(data, wading(horse), 0);
+        show(data, wading(horse) && (MuleLine.of(data) == null || ignoresSlowBlocks(data)), 0);
     }
 
     public static void show(IHorseData data, boolean stuck, int variant) {
@@ -60,6 +60,7 @@ public final class SlowBlockImmunity implements BreedAbility {
         if (Objects.equals(breedKey, BhContent.ICELANDIC.getKey())) {
             return BhAbility.ICELANDIC_MOMENTUM.on();
         }
-        return false;
+        return MuleLine.of(data) != null
+                && (BhAbility.PERCHERON_MOMENTUM.on(data) || BhAbility.ICELANDIC_MOMENTUM.on(data));
     }
 }

@@ -1,7 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhHorseAttributes;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -17,7 +16,7 @@ public final class EasyKeeper implements BreedAbility {
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
-        boolean want = BhHorseTraits.bondTier(data.bh_getBond()) >= 2 && BhAbility.MORGAN_ADAPT.on();
+        boolean want = BhAbility.MORGAN_ADAPT.tier(data) >= 2;
         if (want == applied) {
             return;
         }

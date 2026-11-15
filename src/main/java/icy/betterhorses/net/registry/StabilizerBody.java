@@ -17,5 +17,7 @@ public enum StabilizerBody {
     PEGA_DONKEY,
     POITOU_DONKEY,
     ZAMORANO_DONKEY,
-    MULE
+    MULE,
+    SMALL_MULE,
+    LARGE_MULE
 }

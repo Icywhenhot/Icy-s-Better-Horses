@@ -1,6 +1,5 @@
 package icy.betterhorses.net.feature.breed;
 
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
@@ -38,10 +37,11 @@ public final class SecondChance implements BreedAbility {
         if (rider == null) {
             return;
         }
-        if (!BhAbility.ANDALUSIAN_GUARD.on()) {
+        int guard = BhAbility.ANDALUSIAN_GUARD.tier(data);
+        if (guard < 0) {
             return;
         }
-        int amp = BhHorseTraits.bondTier(data.bh_getBond()) >= 1 ? 1 : 0;
+        int amp = guard >= 1 ? 1 : 0;
         BhBreedAbilities.applyQuietEffect(rider, MobEffects.DAMAGE_RESISTANCE, DURATION, amp);
     }
 

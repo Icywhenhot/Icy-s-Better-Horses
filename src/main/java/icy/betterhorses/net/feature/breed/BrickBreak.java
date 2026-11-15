@@ -1,7 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhConfig;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.BhAbility;
@@ -71,8 +70,7 @@ public final class BrickBreak implements BreedAbility {
             cooldown--;
             return;
         }
-        if (!(badge == 0 ? BhAbility.BELGIAN_BRICK : BhAbility.SHIRE_BRICK).on()
-                || BhHorseTraits.bondTier(data.bh_getBond()) < 2
+        if ((badge == 0 ? BhAbility.BELGIAN_BRICK : BhAbility.SHIRE_BRICK).tier(data) < 2
                 || !(horse.level() instanceof ServerLevel level)
                 || !(horse.getControllingPassenger() instanceof Player rider)) {
             return;

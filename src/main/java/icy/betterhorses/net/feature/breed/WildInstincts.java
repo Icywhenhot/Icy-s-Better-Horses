@@ -1,6 +1,5 @@
 package icy.betterhorses.net.feature.breed;
 
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
@@ -33,18 +32,18 @@ public final class WildInstincts implements BreedAbility {
         if (!(horse.level() instanceof ServerLevel level)) {
             return;
         }
-        int tier = BhHorseTraits.bondTier(data.bh_getBond());
-
         if (alertCooldown > 0) {
             alertCooldown--;
         }
 
-        if (BhAbility.MUSTANG_SELF_HEAL.on()
-                && horse.tickCount % SELF_HEAL[tier] == 0 && horse.getHealth() < horse.getMaxHealth()) {
+        int heal = BhAbility.MUSTANG_SELF_HEAL.tier(data);
+        if (heal >= 0
+                && horse.tickCount % SELF_HEAL[heal] == 0 && horse.getHealth() < horse.getMaxHealth()) {
             horse.heal(HEAL_AMOUNT);
         }
 
-        int riderRate = BhAbility.MUSTANG_RIDER_HEAL.on() ? RIDER_HEAL[tier] : 0;
+        int mend = BhAbility.MUSTANG_RIDER_HEAL.tier(data);
+        int riderRate = mend >= 0 ? RIDER_HEAL[mend] : 0;
         if (riderRate > 0 && horse.tickCount % riderRate == 0) {
             Player rider = BhBreedAbilities.rider(horse);
             if (rider != null && rider.getHealth() < rider.getMaxHealth()) {
@@ -53,7 +52,7 @@ public final class WildInstincts implements BreedAbility {
             }
         }
 
-        if (!BhAbility.MUSTANG_ALERT.on() || !data.bh_isOwned()
+        if (!BhAbility.MUSTANG_ALERT.on(data) || !data.bh_isOwned()
                 || alertCooldown > 0 || horse.tickCount % ALERT_INTERVAL != 0) {
             return;
         }

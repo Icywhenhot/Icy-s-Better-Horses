@@ -1,10 +1,9 @@
 package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhAbility;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.IcysBetterHorses;
-import icy.betterhorses.net.entity.BhBreedDonkey;
+import icy.betterhorses.net.entity.BhBreedHorse;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
@@ -59,11 +58,11 @@ public final class FarmCompanion {
     }
 
     private static boolean nearMiniature(ServerLevel level, Animal parent, int tier) {
-        return !level.getEntitiesOfClass(BhBreedDonkey.class, parent.getBoundingBox().inflate(RADIUS), d -> {
+        return !level.getEntitiesOfClass(BhBreedHorse.class, parent.getBoundingBox().inflate(RADIUS), d -> {
             IHorseData data = IHorseData.of(d);
-            return d.isAlive() && !d.isBaby() && d.bhFixedBreed().equals(BhContent.MINIATURE_DONKEY.getKey())
+            return d.isAlive() && !d.isBaby()
                     && d.distanceToSqr(parent) <= RADIUS * RADIUS && !data.bh_isAbilityPaused()
-                    && BhHorseTraits.bondTier(data.bh_getBond()) >= tier;
+                    && BhAbility.MINIATURE_FARM.tier(data, BhContent.MINIATURE_DONKEY.getKey()) >= tier;
         }).isEmpty();
     }
 }

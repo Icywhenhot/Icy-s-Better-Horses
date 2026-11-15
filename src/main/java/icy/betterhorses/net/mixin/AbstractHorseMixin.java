@@ -217,6 +217,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private final CartRig bh_cartRig = new CartRig();
     @Unique private final HorseCombat bh_combat = new HorseCombat();
     @Unique private final BreedAbilities bh_abilities = new BreedAbilities();
+    @Unique private int bh_channel;
     @Unique private final Bonding bh_bonding = new Bonding();
     @Unique private boolean bh_feedingTreat;
 
@@ -1105,14 +1106,17 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Override
     public int bh_getSurge() {
-        return ((AbstractHorse) (Object) this).getData(BhHorseAttachments.SURGE);
+        return ((AbstractHorse) (Object) this).getData(bh_surgeKey(bh_channel));
     }
 
     @Override
     public void bh_setSurge(int packed) {
-        if (((AbstractHorse) (Object) this).getData(BhHorseAttachments.SURGE) != packed) {
-            ((AbstractHorse) (Object) this).setData(BhHorseAttachments.SURGE, packed);
-        }
+        bh_setAbilitySurge(bh_channel, packed);
+    }
+
+    @Override
+    public void bh_setSurgeChannel(int slot) {
+        bh_channel = slot;
     }
 
     @Unique
@@ -1158,6 +1162,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Override
     public void bh_setPulse(int packed) {
+        if (bh_channel > 0) {
+            int phase = BhSurge.phase(bh_getAbilitySurge(bh_channel));
+            if (phase == BhSurge.IDLE || phase == BhSurge.PULSE) bh_setAbilitySurge(bh_channel, packed);
+            return;
+        }
         if (((AbstractHorse) (Object) this).getData(BhHorseAttachments.PULSE) != packed) {
             ((AbstractHorse) (Object) this).setData(BhHorseAttachments.PULSE, packed);
         }
