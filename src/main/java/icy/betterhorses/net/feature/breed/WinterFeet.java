@@ -2,7 +2,6 @@ package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhHorseAttributes;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.IcysBetterHorses;
@@ -28,8 +27,8 @@ public final class WinterFeet implements BreedAbility {
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
-        int tier = BhHorseTraits.bondTier(data.bh_getBond());
-        double want = tier >= 1 && BhAbility.ZAMORANO_SNOW.on() && horse.onGround()
+        int tier = BhAbility.ZAMORANO_SNOW.tier(data);
+        double want = tier >= 1 && horse.onGround()
                 && (snow(horse.getBlockStateOn()) || snow(horse.level().getBlockState(horse.blockPosition())))
                 ? tier >= 2 ? 0.5D : 0.2D : 0.0D;
         if (want != bonus) {
@@ -55,8 +54,8 @@ public final class WinterFeet implements BreedAbility {
     }
 
     public static float friction(LivingEntity target, float original) {
-        return target instanceof AbstractHorse horse && BhAbility.ZAMORANO_ICE.on()
-                && BhContent.ZAMORANO_DONKEY.key().equals(IHorseData.of(horse).bh_getBreedKey())
+        return target instanceof AbstractHorse horse
+                && BhAbility.ZAMORANO_ICE.tier(IHorseData.of(horse), BhContent.ZAMORANO_DONKEY.key()) >= 0
                 && horse.level().getBlockState(horse.getBlockPosBelowThatAffectsMyMovement()).is(BlockTags.ICE)
                 ? 0.6F : original;
     }

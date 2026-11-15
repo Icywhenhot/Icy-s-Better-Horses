@@ -28,8 +28,9 @@ public abstract class FishingHookMixin {
             return;
         }
         Player player = ((FishingHook) (Object) this).getPlayerOwner();
-        if (player != null && CoastalScout.fishingNearby(player)) {
-            timeUntilLured = Math.max(1, (int) Math.ceil(timeUntilLured * 0.85D));
+        double wait = player == null ? 1.0D : CoastalScout.fishingWait(player);
+        if (wait < 1.0D) {
+            timeUntilLured = Math.max(1, (int) Math.ceil(timeUntilLured * wait));
         }
     }
 }

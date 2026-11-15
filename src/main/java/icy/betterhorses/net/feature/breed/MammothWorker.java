@@ -2,7 +2,6 @@ package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhHorseAttributes;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedAbilities;
@@ -23,7 +22,6 @@ public final class MammothWorker implements BreedAbility {
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
-        int tier = BhHorseTraits.bondTier(data.bh_getBond());
         boolean want = braced(horse);
         if (want != anchored) {
             anchored = want;
@@ -34,10 +32,10 @@ public final class MammothWorker implements BreedAbility {
                 BhSurge.pulse(data, 0, 2);
             }
         }
-        if (horse.tickCount % 10 == 0 && BhAbility.MAMMOTH_RUBBLE.on()) {
+        if (horse.tickCount % 10 == 0 && BhAbility.MAMMOTH_RUBBLE.on(data)) {
             DonkeyForaging.pickup(horse, data, MammothWorker::rubble);
         }
-        if (tier >= 1 && BhAbility.MAMMOTH_WORK.on() && horse.tickCount % 20 == 0) {
+        if (BhAbility.MAMMOTH_WORK.tier(data) >= 1 && horse.tickCount % 20 == 0) {
             for (Player player : horse.level().getEntitiesOfClass(Player.class,
                     horse.getBoundingBox().inflate(12.0D), p -> p.isAlive() && horse.distanceToSqr(p) <= 144.0D)) {
                 if (!player.hasEffect(MobEffects.HASTE)) {
@@ -58,9 +56,8 @@ public final class MammothWorker implements BreedAbility {
     public static boolean braced(LivingEntity target) {
         AbstractHorse horse = target instanceof AbstractHorse h ? h
                 : target.getVehicle() instanceof AbstractHorse h ? h : null;
-        return horse != null && BhAbility.MAMMOTH_BRACE.on()
-                && BhContent.MAMMOTH_DONKEY.key().equals(IHorseData.of(horse).bh_getBreedKey())
-                && BhHorseTraits.bondTier(IHorseData.of(horse).bh_getBond()) >= 2
+        return horse != null
+                && BhAbility.MAMMOTH_BRACE.tier(IHorseData.of(horse), BhContent.MAMMOTH_DONKEY.key()) >= 2
                 && BhBreedAbilities.rider(horse) != null;
     }
 

@@ -324,6 +324,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private final BreedAbilities bh_abilities = new BreedAbilities();
     @Unique private static final EntityDataAccessor<String> BH_TREAT =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.STRING);
+    @Unique private int bh_channel;
     @Unique private final Bonding bh_bonding = new Bonding();
     @Unique private boolean bh_feedingTreat;
 
@@ -681,7 +682,6 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Override
     public void bh_setRescueReadyAt(long value) { bh_rescueReadyAt = value; }
-
 
 
     @Override
@@ -1237,14 +1237,17 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Override
     public int bh_getSurge() {
-        return this.entityData.get(BH_SURGE_SYNCED);
+        return bh_getAbilitySurge(bh_channel);
     }
 
     @Override
     public void bh_setSurge(int packed) {
-        if (this.entityData.get(BH_SURGE_SYNCED) != packed) {
-            this.entityData.set(BH_SURGE_SYNCED, packed);
-        }
+        bh_setAbilitySurge(bh_channel, packed);
+    }
+
+    @Override
+    public void bh_setSurgeChannel(int slot) {
+        bh_channel = slot;
     }
 
     @Unique
@@ -1290,6 +1293,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Override
     public void bh_setPulse(int packed) {
+        if (bh_channel > 0) {
+            int phase = BhSurge.phase(bh_getAbilitySurge(bh_channel));
+            if (phase == BhSurge.IDLE || phase == BhSurge.PULSE) bh_setAbilitySurge(bh_channel, packed);
+            return;
+        }
         if (this.entityData.get(BH_PULSE_SYNCED) != packed) {
             this.entityData.set(BH_PULSE_SYNCED, packed);
         }
@@ -1816,6 +1824,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         goalSelector.addGoal(3, new HorseFollowOwnerGoal(self));
         goalSelector.addGoal(3, new HorseReturnHomeGoal(self));
         goalSelector.addGoal(3, new HorseWanderBoundsGoal(self));
+        goalSelector.addGoal(4, new icy.betterhorses.net.feature.breed.FieldHand.TendGoal(self));
+        goalSelector.addGoal(4, new icy.betterhorses.net.feature.breed.MiniatureCompanion.FetchGoal(self));
         goalSelector.addGoal(5, new HorseBegGoal(self));
     }
 

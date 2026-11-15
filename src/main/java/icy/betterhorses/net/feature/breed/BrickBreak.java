@@ -1,14 +1,11 @@
 package icy.betterhorses.net.feature.breed;
 
-import icy.betterhorses.net.BhConfig;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -71,8 +68,7 @@ public final class BrickBreak implements BreedAbility {
             cooldown--;
             return;
         }
-        if (!(badge == 0 ? BhAbility.BELGIAN_BRICK : BhAbility.SHIRE_BRICK).on()
-                || BhHorseTraits.bondTier(data.bh_getBond()) < 2
+        if ((badge == 0 ? BhAbility.BELGIAN_BRICK : BhAbility.SHIRE_BRICK).tier(data) < 2
                 || !(horse.level() instanceof ServerLevel level)
                 || !(horse.getControllingPassenger() instanceof Player rider)) {
             return;

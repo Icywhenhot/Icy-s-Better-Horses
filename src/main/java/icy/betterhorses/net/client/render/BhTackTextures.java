@@ -35,10 +35,13 @@ public final class BhTackTextures {
     public static final BhTackTextures PEGA_DONKEY = new BhTackTextures("pega_donkey");
     public static final BhTackTextures POITOU_DONKEY = new BhTackTextures("poitou_donkey");
     public static final BhTackTextures ZAMORANO_DONKEY = new BhTackTextures("zamorano_donkey");
+    public static final BhTackTextures MULE = new BhTackTextures("mule");
+    public static final BhTackTextures SMALL_MULE = new BhTackTextures("small_mule");
+    public static final BhTackTextures LARGE_MULE = new BhTackTextures("large_mule");
 
     private static final BhTackTextures[] ALL = {BELGIAN, FRIESIAN, HAFLINGER, ICELANDIC, MEDIUM, PERCHERON, SHIRE, SMALL,
             ANDALUSIAN_DONKEY, ASINARA_DONKEY, MAMMOTH_DONKEY, MINIATURE_DONKEY,
-            PEGA_DONKEY, POITOU_DONKEY, ZAMORANO_DONKEY};
+            PEGA_DONKEY, POITOU_DONKEY, ZAMORANO_DONKEY, MULE, SMALL_MULE, LARGE_MULE};
 
     private final String base;
     private final Map<Item, Identifier> armors = new HashMap<>();
@@ -113,10 +116,15 @@ public final class BhTackTextures {
 
     private Identifier lookup(Item item) {
         Identifier key = BuiltInRegistries.ITEM.getKey(item);
-        Identifier named = Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID,
-                base + "armor/" + key.getNamespace() + "/" + key.getPath() + ".png");
-        if (Minecraft.getInstance().getResourceManager().getResource(named).isPresent()) {
+        Identifier named = named(key.getNamespace(), key.getPath());
+        if (named != null) {
             return named;
+        }
+        if (key.getPath().startsWith("waxed_")) {
+            named = named(key.getNamespace(), key.getPath().substring("waxed_".length()));
+            if (named != null) {
+                return named;
+            }
         }
         if (item == Items.LEATHER_HORSE_ARMOR) {
             return armorLeather;
@@ -133,9 +141,15 @@ public final class BhTackTextures {
         if (item == Items.DIAMOND_HORSE_ARMOR) {
             return armorDiamond;
         }
-        if (item == Items.NETHERITE_HORSE_ARMOR) {
+        if (item == Items.NETHERITE_HORSE_ARMOR || key.getPath().equals("netherite_horse_armor")) {
             return armorNetherite;
         }
         return armorGeneric;
+    }
+
+    private Identifier named(String namespace, String path) {
+        Identifier texture = Identifier.fromNamespaceAndPath(IcysBetterHorses.MOD_ID,
+                base + "armor/" + namespace + "/" + path + ".png");
+        return Minecraft.getInstance().getResourceManager().getResource(texture).isPresent() ? texture : null;
     }
 }

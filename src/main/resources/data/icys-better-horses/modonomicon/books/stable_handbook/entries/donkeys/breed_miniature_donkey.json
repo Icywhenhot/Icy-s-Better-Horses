@@ -36,6 +36,13 @@
     },
     {
       "type": "modonomicon:text",
+      "id": "taming",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.taming.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.taming.text"
+    },
+    {
+      "type": "modonomicon:text",
       "id": "small",
       "title": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.small.title",
       "show_title_separator": true,

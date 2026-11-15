@@ -84,28 +84,28 @@ public final class AsinaraDonkeyGeometry {
         PartDefinition p_front_right_leg = root.addOrReplaceChild(
                 "front_right_leg",
                 CubeListBuilder.create()
-                        .texOffs(44, 56).addBox(-1.5000F, -8.0F, -1.5000F, 3.0F, 9.0F, 3.0F)
+                        .texOffs(44, 56).addBox(-1.5000F, -8.0F, -1.5000F, 3.0F, 9.0F, 3.0F, new CubeDeformation(-0.0100F))
                         .texOffs(32, 62).addBox(-1.5000F, -3.0F, -1.5000F, 3.0F, 4.0F, 3.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(-2.5000F, 23.0F, -9.4000F));
 
         PartDefinition p_front_left_leg = root.addOrReplaceChild(
                 "front_left_leg",
                 CubeListBuilder.create()
-                        .texOffs(32, 50).addBox(-1.5000F, -8.0F, -1.5000F, 3.0F, 9.0F, 3.0F)
+                        .texOffs(32, 50).addBox(-1.5000F, -8.0F, -1.5000F, 3.0F, 9.0F, 3.0F, new CubeDeformation(-0.0100F))
                         .texOffs(68, 14).addBox(-1.5000F, -3.0F, -1.5000F, 3.0F, 4.0F, 3.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(2.5000F, 23.0F, -9.4000F));
 
         PartDefinition p_back_right_leg = root.addOrReplaceChild(
                 "back_right_leg",
                 CubeListBuilder.create()
-                        .texOffs(0, 60).addBox(-1.5000F, -8.0F, -2.5000F, 3.0F, 9.0F, 3.0F)
+                        .texOffs(0, 60).addBox(-1.5000F, -8.0F, -2.5000F, 3.0F, 9.0F, 3.0F, new CubeDeformation(-0.0100F))
                         .texOffs(68, 7).addBox(-1.5000F, -3.0F, -2.5000F, 3.0F, 4.0F, 3.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(-2.5000F, 23.0F, 4.5000F));
 
         PartDefinition p_back_left_leg = root.addOrReplaceChild(
                 "back_left_leg",
                 CubeListBuilder.create()
-                        .texOffs(56, 56).addBox(-1.5000F, -8.0F, -2.5000F, 3.0F, 9.0F, 3.0F)
+                        .texOffs(56, 56).addBox(-1.5000F, -8.0F, -2.5000F, 3.0F, 9.0F, 3.0F, new CubeDeformation(-0.0100F))
                         .texOffs(68, 0).addBox(-1.5000F, -3.0F, -2.5000F, 3.0F, 4.0F, 3.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(2.5000F, 23.0F, 4.5000F));
 

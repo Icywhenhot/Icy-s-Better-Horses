@@ -15,6 +15,10 @@ public final class MiniatureDonkeyArmorGeometry {
     private MiniatureDonkeyArmorGeometry() {}
 
     public static LayerDefinition createBodyLayer() {
+        return createBodyLayer(null);
+    }
+
+    public static LayerDefinition createBodyLayer(BhNeckPlates plates) {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
@@ -35,11 +39,19 @@ public final class MiniatureDonkeyArmorGeometry {
                         .texOffs(11, 76).addBox(-1.0F, -3.0F, -2.8000F, 2.0F, 6.0F, 4.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(0.0F, 0.0F, 0.0F));
 
+        if (plates != null) {
+            plates.add(p_neck3, 1.0F, -3.0F, 1.2000F);
+        }
+
         PartDefinition p_head2 = p_neck2.addOrReplaceChild(
                 "head2",
                 CubeListBuilder.create()
                         .texOffs(69, 65).addBox(-1.5000F, -4.0F, -2.8000F, 3.0F, 4.0F, 5.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(0.0F, -3.0F, -1.0F));
+
+        if (plates != null) {
+            plates.addRod(p_head2, -4.0F, -2.8000F, 8, 0);
+        }
 
         PartDefinition p_snout2 = p_head2.addOrReplaceChild(
                 "snout2",
@@ -75,7 +87,7 @@ public final class MiniatureDonkeyArmorGeometry {
         PartDefinition p_front_right_leg = root.addOrReplaceChild(
                 "front_right_leg",
                 CubeListBuilder.create()
-                        .mirror().texOffs(0, 0).addBox(-1.0F, -6.0769F, -1.0F, 2.0F, 5.0F, 2.0F, new CubeDeformation(0.0800F)),
+                        .mirror().texOffs(62, 80).addBox(-1.0F, -6.0769F, -1.0F, 2.0F, 5.0F, 2.0F, new CubeDeformation(0.0800F)),
                 PartPose.offset(-1.5000F, 23.0F, -6.9000F));
 
         PartDefinition p_front_left_leg = root.addOrReplaceChild(

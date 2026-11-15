@@ -1,8 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
-import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedAbilities;
@@ -22,15 +20,17 @@ public final class HardyNorthern implements BreedAbility {
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
-        SlowBlockImmunity.show(data, SlowBlockImmunity.wading(horse), 2);
+        SlowBlockImmunity.show(data, SlowBlockImmunity.wading(horse)
+                && (MuleLine.of(data) == null || SlowBlockImmunity.ignoresSlowBlocks(data)), 2);
 
-        int tier = BhHorseTraits.bondTier(data.bh_getBond());
-        if (tier < 1) {
+        int freeze = BhAbility.ICELANDIC_FREEZE.tier(data);
+        int clear = BhAbility.ICELANDIC_CLEAR.tier(data);
+        if (freeze < 1 && clear < 1) {
             return;
         }
 
         Player rider = BhBreedAbilities.rider(horse);
-        if (BhAbility.ICELANDIC_FREEZE.on()) {
+        if (freeze >= 1) {
             boolean freezing = horse.getTicksFrozen() > 0;
             horse.setTicksFrozen(0);
             if (rider != null) {
@@ -40,7 +40,7 @@ public final class HardyNorthern implements BreedAbility {
             if (freezing) BhSurge.pulse(data, 0, 1);
         }
 
-        if (tier < 2 || !BhAbility.ICELANDIC_CLEAR.on() || horse.tickCount % SWEEP != 0) {
+        if (clear < 2 || horse.tickCount % SWEEP != 0) {
             return;
         }
         boolean cleansed = purge(horse);
@@ -63,7 +63,8 @@ public final class HardyNorthern implements BreedAbility {
     }
 
     public static boolean blocksFreeze(IHorseData data, int tier) {
-        return Objects.equals(data.bh_getBreedKey(), BhContent.ICELANDIC.key()) && tier >= 1
+        return MuleLine.of(data) != null ? BhAbility.ICELANDIC_FREEZE.tier(data) >= 1
+                : Objects.equals(data.bh_getBreedKey(), BhContent.ICELANDIC.key()) && tier >= 1
                 && BhAbility.ICELANDIC_FREEZE.on();
     }
 
@@ -76,8 +77,6 @@ public final class HardyNorthern implements BreedAbility {
 
     private static boolean hardened(LivingEntity target) {
         return target instanceof AbstractHorse horse
-                && Objects.equals(IHorseData.of(horse).bh_getBreedKey(), BhContent.ICELANDIC.key())
-                && BhHorseTraits.bondTier(IHorseData.of(horse).bh_getBond()) >= 2
-                && BhAbility.ICELANDIC_CLEAR.on();
+                && BhAbility.ICELANDIC_CLEAR.tier(IHorseData.of(horse), BhContent.ICELANDIC.key()) >= 2;
     }
 }

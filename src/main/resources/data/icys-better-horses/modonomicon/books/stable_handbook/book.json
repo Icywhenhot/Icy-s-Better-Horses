@@ -8,5 +8,9 @@
   "display_mode": "node",
   "page_display_mode": "double_page",
   "allow_open_book_with_invalid_links": true,
-  "show_recently_unlocked": true
+  "show_recently_unlocked": true,
+  "book_text_offset_x": 8,
+  "book_text_offset_y": 2,
+  "book_text_offset_width": -16,
+  "book_text_offset_height": -4
 }

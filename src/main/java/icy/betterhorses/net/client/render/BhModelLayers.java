@@ -1,8 +1,11 @@
 package icy.betterhorses.net.client.render;
 
-import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
 import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.resources.Identifier;
+import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
+
+import java.util.function.Function;
 
 public final class BhModelLayers {
 
@@ -174,7 +177,36 @@ public final class BhModelLayers {
     public static final ModelLayerLocation ZAMORANO_DONKEY_CHEST = layer("zamorano_donkey", "chest");
     public static final ModelLayerLocation ZAMORANO_DONKEY_CHEST_BABY = layer("zamorano_donkey", "chest_baby");
 
+    public static final ModelLayerLocation MULE = layer("mule", "main");
+    public static final ModelLayerLocation MULE_SADDLE = layer("mule", "saddle");
+    public static final ModelLayerLocation MULE_SADDLE_BABY = layer("mule", "saddle_baby");
+    public static final ModelLayerLocation MULE_CARPET = layer("mule", "carpet");
+    public static final ModelLayerLocation MULE_CARPET_BABY = layer("mule", "carpet_baby");
+    public static final ModelLayerLocation MULE_ARMOR = layer("mule", "armor");
+    public static final ModelLayerLocation MULE_ARMOR_BABY = layer("mule", "armor_baby");
+    public static final ModelLayerLocation MULE_CHEST = layer("mule", "chest");
+    public static final ModelLayerLocation MULE_CHEST_BABY = layer("mule", "chest_baby");
     public static final ModelLayerLocation MULE_BABY = layer("mule", "baby");
+
+    public static final ModelLayerLocation SMALL_MULE = layer("small_mule", "main");
+    public static final ModelLayerLocation SMALL_MULE_SADDLE = layer("small_mule", "saddle");
+    public static final ModelLayerLocation SMALL_MULE_SADDLE_BABY = layer("small_mule", "saddle_baby");
+    public static final ModelLayerLocation SMALL_MULE_CARPET = layer("small_mule", "carpet");
+    public static final ModelLayerLocation SMALL_MULE_CARPET_BABY = layer("small_mule", "carpet_baby");
+    public static final ModelLayerLocation SMALL_MULE_ARMOR = layer("small_mule", "armor");
+    public static final ModelLayerLocation SMALL_MULE_ARMOR_BABY = layer("small_mule", "armor_baby");
+    public static final ModelLayerLocation SMALL_MULE_CHEST = layer("small_mule", "chest");
+    public static final ModelLayerLocation SMALL_MULE_CHEST_BABY = layer("small_mule", "chest_baby");
+
+    public static final ModelLayerLocation LARGE_MULE = layer("large_mule", "main");
+    public static final ModelLayerLocation LARGE_MULE_SADDLE = layer("large_mule", "saddle");
+    public static final ModelLayerLocation LARGE_MULE_SADDLE_BABY = layer("large_mule", "saddle_baby");
+    public static final ModelLayerLocation LARGE_MULE_CARPET = layer("large_mule", "carpet");
+    public static final ModelLayerLocation LARGE_MULE_CARPET_BABY = layer("large_mule", "carpet_baby");
+    public static final ModelLayerLocation LARGE_MULE_ARMOR = layer("large_mule", "armor");
+    public static final ModelLayerLocation LARGE_MULE_ARMOR_BABY = layer("large_mule", "armor_baby");
+    public static final ModelLayerLocation LARGE_MULE_CHEST = layer("large_mule", "chest");
+    public static final ModelLayerLocation LARGE_MULE_CHEST_BABY = layer("large_mule", "chest_baby");
 
     public static void register() {
         ModelLayerRegistry.registerModelLayer(LARGE_UNDEAD_HORSE, LargeUndeadHorseGeometry::createBodyLayer);
@@ -427,7 +459,60 @@ public final class BhModelLayers {
         ModelLayerRegistry.registerModelLayer(ZAMORANO_DONKEY_ARMOR_BABY, ZamoranoDonkeyArmorGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(ZAMORANO_DONKEY_CHEST, ZamoranoDonkeyChestGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(ZAMORANO_DONKEY_CHEST_BABY, ZamoranoDonkeyChestGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(MULE, MuleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(MULE_SADDLE, MuleSaddleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(MULE_SADDLE_BABY, MuleSaddleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(MULE_CARPET, MuleCarpetGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(MULE_CARPET_BABY, MuleCarpetGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(MULE_ARMOR, MuleArmorGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(MULE_ARMOR_BABY, MuleArmorGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(MULE_CHEST, MuleChestGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(MULE_CHEST_BABY, MuleChestGeometry::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(MULE_BABY, SmallDonkeyFoalGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(SMALL_MULE, SmallMuleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(SMALL_MULE_SADDLE, SmallMuleSaddleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(SMALL_MULE_SADDLE_BABY, SmallMuleSaddleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(SMALL_MULE_CARPET, SmallMuleCarpetGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(SMALL_MULE_CARPET_BABY, SmallMuleCarpetGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(SMALL_MULE_ARMOR, SmallMuleArmorGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(SMALL_MULE_ARMOR_BABY, SmallMuleArmorGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(SMALL_MULE_CHEST, SmallMuleChestGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(SMALL_MULE_CHEST_BABY, SmallMuleChestGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(LARGE_MULE, LargeMuleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(LARGE_MULE_SADDLE, LargeMuleSaddleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(LARGE_MULE_SADDLE_BABY, LargeMuleSaddleGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(LARGE_MULE_CARPET, LargeMuleCarpetGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(LARGE_MULE_CARPET_BABY, LargeMuleCarpetGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(LARGE_MULE_ARMOR, LargeMuleArmorGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(LARGE_MULE_ARMOR_BABY, LargeMuleArmorGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(LARGE_MULE_CHEST, LargeMuleChestGeometry::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(LARGE_MULE_CHEST_BABY, LargeMuleChestGeometry::createBodyLayer);
+
+        registerPlates(ICELANDIC_ARMOR, IcelandicArmorGeometry::createBodyLayer);
+        registerPlates(FRIESIAN_ARMOR, FriesianArmorGeometry::createBodyLayer);
+        registerPlates(SMALL_ARMOR, SmallArmorGeometry::createBodyLayer);
+        registerPlates(HAFLINGER_ARMOR, HaflingerArmorGeometry::createBodyLayer);
+        registerPlates(MEDIUM_ARMOR, MediumArmorGeometry::createBodyLayer);
+        registerPlates(PERCHERON_ARMOR, PercheronArmorGeometry::createBodyLayer);
+        registerPlates(SHIRE_ARMOR, ShireArmorGeometry::createBodyLayer);
+        registerPlates(BELGIAN_ARMOR, BelgianArmorGeometry::createBodyLayer);
+        registerPlates(ANDALUSIAN_DONKEY_ARMOR, AndalusianDonkeyArmorGeometry::createBodyLayer);
+        registerPlates(ASINARA_DONKEY_ARMOR, AsinaraDonkeyArmorGeometry::createBodyLayer);
+        registerPlates(MAMMOTH_DONKEY_ARMOR, MammothDonkeyArmorGeometry::createBodyLayer);
+        registerPlates(MINIATURE_DONKEY_ARMOR, MiniatureDonkeyArmorGeometry::createBodyLayer);
+        registerPlates(PEGA_DONKEY_ARMOR, PegaDonkeyArmorGeometry::createBodyLayer);
+        registerPlates(POITOU_DONKEY_ARMOR, PoitouDonkeyArmorGeometry::createBodyLayer);
+        registerPlates(ZAMORANO_DONKEY_ARMOR, ZamoranoDonkeyArmorGeometry::createBodyLayer);
+        registerPlates(MULE_ARMOR, MuleArmorGeometry::createBodyLayer);
+        registerPlates(SMALL_MULE_ARMOR, SmallMuleArmorGeometry::createBodyLayer);
+        registerPlates(LARGE_MULE_ARMOR, LargeMuleArmorGeometry::createBodyLayer);
+    }
+
+    private static void registerPlates(ModelLayerLocation armor,
+                                       Function<BhNeckPlates, LayerDefinition> geometry) {
+        for (BhNeckPlates plates : BhNeckPlates.values()) {
+            ModelLayerRegistry.registerModelLayer(plates.layer(armor), () -> geometry.apply(plates));
+        }
     }
 
     private static ModelLayerLocation layer(String path, String name) {

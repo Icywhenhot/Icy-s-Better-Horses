@@ -80,25 +80,25 @@ public final class MiniatureDonkeyFoalGeometry {
         PartDefinition p_front_right_leg = root.addOrReplaceChild(
                 "front_right_leg",
                 CubeListBuilder.create()
-                        .texOffs(20, 6).addBox(-0.5000F, -4.0F, -0.5000F, 1.0F, 5.0F, 1.0F),
+                        .texOffs(20, 6).addBox(-0.5000F, -4.0F, -0.5000F, 1.0F, 5.0F, 1.0F, new CubeDeformation(-0.0100F)),
                 PartPose.offset(-1.0F, 23.0F, -7.4000F));
 
         PartDefinition p_front_left_leg = root.addOrReplaceChild(
                 "front_left_leg",
                 CubeListBuilder.create()
-                        .texOffs(20, 0).addBox(-0.5000F, -4.0F, -0.5000F, 1.0F, 5.0F, 1.0F),
+                        .texOffs(20, 0).addBox(-0.5000F, -4.0F, -0.5000F, 1.0F, 5.0F, 1.0F, new CubeDeformation(-0.0100F)),
                 PartPose.offset(1.0F, 23.0F, -7.4000F));
 
         PartDefinition p_back_right_leg = root.addOrReplaceChild(
                 "back_right_leg",
                 CubeListBuilder.create()
-                        .texOffs(24, 0).addBox(-0.5000F, -4.0F, -1.5000F, 1.0F, 5.0F, 1.0F),
+                        .texOffs(24, 0).addBox(-0.5000F, -4.0F, -1.5000F, 1.0F, 5.0F, 1.0F, new CubeDeformation(-0.0100F)),
                 PartPose.offset(-1.0F, 23.0F, -0.5000F));
 
         PartDefinition p_back_left_leg = root.addOrReplaceChild(
                 "back_left_leg",
                 CubeListBuilder.create()
-                        .texOffs(22, 19).addBox(-0.5000F, -4.0F, -1.5000F, 1.0F, 5.0F, 1.0F),
+                        .texOffs(22, 19).addBox(-0.5000F, -4.0F, -1.5000F, 1.0F, 5.0F, 1.0F, new CubeDeformation(-0.0100F)),
                 PartPose.offset(1.0F, 23.0F, -0.5000F));
 
         PartDefinition p_tail = root.addOrReplaceChild(

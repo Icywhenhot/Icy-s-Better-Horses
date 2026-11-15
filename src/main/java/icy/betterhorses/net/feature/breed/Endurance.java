@@ -1,7 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhHorseAttributes;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
@@ -22,12 +21,12 @@ public final class Endurance implements BreedAbility {
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
-        int tier = BhHorseTraits.bondTier(data.bh_getBond());
+        int tier = Math.max(0, BhAbility.ARABIAN_ENDURANCE.tier(data));
         double cap = tier >= 1 ? 0.20D : 0.10D;
         int ramp = tier >= 2 ? FAST_RAMP : RAMP;
         int grace = tier >= 2 ? GRACE : 0;
 
-        boolean rolling = BhAbility.ARABIAN_ENDURANCE.on()
+        boolean rolling = BhAbility.ARABIAN_ENDURANCE.on(data)
                 && BhBreedAbilities.rider(horse) != null
                 && (state.movingTicks() > 0 || state.standstillTicks() <= grace);
 

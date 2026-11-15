@@ -1,6 +1,5 @@
 package icy.betterhorses.net.client.render;
 
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -29,6 +28,10 @@ public final class SmallArmorGeometry {
     private SmallArmorGeometry() {}
 
     public static LayerDefinition createBodyLayer() {
+        return createBodyLayer(null);
+    }
+
+    public static LayerDefinition createBodyLayer(BhNeckPlates plates) {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
@@ -49,11 +52,19 @@ public final class SmallArmorGeometry {
                         .texOffs(11, 76).addBox(-2.0F, -11.0F, -4.0F, 4.0F, 14.0F, 7.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(0.0F, 0.0F, 0.0F));
 
+        if (plates != null) {
+            plates.add(p_neck3, 2.0000F, -11.0F, 3.0F);
+        }
+
         PartDefinition p_head2 = p_neck2.addOrReplaceChild(
                 "head2",
                 CubeListBuilder.create()
                         .texOffs(69, 65).addBox(-2.5000F, -6.0F, -4.0F, 5.0F, 6.0F, 7.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(0.0F, -8.0F, -2.0F));
+
+        if (plates != null) {
+            plates.addRod(p_head2, -6.0F, -4.0F, 8, 0);
+        }
 
         PartDefinition p_snout2 = p_head2.addOrReplaceChild(
                 "snout2",

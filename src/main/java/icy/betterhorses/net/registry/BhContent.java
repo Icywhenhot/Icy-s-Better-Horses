@@ -6,7 +6,7 @@ import icy.betterhorses.net.feature.breed.DrownedRider;
 import icy.betterhorses.net.feature.breed.RottenRations;
 import icy.betterhorses.net.feature.breed.DrownedLungs;
 import icy.betterhorses.net.feature.breed.FrostCharge;
-import icy.betterhorses.net.feature.breed.ParchingBite;
+import icy.betterhorses.net.feature.breed.SunBaked;
 import icy.betterhorses.net.feature.breed.SculkHush;
 import icy.betterhorses.net.entity.BhBreedCoats;
 import icy.betterhorses.net.feature.breed.BrickBreak;
@@ -87,6 +87,7 @@ public final class BhContent {
             .speed(0.1620D, 0.3472D).health(15.0D, 50.0D).jump(0.38D, 1.02D)
             .bashDamage(1.25D).bashKnockback(1.0D)
             .defaultChestRows(4).allowsChestAndRiders(false)
+            .fallDamageWaiver(8.0D)
             .build());
 
     public static final Holder.Reference<ArchetypeType> NONE = register(BhRegistries.archetypeTypeRegistry(), "none", ArchetypeType.builder()
@@ -97,7 +98,7 @@ public final class BhContent {
             .build());
 
     public static final Holder.Reference<ArchetypeType> SKELETON = register(BhRegistries.archetypeTypeRegistry(), "skeleton", ArchetypeType.builder()
-            .speed(10.0D / 43.2D, 15.0D / 43.2D).health(15.0D, 20.0D)
+            .speed(10.0D / 43.2D, 17.0D / 43.2D).health(15.0D, 20.0D)
             .jump(BhJumpHeight.strength(3.0D), BhJumpHeight.strength(5.0D))
             .bashDamage(0.75D).bashKnockback(1.0D).defaultChestRows(3)
             .baseSpookChance(0.0D).build());
@@ -136,21 +137,34 @@ public final class BhContent {
             register(BhRegistries.abilityTypeRegistry(), "easy_keeper", new AbilityType(EasyKeeper::new, true));
     public static final Holder.Reference<AbilityType> STOCK_HORSE =
             register(BhRegistries.abilityTypeRegistry(), "stock_horse", new AbilityType(StockHorse::new, true));
-
-    public static final Holder.Reference<AbilityType> SKITTISH = register(BhRegistries.abilityTypeRegistry(), "skittish", new AbilityType(Skittish::new, true));
-    public static final Holder.Reference<AbilityType> FIELD_HAND = register(BhRegistries.abilityTypeRegistry(), "field_hand", new AbilityType(FieldHand::new, true));
-    public static final Holder.Reference<AbilityType> COASTAL_SCOUT = register(BhRegistries.abilityTypeRegistry(), "coastal_scout", new AbilityType(CoastalScout::new, true));
-    public static final Holder.Reference<AbilityType> MAMMOTH_WORKER = register(BhRegistries.abilityTypeRegistry(), "mammoth_worker", new AbilityType(MammothWorker::new, true));
-    public static final Holder.Reference<AbilityType> FARM_COMPANION = register(BhRegistries.abilityTypeRegistry(), "farm_companion", new AbilityType(MiniatureCompanion::new, true));
-    public static final Holder.Reference<AbilityType> PEGA_COMPANION = register(BhRegistries.abilityTypeRegistry(), "pega_companion", new AbilityType(PegaCompanion::new, true));
-    public static final Holder.Reference<AbilityType> THICK_HIDE = register(BhRegistries.abilityTypeRegistry(), "thick_hide", new AbilityType(ThickHide::new, true));
-    public static final Holder.Reference<AbilityType> WINTER_FEET = register(BhRegistries.abilityTypeRegistry(), "winter_feet", new AbilityType(WinterFeet::new, true));
-    public static final Holder.Reference<AbilityType> DROWNED_RIDER = register(BhRegistries.abilityTypeRegistry(), "drowned_rider", new AbilityType(DrownedRider::new, true));
-    public static final Holder.Reference<AbilityType> ROTTEN_RATIONS = register(BhRegistries.abilityTypeRegistry(), "rotten_rations", new AbilityType(RottenRations::new, true));
-    public static final Holder.Reference<AbilityType> FROST_CHARGE = register(BhRegistries.abilityTypeRegistry(), "frost_charge", new AbilityType(FrostCharge::new, true));
-    public static final Holder.Reference<AbilityType> SCULK_HUSH = register(BhRegistries.abilityTypeRegistry(), "sculk_hush", new AbilityType(SculkHush::new, true));
-    public static final Holder.Reference<AbilityType> PARCHING_BITE = register(BhRegistries.abilityTypeRegistry(), "parching_bite", new AbilityType(ParchingBite::new, true));
-    public static final Holder.Reference<AbilityType> DROWNED_LUNGS = register(BhRegistries.abilityTypeRegistry(), "drowned_lungs", new AbilityType(DrownedLungs::new, true));
+    public static final Holder.Reference<AbilityType> SKITTISH =
+            register(BhRegistries.abilityTypeRegistry(), "skittish", new AbilityType(Skittish::new, true));
+    public static final Holder.Reference<AbilityType> FIELD_HAND =
+            register(BhRegistries.abilityTypeRegistry(), "field_hand", new AbilityType(FieldHand::new, true));
+    public static final Holder.Reference<AbilityType> COASTAL_SCOUT =
+            register(BhRegistries.abilityTypeRegistry(), "coastal_scout", new AbilityType(CoastalScout::new, true));
+    public static final Holder.Reference<AbilityType> MAMMOTH_WORKER =
+            register(BhRegistries.abilityTypeRegistry(), "mammoth_worker", new AbilityType(MammothWorker::new, true));
+    public static final Holder.Reference<AbilityType> FARM_COMPANION =
+            register(BhRegistries.abilityTypeRegistry(), "farm_companion", new AbilityType(MiniatureCompanion::new, true));
+    public static final Holder.Reference<AbilityType> PEGA_COMPANION =
+            register(BhRegistries.abilityTypeRegistry(), "pega_companion", new AbilityType(PegaCompanion::new, true));
+    public static final Holder.Reference<AbilityType> THICK_HIDE =
+            register(BhRegistries.abilityTypeRegistry(), "thick_hide", new AbilityType(ThickHide::new, true));
+    public static final Holder.Reference<AbilityType> WINTER_FEET =
+            register(BhRegistries.abilityTypeRegistry(), "winter_feet", new AbilityType(WinterFeet::new, true));
+    public static final Holder.Reference<AbilityType> DROWNED_RIDER =
+            register(BhRegistries.abilityTypeRegistry(), "drowned_rider", new AbilityType(DrownedRider::new, true));
+    public static final Holder.Reference<AbilityType> ROTTEN_RATIONS =
+            register(BhRegistries.abilityTypeRegistry(), "rotten_rations", new AbilityType(RottenRations::new, true));
+    public static final Holder.Reference<AbilityType> FROST_CHARGE =
+            register(BhRegistries.abilityTypeRegistry(), "frost_charge", new AbilityType(FrostCharge::new, true));
+    public static final Holder.Reference<AbilityType> SCULK_HUSH =
+            register(BhRegistries.abilityTypeRegistry(), "sculk_hush", new AbilityType(SculkHush::new, true));
+    public static final Holder.Reference<AbilityType> SUN_BAKED =
+            register(BhRegistries.abilityTypeRegistry(), "sun_baked", new AbilityType(SunBaked::new, true));
+    public static final Holder.Reference<AbilityType> DROWNED_LUNGS =
+            register(BhRegistries.abilityTypeRegistry(), "drowned_lungs", new AbilityType(DrownedLungs::new, true));
 
     public static final Holder.Reference<BreedType> THOROUGHBRED = register(BhRegistries.breedTypeRegistry(), "thoroughbred",
             BreedType.builder(RACE.key())
@@ -286,7 +300,8 @@ public final class BhContent {
                     .stabilizerBody(StabilizerBody.MEDIUM)
                     .build());
 
-    public static final Holder.Reference<BreedType> ANDALUSIAN_DONKEY = register(BhRegistries.breedTypeRegistry(), "andalusian_donkey", BreedType.builder(DONKEY.key())
+    public static final Holder.Reference<BreedType> ANDALUSIAN_DONKEY = register(BhRegistries.breedTypeRegistry(), "andalusian_donkey",
+            BreedType.builder(DONKEY.key())
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.ANDALUSIAN_DONKEY.folder(), BhBreedCoats.ANDALUSIAN_DONKEY.coatIds(), BhBreedCoats.ANDALUSIAN_DONKEY.hasFoalVariant())
                     .entityType(entity("andalusian_donkey"))
                     .chestRows(4).midChestRows(5).bondedChestRows(6)
@@ -294,7 +309,8 @@ public final class BhContent {
                     .stabilizerBody(StabilizerBody.ANDALUSIAN_DONKEY)
                     .build());
 
-    public static final Holder.Reference<BreedType> ASINARA_DONKEY = register(BhRegistries.breedTypeRegistry(), "asinara_donkey", BreedType.builder(DONKEY.key()).small()
+    public static final Holder.Reference<BreedType> ASINARA_DONKEY = register(BhRegistries.breedTypeRegistry(), "asinara_donkey",
+            BreedType.builder(DONKEY.key()).small()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.ASINARA_DONKEY.folder(), BhBreedCoats.ASINARA_DONKEY.coatIds(), BhBreedCoats.ASINARA_DONKEY.hasFoalVariant())
                     .entityType(entity("asinara_donkey"))
                     .chestRows(4).midChestRows(5).bondedChestRows(6)
@@ -302,7 +318,8 @@ public final class BhContent {
                     .stabilizerBody(StabilizerBody.ASINARA_DONKEY)
                     .build());
 
-    public static final Holder.Reference<BreedType> MAMMOTH_DONKEY = register(BhRegistries.breedTypeRegistry(), "mammoth_donkey", BreedType.builder(DONKEY.key()).large()
+    public static final Holder.Reference<BreedType> MAMMOTH_DONKEY = register(BhRegistries.breedTypeRegistry(), "mammoth_donkey",
+            BreedType.builder(DONKEY.key()).large()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.MAMMOTH_DONKEY.folder(), BhBreedCoats.MAMMOTH_DONKEY.coatIds(), BhBreedCoats.MAMMOTH_DONKEY.hasFoalVariant())
                     .entityType(entity("mammoth_donkey"))
                     .chestRows(4).midChestRows(5).bondedChestRows(6)
@@ -310,7 +327,8 @@ public final class BhContent {
                     .stabilizerBody(StabilizerBody.MAMMOTH_DONKEY)
                     .build());
 
-    public static final Holder.Reference<BreedType> MINIATURE_DONKEY = register(BhRegistries.breedTypeRegistry(), "miniature_donkey", BreedType.builder(DONKEY.key()).small()
+    public static final Holder.Reference<BreedType> MINIATURE_DONKEY = register(BhRegistries.breedTypeRegistry(), "miniature_donkey",
+            BreedType.builder(DONKEY.key()).small()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.MINIATURE_DONKEY.folder(), BhBreedCoats.MINIATURE_DONKEY.coatIds(), BhBreedCoats.MINIATURE_DONKEY.hasFoalVariant())
                     .entityType(entity("miniature_donkey"))
                     .chestRows(4).midChestRows(5).bondedChestRows(6)
@@ -320,7 +338,8 @@ public final class BhContent {
                     .noCarts()
                     .build());
 
-    public static final Holder.Reference<BreedType> PEGA_DONKEY = register(BhRegistries.breedTypeRegistry(), "pega_donkey", BreedType.builder(DONKEY.key()).large()
+    public static final Holder.Reference<BreedType> PEGA_DONKEY = register(BhRegistries.breedTypeRegistry(), "pega_donkey",
+            BreedType.builder(DONKEY.key()).large()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.PEGA_DONKEY.folder(), BhBreedCoats.PEGA_DONKEY.coatIds(), BhBreedCoats.PEGA_DONKEY.hasFoalVariant())
                     .entityType(entity("pega_donkey"))
                     .chestRows(4).midChestRows(5).bondedChestRows(6)
@@ -328,7 +347,8 @@ public final class BhContent {
                     .stabilizerBody(StabilizerBody.PEGA_DONKEY)
                     .build());
 
-    public static final Holder.Reference<BreedType> POITOU_DONKEY = register(BhRegistries.breedTypeRegistry(), "poitou_donkey", BreedType.builder(DONKEY.key()).large()
+    public static final Holder.Reference<BreedType> POITOU_DONKEY = register(BhRegistries.breedTypeRegistry(), "poitou_donkey",
+            BreedType.builder(DONKEY.key()).large()
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.POITOU_DONKEY.folder(), BhBreedCoats.POITOU_DONKEY.coatIds(), BhBreedCoats.POITOU_DONKEY.hasFoalVariant())
                     .entityType(entity("poitou_donkey"))
                     .chestRows(4).midChestRows(5).bondedChestRows(6)
@@ -336,7 +356,8 @@ public final class BhContent {
                     .stabilizerBody(StabilizerBody.POITOU_DONKEY)
                     .build());
 
-    public static final Holder.Reference<BreedType> ZAMORANO_DONKEY = register(BhRegistries.breedTypeRegistry(), "zamorano_donkey", BreedType.builder(DONKEY.key())
+    public static final Holder.Reference<BreedType> ZAMORANO_DONKEY = register(BhRegistries.breedTypeRegistry(), "zamorano_donkey",
+            BreedType.builder(DONKEY.key())
                     .coats(IcysBetterHorses.MOD_ID, BhBreedCoats.ZAMORANO_DONKEY.folder(), BhBreedCoats.ZAMORANO_DONKEY.coatIds(), BhBreedCoats.ZAMORANO_DONKEY.hasFoalVariant())
                     .entityType(entity("zamorano_donkey"))
                     .chestRows(4).midChestRows(5).bondedChestRows(6)
@@ -369,11 +390,11 @@ public final class BhContent {
     public static final Holder.Reference<BreedType> SMALL_SCULK_HORSE =
             undead("small_sculk_horse", SKELETON, DROWNED_RIDER, SCULK_HUSH, StabilizerBody.SMALL);
     public static final Holder.Reference<BreedType> LARGE_HUSK_HORSE =
-            undead("large_husk_horse", ZOMBIE, ROTTEN_RATIONS, PARCHING_BITE, StabilizerBody.PERCHERON);
+            undead("large_husk_horse", ZOMBIE, ROTTEN_RATIONS, SUN_BAKED, StabilizerBody.PERCHERON);
     public static final Holder.Reference<BreedType> MEDIUM_HUSK_HORSE =
-            undead("medium_husk_horse", ZOMBIE, ROTTEN_RATIONS, PARCHING_BITE, StabilizerBody.MEDIUM);
+            undead("medium_husk_horse", ZOMBIE, ROTTEN_RATIONS, SUN_BAKED, StabilizerBody.MEDIUM);
     public static final Holder.Reference<BreedType> SMALL_HUSK_HORSE =
-            undead("small_husk_horse", ZOMBIE, ROTTEN_RATIONS, PARCHING_BITE, StabilizerBody.SMALL);
+            undead("small_husk_horse", ZOMBIE, ROTTEN_RATIONS, SUN_BAKED, StabilizerBody.SMALL);
     public static final Holder.Reference<BreedType> LARGE_DROWNED_HORSE =
             undead("large_drowned_horse", ZOMBIE, ROTTEN_RATIONS, DROWNED_LUNGS, StabilizerBody.PERCHERON);
     public static final Holder.Reference<BreedType> MEDIUM_DROWNED_HORSE =
@@ -381,16 +402,24 @@ public final class BhContent {
     public static final Holder.Reference<BreedType> SMALL_DROWNED_HORSE =
             undead("small_drowned_horse", ZOMBIE, ROTTEN_RATIONS, DROWNED_LUNGS, StabilizerBody.SMALL);
 
-    public static final Holder.Reference<BreedType> SMALL_MULE = mule("small_mule");
-    public static final Holder.Reference<BreedType> MEDIUM_MULE = mule("medium_mule");
-    public static final Holder.Reference<BreedType> LARGE_MULE = mule("large_mule");
+    private static final List<String> MULE_COATS = List.of("brown", "dark_brown", "sorrel", "black", "grey",
+            "palomino", "buckskin", "grullo", "flaxen_sorrel", "appaloosa", "pinto", "roan");
 
-    private static Holder.Reference<BreedType> mule(String path) {
-        return register(BhRegistries.breedTypeRegistry(), path, BreedType.builder(MULE.key())
-                .coats(IcysBetterHorses.MOD_ID, "mule", List.of("brown", "dark_brown"), true)
-                .entityType(entity(path))
-                .stabilizerBody(StabilizerBody.MEDIUM)
-                .build());
+    public static final Holder.Reference<BreedType> SMALL_MULE = mule("small_mule", "small_mule",
+            BreedType.SMALL, StabilizerBody.SMALL_MULE);
+    public static final Holder.Reference<BreedType> MEDIUM_MULE = mule("medium_mule", "mule",
+            BreedType.MEDIUM, StabilizerBody.MULE);
+    public static final Holder.Reference<BreedType> LARGE_MULE = mule("large_mule", "large_mule",
+            BreedType.LARGE, StabilizerBody.LARGE_MULE);
+
+        private static Holder.Reference<BreedType> mule(String path, String folder, int size, StabilizerBody body) {
+        BreedType.Builder b = BreedType.builder(MULE.key())
+                .coats(IcysBetterHorses.MOD_ID, folder, MULE_COATS, true)
+            .entityType(entity(path))
+            .stabilizerBody(body);
+        if (size == BreedType.SMALL) b.small();
+        if (size == BreedType.LARGE) b.large();
+        return register(BhRegistries.breedTypeRegistry(), path, b.build());
     }
 
     private static Holder.Reference<BreedType> undead(String path,

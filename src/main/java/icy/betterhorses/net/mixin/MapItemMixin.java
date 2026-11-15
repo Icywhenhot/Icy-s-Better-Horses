@@ -1,9 +1,7 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhHorseKind;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
-import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.registry.BhContent;
@@ -29,7 +27,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Objects;
 
 @Mixin(MapItem.class)
 public abstract class MapItemMixin {
@@ -40,10 +37,11 @@ public abstract class MapItemMixin {
             return scanWidth;
         }
         IHorseData d = IHorseData.of(horse);
-        if (!Objects.equals(d.bh_getBreedKey(), BhContent.AMERICAN_PAINT.key()) || !BhAbility.PAINT_SCAN.on()) {
+        int tier = BhAbility.PAINT_SCAN.tier(d, BhContent.AMERICAN_PAINT.key());
+        if (tier < 0) {
             return scanWidth;
         }
-        return scanWidth * (2 + BhHorseTraits.bondTier(d.bh_getBond()));
+        return scanWidth * (2 + tier);
     }
 
     @Inject(method = "inventoryTick", at = @At("TAIL"))
@@ -54,9 +52,7 @@ public abstract class MapItemMixin {
             return;
         }
         IHorseData d = IHorseData.of(horse);
-        if (!Objects.equals(d.bh_getBreedKey(), BhContent.AMERICAN_PAINT.key())
-                || !BhAbility.PAINT_STRUCTURES.on()
-                || BhHorseTraits.bondTier(d.bh_getBond()) < 2) {
+        if (BhAbility.PAINT_STRUCTURES.tier(d, BhContent.AMERICAN_PAINT.key()) < 2) {
             return;
         }
 

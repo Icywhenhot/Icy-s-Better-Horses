@@ -14,13 +14,13 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Donkey;
+import net.minecraft.world.entity.animal.equine.Mule;
+import net.minecraft.world.entity.animal.equine.AbstractChestedHorse;
+import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.entity.animal.equine.SkeletonHorse;
 import net.minecraft.world.entity.animal.equine.ZombieHorse;
 import net.minecraft.world.ItemStackWithSlot;
-import net.minecraft.world.entity.animal.equine.Mule;
-import net.minecraft.world.entity.animal.equine.AbstractChestedHorse;
-import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.world.SimpleContainer;
 import icy.betterhorses.net.inventory.GearSlot;
 import net.minecraft.world.item.ItemStack;
@@ -60,8 +60,9 @@ public final class BhVanillaHorseSwap {
             breedKey = BhBreeds.keyOf(HorseBreed.byId(EntityType.getKey(entityType).getPath()));
         }
         if (entityType == null && horse instanceof Mule) {
-            entityType = ModEntities.MEDIUM_MULE;
-            breedKey = BhContent.MEDIUM_MULE.key();
+            int size = horse.getRandom().nextInt(ModEntities.MULES.size());
+            entityType = ModEntities.MULES.get(size);
+            breedKey = List.of(BhContent.SMALL_MULE, BhContent.MEDIUM_MULE, BhContent.LARGE_MULE).get(size).key();
         }
         if (entityType == null) {
             breedKey = horse instanceof Donkey ? null : IHorseData.of(horse).bh_getBreedKey();

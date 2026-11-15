@@ -62,11 +62,11 @@ public class BhTackLayer<S extends BhHorseRenderState, M extends BhHorseModel>
             RenderLayerParent<S, M> parent,
             BhHorseModel adultModel,
             BhHorseModel babyModel,
-            BhTackTextures tack) {
+            BhTackTextures tack, BhNeckPlates plates) {
         return new BhTackLayer<>(parent, adultModel, babyModel,
                 state -> {
                     ItemStack stack = state.bodyArmorItem;
-                    return stack == null || stack.isEmpty() ? null : tack.armor(stack);
+                    return stack == null || stack.isEmpty() || BhNeckPlates.of(stack) != plates ? null : tack.armor(stack);
                 },
                 state -> {
                     ItemStack stack = state.bodyArmorItem;

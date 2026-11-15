@@ -15,6 +15,10 @@ public final class PegaDonkeyArmorGeometry {
     private PegaDonkeyArmorGeometry() {}
 
     public static LayerDefinition createBodyLayer() {
+        return createBodyLayer(null);
+    }
+
+    public static LayerDefinition createBodyLayer(BhNeckPlates plates) {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
@@ -22,24 +26,32 @@ public final class PegaDonkeyArmorGeometry {
                 "body",
                 CubeListBuilder.create()
                         .texOffs(9, 7).addBox(-5.0F, -5.0F, -11.0F, 10.0F, 9.0F, 24.0F, new CubeDeformation(0.1000F)),
-                PartPose.offset(0.0F, 7.0F, 0.0F));
+                PartPose.offset(0.0F, 6.0F, 0.0F));
 
         PartDefinition p_neck2 = p_body.addOrReplaceChild(
                 "neck2",
                 CubeListBuilder.create(),
-                PartPose.offset(0.0F, -4.0F, -7.0F));
+                PartPose.offset(0.0F, -3.0F, -7.0F));
 
         PartDefinition p_neck3 = p_neck2.addOrReplaceChild(
                 "neck3",
                 CubeListBuilder.create()
-                        .texOffs(11, 77).addBox(-2.0F, -8.8571F, -2.8714F, 4.0F, 10.0F, 5.0F, new CubeDeformation(0.0990F)),
+                        .texOffs(11, 77).addBox(-2.0F, -9.8571F, -2.8714F, 4.0F, 10.0F, 5.0F, new CubeDeformation(0.0990F)),
                 PartPose.offset(0.0F, 0.0F, 0.0F));
+
+        if (plates != null) {
+            plates.add(p_neck3, 2.0F, -9.8571F, 2.1286F);
+        }
 
         PartDefinition p_head2 = p_neck2.addOrReplaceChild(
                 "head2",
                 CubeListBuilder.create()
                         .texOffs(69, 65).addBox(-3.0F, -5.0F, -3.8000F, 6.0F, 5.0F, 7.0F, new CubeDeformation(0.1000F)),
-                PartPose.offset(0.0F, -9.0F, -1.0F));
+                PartPose.offset(0.0F, -10.0F, -1.0F));
+
+        if (plates != null) {
+            plates.addRod(p_head2, -5.0F, -3.8000F, 8, 0);
+        }
 
         PartDefinition p_snout2 = p_head2.addOrReplaceChild(
                 "snout2",
@@ -75,13 +87,13 @@ public final class PegaDonkeyArmorGeometry {
         PartDefinition p_front_right_leg = root.addOrReplaceChild(
                 "front_right_leg",
                 CubeListBuilder.create()
-                        .mirror().texOffs(77, 0).addBox(-2.0F, -10.8462F, -2.0F, 4.0F, 8.0F, 4.0F, new CubeDeformation(0.0800F)),
+                        .mirror().texOffs(62, 80).addBox(-2.0F, -11.8462F, -2.0F, 4.0F, 8.0F, 4.0F, new CubeDeformation(0.0800F)),
                 PartPose.offset(-3.0F, 23.0F, -8.9000F));
 
         PartDefinition p_front_left_leg = root.addOrReplaceChild(
                 "front_left_leg",
                 CubeListBuilder.create()
-                        .texOffs(62, 80).addBox(-2.0F, -10.8462F, -2.0F, 4.0F, 8.0F, 4.0F, new CubeDeformation(0.0800F)),
+                        .texOffs(62, 80).addBox(-2.0F, -11.8462F, -2.0F, 4.0F, 8.0F, 4.0F, new CubeDeformation(0.0800F)),
                 PartPose.offset(3.0F, 23.0F, -8.9000F));
         return LayerDefinition.create(mesh, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     }

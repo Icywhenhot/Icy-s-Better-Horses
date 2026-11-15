@@ -119,6 +119,7 @@ public interface IHorseData {
 
     int bh_getAbilitySurge(int slot);
     void bh_setAbilitySurge(int slot, int packed);
+    void bh_setSurgeChannel(int slot);
 
     int bh_getPerkSurge();
     void bh_setPerkSurge(int packed);

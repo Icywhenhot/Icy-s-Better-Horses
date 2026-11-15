@@ -1,18 +1,15 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.entity.BhBreedEntity;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Horse;
-import net.minecraft.world.entity.player.Player;
+import icy.betterhorses.net.entity.BhBreedEntity;
 import icy.betterhorses.net.registry.BhContent;
 
 import java.util.List;
-import java.util.Objects;
 
 public final class BhHorseTraits {
 
@@ -29,8 +26,9 @@ public final class BhHorseTraits {
 
     public static void grantBond(IHorseData data, int amount) {
         int gain = amount;
-        if (Objects.equals(data.bh_getBreedKey(), BhContent.MORGAN.key()) && BhAbility.MORGAN_BOND.on()) {
-            int halves = amount * (bondTier(data.bh_getBond()) >= 1 ? 4 : 3) + data.bh_getBondRemainder();
+        int quick = BhAbility.MORGAN_BOND.tier(data, BhContent.MORGAN.key());
+        if (quick >= 0) {
+            int halves = amount * (quick >= 1 ? 4 : 3) + data.bh_getBondRemainder();
             gain = halves / 2;
             data.bh_setBondRemainder(halves % 2);
         }

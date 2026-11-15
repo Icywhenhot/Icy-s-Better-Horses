@@ -1,6 +1,5 @@
 package icy.betterhorses.net.feature.breed;
 
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
@@ -23,15 +22,14 @@ public final class Hearthlight implements BreedAbility {
         if (!(horse.level() instanceof ServerLevel level)) {
             return;
         }
-        int tier = BhHorseTraits.bondTier(data.bh_getBond());
-        boolean cart = tier >= 1 && BhAbility.HAFLINGER_HAUL.on() && data.bh_hasCartGear()
+        boolean cart = BhAbility.HAFLINGER_HAUL.tier(data) >= 1 && data.bh_hasCartGear()
                 && horse.getControllingPassenger() instanceof Player;
         if (cart && !hauling) {
             BhSurge.pulse(data, 0, 1);
         }
         hauling = cart;
 
-        if (tier < 2 || !BhAbility.HAFLINGER_LIGHT.on() || level.isBrightOutside()) {
+        if (BhAbility.HAFLINGER_LIGHT.tier(data) < 2 || level.isBrightOutside()) {
             clear(level, horse);
             glow(data, false);
             return;

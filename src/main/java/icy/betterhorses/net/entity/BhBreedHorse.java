@@ -7,15 +7,14 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import icy.betterhorses.net.BreedArchetype;
 import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.ModEntities;
+import icy.betterhorses.net.feature.breed.MuleLine;
 import icy.betterhorses.net.feature.breed.MuleSire;
 import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BhRegistries;
@@ -185,6 +184,7 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
                 }
                 ((BhBreedHorse) mule).bhInheritStats(this, other);
                 MuleSire.apply(this, other, mule);
+                mule.bhSetLine(MuleLine.born(IHorseData.of(this).bh_getBreed(), IHorseData.of(other).bh_getBreed(), this.random));
                 mule.bhSetCoat(mule.bhCoatSet().roll(this.random));
                 return mule;
             }

@@ -1,8 +1,12 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.feature.breed.MuleLine;
+import icy.betterhorses.net.registry.BreedType;
+import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
+import java.util.Objects;
 
 public enum BhAbility {
 
@@ -16,6 +20,7 @@ public enum BhAbility {
     PONY_SNOW(BreedArchetype.PONY),
     PONY_HEAL(BreedArchetype.PONY),
     DONKEY_GUARD(BreedArchetype.DONKEY),
+    MULE_SURE_FOOT(BreedArchetype.MULE),
 
     THOROUGHBRED_TOP_END(HorseBreed.THOROUGHBRED),
     ARABIAN_ENDURANCE(HorseBreed.ARABIAN),
@@ -56,14 +61,16 @@ public enum BhAbility {
     ASINARA_WATER(HorseBreed.ASINARA_DONKEY),
     ASINARA_FISH(HorseBreed.ASINARA_DONKEY),
     ASINARA_TREASURE(HorseBreed.ASINARA_DONKEY),
+    ASINARA_BITE(HorseBreed.ASINARA_DONKEY),
     MINIATURE_PICKUP(HorseBreed.MINIATURE_DONKEY),
     MINIATURE_BASKET(HorseBreed.MINIATURE_DONKEY),
     MAMMOTH_RUBBLE(HorseBreed.MAMMOTH_DONKEY),
     MAMMOTH_WORK(HorseBreed.MAMMOTH_DONKEY),
     MAMMOTH_BRACE(HorseBreed.MAMMOTH_DONKEY),
     PEGA_SEAT(HorseBreed.PEGA_DONKEY),
-    PEGA_SELF_HEAL(HorseBreed.PEGA_DONKEY),
-    PEGA_RIDER_HEAL(HorseBreed.PEGA_DONKEY),
+    PEGA_MEDKIT(HorseBreed.PEGA_DONKEY),
+    PEGA_SHARE(HorseBreed.PEGA_DONKEY),
+    PEGA_RALLY(HorseBreed.PEGA_DONKEY),
     POITOU_HIDE(HorseBreed.POITOU_DONKEY),
     POITOU_CLEAR(HorseBreed.POITOU_DONKEY),
     ZAMORANO_ICE(HorseBreed.ZAMORANO_DONKEY),
@@ -78,10 +85,11 @@ public enum BhAbility {
     SCULK_HUSH(HorseBreed.SCULK_SPECIES),
     SCULK_KIN(HorseBreed.SCULK_SPECIES),
     SCULK_LULL(HorseBreed.SCULK_SPECIES),
-    HUSK_THIRST(HorseBreed.HUSK_SPECIES),
-    DROWNED_BREATH(HorseBreed.DROWNED_SPECIES),
+    HUSK_FIREPROOF(HorseBreed.HUSK_SPECIES),
+    HUSK_SHARE(HorseBreed.HUSK_SPECIES),
     DROWNED_GILLS(HorseBreed.DROWNED_SPECIES),
-    DROWNED_SWIM(HorseBreed.DROWNED_SPECIES);
+    DROWNED_SWIM(HorseBreed.DROWNED_SPECIES),
+    DROWNED_DASH(HorseBreed.DROWNED_SPECIES);
 
     private final @Nullable BreedArchetype archetype;
     private final @Nullable HorseBreed breed;
@@ -132,5 +140,20 @@ public enum BhAbility {
 
     public boolean on() {
         return BhConfig.abilityEnabled(this);
+    }
+
+    public boolean on(IHorseData data) {
+        return tier(data) >= 0;
+    }
+
+    public int tier(IHorseData data) {
+        if (!on()) return -1;
+        int bond = BhHorseTraits.bondTier(data.bh_getBond());
+        MuleLine line = MuleLine.of(data);
+        return line == null ? bond : line.tier(this, bond);
+    }
+
+    public int tier(IHorseData data, ResourceKey<BreedType> breed) {
+        return Objects.equals(data.bh_getBreedKey(), breed) || MuleLine.of(data) != null ? tier(data) : -1;
     }
 }

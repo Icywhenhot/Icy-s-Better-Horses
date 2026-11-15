@@ -15,6 +15,10 @@ public final class ZamoranoDonkeyArmorGeometry {
     private ZamoranoDonkeyArmorGeometry() {}
 
     public static LayerDefinition createBodyLayer() {
+        return createBodyLayer(null);
+    }
+
+    public static LayerDefinition createBodyLayer(BhNeckPlates plates) {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
@@ -35,11 +39,19 @@ public final class ZamoranoDonkeyArmorGeometry {
                         .texOffs(11, 77).addBox(-2.0F, -8.8571F, -2.8000F, 4.0F, 10.0F, 6.0F, new CubeDeformation(0.0990F)),
                 PartPose.offset(0.0F, 0.0F, 0.0F));
 
+        if (plates != null) {
+            plates.add(p_neck3, 2.0F, -8.8571F, 3.2000F);
+        }
+
         PartDefinition p_head2 = p_neck2.addOrReplaceChild(
                 "head2",
                 CubeListBuilder.create()
                         .texOffs(69, 65).addBox(-3.0F, -6.0F, -3.8000F, 6.0F, 6.0F, 7.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(0.0F, -9.0F, 0.0F));
+
+        if (plates != null) {
+            plates.addRod(p_head2, -6.0F, -3.8000F, 8, 0);
+        }
 
         PartDefinition p_snout2 = p_head2.addOrReplaceChild(
                 "snout2",
@@ -75,7 +87,7 @@ public final class ZamoranoDonkeyArmorGeometry {
         PartDefinition p_front_right_leg = root.addOrReplaceChild(
                 "front_right_leg",
                 CubeListBuilder.create()
-                        .mirror().texOffs(73, 0).addBox(-2.0F, -7.8846F, -2.0F, 4.0F, 6.0F, 4.0F, new CubeDeformation(0.0800F)),
+                        .mirror().texOffs(62, 80).addBox(-2.0F, -7.8846F, -2.0F, 4.0F, 6.0F, 4.0F, new CubeDeformation(0.0800F)),
                 PartPose.offset(-3.0F, 23.0F, -8.9000F));
 
         PartDefinition p_front_left_leg = root.addOrReplaceChild(

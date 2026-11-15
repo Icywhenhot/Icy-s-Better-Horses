@@ -8,6 +8,30 @@
     {
       "id": "#forge:chests/wooden",
       "required": false
+    },
+    {
+      "id": "sophisticatedstorage:chest",
+      "required": false
+    },
+    {
+      "id": "sophisticatedstorage:copper_chest",
+      "required": false
+    },
+    {
+      "id": "sophisticatedstorage:iron_chest",
+      "required": false
+    },
+    {
+      "id": "sophisticatedstorage:gold_chest",
+      "required": false
+    },
+    {
+      "id": "sophisticatedstorage:diamond_chest",
+      "required": false
+    },
+    {
+      "id": "sophisticatedstorage:netherite_chest",
+      "required": false
     }
   ]
 }

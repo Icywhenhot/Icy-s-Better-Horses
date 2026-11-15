@@ -17,7 +17,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import java.util.EnumMap;
 import java.util.Map;
-import net.minecraft.world.entity.EntityType;
 
 public final class HorseStabilizerLayer<S extends EquineRenderState, M extends EntityModel<? super S>>
         extends RenderLayer<S, M> {
@@ -76,6 +75,12 @@ public final class HorseStabilizerLayer<S extends EquineRenderState, M extends E
                 new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("poitou_donkey")), 24.0D / 16.0D, 0.0D));
         BY_BODY.put(StabilizerBody.ZAMORANO_DONKEY, new Variant(
                 new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("zamorano_donkey")), 24.0D / 16.0D, 0.0D));
+        BY_BODY.put(StabilizerBody.MULE, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("mule")), 24.0D / 16.0D, 0.0D));
+        BY_BODY.put(StabilizerBody.SMALL_MULE, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("small_mule")), 24.0D / 16.0D, 0.0D));
+        BY_BODY.put(StabilizerBody.LARGE_MULE, new Variant(
+                new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("large_mule")), 24.0D / 16.0D, 0.0D));
     }
 
     private static Variant variantFor(EquineRenderState state) {

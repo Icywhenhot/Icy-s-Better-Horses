@@ -1,7 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhAbility;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.world.damagesource.DamageSource;
@@ -24,20 +23,20 @@ public final class ThickHide implements BreedAbility {
     }
 
     public static float damageScale(LivingEntity target, DamageSource source) {
-        if (!(target instanceof AbstractHorse horse) || !BhAbility.POITOU_HIDE.on()
-                || !BhContent.POITOU_DONKEY.key().equals(IHorseData.of(horse).bh_getBreedKey())
+        int hide = target instanceof AbstractHorse horse
+                ? BhAbility.POITOU_HIDE.tier(IHorseData.of(horse), BhContent.POITOU_DONKEY.key()) : -1;
+        if (hide < 0
                 || source.is(DamageTypeTags.IS_EXPLOSION) || source.is(DamageTypeTags.IS_PROJECTILE)
                 || source.is(DamageTypeTags.BYPASSES_ARMOR)
                 || !(source.getDirectEntity() instanceof LivingEntity)
                 || source.getDirectEntity() != source.getEntity()) {
             return 1.0F;
         }
-        return BhHorseTraits.bondTier(IHorseData.of(horse).bh_getBond()) >= 1 ? 0.8F : 0.9F;
+        return hide >= 1 ? 0.8F : 0.9F;
     }
 
     public static boolean immune(LivingEntity target) {
-        return target instanceof AbstractHorse horse && BhAbility.POITOU_CLEAR.on()
-                && BhContent.POITOU_DONKEY.key().equals(IHorseData.of(horse).bh_getBreedKey())
-                && BhHorseTraits.bondTier(IHorseData.of(horse).bh_getBond()) >= 2;
+        return target instanceof AbstractHorse horse
+                && BhAbility.POITOU_CLEAR.tier(IHorseData.of(horse), BhContent.POITOU_DONKEY.key()) >= 2;
     }
 }

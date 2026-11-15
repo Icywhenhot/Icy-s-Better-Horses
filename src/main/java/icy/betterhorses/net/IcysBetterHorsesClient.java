@@ -15,6 +15,8 @@ import icy.betterhorses.net.client.render.BhNamedCoats;
 import icy.betterhorses.net.client.render.BhTackTextures;
 import icy.betterhorses.net.client.render.DonkeyRenderer;
 import icy.betterhorses.net.client.render.MuleRenderer;
+import icy.betterhorses.net.client.render.MiniatureDonkeyModel;
+import icy.betterhorses.net.client.render.LargeDonkeyModel;
 import icy.betterhorses.net.client.render.UndeadHorseRenderer;
 import icy.betterhorses.net.client.render.FriesianHorseRenderer;
 import icy.betterhorses.net.client.render.PercheronHorseRenderer;
@@ -27,7 +29,6 @@ import icy.betterhorses.net.client.render.IcelandicHorseRenderer;
 import icy.betterhorses.net.client.render.MediumHorseRenderer;
 import icy.betterhorses.net.client.render.SmallHorseRenderer;
 import icy.betterhorses.net.entity.IcelandicHorse;
-import icy.betterhorses.net.entity.BhBreedMule;
 import icy.betterhorses.net.entity.BhUndeadHorse;
 import icy.betterhorses.net.ModMenus;
 import icy.betterhorses.net.client.CartScreen;
@@ -243,29 +244,25 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
                 BhModelLayers.ASINARA_DONKEY_ARMOR, BhModelLayers.ASINARA_DONKEY_ARMOR_BABY,
                 BhModelLayers.ASINARA_DONKEY_CHEST, BhModelLayers.ASINARA_DONKEY_CHEST_BABY,
                 BhTackTextures.ASINARA_DONKEY));
-        EntityRendererRegistry.register(ModEntities.MAMMOTH_DONKEY, context -> new DonkeyRenderer(context,
-                BhModelLayers.MAMMOTH_DONKEY, BhModelLayers.MAMMOTH_DONKEY_BABY,
+        EntityRendererRegistry.register(ModEntities.MAMMOTH_DONKEY, context -> new DonkeyRenderer(context, LargeDonkeyModel::new, BhModelLayers.MAMMOTH_DONKEY, BhModelLayers.MAMMOTH_DONKEY_BABY,
                 BhModelLayers.MAMMOTH_DONKEY_SADDLE, BhModelLayers.MAMMOTH_DONKEY_SADDLE_BABY,
                 BhModelLayers.MAMMOTH_DONKEY_CARPET, BhModelLayers.MAMMOTH_DONKEY_CARPET_BABY,
                 BhModelLayers.MAMMOTH_DONKEY_ARMOR, BhModelLayers.MAMMOTH_DONKEY_ARMOR_BABY,
                 BhModelLayers.MAMMOTH_DONKEY_CHEST, BhModelLayers.MAMMOTH_DONKEY_CHEST_BABY,
                 BhTackTextures.MAMMOTH_DONKEY));
-        EntityRendererRegistry.register(ModEntities.MINIATURE_DONKEY, context -> new DonkeyRenderer(context,
-                BhModelLayers.MINIATURE_DONKEY, BhModelLayers.MINIATURE_DONKEY_BABY,
+        EntityRendererRegistry.register(ModEntities.MINIATURE_DONKEY, context -> new DonkeyRenderer(context, MiniatureDonkeyModel::new, BhModelLayers.MINIATURE_DONKEY, BhModelLayers.MINIATURE_DONKEY_BABY,
                 BhModelLayers.MINIATURE_DONKEY_SADDLE, BhModelLayers.MINIATURE_DONKEY_SADDLE_BABY,
                 BhModelLayers.MINIATURE_DONKEY_CARPET, BhModelLayers.MINIATURE_DONKEY_CARPET_BABY,
                 BhModelLayers.MINIATURE_DONKEY_ARMOR, BhModelLayers.MINIATURE_DONKEY_ARMOR_BABY,
                 BhModelLayers.MINIATURE_DONKEY_CHEST, BhModelLayers.MINIATURE_DONKEY_CHEST_BABY,
                 BhTackTextures.MINIATURE_DONKEY));
-        EntityRendererRegistry.register(ModEntities.PEGA_DONKEY, context -> new DonkeyRenderer(context,
-                BhModelLayers.PEGA_DONKEY, BhModelLayers.PEGA_DONKEY_BABY,
+        EntityRendererRegistry.register(ModEntities.PEGA_DONKEY, context -> new DonkeyRenderer(context, LargeDonkeyModel::new, BhModelLayers.PEGA_DONKEY, BhModelLayers.PEGA_DONKEY_BABY,
                 BhModelLayers.PEGA_DONKEY_SADDLE, BhModelLayers.PEGA_DONKEY_SADDLE_BABY,
                 BhModelLayers.PEGA_DONKEY_CARPET, BhModelLayers.PEGA_DONKEY_CARPET_BABY,
                 BhModelLayers.PEGA_DONKEY_ARMOR, BhModelLayers.PEGA_DONKEY_ARMOR_BABY,
                 BhModelLayers.PEGA_DONKEY_CHEST, BhModelLayers.PEGA_DONKEY_CHEST_BABY,
                 BhTackTextures.PEGA_DONKEY));
-        EntityRendererRegistry.register(ModEntities.POITOU_DONKEY, context -> new DonkeyRenderer(context,
-                BhModelLayers.POITOU_DONKEY, BhModelLayers.POITOU_DONKEY_BABY,
+        EntityRendererRegistry.register(ModEntities.POITOU_DONKEY, context -> new DonkeyRenderer(context, LargeDonkeyModel::new, BhModelLayers.POITOU_DONKEY, BhModelLayers.POITOU_DONKEY_BABY,
                 BhModelLayers.POITOU_DONKEY_SADDLE, BhModelLayers.POITOU_DONKEY_SADDLE_BABY,
                 BhModelLayers.POITOU_DONKEY_CARPET, BhModelLayers.POITOU_DONKEY_CARPET_BABY,
                 BhModelLayers.POITOU_DONKEY_ARMOR, BhModelLayers.POITOU_DONKEY_ARMOR_BABY,
@@ -285,9 +282,9 @@ public class IcysBetterHorsesClient implements ClientModInitializer {
         EntityRendererRegistry.register(ModEntities.ANDALUSIAN_HORSE, MediumHorseRenderer::new);
         EntityRendererRegistry.register(ModEntities.MUSTANG_HORSE, MediumHorseRenderer::new);
         EntityRendererRegistry.register(ModEntities.QUARTER_HORSE, MediumHorseRenderer::new);
-        for (EntityType<BhBreedMule> mule : ModEntities.MULES) {
-            EntityRendererRegistry.register(mule, MuleRenderer::new);
-        }
+        EntityRendererRegistry.register(ModEntities.SMALL_MULE, ctx -> new MuleRenderer(ctx, 0));
+        EntityRendererRegistry.register(ModEntities.MEDIUM_MULE, ctx -> new MuleRenderer(ctx, 1));
+        EntityRendererRegistry.register(ModEntities.LARGE_MULE, ctx -> new MuleRenderer(ctx, 2));
         EntityRendererRegistry.register(ModEntities.ARABIAN_HORSE, SmallHorseRenderer::new);
         EntityRendererRegistry.register(ModEntities.MORGAN_HORSE, SmallHorseRenderer::new);
 

@@ -1,9 +1,7 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhHorseKind;
-import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.BhAbility;
-import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.feature.breed.HardyNorthern;
@@ -12,14 +10,12 @@ import icy.betterhorses.net.entity.BhUndeadHorse;
 import icy.betterhorses.net.feature.breed.MammothWorker;
 import icy.betterhorses.net.feature.breed.RottenRations;
 import icy.betterhorses.net.feature.breed.DrownedRider;
+import icy.betterhorses.net.feature.breed.PegaCompanion;
 import icy.betterhorses.net.feature.breed.DrownedLungs;
 import icy.betterhorses.net.feature.breed.FrostCharge;
-import icy.betterhorses.net.feature.breed.ParchingBite;
 import icy.betterhorses.net.feature.breed.SculkHush;
 import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
 import icy.betterhorses.net.IHorseData;
-import icy.betterhorses.net.ModItems;
-import icy.betterhorses.net.inventory.GearSlot;
 import icy.betterhorses.net.entity.BhBreedHorse;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponents;
@@ -29,15 +25,12 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.equipment.Equippable;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -150,7 +143,7 @@ public abstract class LivingEntityMixin extends Entity {
             return;
         }
 
-        if (self.isInvulnerableTo(level, source) || !this.bh_hasEquippedMedkit(data)) {
+        if (self.isInvulnerableTo(level, source) || !ArchetypePerks.hasMedkit(data) || PegaCompanion.holdingKit(self)) {
             return;
         }
 
@@ -166,7 +159,6 @@ public abstract class LivingEntityMixin extends Entity {
         LivingEntity self = (LivingEntity) (Object) this;
         RottenRations.hit(self, source, amount);
         FrostCharge.hit(self, source, amount);
-        ParchingBite.hit(self, source, amount);
         SculkHush.hit(self, source);
 
         if (!this.bh_triggerHorseMedkitAfterDamage) {
@@ -179,16 +171,10 @@ public abstract class LivingEntityMixin extends Entity {
             return;
         }
 
-        this.bh_consumeMedkitAndApplyEffects(self, data);
+        ArchetypePerks.useMedkit(self, data);
         BhSurge.pulsePerk(data, ArchetypePerks.MEDKIT_BADGE);
     }
 
-
-    @Unique
-    private boolean bh_hasEquippedMedkit(IHorseData data) {
-        return BhConfig.medkitEnabled()
-                && data.bh_getGearContainer().getItem(GearSlot.MEDKIT.ordinal()).is(ModItems.HORSE_MEDKIT);
-    }
 
     @Unique
     private float bh_calculateHealthDamage(LivingEntity self, DamageSource source, float amount) {
@@ -197,20 +183,4 @@ public abstract class LivingEntityMixin extends Entity {
         return Math.max(mitigatedDamage - self.getAbsorptionAmount(), 0.0F);
     }
 
-    @Unique
-    private void bh_consumeMedkitAndApplyEffects(LivingEntity self, IHorseData data) {
-        if (self.level().isClientSide() || !this.bh_hasEquippedMedkit(data)) {
-            return;
-        }
-
-        SimpleContainer gear = data.bh_getGearContainer();
-        gear.setItem(GearSlot.MEDKIT.ordinal(), ItemStack.EMPTY);
-        gear.setChanged();
-
-        int dur = BH_MEDKIT_EFFECT_DURATION * ArchetypePerks.medkitMultiplier(BhBreedData.of(data.bh_getBreedKey()).archetype());
-        self.addEffect(new MobEffectInstance(MobEffects.REGENERATION, dur, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.INSTANT_HEALTH, 1, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, dur, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, dur, 0));
-    }
 }

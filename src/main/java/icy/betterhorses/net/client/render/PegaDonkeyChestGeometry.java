@@ -21,7 +21,7 @@ public final class PegaDonkeyChestGeometry {
                 "body",
                 CubeListBuilder.create()
                         .texOffs(86, 102).addBox(-3.5000F, -11.0F, 7.7727F, 7.0F, 6.0F, 5.0F),
-                PartPose.offset(0.0F, 7.0F, 0.0F));
+                PartPose.offset(0.0F, 6.0F, 0.0F));
         return LayerDefinition.create(mesh, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     }
 }

@@ -1,9 +1,7 @@
 package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhHorseAttributes;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
-import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedAbilities;
@@ -14,7 +12,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.Objects;
 
 public final class Ironclad implements BreedAbility {
 
@@ -27,7 +24,7 @@ public final class Ironclad implements BreedAbility {
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
-        double armor = BhAbility.CLYDESDALE_ARMOR.on()
+        double armor = BhAbility.CLYDESDALE_ARMOR.on(data)
                 ? armorBonus(horse)
                 : 0.0D;
         if (armor != applied) {
@@ -43,12 +40,12 @@ public final class Ironclad implements BreedAbility {
         }
         hadRider = up != null;
 
-        int tier = BhHorseTraits.bondTier(data.bh_getBond());
+        int tier = BhAbility.CLYDESDALE_RESIST.tier(data);
         if (tier < 1 || horse.tickCount % REFRESH != 0) {
             return;
         }
         Player rider = up;
-        if (rider != null && BhAbility.CLYDESDALE_RESIST.on()
+        if (rider != null
                 && horse.getAttributeValue(Attributes.ARMOR) > 0.0D) {
             BhBreedAbilities.applyQuietEffect(rider, MobEffects.RESISTANCE, SHIELD_DURATION, 0);
         }
@@ -72,8 +69,6 @@ public final class Ironclad implements BreedAbility {
     }
 
     public static boolean deflectsProjectiles(IHorseData data) {
-        return Objects.equals(data.bh_getBreedKey(), BhContent.CLYDESDALE.key())
-                && BhHorseTraits.bondTier(data.bh_getBond()) >= 2
-                && BhAbility.CLYDESDALE_DEFLECT.on();
+        return BhAbility.CLYDESDALE_DEFLECT.tier(data, BhContent.CLYDESDALE.key()) >= 2;
     }
 }

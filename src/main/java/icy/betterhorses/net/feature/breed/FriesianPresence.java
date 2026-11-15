@@ -1,6 +1,5 @@
 package icy.betterhorses.net.feature.breed;
 
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.ICalmable;
@@ -40,9 +39,9 @@ public final class FriesianPresence implements BreedAbility {
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
         Player rider = BhBreedAbilities.rider(horse);
-        int tier = BhHorseTraits.bondTier(data.bh_getBond());
+        int tier = Math.max(0, BhAbility.FRIESIAN_CALM.tier(data));
 
-        boolean soothes = BhAbility.FRIESIAN_CALM.on() && horse.level() instanceof ServerLevel;
+        boolean soothes = BhAbility.FRIESIAN_CALM.on(data) && horse.level() instanceof ServerLevel;
         if ((!soothes || rider == null) && !calmed.isEmpty()) {
             release(horse);
         }
@@ -60,7 +59,7 @@ public final class FriesianPresence implements BreedAbility {
         }
 
         boolean standing = horse.isStanding();
-        if (tier >= 2 && BhAbility.FRIESIAN_DRESSAGE.on()
+        if (BhAbility.FRIESIAN_DRESSAGE.tier(data) >= 2
                 && standing && !wasStanding && dressage(horse)) {
             BhSurge.pulse(data, 0);
         }

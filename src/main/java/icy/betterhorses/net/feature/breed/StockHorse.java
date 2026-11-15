@@ -1,6 +1,5 @@
 package icy.betterhorses.net.feature.breed;
 
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
@@ -39,9 +38,7 @@ public final class StockHorse implements BreedAbility {
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
         Player rider = BhBreedAbilities.rider(horse);
-        int tier = BhHorseTraits.bondTier(data.bh_getBond());
-
-        boolean dark = rider != null && BhAbility.APPALOOSA_NIGHT.on()
+        boolean dark = rider != null && BhAbility.APPALOOSA_NIGHT.on(data)
                 && BhBreedAbilities.isDarkOutside(horse);
         if (dark && horse.tickCount % VISION_REFRESH == 0) {
             BhBreedAbilities.applyQuietEffect(rider, MobEffects.NIGHT_VISION, VISION_DURATION, 0);
@@ -51,12 +48,12 @@ public final class StockHorse implements BreedAbility {
         }
         seeing = dark;
 
-        if (tier >= 1 && rider != null && BhAbility.APPALOOSA_HERD.on()
+        if (BhAbility.APPALOOSA_HERD.tier(data) >= 1 && rider != null
                 && !data.bh_isAbilityPaused() && horse.tickCount % HERD_INTERVAL == 0
                 && herd(horse)) {
             BhSurge.pulse(data, 0);
         }
-        if (tier >= 2 && BhAbility.APPALOOSA_FEED.on()
+        if (BhAbility.APPALOOSA_FEED.tier(data) >= 2
                 && horse.tickCount % FEED_INTERVAL == 0 && feed(horse, data)) {
             BhSurge.pulse(data, 0, 1);
         }

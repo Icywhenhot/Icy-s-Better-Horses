@@ -15,6 +15,10 @@ public final class BelgianArmorGeometry {
     private BelgianArmorGeometry() {}
 
     public static LayerDefinition createBodyLayer() {
+        return createBodyLayer(null);
+    }
+
+    public static LayerDefinition createBodyLayer(BhNeckPlates plates) {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
@@ -35,11 +39,19 @@ public final class BelgianArmorGeometry {
                         .texOffs(2, 39).addBox(-3.0F, -12.0F, -4.0F, 6.0F, 14.0F, 8.0F, new CubeDeformation(0.0490F)),
                 PartPose.offset(0.0F, 0.0F, 0.0F));
 
+        if (plates != null) {
+            plates.add(p_neck3, 3.0000F, -12.0F, 4.0F);
+        }
+
         PartDefinition p_head2 = p_neck2.addOrReplaceChild(
                 "head2",
                 CubeListBuilder.create()
                         .texOffs(78, 2).addBox(-3.5000F, -7.0F, -4.0F, 7.0F, 7.0F, 8.0F, new CubeDeformation(0.0500F)),
                 PartPose.offset(0.0F, -8.0F, -2.0F));
+
+        if (plates != null) {
+            plates.addRod(p_head2, -7.0F, -4.0F, 8, 0);
+        }
 
         PartDefinition p_snout2 = p_head2.addOrReplaceChild(
                 "snout2",

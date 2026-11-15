@@ -3,7 +3,6 @@ package icy.betterhorses.net.mixin;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhHorseKind;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.Holder;
@@ -16,7 +15,6 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-import java.util.Objects;
 
 @Mixin(EnchantmentHelper.class)
 public abstract class EnchantmentHelperMixin {
@@ -29,9 +27,10 @@ public abstract class EnchantmentHelperMixin {
             return level;
         }
         IHorseData d = IHorseData.of(horse);
-        if (!Objects.equals(d.bh_getBreedKey(), BhContent.AMERICAN_PAINT.key()) || !BhAbility.PAINT_LOOTING.on()) {
+        int tier = BhAbility.PAINT_LOOTING.tier(d, BhContent.AMERICAN_PAINT.key());
+        if (tier < 0) {
             return level;
         }
-        return Math.max(level, BhHorseTraits.bondTier(d.bh_getBond()) + 1);
+        return Math.max(level, tier + 1);
     }
 }

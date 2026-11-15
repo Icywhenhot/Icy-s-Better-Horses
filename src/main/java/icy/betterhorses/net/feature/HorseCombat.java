@@ -5,7 +5,6 @@ import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhFeature;
 import icy.betterhorses.net.BhGears;
 import icy.betterhorses.net.BhSurge;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhDamageTypes;
 import icy.betterhorses.net.ModSounds;
 import icy.betterhorses.net.BhHorseAttributes;
@@ -218,17 +217,14 @@ public final class HorseCombat implements HorseFeature {
     }
 
     private double momentum(ResourceKey<BreedType> breedKey, IHorseData data) {
-        if (!Objects.equals(breedKey, BhContent.PERCHERON.key())
-                || !BhAbility.PERCHERON_MOMENTUM.on() || BhHorseTraits.bondTier(data.bh_getBond()) < 1) {
+        if (BhAbility.PERCHERON_MOMENTUM.tier(data, BhContent.PERCHERON.key()) < 1) {
             return 1.0D;
         }
         return 1.0D + 0.5D * (double) straight / FULL_WIND;
     }
 
     private static boolean chains(ResourceKey<BreedType> breedKey, IHorseData data) {
-        return Objects.equals(breedKey, BhContent.PERCHERON.key())
-                && BhHorseTraits.bondTier(data.bh_getBond()) >= 2
-                && BhAbility.PERCHERON_CHAIN.on();
+        return BhAbility.PERCHERON_CHAIN.tier(data, BhContent.PERCHERON.key()) >= 2;
     }
 
     public static boolean mayTarget(LivingEntity target) {

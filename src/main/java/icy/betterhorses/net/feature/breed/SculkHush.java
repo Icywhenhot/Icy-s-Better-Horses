@@ -57,6 +57,10 @@ public final class SculkHush implements BreedAbility {
                 && BhAbility.SCULK_LULL.on();
     }
 
+    public static boolean hushed(Entity entity) {
+        return entity instanceof AbstractHorse && entity.dampensVibrations();
+    }
+
     public static boolean hiddenFrom(Entity entity) {
         if (entity instanceof AbstractHorse horse && IHorseData.of(horse).bh_getBreed().isSculk()) {
             return BhAbility.SCULK_KIN.on() && !broken(horse);

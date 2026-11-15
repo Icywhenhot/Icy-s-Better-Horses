@@ -34,6 +34,8 @@
 		"FarmlandBlockMixin",
 		"ItemEntityAccessor",
 		"WardenMixin",
+		"SculkStepMixin",
+		"EntityMountHushMixin",
 		"MobCartPassengerMixin",
 		"MobNameTagBondMixin",
 		"MoveControlStepMixin",

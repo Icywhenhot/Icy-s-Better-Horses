@@ -40,7 +40,12 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends AbstractHorseRender
                         : state.carpetTexture != null ? state.carpetTexture : textures.carpet(state.carpet)));
 
         this.addLayer(BhTackLayer.<BhHorseRenderState, BhHorseModel>forArmor(this,
-                models.apply(armor), models.apply(armorBaby), textures));
+                models.apply(armor), models.apply(armorBaby), textures, null));
+        for (BhNeckPlates plates : BhNeckPlates.values()) {
+            BhHorseModel plated = models.apply(plates.layer(armor));
+            this.addLayer(BhTackLayer.<BhHorseRenderState, BhHorseModel>forArmor(this,
+                    plated, plated, textures, plates));
+        }
 
         this.addLayer(new BhTackLayer<>(this, models.apply(chest), models.apply(chestBaby),
                 state -> {
@@ -75,7 +80,11 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends AbstractHorseRender
 
         state.entityId = BhEquineGait.renderId(entity.getId());
 
+        gaitPose(entity, state);
         BhEquineGait.advanceFor(entity, state);
+    }
+
+    protected void gaitPose(T entity, BhHorseRenderState state) {
     }
 
     @Override
