@@ -1,6 +1,9 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.registry.BhContent;
+import io.netty.buffer.Unpooled;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -50,8 +53,7 @@ public final class BhHorseAttachments {
     public static final AttachmentType<Integer> CHARGE = integer(BhSurge.HIDDEN);
     public static final AttachmentType<Integer> BEG = integer(0);
     public static final AttachmentType<ItemStack> BANNER = synced(() -> ItemStack.EMPTY,
-            (buffer, stack) -> ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, stack),
-            ItemStack.OPTIONAL_STREAM_CODEC::decode);
+            BhHorseAttachments::writeBanner, BhHorseAttachments::readBanner);
 
     private BhHorseAttachments() {}
 
@@ -96,6 +98,48 @@ public final class BhHorseAttachments {
                 NeoForgeRegistries.Keys.ATTACHMENT_TYPES,
                 ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, path),
                 () -> type);
+    }
+
+    private static void writeBanner(RegistryFriendlyByteBuf buffer, ItemStack stack) {
+        RegistryFriendlyByteBuf packed = new RegistryFriendlyByteBuf(Unpooled.buffer(), buffer.registryAccess(), buffer.getConnectionType());
+        try {
+            ItemStack.OPTIONAL_STREAM_CODEC.encode(packed, renderCopy(stack));
+            byte[] bytes = new byte[packed.readableBytes()];
+            packed.readBytes(bytes);
+            buffer.writeByteArray(bytes);
+        } catch (RuntimeException e) {
+            buffer.writeByteArray(new byte[0]);
+        } finally {
+            packed.release();
+        }
+    }
+
+    private static ItemStack readBanner(RegistryFriendlyByteBuf buffer) {
+        byte[] bytes = buffer.readByteArray();
+        if (bytes.length == 0) return ItemStack.EMPTY;
+        RegistryFriendlyByteBuf packed = new RegistryFriendlyByteBuf(Unpooled.wrappedBuffer(bytes), buffer.registryAccess(), buffer.getConnectionType());
+        try {
+            return ItemStack.OPTIONAL_STREAM_CODEC.decode(packed);
+        } catch (RuntimeException e) {
+            return ItemStack.EMPTY;
+        } finally {
+            packed.release();
+        }
+    }
+
+    private static ItemStack renderCopy(ItemStack stack) {
+        if (stack.isEmpty()) return ItemStack.EMPTY;
+        ItemStack copy = new ItemStack(stack.getItemHolder(), 1);
+        copyComponent(stack, copy, DataComponents.BANNER_PATTERNS);
+        copyComponent(stack, copy, DataComponents.BASE_COLOR);
+        copyComponent(stack, copy, DataComponents.CUSTOM_MODEL_DATA);
+        copyComponent(stack, copy, DataComponents.DYED_COLOR);
+        return copy;
+    }
+
+    private static <C> void copyComponent(ItemStack from, ItemStack to, DataComponentType<C> type) {
+        C value = from.get(type);
+        if (value != null) to.set(type, value);
     }
 
     private static AttachmentType<Integer> integer(int initial) {
