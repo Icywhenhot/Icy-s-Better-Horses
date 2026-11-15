@@ -1,27 +1,21 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhHorseKind;
-import icy.betterhorses.net.BhBreedData;
-import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.feature.breed.HardyNorthern;
+import icy.betterhorses.net.feature.breed.PegaCompanion;
 import icy.betterhorses.net.feature.breed.ThickHide;
 import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
 import icy.betterhorses.net.IHorseData;
-import icy.betterhorses.net.ModItems;
-import icy.betterhorses.net.inventory.GearSlot;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -42,8 +36,6 @@ public abstract class LivingEntityMixin extends Entity {
         }
     }
 
-    @Unique private static final float BH_MEDKIT_HEALTH_THRESHOLD_FRACTION = 0.5F;
-    @Unique private static final int BH_MEDKIT_EFFECT_DURATION = 20 * 30;
     @Unique private boolean bh_triggerHorseMedkitAfterDamage = false;
 
     protected LivingEntityMixin(EntityType<?> entityType, Level level) {
@@ -92,13 +84,13 @@ public abstract class LivingEntityMixin extends Entity {
             return;
         }
 
-        if (self.isInvulnerableTo(source) || !this.bh_hasEquippedMedkit(data)) {
+        if (self.isInvulnerableTo(source) || !ArchetypePerks.hasMedkit(data) || PegaCompanion.holdingKit(self)) {
             return;
         }
 
         float damageToHealth = this.bh_calculateHealthDamage(self, source, amount);
         float healthAfterDamage = self.getHealth() - damageToHealth;
-        if (healthAfterDamage < self.getMaxHealth() * BH_MEDKIT_HEALTH_THRESHOLD_FRACTION) {
+        if (healthAfterDamage < self.getMaxHealth() * ArchetypePerks.MEDKIT_THRESHOLD) {
             this.bh_triggerHorseMedkitAfterDamage = true;
         }
     }
@@ -117,15 +109,7 @@ public abstract class LivingEntityMixin extends Entity {
             return;
         }
 
-        this.bh_consumeMedkitAndApplyEffects(self, data);
-        BhSurge.pulsePerk(data, ArchetypePerks.MEDKIT_BADGE);
-    }
-
-
-    @Unique
-    private boolean bh_hasEquippedMedkit(IHorseData data) {
-        return BhConfig.medkitEnabled()
-                && data.bh_getGearContainer().getItem(GearSlot.MEDKIT.ordinal()).is(ModItems.HORSE_MEDKIT);
+        ArchetypePerks.useMedkit(self, data);
     }
 
     @Unique
@@ -133,22 +117,5 @@ public abstract class LivingEntityMixin extends Entity {
         float mitigatedDamage = this.getDamageAfterArmorAbsorb(source, amount);
         mitigatedDamage = this.getDamageAfterMagicAbsorb(source, mitigatedDamage);
         return Math.max(mitigatedDamage - self.getAbsorptionAmount(), 0.0F);
-    }
-
-    @Unique
-    private void bh_consumeMedkitAndApplyEffects(LivingEntity self, IHorseData data) {
-        if (self.level().isClientSide() || !this.bh_hasEquippedMedkit(data)) {
-            return;
-        }
-
-        SimpleContainer gear = data.bh_getGearContainer();
-        gear.setItem(GearSlot.MEDKIT.ordinal(), ItemStack.EMPTY);
-        gear.setChanged();
-
-        int dur = BH_MEDKIT_EFFECT_DURATION * ArchetypePerks.medkitMultiplier(BhBreedData.of(data.bh_getBreedKey()).archetype());
-        self.addEffect(new MobEffectInstance(MobEffects.REGENERATION, dur, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.HEAL, 1, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, dur, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, dur, 0));
     }
 }

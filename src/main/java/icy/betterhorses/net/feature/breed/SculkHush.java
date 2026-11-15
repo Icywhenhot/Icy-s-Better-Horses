@@ -11,6 +11,7 @@ import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import org.jetbrains.annotations.Nullable;
 
 public final class SculkHush implements BreedAbility {
 
@@ -41,6 +42,10 @@ public final class SculkHush implements BreedAbility {
     private static boolean lulls(IHorseData data) {
         return data.bh_getBreed().isSculk() && BhHorseTraits.bondTier(data.bh_getBond()) >= 2
                 && BhAbility.SCULK_LULL.on();
+    }
+
+    public static boolean hushed(@Nullable Entity entity) {
+        return entity instanceof AbstractHorse && entity.dampensVibrations();
     }
 
     public static boolean hiddenFrom(Entity entity) {

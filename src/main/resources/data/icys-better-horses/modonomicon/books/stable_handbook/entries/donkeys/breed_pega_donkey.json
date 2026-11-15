@@ -43,6 +43,13 @@
     },
     {
       "type": "modonomicon:text",
+      "id": "medic",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.medic.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.medic.text"
+    },
+    {
+      "type": "modonomicon:text",
       "id": "spawns",
       "title": "book.icys-better-horses.stable_handbook.donkeys.breed_pega_donkey.spawns.title",
       "show_title_separator": true,

@@ -127,15 +127,25 @@ public final class CoastalScout implements BreedAbility {
         arrived = false;
     }
 
-    public static boolean fishingNearby(Player player) {
-        if (!BhAbility.ASINARA_FISH.on()) {
-            return false;
+    public static double fishingWait(Player player) {
+        if (!BhAbility.ASINARA_FISH.on() && !BhAbility.ASINARA_BITE.on()) {
+            return 1.0D;
         }
-        return !player.level().getEntitiesOfClass(BhBreedHorse.class, player.getBoundingBox().inflate(12.0D), horse -> {
+        double wait = 1.0D;
+        for (BhBreedHorse horse : player.level().getEntitiesOfClass(BhBreedHorse.class,
+                player.getBoundingBox().inflate(12.0D))) {
             IHorseData data = IHorseData.of(horse);
-            return horse.isAlive() && !horse.isBaby() && horse.distanceToSqr(player) <= 144.0D
-                    && data.bh_isOwned() && BhAbility.ASINARA_FISH.tier(data, BhContent.ASINARA_DONKEY.getKey()) >= 1;
-        }).isEmpty();
+            if (!horse.isAlive() || horse.isBaby() || horse.distanceToSqr(player) > 144.0D || !data.bh_isOwned()) {
+                continue;
+            }
+            if (BhAbility.ASINARA_BITE.tier(data, BhContent.ASINARA_DONKEY.getKey()) >= 2) {
+                return 1.0D / 1.3D;
+            }
+            if (BhAbility.ASINARA_FISH.tier(data, BhContent.ASINARA_DONKEY.getKey()) >= 1) {
+                wait = 0.85D;
+            }
+        }
+        return wait;
     }
 
     @Override

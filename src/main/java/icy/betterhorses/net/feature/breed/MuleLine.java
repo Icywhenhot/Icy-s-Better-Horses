@@ -49,13 +49,13 @@ public record MuleLine(HorseBreed horse, HorseBreed donkey, int flips) {
         put(HorseBreed.ANDALUSIAN_DONKEY, List.of(BhAbility.ANDALUSIAN_FARM), List.of(BhAbility.ANDALUSIAN_FARM),
                 List.of(BhAbility.ANDALUSIAN_FARM));
         put(HorseBreed.ASINARA_DONKEY, List.of(BhAbility.ASINARA_WATER), List.of(BhAbility.ASINARA_FISH),
-                List.of(BhAbility.ASINARA_TREASURE));
+                List.of(BhAbility.ASINARA_TREASURE, BhAbility.ASINARA_BITE));
         put(HorseBreed.MAMMOTH_DONKEY, List.of(BhAbility.MAMMOTH_RUBBLE), List.of(BhAbility.MAMMOTH_WORK),
                 List.of(BhAbility.MAMMOTH_BRACE));
         put(HorseBreed.MINIATURE_DONKEY, List.of(BhAbility.MINIATURE_PICKUP, BhAbility.MINIATURE_FARM),
                 List.of(BhAbility.MINIATURE_BASKET, BhAbility.MINIATURE_FARM), List.of(BhAbility.MINIATURE_FARM));
-        put(HorseBreed.PEGA_DONKEY, List.of(BhAbility.PEGA_SEAT), List.of(BhAbility.PEGA_SELF_HEAL),
-                List.of(BhAbility.PEGA_RIDER_HEAL));
+        put(HorseBreed.PEGA_DONKEY, List.of(BhAbility.PEGA_SEAT, BhAbility.PEGA_MEDKIT),
+                List.of(BhAbility.PEGA_SHARE), List.of(BhAbility.PEGA_RALLY));
         put(HorseBreed.POITOU_DONKEY, List.of(BhAbility.POITOU_HIDE), List.of(BhAbility.POITOU_HIDE),
                 List.of(BhAbility.POITOU_CLEAR));
         put(HorseBreed.ZAMORANO_DONKEY, List.of(BhAbility.ZAMORANO_ICE), List.of(BhAbility.ZAMORANO_SNOW),

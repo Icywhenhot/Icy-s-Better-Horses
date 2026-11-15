@@ -43,6 +43,8 @@
 		"FoodOnAStickItemMixin",
 		"MobCalmMixin",
 		"WardenMixin",
+		"SculkStepMixin",
+		"EntityMountHushMixin",
 		"PathNavigationIdleGaitMixin",
 		"MobCartPassengerMixin",
 		"MobNameTagBondMixin",
@@ -50,7 +52,6 @@
 		"PanicGoalMixin",
 		"PlayerHurtMixin",
 		"EntitySlowBlockMixin",
-		"EntitySureFootMixin",
 		"PowderSnowBlockMixin",
 		"SpawnPlacementsAccessor",
 		"SlotAccessor"
