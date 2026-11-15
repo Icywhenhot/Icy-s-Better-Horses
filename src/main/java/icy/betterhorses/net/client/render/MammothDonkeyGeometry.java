@@ -23,7 +23,7 @@ public final class MammothDonkeyGeometry {
                 CubeListBuilder.create()
                         .texOffs(0, 0).addBox(-5.0F, -5.0F, -11.0F, 10.0F, 10.0F, 22.0F)
                         .texOffs(0, 92).addBox(-5.0F, -5.0F, -11.0F, 10.0F, 10.0F, 22.0F, new CubeDeformation(0.0500F)),
-                PartPose.offset(0.0F, 10.0F, 0.0F));
+                PartPose.offset(0.0F, 5.0F, 0.0F));
 
         PartDefinition p_neck2 = p_body.addOrReplaceChild(
                 "neck2",
@@ -33,14 +33,14 @@ public final class MammothDonkeyGeometry {
         PartDefinition p_neck3 = p_neck2.addOrReplaceChild(
                 "neck3",
                 CubeListBuilder.create()
-                        .texOffs(0, 64).addBox(-2.0F, -9.0F, -3.8000F, 4.0F, 12.0F, 7.0F),
+                        .texOffs(0, 32).addBox(-2.0F, -10.0F, -3.8000F, 4.0F, 13.0F, 7.0F),
                 PartPose.offset(0.0F, 0.0F, 0.0F));
 
         PartDefinition p_head2 = p_neck2.addOrReplaceChild(
                 "head2",
                 CubeListBuilder.create()
                         .texOffs(64, 19).addBox(-3.0F, -6.0F, -3.8000F, 6.0F, 6.0F, 7.0F, new CubeDeformation(0.0100F)),
-                PartPose.offset(0.0F, -9.0F, 0.0F));
+                PartPose.offset(0.0F, -10.0F, 0.0F));
 
         PartDefinition p_snout2 = p_head2.addOrReplaceChild(
                 "snout2",
@@ -75,35 +75,35 @@ public final class MammothDonkeyGeometry {
         PartDefinition p_tail2 = p_body.addOrReplaceChild(
                 "tail2",
                 CubeListBuilder.create()
-                        .texOffs(74, 62).addBox(-1.5000F, -0.0F, 0.0F, 3.0F, 12.0F, 4.0F)
+                        .texOffs(74, 62).addBox(-1.5000F, 0.0F, 0.0F, 3.0F, 12.0F, 4.0F)
                         .texOffs(80, 32).addBox(-1.5000F, 12.0F, 0.0F, 3.0F, 5.0F, 4.0F),
                 PartPose.offset(0.0F, -5.0F, 11.0F));
 
         PartDefinition p_front_right_leg = root.addOrReplaceChild(
                 "front_right_leg",
                 CubeListBuilder.create()
-                        .texOffs(42, 64).addBox(-2.0F, -8.0F, -2.0F, 4.0F, 9.0F, 4.0F, new CubeDeformation(-0.0100F))
+                        .texOffs(86, 0).addBox(-2.0F, -13.0F, -2.0F, 4.0F, 14.0F, 4.0F, new CubeDeformation(-0.0100F))
                         .texOffs(22, 76).addBox(-2.0F, -3.0F, -2.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(-3.0F, 23.0F, -8.9000F));
 
         PartDefinition p_front_left_leg = root.addOrReplaceChild(
                 "front_left_leg",
                 CubeListBuilder.create()
-                        .texOffs(64, 32).addBox(-2.0F, -8.0F, -2.0F, 4.0F, 9.0F, 4.0F, new CubeDeformation(-0.0100F))
+                        .texOffs(64, 0).addBox(-2.0F, -13.0F, -2.0F, 4.0F, 14.0F, 4.0F, new CubeDeformation(-0.0100F))
                         .texOffs(54, 79).addBox(-2.0F, -3.0F, -2.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(3.0F, 23.0F, -8.9000F));
 
         PartDefinition p_back_right_leg = root.addOrReplaceChild(
                 "back_right_leg",
                 CubeListBuilder.create()
-                        .texOffs(58, 64).addBox(-2.0F, -8.0F, -3.0F, 4.0F, 9.0F, 4.0F, new CubeDeformation(-0.0100F))
+                        .texOffs(94, 18).addBox(-2.0F, -13.0F, -3.0F, 4.0F, 14.0F, 4.0F, new CubeDeformation(-0.0100F))
                         .texOffs(38, 79).addBox(-2.0F, -3.0F, -3.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(-3.0F, 23.0F, 10.0F));
 
         PartDefinition p_back_left_leg = root.addOrReplaceChild(
                 "back_left_leg",
                 CubeListBuilder.create()
-                        .texOffs(64, 47).addBox(-2.0F, -8.0F, -3.0F, 4.0F, 9.0F, 4.0F, new CubeDeformation(-0.0100F))
+                        .texOffs(102, 0).addBox(-2.0F, -13.0F, -3.0F, 4.0F, 14.0F, 4.0F, new CubeDeformation(-0.0100F))
                         .texOffs(74, 78).addBox(-2.0F, -3.0F, -3.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(0.1000F)),
                 PartPose.offset(3.0F, 23.0F, 10.0F));
 

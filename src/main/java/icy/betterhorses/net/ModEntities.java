@@ -135,13 +135,13 @@ public final class ModEntities {
     public static final EntityType<BhBreedDonkey> ASINARA_DONKEY =
             registerDonkey("asinara_donkey", BhContent.ASINARA_DONKEY, 1.2F, 1.3125F);
     public static final EntityType<BhBreedDonkey> MAMMOTH_DONKEY =
-            registerDonkey("mammoth_donkey", BhContent.MAMMOTH_DONKEY, 1.3964844F, 1.375F);
+            registerDonkey("mammoth_donkey", BhContent.MAMMOTH_DONKEY, 1.3964844F, 1.6875F);
     public static final EntityType<BhBreedDonkey> MINIATURE_DONKEY =
             registerDonkey("miniature_donkey", BhContent.MINIATURE_DONKEY, 0.9F, 1.0625F);
     public static final EntityType<BhBreedDonkey> PEGA_DONKEY =
-            registerDonkey("pega_donkey", BhContent.PEGA_DONKEY, 1.3964844F, 1.5625F);
+            registerDonkey("pega_donkey", BhContent.PEGA_DONKEY, 1.3964844F, 1.625F);
     public static final EntityType<BhBreedDonkey> POITOU_DONKEY =
-            registerDonkey("poitou_donkey", BhContent.POITOU_DONKEY, 1.3964844F, 1.5F);
+            registerDonkey("poitou_donkey", BhContent.POITOU_DONKEY, 1.3964844F, 1.6875F);
     public static final EntityType<BhBreedDonkey> ZAMORANO_DONKEY =
             registerDonkey("zamorano_donkey", BhContent.ZAMORANO_DONKEY, 1.3964844F, 1.375F);
 

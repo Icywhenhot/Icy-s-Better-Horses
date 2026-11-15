@@ -7,9 +7,9 @@ public class MuleRenderer extends BhHorseRenderer<BhBreedMule> {
 
     public MuleRenderer(EntityRendererProvider.Context context, int size) {
         super(context,
-                new MediumHorseModel<>(context.bakeLayer(pick(size, BhModelLayers.SMALL_MULE, BhModelLayers.MULE, BhModelLayers.LARGE_MULE))),
+                new MuleModel(context.bakeLayer(pick(size, BhModelLayers.SMALL_MULE, BhModelLayers.MULE, BhModelLayers.LARGE_MULE))),
                 new MediumFoalModel<>(context.bakeLayer(BhModelLayers.MULE_BABY)),
-                layer -> new MediumHorseModel<>(context.bakeLayer(layer)),
+                layer -> new MuleModel(context.bakeLayer(layer)),
                 pick(size, BhModelLayers.SMALL_MULE_SADDLE, BhModelLayers.MULE_SADDLE, BhModelLayers.LARGE_MULE_SADDLE),
                 pick(size, BhModelLayers.SMALL_MULE_SADDLE_BABY, BhModelLayers.MULE_SADDLE_BABY, BhModelLayers.LARGE_MULE_SADDLE_BABY),
                 pick(size, BhModelLayers.SMALL_MULE_CARPET, BhModelLayers.MULE_CARPET, BhModelLayers.LARGE_MULE_CARPET),

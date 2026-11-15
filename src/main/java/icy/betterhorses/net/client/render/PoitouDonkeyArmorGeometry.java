@@ -26,7 +26,7 @@ public final class PoitouDonkeyArmorGeometry {
                 "body",
                 CubeListBuilder.create()
                         .texOffs(9, 7).addBox(-5.0F, -7.0F, -11.0F, 10.0F, 9.0F, 22.0F, new CubeDeformation(0.1000F)),
-                PartPose.offset(0.0F, 10.0F, 0.0F));
+                PartPose.offset(0.0F, 7.0F, 0.0F));
 
         PartDefinition p_neck2 = p_body.addOrReplaceChild(
                 "neck2",
@@ -36,18 +36,18 @@ public final class PoitouDonkeyArmorGeometry {
         PartDefinition p_neck3 = p_neck2.addOrReplaceChild(
                 "neck3",
                 CubeListBuilder.create()
-                        .texOffs(11, 77).addBox(-2.0F, -8.8571F, -2.8000F, 4.0F, 10.0F, 6.0F, new CubeDeformation(0.0990F)),
+                        .texOffs(11, 77).addBox(-2.0F, -9.8571F, -2.8000F, 4.0F, 10.0F, 6.0F, new CubeDeformation(0.0990F)),
                 PartPose.offset(0.0F, 0.0F, 0.0F));
 
         if (plates != null) {
-            plates.add(p_neck3, 2.0F, -8.8571F, 3.2000F);
+            plates.add(p_neck3, 2.0F, -9.8571F, 3.2000F);
         }
 
         PartDefinition p_head2 = p_neck2.addOrReplaceChild(
                 "head2",
                 CubeListBuilder.create()
                         .texOffs(69, 65).addBox(-3.0F, -6.0F, -3.8000F, 6.0F, 6.0F, 7.0F, new CubeDeformation(0.1000F)),
-                PartPose.offset(0.0F, -9.0F, 0.0F));
+                PartPose.offset(0.0F, -10.0F, 0.0F));
 
         if (plates != null) {
             plates.addRod(p_head2, -6.0F, -3.8000F, 8, 0);
@@ -87,13 +87,13 @@ public final class PoitouDonkeyArmorGeometry {
         PartDefinition p_front_right_leg = root.addOrReplaceChild(
                 "front_right_leg",
                 CubeListBuilder.create()
-                        .mirror().texOffs(62, 80).addBox(-2.0F, -10.1923F, -2.0F, 4.0F, 8.0F, 4.0F, new CubeDeformation(0.0800F)),
+                        .mirror().texOffs(62, 80).addBox(-2.0F, -13.1923F, -2.0F, 4.0F, 8.0F, 4.0F, new CubeDeformation(0.0800F)),
                 PartPose.offset(-3.0F, 23.0F, -8.9000F));
 
         PartDefinition p_front_left_leg = root.addOrReplaceChild(
                 "front_left_leg",
                 CubeListBuilder.create()
-                        .texOffs(62, 80).addBox(-2.0F, -10.1923F, -2.0F, 4.0F, 8.0F, 4.0F, new CubeDeformation(0.0800F)),
+                        .texOffs(62, 80).addBox(-2.0F, -13.1923F, -2.0F, 4.0F, 8.0F, 4.0F, new CubeDeformation(0.0800F)),
                 PartPose.offset(3.0F, 23.0F, -8.9000F));
         return LayerDefinition.create(mesh, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     }

@@ -6,48 +6,28 @@ import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedAbilities;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.living.LivingBreatheEvent;
 
 public final class DrownedRider implements BreedAbility {
 
-    private static final int COOLDOWN = 400;
-    private static final int DASH_TICKS = 8;
-
-    private int cooldown;
-    private int dash;
+    private final WaterDash dash = new WaterDash();
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
-        if (cooldown > 0) {
-            cooldown--;
-        }
         Player rider = BhBreedAbilities.rider(horse);
         int tier = BhHorseTraits.bondTier(data.bh_getBond());
-        if (dash > 0 && eligible(horse, data, rider)) {
-            Vec3 motion = rider.getLookAngle().scale(0.9D);
-            horse.setDeltaMovement(motion);
-            horse.hurtMarked = true;
-            if (rider instanceof ServerPlayer player) {
-                player.connection.send(new ClientboundSetEntityMotionPacket(horse));
-            }
-            dash--;
-            data.bh_setSurge(BhSurge.pack(BhSurge.ACTIVE, dash, DASH_TICKS, 0, 2));
+        if (dash.push(horse, rider, eligible(horse, data, rider))) {
+            data.bh_setSurge(BhSurge.pack(BhSurge.ACTIVE, dash.dash, WaterDash.DASH_TICKS, 0, 2));
+        } else if (dash.cooldown > 0 && BhAbility.SKELETON_DASH.on()) {
+            data.bh_setSurge(BhSurge.pack(BhSurge.COOLING, dash.cooldown, WaterDash.COOLDOWN, 0, 2));
+        } else if (rider != null && rider.isEyeInFluid(FluidTags.WATER)
+                && (tier >= 1 ? BhAbility.SKELETON_DIVE.on() : BhAbility.SKELETON_BREATH.on())) {
+            data.bh_setSurge(BhSurge.pack(BhSurge.ACTIVE, 0, 0, tier >= 1 ? 0 : 50, tier >= 1 ? 1 : 0));
         } else {
-            dash = 0;
-            if (cooldown > 0 && BhAbility.SKELETON_DASH.on()) {
-                data.bh_setSurge(BhSurge.pack(BhSurge.COOLING, cooldown, COOLDOWN, 0, 2));
-            } else if (rider != null && rider.isEyeInFluid(FluidTags.WATER)
-                    && (tier >= 1 ? BhAbility.SKELETON_DIVE.on() : BhAbility.SKELETON_BREATH.on())) {
-                data.bh_setSurge(BhSurge.pack(BhSurge.ACTIVE, 0, 0, tier >= 1 ? 0 : 50, tier >= 1 ? 1 : 0));
-            } else {
-                data.bh_setSurge(0);
-            }
+            data.bh_setSurge(0);
         }
     }
 
@@ -59,17 +39,14 @@ public final class DrownedRider implements BreedAbility {
     @Override
     public void onActivate(AbstractHorse horse, IHorseData data) {
         Player rider = BhBreedAbilities.rider(horse);
-        if (horse.level().isClientSide() || cooldown > 0 || !eligible(horse, data, rider)) {
-            return;
+        if (!horse.level().isClientSide() && dash.cooldown <= 0 && eligible(horse, data, rider)) {
+            dash.start();
         }
-        cooldown = COOLDOWN;
-        dash = DASH_TICKS;
     }
 
     private static boolean eligible(AbstractHorse horse, IHorseData data, Player rider) {
-        return rider != null && data.bh_getBreed().isSkeleton()
-                && BhHorseTraits.bondTier(data.bh_getBond()) >= 2 && BhAbility.SKELETON_DASH.on()
-                && horse.isInWater() && rider.isEyeInFluid(FluidTags.WATER);
+        return data.bh_getBreed().isSkeleton() && BhHorseTraits.bondTier(data.bh_getBond()) >= 2
+                && BhAbility.SKELETON_DASH.on() && WaterDash.underwater(horse, rider);
     }
 
     public static void breathe(LivingBreatheEvent event) {
@@ -93,18 +70,17 @@ public final class DrownedRider implements BreedAbility {
 
     @Override
     public void onDetach(AbstractHorse horse, IHorseData data) {
-        dash = 0;
+        dash.reset();
         data.bh_setSurge(0);
     }
 
     @Override
     public void save(CompoundTag tag) {
-        tag.putInt("cooldown", cooldown);
+        tag.putInt("cooldown", dash.saved());
     }
 
     @Override
     public void load(CompoundTag tag) {
-        cooldown = Math.clamp(tag.getInt("cooldown"), 0, COOLDOWN);
-        dash = 0;
+        dash.load(tag.getInt("cooldown"));
     }
 }

@@ -14,6 +14,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -89,6 +90,10 @@ public class BhUndeadHorse extends BhBreedHorse {
                     setBodyArmorItem(ItemStack.EMPTY);
                 }
             }
+        }
+        if (skeleton && isAlive() && !level().isClientSide() && tickCount % 20 == 0
+                && (!getBodyArmorItem().isEmpty() || IHorseData.of(this).bh_hasChestGear())) {
+            BhBreedAbilities.applyQuietEffect(this, MobEffects.MOVEMENT_SLOWDOWN, 40, 0);
         }
         super.aiStep();
     }

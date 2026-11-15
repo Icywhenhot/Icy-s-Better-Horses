@@ -19,6 +19,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import icy.betterhorses.net.ModItems;
@@ -51,6 +52,8 @@ public final class BhAbilityBadges {
     private static final int ICON = 16;
     private static final int ICON_Y = 7;
     private static final int TEXT_Y = 7;
+    private static final int WRAP_Y = 5;
+    private static final int WRAP_GAP = 6;
     private static final int TEXT_W = 70;
     private static final float TEXT_SCALE = 0.75F;
     private static final float MIN_TEXT_SCALE = 0.6F;
@@ -103,9 +106,10 @@ public final class BhAbilityBadges {
             Map.entry("rotten_rations_2", new ItemStack(Items.FERMENTED_SPIDER_EYE)),
             Map.entry("frost_charge", new ItemStack(Items.PACKED_ICE)),
             Map.entry("sculk_hush_1", new ItemStack(Items.ECHO_SHARD)),
-            Map.entry("parching_bite", new ItemStack(Items.DEAD_BUSH)),
+            Map.entry("sun_baked", new ItemStack(Items.MAGMA_CREAM)),
+            Map.entry("sun_baked_1", new ItemStack(Items.BLAZE_POWDER)),
             Map.entry("drowned_lungs", new ItemStack(Items.NAUTILUS_SHELL)),
-            Map.entry("drowned_lungs_1", new ItemStack(Items.HEART_OF_THE_SEA)),
+            Map.entry("drowned_lungs_1", new ItemStack(Items.TRIDENT)),
             Map.entry("perk_1", new ItemStack(Items.GOLDEN_APPLE)),
             Map.entry("perk_2", new ItemStack(Items.POWDER_SNOW_BUCKET)),
             Map.entry("perk_3", new ItemStack(Items.FEATHER)));
@@ -266,21 +270,26 @@ public final class BhAbilityBadges {
         gfx.setColor(1f, 1f, 1f, 1f);
 
         float labelScale = fit(font, badge.label, plate.textW());
-        small(gfx, font, badge.label, left + plate.textX(), y + TEXT_Y, BhAnim.fade(INK, a), labelScale);
+        boolean wrapped = labelScale < MIN_TEXT_SCALE
+                && wrap(gfx, font, badge.label, left + plate.textX(), y, plate.textW(), BhAnim.fade(INK, a));
+        if (!wrapped) {
+            small(gfx, font, badge.label.getVisualOrderText(), left + plate.textX(), y + TEXT_Y,
+                    BhAnim.fade(INK, a), labelScale);
+        }
 
         int rawValue = font.width(badge.value);
         if (rawValue <= 0) {
             return;
         }
         if (badge.fill < 0.0F) {
-            small(gfx, font, badge.value, left + plate.textX(), y + VALUE_Y,
+            small(gfx, font, badge.value.getVisualOrderText(), left + plate.textX(), y + VALUE_Y,
                     BhAnim.fade(INK_SOFT, a), fit(font, badge.value, plate.textW()));
             return;
         }
         int labelWidth = Math.round(font.width(badge.label) * labelScale);
         int valueWidth = Math.round(rawValue * TEXT_SCALE);
-        if (labelWidth + valueWidth + 3 <= plate.textW()) {
-            small(gfx, font, badge.value, left + plate.textX() + plate.textW() - valueWidth,
+        if (!wrapped && labelWidth + valueWidth + 3 <= plate.textW()) {
+            small(gfx, font, badge.value.getVisualOrderText(), left + plate.textX() + plate.textW() - valueWidth,
                     y + TEXT_Y, BhAnim.fade(INK_SOFT, a), TEXT_SCALE);
         }
 
@@ -297,10 +306,27 @@ public final class BhAbilityBadges {
         if (w <= 0) {
             return TEXT_SCALE;
         }
-        return Math.max(MIN_TEXT_SCALE, Math.min(TEXT_SCALE, room / (float) w));
+        return Math.min(TEXT_SCALE, room / (float) w);
     }
 
-    private static void small(GuiGraphics gfx, Font font, Component text,
+    private static boolean wrap(GuiGraphics gfx, Font font, Component text, int x, int y, int room, int color) {
+        for (String word : text.getString().split(" ")) {
+            if (font.width(word) * MIN_TEXT_SCALE > room) {
+                return false;
+            }
+        }
+        List<FormattedCharSequence> lines = font.split(text, (int) (room / MIN_TEXT_SCALE));
+        if (lines.size() != 2) {
+            return false;
+        }
+        for (int i = 0; i < lines.size(); i++) {
+            float scale = Math.min(MIN_TEXT_SCALE, room / (float) Math.max(1, font.width(lines.get(i))));
+            small(gfx, font, lines.get(i), x, y + WRAP_Y + i * WRAP_GAP, color, scale);
+        }
+        return true;
+    }
+
+    private static void small(GuiGraphics gfx, Font font, FormattedCharSequence text,
                               int x, int y, int color, float scale) {
         PoseStack pose = gfx.pose();
         pose.pushPose();

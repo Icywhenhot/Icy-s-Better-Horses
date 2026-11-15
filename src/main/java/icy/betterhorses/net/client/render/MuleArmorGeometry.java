@@ -26,12 +26,12 @@ public final class MuleArmorGeometry {
                 "body",
                 CubeListBuilder.create()
                         .texOffs(9, 7).addBox(-4.0F, -5.0F, -11.0F, 8.0F, 9.0F, 20.0F, new CubeDeformation(0.1000F)),
-                PartPose.offset(0.0F, 7.0F, 0.0F));
+                PartPose.offset(0.0F, 6.0F, 0.0F));
 
         PartDefinition p_neck2 = p_body.addOrReplaceChild(
                 "neck2",
                 CubeListBuilder.create(),
-                PartPose.offset(0.0F, -4.0F, -9.0F));
+                PartPose.offset(0.0F, -3.0F, -9.0F));
 
         PartDefinition p_neck3 = p_neck2.addOrReplaceChild(
                 "neck3",
@@ -87,13 +87,13 @@ public final class MuleArmorGeometry {
         PartDefinition p_front_right_leg = root.addOrReplaceChild(
                 "front_right_leg",
                 CubeListBuilder.create()
-                        .mirror().texOffs(62, 80).addBox(-1.5000F, -11.1923F, -1.5000F, 3.0F, 9.0F, 3.0F, new CubeDeformation(0.0800F)),
+                        .mirror().texOffs(62, 80).addBox(-1.5000F, -12.1923F, -1.5000F, 3.0F, 9.0F, 3.0F, new CubeDeformation(0.0800F)),
                 PartPose.offset(-2.5000F, 23.0F, -9.4000F));
 
         PartDefinition p_front_left_leg = root.addOrReplaceChild(
                 "front_left_leg",
                 CubeListBuilder.create()
-                        .texOffs(62, 80).addBox(-1.5000F, -11.1923F, -1.5000F, 3.0F, 9.0F, 3.0F, new CubeDeformation(0.0800F)),
+                        .texOffs(62, 80).addBox(-1.5000F, -12.1923F, -1.5000F, 3.0F, 9.0F, 3.0F, new CubeDeformation(0.0800F)),
                 PartPose.offset(2.5000F, 23.0F, -9.4000F));
         return LayerDefinition.create(mesh, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     }

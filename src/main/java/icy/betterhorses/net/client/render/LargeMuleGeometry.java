@@ -27,7 +27,7 @@ public final class LargeMuleGeometry {
         PartDefinition p_neck2 = p_body.addOrReplaceChild(
                 "neck2",
                 CubeListBuilder.create(),
-                PartPose.offset(0.0F, -5.0F, -10.0F));
+                PartPose.offset(0.0F, -4.0F, -10.0F));
 
         PartDefinition p_neck3 = p_neck2.addOrReplaceChild(
                 "neck3",
@@ -64,20 +64,20 @@ public final class LargeMuleGeometry {
                 "mane3",
                 CubeListBuilder.create()
                         .texOffs(92, 52).addBox(-1.0F, -4.0F, 0.0F, 2.0F, 4.0F, 3.0F)
-                        .texOffs(82, 52).addBox(-0.0F, -4.0F, 3.0F, 0.0F, 4.0F, 5.0F),
+                        .texOffs(82, 52).addBox(0.0F, -4.0F, 3.0F, 0.0F, 4.0F, 5.0F),
                 PartPose.offset(0.0F, -4.0F, 4.0F));
 
         PartDefinition p_mane2 = p_neck2.addOrReplaceChild(
                 "mane2",
                 CubeListBuilder.create()
                         .texOffs(88, 34).addBox(-1.0F, -11.0F, 0.0F, 2.0F, 11.0F, 3.0F)
-                        .texOffs(50, 34).addBox(-0.0F, -11.0F, 3.0F, 0.0F, 11.0F, 5.0F),
+                        .texOffs(50, 34).addBox(0.0F, -11.0F, 3.0F, 0.0F, 11.0F, 5.0F),
                 PartPose.offset(0.0F, -1.0F, 4.0F));
 
         PartDefinition p_tail2 = p_body.addOrReplaceChild(
                 "tail2",
                 CubeListBuilder.create()
-                        .texOffs(32, 34).addBox(-2.0F, -0.0F, 0.0F, 4.0F, 12.0F, 5.0F)
+                        .texOffs(32, 34).addBox(-2.0F, 0.0F, 0.0F, 4.0F, 12.0F, 5.0F)
                         .texOffs(0, 52).addBox(-2.0F, 12.0F, 0.0F, 4.0F, 5.0F, 5.0F),
                 PartPose.offset(0.0F, -6.0F, 11.0F));
 

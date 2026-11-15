@@ -6,7 +6,7 @@ import icy.betterhorses.net.feature.breed.DrownedRider;
 import icy.betterhorses.net.feature.breed.RottenRations;
 import icy.betterhorses.net.feature.breed.DrownedLungs;
 import icy.betterhorses.net.feature.breed.FrostCharge;
-import icy.betterhorses.net.feature.breed.ParchingBite;
+import icy.betterhorses.net.feature.breed.SunBaked;
 import icy.betterhorses.net.feature.breed.SculkHush;
 import icy.betterhorses.net.entity.BhBreedCoats;
 import icy.betterhorses.net.feature.breed.BrickBreak;
@@ -102,7 +102,7 @@ public final class BhContent {
             .build());
 
     public static final DeferredHolder<ArchetypeType, ArchetypeType> SKELETON = ARCHETYPES.register("skeleton", () -> ArchetypeType.builder()
-            .speed(10.0D / 43.2D, 15.0D / 43.2D).health(15.0D, 20.0D)
+            .speed(10.0D / 43.2D, 17.0D / 43.2D).health(15.0D, 20.0D)
             .jump(BhJumpHeight.strength(3.0D), BhJumpHeight.strength(5.0D))
             .bashDamage(0.75D).bashKnockback(1.0D).defaultChestRows(3)
             .baseSpookChance(0.0D).build());
@@ -168,8 +168,8 @@ public final class BhContent {
             ABILITIES.register("frost_charge", () -> new AbilityType(FrostCharge::new, true));
     public static final DeferredHolder<AbilityType, AbilityType> SCULK_HUSH =
             ABILITIES.register("sculk_hush", () -> new AbilityType(SculkHush::new, true));
-    public static final DeferredHolder<AbilityType, AbilityType> PARCHING_BITE =
-            ABILITIES.register("parching_bite", () -> new AbilityType(ParchingBite::new, true));
+    public static final DeferredHolder<AbilityType, AbilityType> SUN_BAKED =
+            ABILITIES.register("sun_baked", () -> new AbilityType(SunBaked::new, true));
     public static final DeferredHolder<AbilityType, AbilityType> DROWNED_LUNGS =
             ABILITIES.register("drowned_lungs", () -> new AbilityType(DrownedLungs::new, true));
 
@@ -400,11 +400,11 @@ public final class BhContent {
     public static final DeferredHolder<BreedType, BreedType> SMALL_SCULK_HORSE =
             undead("small_sculk_horse", SKELETON, DROWNED_RIDER, SCULK_HUSH, StabilizerBody.SMALL);
     public static final DeferredHolder<BreedType, BreedType> LARGE_HUSK_HORSE =
-            undead("large_husk_horse", ZOMBIE, ROTTEN_RATIONS, PARCHING_BITE, StabilizerBody.PERCHERON);
+            undead("large_husk_horse", ZOMBIE, ROTTEN_RATIONS, SUN_BAKED, StabilizerBody.PERCHERON);
     public static final DeferredHolder<BreedType, BreedType> MEDIUM_HUSK_HORSE =
-            undead("medium_husk_horse", ZOMBIE, ROTTEN_RATIONS, PARCHING_BITE, StabilizerBody.MEDIUM);
+            undead("medium_husk_horse", ZOMBIE, ROTTEN_RATIONS, SUN_BAKED, StabilizerBody.MEDIUM);
     public static final DeferredHolder<BreedType, BreedType> SMALL_HUSK_HORSE =
-            undead("small_husk_horse", ZOMBIE, ROTTEN_RATIONS, PARCHING_BITE, StabilizerBody.SMALL);
+            undead("small_husk_horse", ZOMBIE, ROTTEN_RATIONS, SUN_BAKED, StabilizerBody.SMALL);
     public static final DeferredHolder<BreedType, BreedType> LARGE_DROWNED_HORSE =
             undead("large_drowned_horse", ZOMBIE, ROTTEN_RATIONS, DROWNED_LUNGS, StabilizerBody.PERCHERON);
     public static final DeferredHolder<BreedType, BreedType> MEDIUM_DROWNED_HORSE =

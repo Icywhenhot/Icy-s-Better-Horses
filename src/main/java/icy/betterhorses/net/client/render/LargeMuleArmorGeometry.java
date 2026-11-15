@@ -31,7 +31,7 @@ public final class LargeMuleArmorGeometry {
         PartDefinition p_neck2 = p_body.addOrReplaceChild(
                 "neck2",
                 CubeListBuilder.create(),
-                PartPose.offset(0.0F, -5.0F, -10.0F));
+                PartPose.offset(0.0F, -4.0F, -10.0F));
 
         PartDefinition p_neck3 = p_neck2.addOrReplaceChild(
                 "neck3",

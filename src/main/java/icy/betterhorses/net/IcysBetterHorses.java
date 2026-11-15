@@ -9,7 +9,6 @@ import icy.betterhorses.net.feature.breed.RottenRations;
 import icy.betterhorses.net.feature.breed.DrownedLungs;
 import icy.betterhorses.net.feature.breed.FrostCharge;
 import icy.betterhorses.net.feature.breed.SculkHush;
-import icy.betterhorses.net.feature.breed.ParchingBite;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingKnockBackEvent;
 import net.minecraft.world.level.GameRules;
@@ -125,7 +124,6 @@ public class IcysBetterHorses {
         NeoForge.EVENT_BUS.addListener(RottenRations::hit);
         NeoForge.EVENT_BUS.addListener(FrostCharge::hit);
         NeoForge.EVENT_BUS.addListener(SculkHush::hit);
-        NeoForge.EVENT_BUS.addListener(ParchingBite::hit);
         NeoForge.EVENT_BUS.addListener(DrownedLungs::breathe);
         NeoForge.EVENT_BUS.addListener(BhClassLoader::register);
         NeoForge.EVENT_BUS.addListener(BhCommands::register);
@@ -556,10 +554,16 @@ public class IcysBetterHorses {
         if (horse.getControllingPassenger() != null && horse.getControllingPassenger() != player) {
             return;
         }
-        if (horse.getControllingPassenger() == player && horse.isInWater()
-                && IHorseData.of(horse).bh_getBreed().isSkeleton()) {
-            ((IHorseAbilityHost) horse).bh_activateAbility(BhContent.DROWNED_RIDER.getKey());
-            return;
+        if (horse.getControllingPassenger() == player && horse.isInWater()) {
+            HorseBreed kind = IHorseData.of(horse).bh_getBreed();
+            if (kind.isSkeleton()) {
+                ((IHorseAbilityHost) horse).bh_activateAbility(BhContent.DROWNED_RIDER.getKey());
+                return;
+            }
+            if (kind.isDrowned()) {
+                ((IHorseAbilityHost) horse).bh_activateAbility(BhContent.DROWNED_LUNGS.getKey());
+                return;
+            }
         }
         horse.standIfPossible();
         if (horse.isStanding() && BhFeature.REAR_NEIGH.on() && IHorseData.of(horse).bh_getBreed().neighs()) {

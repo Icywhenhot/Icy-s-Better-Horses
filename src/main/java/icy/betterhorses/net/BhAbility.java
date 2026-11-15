@@ -85,10 +85,11 @@ public enum BhAbility {
     SCULK_HUSH(HorseBreed.SCULK_SPECIES),
     SCULK_KIN(HorseBreed.SCULK_SPECIES),
     SCULK_LULL(HorseBreed.SCULK_SPECIES),
-    HUSK_THIRST(HorseBreed.HUSK_SPECIES),
-    DROWNED_BREATH(HorseBreed.DROWNED_SPECIES),
+    HUSK_FIREPROOF(HorseBreed.HUSK_SPECIES),
+    HUSK_SHARE(HorseBreed.HUSK_SPECIES),
     DROWNED_GILLS(HorseBreed.DROWNED_SPECIES),
-    DROWNED_SWIM(HorseBreed.DROWNED_SPECIES);
+    DROWNED_SWIM(HorseBreed.DROWNED_SPECIES),
+    DROWNED_DASH(HorseBreed.DROWNED_SPECIES);
 
     private final @Nullable BreedArchetype archetype;
     private final @Nullable HorseBreed breed;

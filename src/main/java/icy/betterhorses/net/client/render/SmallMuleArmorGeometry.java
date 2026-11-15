@@ -47,7 +47,7 @@ public final class SmallMuleArmorGeometry {
                 "head2",
                 CubeListBuilder.create()
                         .texOffs(69, 65).addBox(-2.5000F, -6.0F, -4.0F, 5.0F, 6.0F, 7.0F, new CubeDeformation(0.1000F)),
-                PartPose.offset(0.0F, -8.0F, -2.0F));
+                PartPose.offset(0.0F, -8.0F, -1.0F));
 
         if (plates != null) {
             plates.addRod(p_head2, -6.0F, -4.0F, 8, 0);
@@ -56,7 +56,7 @@ public final class SmallMuleArmorGeometry {
         PartDefinition p_snout2 = p_head2.addOrReplaceChild(
                 "snout2",
                 CubeListBuilder.create()
-                        .texOffs(101, 65).addBox(-1.5000F, -1.0F, -6.0F, 3.0F, 5.0F, 7.0F, new CubeDeformation(0.0600F)),
+                        .texOffs(102, 66).addBox(-1.5000F, -1.0F, -5.0F, 3.0F, 5.0F, 6.0F, new CubeDeformation(0.0600F)),
                 PartPose.offset(0.0F, -4.0F, -4.0F));
 
         PartDefinition p_left_ear2 = p_head2.addOrReplaceChild(

@@ -32,7 +32,7 @@ public final class SmallMuleGeometry {
         PartDefinition p_neck3 = p_neck2.addOrReplaceChild(
                 "neck3",
                 CubeListBuilder.create()
-                        .texOffs(52, 0).addBox(-2.0F, -11.0F, -4.0F, 4.0F, 14.0F, 7.0F, new CubeDeformation(0.0100F)),
+                        .texOffs(53, 1).addBox(-2.0F, -11.0F, -3.0F, 4.0F, 14.0F, 6.0F, new CubeDeformation(0.0100F)),
                 PartPose.offset(0.0F, 0.0F, 0.0F));
 
         PartDefinition p_head2 = p_neck2.addOrReplaceChild(
@@ -40,12 +40,12 @@ public final class SmallMuleGeometry {
                 CubeListBuilder.create()
                         .texOffs(28, 28).addBox(-2.5000F, -6.0F, -4.0F, 5.0F, 6.0F, 7.0F)
                         .texOffs(40, 42).addBox(-1.0F, -7.0F, 0.0F, 2.0F, 1.0F, 3.0F),
-                PartPose.offset(0.0F, -8.0F, -2.0F));
+                PartPose.offset(0.0F, -8.0F, -1.0F));
 
         PartDefinition p_snout2 = p_head2.addOrReplaceChild(
                 "snout2",
                 CubeListBuilder.create()
-                        .texOffs(52, 28).addBox(-1.5000F, -1.0F, -6.0F, 3.0F, 5.0F, 6.0F),
+                        .texOffs(53, 29).addBox(-1.5000F, -1.0F, -5.0F, 3.0F, 5.0F, 5.0F),
                 PartPose.offset(0.0F, -4.0F, -4.0F));
 
         PartDefinition p_left_ear2 = p_head2.addOrReplaceChild(
@@ -64,20 +64,20 @@ public final class SmallMuleGeometry {
                 "mane3",
                 CubeListBuilder.create()
                         .texOffs(12, 42).addBox(-1.0F, -4.0F, 0.0F, 2.0F, 4.0F, 3.0F)
-                        .texOffs(22, 42).addBox(-0.0F, -4.0F, 3.0F, 0.0F, 4.0F, 3.0F),
+                        .texOffs(22, 42).addBox(0.0F, -4.0F, 3.0F, 0.0F, 4.0F, 3.0F),
                 PartPose.offset(0.0F, -3.0F, 3.0F));
 
         PartDefinition p_mane2 = p_neck2.addOrReplaceChild(
                 "mane2",
                 CubeListBuilder.create()
                         .texOffs(12, 28).addBox(-1.0F, -11.0F, 0.0F, 2.0F, 11.0F, 3.0F)
-                        .texOffs(22, 28).addBox(-0.0F, -11.0F, 3.0F, 0.0F, 11.0F, 3.0F),
+                        .texOffs(22, 28).addBox(0.0F, -11.0F, 3.0F, 0.0F, 11.0F, 3.0F),
                 PartPose.offset(0.0F, 0.0F, 3.0F));
 
         PartDefinition p_tail2 = p_body.addOrReplaceChild(
                 "tail2",
                 CubeListBuilder.create()
-                        .texOffs(98, 0).addBox(-1.5000F, -0.0F, 0.0F, 3.0F, 10.0F, 4.0F)
+                        .texOffs(98, 0).addBox(-1.5000F, 0.0F, 0.0F, 3.0F, 10.0F, 4.0F)
                         .texOffs(70, 28).addBox(-1.5000F, 10.0F, 0.0F, 3.0F, 5.0F, 4.0F),
                 PartPose.offset(0.0F, -4.0F, 7.0F));
 

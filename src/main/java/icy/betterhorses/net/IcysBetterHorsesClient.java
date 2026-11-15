@@ -10,6 +10,7 @@ import icy.betterhorses.net.client.HorseStabilizerSoundController;
 import icy.betterhorses.net.client.RadialMenuScreen;
 import icy.betterhorses.net.client.render.BhModelLayers;
 import icy.betterhorses.net.client.render.DonkeyRenderer;
+import icy.betterhorses.net.client.render.LargeDonkeyModel;
 import icy.betterhorses.net.client.render.MiniatureDonkeyModel;
 import icy.betterhorses.net.client.render.MuleRenderer;
 import icy.betterhorses.net.client.render.UndeadHorseRenderer;
@@ -289,7 +290,7 @@ public class IcysBetterHorsesClient {
                 BhModelLayers.ASINARA_DONKEY_CHEST, BhModelLayers.ASINARA_DONKEY_CHEST_BABY,
                 BhTackTextures.ASINARA_DONKEY));
         event.registerEntityRenderer(ModEntities.MAMMOTH_DONKEY, context -> new DonkeyRenderer(context,
-                BhModelLayers.MAMMOTH_DONKEY, BhModelLayers.MAMMOTH_DONKEY_BABY,
+                LargeDonkeyModel::new, BhModelLayers.MAMMOTH_DONKEY, BhModelLayers.MAMMOTH_DONKEY_BABY,
                 BhModelLayers.MAMMOTH_DONKEY_SADDLE, BhModelLayers.MAMMOTH_DONKEY_SADDLE_BABY,
                 BhModelLayers.MAMMOTH_DONKEY_CARPET, BhModelLayers.MAMMOTH_DONKEY_CARPET_BABY,
                 BhModelLayers.MAMMOTH_DONKEY_ARMOR, BhModelLayers.MAMMOTH_DONKEY_ARMOR_BABY,
@@ -303,14 +304,14 @@ public class IcysBetterHorsesClient {
                 BhModelLayers.MINIATURE_DONKEY_CHEST, BhModelLayers.MINIATURE_DONKEY_CHEST_BABY,
                 BhTackTextures.MINIATURE_DONKEY));
         event.registerEntityRenderer(ModEntities.PEGA_DONKEY, context -> new DonkeyRenderer(context,
-                BhModelLayers.PEGA_DONKEY, BhModelLayers.PEGA_DONKEY_BABY,
+                LargeDonkeyModel::new, BhModelLayers.PEGA_DONKEY, BhModelLayers.PEGA_DONKEY_BABY,
                 BhModelLayers.PEGA_DONKEY_SADDLE, BhModelLayers.PEGA_DONKEY_SADDLE_BABY,
                 BhModelLayers.PEGA_DONKEY_CARPET, BhModelLayers.PEGA_DONKEY_CARPET_BABY,
                 BhModelLayers.PEGA_DONKEY_ARMOR, BhModelLayers.PEGA_DONKEY_ARMOR_BABY,
                 BhModelLayers.PEGA_DONKEY_CHEST, BhModelLayers.PEGA_DONKEY_CHEST_BABY,
                 BhTackTextures.PEGA_DONKEY));
         event.registerEntityRenderer(ModEntities.POITOU_DONKEY, context -> new DonkeyRenderer(context,
-                BhModelLayers.POITOU_DONKEY, BhModelLayers.POITOU_DONKEY_BABY,
+                LargeDonkeyModel::new, BhModelLayers.POITOU_DONKEY, BhModelLayers.POITOU_DONKEY_BABY,
                 BhModelLayers.POITOU_DONKEY_SADDLE, BhModelLayers.POITOU_DONKEY_SADDLE_BABY,
                 BhModelLayers.POITOU_DONKEY_CARPET, BhModelLayers.POITOU_DONKEY_CARPET_BABY,
                 BhModelLayers.POITOU_DONKEY_ARMOR, BhModelLayers.POITOU_DONKEY_ARMOR_BABY,
