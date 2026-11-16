@@ -19,6 +19,7 @@ public class MuleRenderer extends BhHorseRenderer<BhBreedMule> {
                 pick(size, BhModelLayers.SMALL_MULE_CHEST, BhModelLayers.MULE_CHEST, BhModelLayers.LARGE_MULE_CHEST),
                 pick(size, BhModelLayers.SMALL_MULE_CHEST_BABY, BhModelLayers.MULE_CHEST_BABY, BhModelLayers.LARGE_MULE_CHEST_BABY),
                 pick(size, BhTackTextures.SMALL_MULE, BhTackTextures.MULE, BhTackTextures.LARGE_MULE));
+        addHorseshoes(pick(size, BhModelLayers.SMALL_MULE, BhModelLayers.MULE, BhModelLayers.LARGE_MULE));
     }
 
     private static <T> T pick(int size, T small, T medium, T large) {

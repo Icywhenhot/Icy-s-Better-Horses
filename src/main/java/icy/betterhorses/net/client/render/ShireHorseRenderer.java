@@ -22,5 +22,6 @@ public class ShireHorseRenderer extends BhHorseRenderer<ShireHorse> {
                 BhModelLayers.SHIRE_CHEST,
                 BhModelLayers.SHIRE_CHEST_BABY,
                 BhTackTextures.SHIRE);
+        addHorseshoes(adultLayer);
     }
 }

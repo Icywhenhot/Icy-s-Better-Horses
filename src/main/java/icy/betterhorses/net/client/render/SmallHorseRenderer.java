@@ -19,5 +19,6 @@ public class SmallHorseRenderer<T extends SmallHorse> extends BhHorseRenderer<T>
                 BhModelLayers.SMALL_CHEST,
                 BhModelLayers.SMALL_CHEST_BABY,
                 BhTackTextures.SMALL);
+        addHorseshoes(BhModelLayers.SMALL_HORSE);
     }
 }

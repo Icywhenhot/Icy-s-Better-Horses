@@ -22,5 +22,6 @@ public class FriesianHorseRenderer extends BhHorseRenderer<FriesianHorse> {
                 BhModelLayers.FRIESIAN_CHEST,
                 BhModelLayers.FRIESIAN_CHEST_BABY,
                 BhTackTextures.FRIESIAN);
+        addHorseshoes(adultLayer);
     }
 }

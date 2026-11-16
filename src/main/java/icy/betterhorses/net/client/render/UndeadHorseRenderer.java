@@ -21,5 +21,6 @@ public class UndeadHorseRenderer extends BhHorseRenderer<BhUndeadHorse> {
                 new UndeadHorseModel(context.bakeLayer(body), draft),
                 layer -> new UndeadHorseModel(context.bakeLayer(layer), draft),
                 saddle, saddle, carpet, carpet, armor, armor, chest, chest, textures);
+        addHorseshoes(body);
     }
 }

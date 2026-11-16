@@ -209,6 +209,7 @@ public final class BhModelLayers {
     public static final ModelLayerLocation LARGE_MULE_CHEST_BABY = layer("large_mule", "chest_baby");
 
     public static void register(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        BhHorseshoes.register(event);
         event.registerLayerDefinition(LARGE_UNDEAD_HORSE, LargeUndeadHorseGeometry::createBodyLayer);
         event.registerLayerDefinition(MEDIUM_UNDEAD_HORSE, MediumUndeadHorseGeometry::createBodyLayer);
         event.registerLayerDefinition(SMALL_UNDEAD_HORSE, SmallUndeadHorseGeometry::createBodyLayer);

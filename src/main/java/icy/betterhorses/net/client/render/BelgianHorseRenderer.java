@@ -22,5 +22,6 @@ public class BelgianHorseRenderer extends BhHorseRenderer<BelgianHorse> {
                 BhModelLayers.BELGIAN_CHEST,
                 BhModelLayers.BELGIAN_CHEST_BABY,
                 BhTackTextures.BELGIAN);
+        addHorseshoes(adultLayer);
     }
 }

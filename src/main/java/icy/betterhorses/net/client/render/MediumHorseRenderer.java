@@ -19,5 +19,6 @@ public class MediumHorseRenderer<T extends MediumHorse> extends BhHorseRenderer<
                 BhModelLayers.MEDIUM_CHEST,
                 BhModelLayers.MEDIUM_CHEST_BABY,
                 BhTackTextures.MEDIUM);
+        addHorseshoes(BhModelLayers.MEDIUM_HORSE);
     }
 }

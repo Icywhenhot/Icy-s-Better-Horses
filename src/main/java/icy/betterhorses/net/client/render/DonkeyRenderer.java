@@ -31,5 +31,6 @@ public class DonkeyRenderer extends BhHorseRenderer<BhBreedDonkey> {
                 new DonkeyFoalModel(context.bakeLayer(baby)),
                 layer -> adultModel.apply(context.bakeLayer(layer)),
                 saddle, saddleBaby, carpet, carpetBaby, armor, armorBaby, chest, chestBaby, textures);
+        addHorseshoes(adult);
     }
 }
