@@ -15,7 +15,9 @@ public abstract class EntityTypeMixin {
 
     @Inject(method = "by", at = @At("RETURN"), cancellable = true)
     private static void bh_loadBreedHorse(CompoundTag compound, CallbackInfoReturnable<Optional<EntityType<?>>> cir) {
-        if (cir.getReturnValue().filter(type -> type == EntityType.HORSE).isEmpty()) {
+        EntityType<?> vanilla = cir.getReturnValue().orElse(null);
+        if (vanilla != EntityType.HORSE && vanilla != EntityType.DONKEY && vanilla != EntityType.MULE
+                && vanilla != EntityType.SKELETON_HORSE && vanilla != EntityType.ZOMBIE_HORSE) {
             return;
         }
         EntityType<?> saved = BhHorseBackup.savedType(compound.getString("BH_EntityId"));

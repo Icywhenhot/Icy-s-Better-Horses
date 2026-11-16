@@ -34,6 +34,9 @@ public final class BhHorseInteraction {
         if (stabilizer && !(horse instanceof Horse)) {
             return null;
         }
+        if (cart && !data.bh_mayPullCart()) {
+            return null;
+        }
         if (horse.level().isClientSide()) {
             return InteractionResult.SUCCESS;
         }

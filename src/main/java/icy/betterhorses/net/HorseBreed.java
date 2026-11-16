@@ -1,31 +1,29 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.feature.breed.BreedAbility;
 import icy.betterhorses.net.feature.breed.BrickBreak;
 import icy.betterhorses.net.feature.breed.EasyKeeper;
-import icy.betterhorses.net.feature.breed.Endurance;
-import icy.betterhorses.net.feature.breed.FriesianPresence;
 import icy.betterhorses.net.feature.breed.HardyNorthern;
 import icy.betterhorses.net.feature.breed.Hearthlight;
 import icy.betterhorses.net.feature.breed.Intimidation;
 import icy.betterhorses.net.feature.breed.Ironclad;
 import icy.betterhorses.net.feature.breed.SecondChance;
 import icy.betterhorses.net.feature.breed.SlowBlockImmunity;
-import icy.betterhorses.net.feature.breed.StandstillBurst;
 import icy.betterhorses.net.feature.breed.StockHorse;
-import icy.betterhorses.net.feature.breed.TopEnd;
+import icy.betterhorses.net.feature.breed.FriesianPresence;
 import icy.betterhorses.net.feature.breed.WildInstincts;
-import icy.betterhorses.net.feature.breed.BreedAbility;
+import icy.betterhorses.net.feature.breed.Endurance;
+import icy.betterhorses.net.feature.breed.StandstillBurst;
+import icy.betterhorses.net.feature.breed.TopEnd;
 import icy.betterhorses.net.registry.ArchetypeType;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.entity.animal.horse.Donkey;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.animal.horse.Markings;
@@ -37,14 +35,12 @@ import net.minecraft.world.entity.animal.horse.ZombieHorse;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
-import java.util.function.Supplier;
 import java.util.ArrayList;
+import java.util.function.Supplier;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 public enum HorseBreed {
     THOROUGHBRED(BreedArchetype.RACE, TopEnd::new),
@@ -67,7 +63,40 @@ public enum HorseBreed {
     MULE_SPECIES(BreedArchetype.NONE),
     SKELETON_SPECIES(BreedArchetype.NONE),
     ZOMBIE_SPECIES(BreedArchetype.NONE),
-    UNKNOWN_SPECIES(BreedArchetype.NONE);
+    UNKNOWN_SPECIES(BreedArchetype.NONE),
+
+    ANDALUSIAN_DONKEY(BreedArchetype.DONKEY),
+    ASINARA_DONKEY(BreedArchetype.DONKEY),
+    MAMMOTH_DONKEY(BreedArchetype.DONKEY),
+    MINIATURE_DONKEY(BreedArchetype.DONKEY),
+    PEGA_DONKEY(BreedArchetype.DONKEY),
+    POITOU_DONKEY(BreedArchetype.DONKEY),
+    ZAMORANO_DONKEY(BreedArchetype.DONKEY),
+    LARGE_SKELETON_HORSE(BreedArchetype.SKELETON),
+    MEDIUM_SKELETON_HORSE(BreedArchetype.SKELETON),
+    SMALL_SKELETON_HORSE(BreedArchetype.SKELETON),
+    LARGE_ZOMBIE_HORSE(BreedArchetype.ZOMBIE),
+    MEDIUM_ZOMBIE_HORSE(BreedArchetype.ZOMBIE),
+    SMALL_ZOMBIE_HORSE(BreedArchetype.ZOMBIE),
+    STRAY_SPECIES(BreedArchetype.NONE),
+    SCULK_SPECIES(BreedArchetype.NONE),
+    HUSK_SPECIES(BreedArchetype.NONE),
+    DROWNED_SPECIES(BreedArchetype.NONE),
+    LARGE_STRAY_HORSE(BreedArchetype.SKELETON),
+    MEDIUM_STRAY_HORSE(BreedArchetype.SKELETON),
+    SMALL_STRAY_HORSE(BreedArchetype.SKELETON),
+    LARGE_SCULK_HORSE(BreedArchetype.SKELETON),
+    MEDIUM_SCULK_HORSE(BreedArchetype.SKELETON),
+    SMALL_SCULK_HORSE(BreedArchetype.SKELETON),
+    LARGE_HUSK_HORSE(BreedArchetype.ZOMBIE),
+    MEDIUM_HUSK_HORSE(BreedArchetype.ZOMBIE),
+    SMALL_HUSK_HORSE(BreedArchetype.ZOMBIE),
+    LARGE_DROWNED_HORSE(BreedArchetype.ZOMBIE),
+    MEDIUM_DROWNED_HORSE(BreedArchetype.ZOMBIE),
+    SMALL_DROWNED_HORSE(BreedArchetype.ZOMBIE),
+    SMALL_MULE(BreedArchetype.MULE),
+    MEDIUM_MULE(BreedArchetype.MULE),
+    LARGE_MULE(BreedArchetype.MULE);
 
     public record Coat(Variant color, Markings markings) {}
 
@@ -77,6 +106,7 @@ public enum HorseBreed {
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "spawns_modded/" + name().toLowerCase(java.util.Locale.ROOT)));
     private final BreedArchetype archetype;
     private final @Nullable Supplier<BreedAbility> ability;
+    private final @Nullable String variant;
 
     HorseBreed(BreedArchetype archetype) {
         this(archetype, null);
@@ -85,10 +115,11 @@ public enum HorseBreed {
     HorseBreed(BreedArchetype archetype, @Nullable Supplier<BreedAbility> ability) {
         this.archetype = archetype;
         this.ability = ability;
-    }
-
-    public @Nullable BreedAbility newAbility() {
-        return ability == null ? null : ability.get();
+        String found = null;
+        for (String v : new String[]{"STRAY", "SCULK", "HUSK", "DROWNED"}) {
+            if (name().equals(v + "_SPECIES") || name().endsWith("_" + v + "_HORSE")) found = v;
+        }
+        this.variant = found;
     }
 
     public ArchetypeType archetype() {
@@ -101,6 +132,10 @@ public enum HorseBreed {
 
     public int chestRows(int bondTier) {
         return BhBreedData.of(this).rowsAt(bondTier);
+    }
+
+    public @Nullable BreedAbility newAbility() {
+        return ability == null ? null : ability.get();
     }
 
     private static final HorseBreed[] VALUES = values();
@@ -132,7 +167,56 @@ public enum HorseBreed {
     }
 
     public boolean isRealBreed() {
-        return ordinal() < HORSE_BREED_COUNT;
+        return ordinal() < HORSE_BREED_COUNT || isDonkey() || isMule()
+                || archetype == BreedArchetype.SKELETON || archetype == BreedArchetype.ZOMBIE;
+    }
+
+    public boolean isDonkey() {
+        return archetype == BreedArchetype.DONKEY;
+    }
+
+    public boolean neighs() {
+        return !isDonkey() && !isMule() && !isUndead();
+    }
+
+    public boolean isMule() {
+        return archetype == BreedArchetype.MULE;
+    }
+
+    public boolean isSkeleton() {
+        return this == SKELETON_SPECIES || archetype == BreedArchetype.SKELETON;
+    }
+
+    public boolean isZombie() {
+        return this == ZOMBIE_SPECIES || archetype == BreedArchetype.ZOMBIE;
+    }
+
+    public boolean isUndead() {
+        return isSkeleton() || isZombie();
+    }
+
+    public boolean isStray() {
+        return variantOf("STRAY");
+    }
+
+    public boolean isSculk() {
+        return variantOf("SCULK");
+    }
+
+    public boolean isHusk() {
+        return variantOf("HUSK");
+    }
+
+    public boolean isDrowned() {
+        return variantOf("DROWNED");
+    }
+
+    public boolean sameUndeadVariant(HorseBreed other) {
+        return variant != null && variant.equals(other.variant);
+    }
+
+    private boolean variantOf(String v) {
+        return v.equals(variant);
     }
 
     public Component displayName() {
@@ -165,17 +249,29 @@ public enum HorseBreed {
     public static List<HorseBreed> breedsForBiome(Holder<Biome> biome) {
         List<HorseBreed> matches = new ArrayList<>();
         for (HorseBreed breed : VALUES) {
-            if (!breed.isRealBreed()) continue;
+            if (!breed.isRealBreed() || breed.isDonkey() || breed.isMule() || breed.isUndead()) continue;
             if (biome.is(breed.biomeTag())) {
                 matches.add(breed);
             }
         }
         if (matches.isEmpty()) {
             for (HorseBreed breed : VALUES) {
-                if (breed.isRealBreed() && biome.is(breed.moddedTag)) matches.add(breed);
+                if (breed.isRealBreed() && !breed.isDonkey() && !breed.isMule() && !breed.isUndead() && biome.is(breed.moddedTag)) matches.add(breed);
             }
         }
         return matches;
+    }
+
+    public static HorseBreed pickDonkey(Holder<Biome> biome, RandomSource random) {
+        List<HorseBreed> donkeys = new ArrayList<>();
+        List<HorseBreed> here = new ArrayList<>();
+        for (HorseBreed breed : VALUES) {
+            if (!breed.isDonkey()) continue;
+            donkeys.add(breed);
+            if (biome.is(breed.biomeTag)) here.add(breed);
+        }
+        List<HorseBreed> pool = here.isEmpty() ? donkeys : here;
+        return pool.get(random.nextInt(pool.size()));
     }
 
     public static @Nullable HorseBreed pickForBiome(Holder<Biome> biome, RandomSource random) {

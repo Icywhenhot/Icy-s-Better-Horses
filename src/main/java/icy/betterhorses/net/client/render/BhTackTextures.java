@@ -23,8 +23,20 @@ public final class BhTackTextures {
     public static final BhTackTextures PERCHERON = new BhTackTextures("percheron");
     public static final BhTackTextures SHIRE = new BhTackTextures("shire");
     public static final BhTackTextures SMALL = new BhTackTextures("small");
+    public static final BhTackTextures ANDALUSIAN_DONKEY = new BhTackTextures("andalusian_donkey");
+    public static final BhTackTextures ASINARA_DONKEY = new BhTackTextures("asinara_donkey");
+    public static final BhTackTextures MAMMOTH_DONKEY = new BhTackTextures("mammoth_donkey");
+    public static final BhTackTextures MINIATURE_DONKEY = new BhTackTextures("miniature_donkey");
+    public static final BhTackTextures PEGA_DONKEY = new BhTackTextures("pega_donkey");
+    public static final BhTackTextures POITOU_DONKEY = new BhTackTextures("poitou_donkey");
+    public static final BhTackTextures ZAMORANO_DONKEY = new BhTackTextures("zamorano_donkey");
+    public static final BhTackTextures MULE = new BhTackTextures("mule");
+    public static final BhTackTextures SMALL_MULE = new BhTackTextures("small_mule");
+    public static final BhTackTextures LARGE_MULE = new BhTackTextures("large_mule");
 
-    private static final BhTackTextures[] ALL = {BELGIAN, FRIESIAN, HAFLINGER, ICELANDIC, MEDIUM, PERCHERON, SHIRE, SMALL};
+    private static final BhTackTextures[] ALL = {BELGIAN, FRIESIAN, HAFLINGER, ICELANDIC, MEDIUM, PERCHERON, SHIRE, SMALL,
+            ANDALUSIAN_DONKEY, ASINARA_DONKEY, MAMMOTH_DONKEY, MINIATURE_DONKEY,
+            PEGA_DONKEY, POITOU_DONKEY, ZAMORANO_DONKEY, MULE, SMALL_MULE, LARGE_MULE};
 
     private final String base;
     private final Map<Item, ResourceLocation> armors = new HashMap<>();

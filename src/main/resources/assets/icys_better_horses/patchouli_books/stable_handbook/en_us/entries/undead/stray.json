@@ -1,0 +1,35 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.undead.stray.name",
+  "icon": "icys-better-horses:stray_horse_spawn_egg",
+  "category": "icys_better_horses:undead",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.undead.stray.about.text",
+      "title": "book.icys-better-horses.stable_handbook.undead.stray.about.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.undead.stray.ability.text",
+      "title": "book.icys-better-horses.stable_handbook.undead.stray.ability.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.undead.stray.spawns.text",
+      "title": "book.icys-better-horses.stable_handbook.undead.stray.spawns.title"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:small_stray_horse"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:medium_stray_horse"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:large_stray_horse"
+    }
+  ]
+}

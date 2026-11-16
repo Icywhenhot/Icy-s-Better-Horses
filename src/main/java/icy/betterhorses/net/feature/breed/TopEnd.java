@@ -1,7 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhHorseAttributes;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
@@ -39,11 +38,11 @@ public final class TopEnd implements BreedAbility {
             return;
         }
         data.bh_setSurge(0);
-        if (!BhAbility.THOROUGHBRED_TOP_END.on()
+        if (!BhAbility.THOROUGHBRED_TOP_END.on(data)
                 || BhBreedAbilities.rider(horse) == null || !state.gallopingFlat(horse, data)) {
             return;
         }
-        int tier = BhHorseTraits.bondTier(data.bh_getBond());
+        int tier = BhAbility.THOROUGHBRED_TOP_END.tier(data);
         burst = tier >= 2 ? LONG_BURST : BURST;
         span = burst;
         bonus = tier >= 1 ? 50 : 35;

@@ -110,6 +110,27 @@ public final class BhBreedCoats {
                     "chestnut_roan", "dapple_bay", "sooty_bay", "rose_roan"),
             true);
 
+    public static final BhBreedCoats ANDALUSIAN_DONKEY = new BhBreedCoats(
+            "andalusian_donkey", List.of("grey", "rucio", "dapple_grey"), true);
+
+    public static final BhBreedCoats ASINARA_DONKEY = new BhBreedCoats(
+            "asinara_donkey", List.of("white"), true);
+
+    public static final BhBreedCoats MAMMOTH_DONKEY = new BhBreedCoats(
+            "mammoth_donkey", List.of("spotted", "black_spotted", "sorrel"), true);
+
+    public static final BhBreedCoats MINIATURE_DONKEY = new BhBreedCoats(
+            "miniature_donkey", List.of("grey_dun", "brown", "black", "sorrel"), true);
+
+    public static final BhBreedCoats PEGA_DONKEY = new BhBreedCoats(
+            "pega_donkey", List.of("silver", "rosilho", "tordilho_escuro"), true);
+
+    public static final BhBreedCoats POITOU_DONKEY = new BhBreedCoats(
+            "poitou_donkey", List.of("dark_bay", "black"), true);
+
+    public static final BhBreedCoats ZAMORANO_DONKEY = new BhBreedCoats(
+            "zamorano_donkey", List.of("brown", "mohino"), true);
+
     private final String folder;
     private final List<String> coatIds;
     private final List<ResourceLocation> textures;

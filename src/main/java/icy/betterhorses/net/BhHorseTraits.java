@@ -1,15 +1,14 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.entity.BhBreedEntity;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Horse;
-import icy.betterhorses.net.entity.BhBreedEntity;
 import icy.betterhorses.net.registry.BhContent;
 
 import java.util.List;
-import java.util.Objects;
 
 public final class BhHorseTraits {
 
@@ -26,12 +25,23 @@ public final class BhHorseTraits {
 
     public static void grantBond(IHorseData data, int amount) {
         int gain = amount;
-        if (Objects.equals(data.bh_getBreedKey(), BhContent.MORGAN.getKey()) && BhAbility.MORGAN_BOND.on()) {
-            int halves = amount * (bondTier(data.bh_getBond()) >= 1 ? 4 : 3) + data.bh_getBondRemainder();
+        int quick = BhAbility.MORGAN_BOND.tier(data, BhContent.MORGAN.getKey());
+        if (quick >= 0) {
+            int halves = amount * (quick >= 1 ? 4 : 3) + data.bh_getBondRemainder();
             gain = halves / 2;
             data.bh_setBondRemainder(halves % 2);
         }
         data.bh_setBond(data.bh_getBond() + gain);
+    }
+
+    public static void applyBondAttributes(AbstractHorse horse, int bond) {
+        double bonus = Math.min(bond / 20, 5) * 0.15D;
+        BhHorseAttributes.apply(horse, Attributes.MOVEMENT_SPEED,
+                BhHorseAttributes.Source.BOND, "growth",
+                bonus, AttributeModifier.Operation.MULTIPLY_BASE);
+        BhHorseAttributes.apply(horse, Attributes.JUMP_STRENGTH,
+                BhHorseAttributes.Source.BOND, "growth",
+                bonus, AttributeModifier.Operation.MULTIPLY_BASE);
     }
 
     public static HorseBreed pickBreed(AbstractHorse horse, RandomSource random) {
@@ -52,13 +62,4 @@ public final class BhHorseTraits {
         return HorseBreed.MUSTANG;
     }
 
-    public static void applyBondAttributes(AbstractHorse horse, int bond) {
-        double bonus = Math.min(bond / 20, 5) * 0.15D;
-        BhHorseAttributes.apply(horse, Attributes.MOVEMENT_SPEED,
-                BhHorseAttributes.Source.BOND, "growth",
-                bonus, AttributeModifier.Operation.MULTIPLY_BASE);
-        BhHorseAttributes.apply(horse, Attributes.JUMP_STRENGTH,
-                BhHorseAttributes.Source.BOND, "growth",
-                bonus, AttributeModifier.Operation.MULTIPLY_BASE);
-    }
 }

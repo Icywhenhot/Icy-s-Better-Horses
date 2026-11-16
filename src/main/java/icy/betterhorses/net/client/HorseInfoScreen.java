@@ -1,5 +1,11 @@
 package icy.betterhorses.net.client;
 
+import java.util.List;
+import java.util.ArrayList;
+import net.minecraft.network.chat.MutableComponent;
+import icy.betterhorses.net.feature.breed.MuleLine;
+import icy.betterhorses.net.BhHorseTraits;
+import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhJumpHeight;
 import icy.betterhorses.net.HorseManageAction;
 import icy.betterhorses.net.IHorseData;
@@ -167,6 +173,7 @@ public class HorseInfoScreen extends Screen {
         drawLabel(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.breed"),
                 breedName);
+        int breedY = y;
         y += ROW_HEIGHT;
 
         drawLabel(gfx, font, left + PADDING, y,
@@ -216,6 +223,13 @@ public class HorseInfoScreen extends Screen {
         renderDisownSection(gfx, font, left, top, mouseX, mouseY);
 
         pose.popPose();
+
+        MuleLine line = MuleLine.of(data);
+        if (line != null && !confirmingDisown && vis >= 1f
+                && mouseX >= left + PADDING && mouseX < left + PANEL_WIDTH - PADDING
+                && mouseY >= breedY - 4 && mouseY < breedY + ROW_HEIGHT - 4) {
+            gfx.renderComponentTooltip(font, lineage(line, data.bh_getBond()), mouseX, mouseY);
+        }
 
         if (confirmingDisown) {
             renderConfirm(gfx, font, mouseX, mouseY);
@@ -386,6 +400,33 @@ public class HorseInfoScreen extends Screen {
         Component markingsComponent = Component.translatable(
                 "coat.icys-better-horses.markings." + markings.name().toLowerCase(Locale.ROOT));
         return Component.translatable("coat.icys-better-horses.combined", colorComponent, markingsComponent);
+    }
+
+    private static List<Component> lineage(MuleLine line, int bond) {
+        List<Component> out = new ArrayList<>();
+        out.add(Component.translatable("screen.icys-better-horses.info.lineage",
+                line.horse().displayName(), line.donkey().displayName()));
+        int reached = BhHorseTraits.bondTier(bond);
+        int[] needs = {0, BhHorseTraits.TIER_TWO_BOND, BhHorseTraits.TIER_THREE_BOND};
+        for (int k = 0; k < MuleLine.TIERS; k++) {
+            Component what;
+            List<BhAbility> traits = line.traits(k);
+            if (k > reached) {
+                what = Component.translatable("screen.icys-better-horses.info.trait_hidden");
+            } else if (traits.isEmpty()) {
+                what = Component.translatable("screen.icys-better-horses.info.trait_none");
+            } else {
+                MutableComponent names = Component.empty();
+                for (int i = 0; i < traits.size(); i++) {
+                    if (i > 0) names.append(", ");
+                    names.append(Component.translatable("config.icys-better-horses.ability." + traits.get(i).key()));
+                }
+                what = Component.translatable("screen.icys-better-horses.info.trait_from",
+                        names, line.from(k).displayName());
+            }
+            out.add(Component.translatable("screen.icys-better-horses.info.trait_tier", needs[k], what));
+        }
+        return out;
     }
 
     private void drawLabel(GuiGraphics gfx, Font font, int x, int y, Component label, Component value) {

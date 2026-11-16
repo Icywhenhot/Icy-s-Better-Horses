@@ -22,5 +22,6 @@ public class PercheronHorseRenderer extends BhHorseRenderer<PercheronHorse> {
                 BhModelLayers.PERCHERON_CHEST,
                 BhModelLayers.PERCHERON_CHEST_BABY,
                 BhTackTextures.PERCHERON);
+        addHorseshoes(adultLayer);
     }
 }

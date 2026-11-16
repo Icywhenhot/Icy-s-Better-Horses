@@ -1,5 +1,6 @@
 package icy.betterhorses.net;
 
+import java.lang.reflect.Method;
 import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -11,9 +12,25 @@ import org.jetbrains.annotations.Nullable;
 
 public final class BhSiegeTow {
 
+    private static final ClassValue<Boolean> TURNS_ITSELF = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> type) {
+            for (Method m : type.getDeclaredMethods()) {
+                if (m.getName().equals("applyRotations") && m.getParameterCount() == 5 && !m.isBridge()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    };
+
     private static final double MANTLET_SPEED = 0.07D;
 
     private BhSiegeTow() {}
+
+    public static boolean turnsItself(Class<?> renderer) {
+        return TURNS_ITSELF.get(renderer);
+    }
 
     public static boolean towing(@Nullable Entity siege) {
         return siege != null

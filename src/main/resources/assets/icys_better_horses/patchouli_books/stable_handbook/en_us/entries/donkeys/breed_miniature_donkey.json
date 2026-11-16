@@ -1,0 +1,45 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.name",
+  "icon": "icys-better-horses:miniature_donkey_spawn_egg",
+  "category": "icys_better_horses:donkeys",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.about.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.about.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.ability.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.ability.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.ability.text.part2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.taming.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.taming.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.taming.text.part2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.small.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.small.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.spawns.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_miniature_donkey.spawns.title"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:miniature_donkey"
+    }
+  ]
+}

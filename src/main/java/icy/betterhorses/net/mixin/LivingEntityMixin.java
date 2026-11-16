@@ -1,24 +1,16 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhHorseKind;
-import icy.betterhorses.net.BhBreedData;
-import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.IHorseData;
-import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.feature.breed.HardyNorthern;
-import icy.betterhorses.net.inventory.GearSlot;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -54,7 +46,7 @@ public abstract class LivingEntityMixin extends Entity {
             return;
         }
 
-        if (self.isInvulnerableTo(source) || !this.bh_hasEquippedMedkit(data)) {
+        if (self.isInvulnerableTo(source) || !ArchetypePerks.hasMedkit(data) || icy.betterhorses.net.feature.breed.PegaCompanion.holdingKit(self)) {
             return;
         }
 
@@ -78,15 +70,9 @@ public abstract class LivingEntityMixin extends Entity {
             return;
         }
 
-        this.bh_consumeMedkitAndApplyEffects(self, data);
-        BhSurge.pulsePerk(data, ArchetypePerks.MEDKIT_BADGE);
+        ArchetypePerks.useMedkit(self, data);
     }
 
-    @Unique
-    private boolean bh_hasEquippedMedkit(IHorseData data) {
-        return BhConfig.medkitEnabled()
-                && data.bh_getGearContainer().getItem(GearSlot.MEDKIT.ordinal()).is(ModItems.HORSE_MEDKIT.get());
-    }
 
     @Unique
     private float bh_calculateHealthDamage(LivingEntity self, DamageSource source, float amount) {
@@ -95,22 +81,6 @@ public abstract class LivingEntityMixin extends Entity {
         return Math.max(mitigatedDamage - self.getAbsorptionAmount(), 0.0F);
     }
 
-    @Unique
-    private void bh_consumeMedkitAndApplyEffects(LivingEntity self, IHorseData data) {
-        if (self.level().isClientSide() || !this.bh_hasEquippedMedkit(data)) {
-            return;
-        }
-
-        SimpleContainer gear = data.bh_getGearContainer();
-        gear.setItem(GearSlot.MEDKIT.ordinal(), ItemStack.EMPTY);
-        gear.setChanged();
-
-        int dur = BH_MEDKIT_EFFECT_DURATION * ArchetypePerks.medkitMultiplier(BhBreedData.of(data.bh_getBreedKey()).archetype());
-        self.addEffect(new MobEffectInstance(MobEffects.REGENERATION, dur, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.HEAL, 1, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, dur, 0));
-        self.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, dur, 0));
-    }
 
     @Inject(method = "canBeAffected", at = @At("HEAD"), cancellable = true)
     private void bh_refuseBadEffects(MobEffectInstance effect, CallbackInfoReturnable<Boolean> cir) {
@@ -118,6 +88,11 @@ public abstract class LivingEntityMixin extends Entity {
             return;
         }
         LivingEntity self = (LivingEntity) (Object) this;
+        if (effect.getEffect().getCategory() == net.minecraft.world.effect.MobEffectCategory.HARMFUL
+                && icy.betterhorses.net.feature.breed.ThickHide.immune(self)) {
+            cir.setReturnValue(false);
+            return;
+        }
         AbstractHorse warden = HardyNorthern.warden(self);
         if (warden == null) {
             return;

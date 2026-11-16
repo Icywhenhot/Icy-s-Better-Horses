@@ -1,0 +1,39 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.undead.drowned.name",
+  "icon": "icys-better-horses:drowned_horse_spawn_egg",
+  "category": "icys_better_horses:undead",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.undead.drowned.about.text",
+      "title": "book.icys-better-horses.stable_handbook.undead.drowned.about.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.undead.drowned.ability.text",
+      "title": "book.icys-better-horses.stable_handbook.undead.drowned.ability.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.undead.drowned.ability.text.part2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.undead.drowned.spawns.text",
+      "title": "book.icys-better-horses.stable_handbook.undead.drowned.spawns.title"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:small_drowned_horse"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:medium_drowned_horse"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:large_drowned_horse"
+    }
+  ]
+}

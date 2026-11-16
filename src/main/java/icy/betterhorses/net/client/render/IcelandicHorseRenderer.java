@@ -22,5 +22,6 @@ public class IcelandicHorseRenderer extends BhHorseRenderer<IcelandicHorse> {
                 BhModelLayers.ICELANDIC_CHEST,
                 BhModelLayers.ICELANDIC_CHEST_BABY,
                 BhTackTextures.ICELANDIC);
+        addHorseshoes(adultLayer);
     }
 }

@@ -1,0 +1,31 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.undead.root.name",
+  "icon": "minecraft:bone",
+  "category": "icys_better_horses:undead",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.undead.root.about.text",
+      "title": "book.icys-better-horses.stable_handbook.undead.root.about.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.undead.root.about.text.part2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.undead.root.kinds.text",
+      "title": "book.icys-better-horses.stable_handbook.undead.root.kinds.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.undead.root.kinds.text.part2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.undead.root.sun.text",
+      "title": "book.icys-better-horses.stable_handbook.undead.root.sun.title"
+    }
+  ]
+}

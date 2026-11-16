@@ -1,7 +1,17 @@
 {
   "replace": false,
   "values": [
-    { "id": "#forge:is_plains", "required": false },
-    { "id": "#minecraft:is_forest", "required": false }
+    {
+      "id": "#c:is_plains",
+      "required": false
+    },
+    {
+      "id": "#c:is_forest",
+      "required": false
+    },
+    {
+      "id": "#c:is_floral",
+      "required": false
+    }
   ]
 }

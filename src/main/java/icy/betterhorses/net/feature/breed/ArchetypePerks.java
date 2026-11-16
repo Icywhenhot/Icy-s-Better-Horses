@@ -1,22 +1,33 @@
 package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhAbility;
+import icy.betterhorses.net.BhBreedData;
+import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.IcysBetterHorses;
+import icy.betterhorses.net.ModItems;
 import icy.betterhorses.net.entity.BhBreedAbilities;
+import icy.betterhorses.net.inventory.GearSlot;
 import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Block;
+
+import java.util.List;
 
 public final class ArchetypePerks {
 
@@ -27,7 +38,11 @@ public final class ArchetypePerks {
     private static final int PATH_INTERVAL = 10;
     private static final int PATH_GRACE = 40;
     private static final double DEFAULT_STEP_HEIGHT = 1.125D;
+    private static final double DONKEY_ARMOR = -0.25D;
+    private static final int GUARD_INTERVAL = 20;
     public static final int MEDKIT_BADGE = 1;
+    public static final float MEDKIT_THRESHOLD = 0.5F;
+    private static final int MEDKIT_TICKS = 20 * 30;
     private static final int SNOW_BADGE = 2;
     public static final int FALL_BADGE = 3;
 
@@ -40,6 +55,11 @@ public final class ArchetypePerks {
         BhHorseAttributes.apply(horse, Attributes.KNOCKBACK_RESISTANCE,
                 BhHorseAttributes.Source.ARCHETYPE, "mass",
                 knockbackResistance(arch), AttributeModifier.Operation.ADDITION);
+        double armor = arch == BhContent.DONKEY.get() ? DONKEY_ARMOR : 0.0D;
+        BhHorseAttributes.apply(horse, Attributes.ARMOR, BhHorseAttributes.Source.ARCHETYPE, "armor",
+                armor, AttributeModifier.Operation.MULTIPLY_TOTAL);
+        BhHorseAttributes.apply(horse, Attributes.ARMOR_TOUGHNESS, BhHorseAttributes.Source.ARCHETYPE, "armor",
+                armor, AttributeModifier.Operation.MULTIPLY_TOTAL);
     }
 
     public void tick(AbstractHorse horse, IHorseData data, ArchetypeType arch) {
@@ -60,6 +80,9 @@ public final class ArchetypePerks {
 
         if (horse.tickCount % PATH_INTERVAL == 0) {
             updatePath(horse, data, arch);
+        }
+        if (arch == BhContent.DONKEY.get() && horse.tickCount % GUARD_INTERVAL == 0 && BhAbility.DONKEY_GUARD.on()) {
+            Guardian.hunt(horse, data);
         }
     }
 
@@ -148,7 +171,8 @@ public final class ArchetypePerks {
     }
 
     public static double fallDamageWaiver(ArchetypeType arch) {
-        if (arch == BhContent.PONY.get() && !BhAbility.PONY_FALL.on()) {
+        if (arch == BhContent.PONY.get() && !BhAbility.PONY_FALL.on()
+                || arch == BhContent.MULE.get() && !BhAbility.MULE_SURE_FOOT.on()) {
             return 0.0D;
         }
         return arch.fallDamageWaiver();
@@ -159,5 +183,34 @@ public final class ArchetypePerks {
             return 0.0D;
         }
         return arch.spookChance(tier);
+    }
+
+    public static boolean hasMedkit(IHorseData data) {
+        return BhConfig.medkitEnabled()
+                && data.bh_getGearContainer().getItem(GearSlot.MEDKIT.ordinal()).is(ModItems.HORSE_MEDKIT.get());
+    }
+
+    public static List<MobEffectInstance> medkitEffects(int duration) {
+        return List.of(new MobEffectInstance(MobEffects.REGENERATION, duration, 0),
+                new MobEffectInstance(MobEffects.HEAL, 1, 0),
+                new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, duration, 0),
+                new MobEffectInstance(MobEffects.FIRE_RESISTANCE, duration, 0));
+    }
+
+    public static void useMedkit(LivingEntity self, IHorseData data) {
+        if (self.level().isClientSide() || !hasMedkit(data)) {
+            return;
+        }
+        SimpleContainer gear = data.bh_getGearContainer();
+        gear.setItem(GearSlot.MEDKIT.ordinal(), ItemStack.EMPTY);
+        gear.setChanged();
+        int duration = MEDKIT_TICKS * medkitMultiplier(BhBreedData.of(data.bh_getBreedKey()).archetype());
+        for (MobEffectInstance effect : medkitEffects(duration)) {
+            self.addEffect(effect);
+        }
+        BhSurge.pulsePerk(data, MEDKIT_BADGE);
+        if (self instanceof AbstractHorse horse) {
+            PegaCompanion.medkitUsed(horse, data, duration);
+        }
     }
 }

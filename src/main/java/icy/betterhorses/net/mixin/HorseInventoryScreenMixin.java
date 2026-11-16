@@ -20,6 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.horse.Llama;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.HorseInventoryMenu;
@@ -86,6 +87,17 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
             new ResourceLocation("icys-better-horses", "textures/gui/bond/silver.png");
     @Unique private static final ResourceLocation BH_BOND_GOLD =
             new ResourceLocation("icys-better-horses", "textures/gui/bond/gold.png");
+    @Unique private static final String BH_SCREEN_DIR = "textures/gui/inventory/";
+    @Unique private static final ResourceLocation BH_SCREEN_PLAIN = bh_screen("horse_plain");
+    @Unique private static final ResourceLocation BH_SCREEN_GEAR = bh_screen("horse_gear");
+    @Unique private static final int BH_SCREEN_CELL_U = 79;
+    @Unique private static final int BH_SCREEN_CELL_V = 17;
+    @Unique private static final int BH_SCREEN_MIN_ROWS = 1;
+    @Unique private static final int BH_SCREEN_MAX_ROWS = 6;
+    @Unique private static final int BH_ART_GEAR_HINT_TINT = 0xA06A4426;
+    @Unique private static final int BH_ART_BANNER_HINT_TINT = 0xA08A6038;
+    @Unique private static final int BH_ART_BANNER_LOCKED_TINT = 0xD05A3818;
+    @Unique private static final String BH_QUARK_PACKAGE = "org.violetmoon.quark";
     @Unique private static final int BH_STAR_SIZE = 16;
     @Unique private static final int BH_STAR_GAP = 2;
     @Unique private static final int BH_STAR_HOVER_REACH = 40;
@@ -113,6 +125,63 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         this.inventoryLabelY = layoutAccess.bh_hasUpgradedSaddleLayout()
                 ? this.imageHeight + 1000
                 : BH_DEFAULT_INVENTORY_LABEL_Y;
+    }
+
+    @Inject(method = "renderBg", at = @At("HEAD"), cancellable = true)
+    private void bh_renderCustomScreen(GuiGraphics gfx, float partialTick, int mouseX, int mouseY, CallbackInfo ci) {
+        AbstractHorse horse = this.bh_getHorseOrNull();
+        if (horse == null || !BhConfig.customInventoryScreens()) {
+            return;
+        }
+
+        this.bh_applyLayoutState();
+        this.inventoryLabelY = this.imageHeight + 1000;
+        int x = this.leftPos;
+        int y = this.topPos;
+        ResourceLocation screen = this.bh_pickScreen();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        gfx.blit(screen, x, y, 0.0F, 0.0F, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
+        if (!this.bh_hasUpgradedSaddleInMenu() && horse instanceof AbstractChestedHorse chested && chested.hasChest()) {
+            int columns = chested.getInventoryColumns();
+            for (int row = 0; row < 3; row++) {
+                for (int col = 0; col < columns; col++) {
+                    gfx.blit(BH_SCREEN_GEAR, x + BH_GEAR_PANEL_X + col * 18, y + BH_GEAR_PANEL_Y + row * 18,
+                            (float) BH_SCREEN_CELL_U, (float) BH_SCREEN_CELL_V, 18, 18,
+                            this.imageWidth, BH_VANILLA_IMAGE_HEIGHT);
+                }
+            }
+        }
+        RenderSystem.disableBlend();
+
+        this.bh_drawGearPanel(gfx, false);
+        this.bh_drawBannerSlot(gfx, false);
+        this.bh_drawPreview(gfx, horse, x, y);
+        ci.cancel();
+    }
+
+    @Unique
+    private ResourceLocation bh_pickScreen() {
+        if (this.bh_hasChestStorageLayout()) {
+            int rows = Mth.clamp(this.bh_chestRows(), BH_SCREEN_MIN_ROWS, BH_SCREEN_MAX_ROWS);
+            return bh_screen("horse_chest_" + rows + (this.bh_quarkButtonsShown() ? "_quark" : ""));
+        }
+        return this.bh_hasUpgradedSaddleInMenu() ? BH_SCREEN_GEAR : BH_SCREEN_PLAIN;
+    }
+
+    @Unique
+    private boolean bh_quarkButtonsShown() {
+        for (var widget : this.renderables) {
+            if (widget.getClass().getName().startsWith(BH_QUARK_PACKAGE)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Unique
+    private static ResourceLocation bh_screen(String name) {
+        return new ResourceLocation("icys-better-horses", BH_SCREEN_DIR + name + ".png");
     }
 
     @Inject(method = "renderBg", at = @At("HEAD"), cancellable = true)
@@ -151,9 +220,15 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
             gfx.blit(BH_HORSE_TEXTURE, x + 7, y + 35, armorSlotU, BH_ARMOR_SLOT_V, 18, 18);
         }
 
-        this.bh_drawGearPanel(gfx);
+        this.bh_drawGearPanel(gfx, true);
         this.bh_drawChestPanel(gfx);
-        this.bh_drawBannerSlot(gfx);
+        this.bh_drawBannerSlot(gfx, true);
+        this.bh_drawPreview(gfx, horse, x, y);
+        ci.cancel();
+    }
+
+    @Unique
+    private void bh_drawPreview(GuiGraphics gfx, AbstractHorse horse, int x, int y) {
         float feet = y + 44 + 17 * (horse.getBbHeight() / horse.getScale() / 2.0F + 0.25F);
         int feetY = Mth.floor(feet);
         gfx.enableScissor(x + 26, y + 18, x + 78, y + 70);
@@ -169,7 +244,6 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
                 horse);
         gfx.pose().popPose();
         gfx.disableScissor();
-        ci.cancel();
     }
 
     @Inject(method = "renderBg", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventoryFollowsMouse(Lnet/minecraft/client/gui/GuiGraphics;IIIFFLnet/minecraft/world/entity/LivingEntity;)V"))
@@ -187,12 +261,12 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         if (this.bh_getHorseOrNull() == null) {
             return;
         }
-        this.bh_drawBannerSlot(gfx);
+        this.bh_drawBannerSlot(gfx, true);
         if (!this.bh_hasUpgradedSaddleInMenu() || this.bh_hasChestStorageLayout()) {
             return;
         }
 
-        this.bh_drawGearPanel(gfx);
+        this.bh_drawGearPanel(gfx, true);
     }
 
     @Inject(method = "render", at = @At("TAIL"))
@@ -313,10 +387,10 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     }
 
     @Unique
-    private void bh_drawGearPanel(GuiGraphics gfx) {
+    private void bh_drawGearPanel(GuiGraphics gfx, boolean withSlots) {
         int x = this.leftPos + BH_GEAR_PANEL_X;
         int y = this.topPos + BH_GEAR_PANEL_Y;
-        for (int i = 0; i < GearSlot.COUNT; i++) {
+        for (int i = 0; withSlots && i < GearSlot.COUNT; i++) {
             int slotIndex = this.bh_getGearSlotIndex(i);
             if (slotIndex >= 0 && this.menu.getSlot(slotIndex).isActive()) {
                 gfx.blit(BH_HORSE_TEXTURE, x + i * 18, y, BH_SLOT_U, BH_SLOT_V, 18, 18);
@@ -338,7 +412,7 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
     }
 
     @Unique
-    private void bh_drawBannerSlot(GuiGraphics gfx) {
+    private void bh_drawBannerSlot(GuiGraphics gfx, boolean withSlot) {
         HorseInventoryLayoutAccess layoutAccess = this.bh_getLayoutAccessOrNull();
         int index = layoutAccess == null ? -1 : layoutAccess.bh_getBannerSlotIndex();
         if (index < 0) {
@@ -347,7 +421,9 @@ public abstract class HorseInventoryScreenMixin extends AbstractContainerScreen<
         Slot slot = this.menu.getSlot(index);
         int x = this.leftPos + slot.x;
         int y = this.topPos + slot.y;
-        gfx.blit(BH_HORSE_TEXTURE, x - 1, y - 1, BH_SLOT_U, BH_SLOT_V, 18, 18);
+        if (withSlot) {
+            gfx.blit(BH_HORSE_TEXTURE, x - 1, y - 1, BH_SLOT_U, BH_SLOT_V, 18, 18);
+        }
         if (slot.hasItem()) {
             return;
         }

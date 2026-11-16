@@ -1,0 +1,63 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.donkeys.mule.name",
+  "icon": "minecraft:mule_spawn_egg",
+  "category": "icys_better_horses:donkeys",
+  "sortnum": 8,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.mule.about.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.mule.about.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.mule.sure_foot.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.mule.sure_foot.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.mule.inherit.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.mule.inherit.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.mule.inherit.text.part2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.mule.reading.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.mule.reading.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.mule.horses_a.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.mule.horses_a.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.mule.horses_a.text.part2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.mule.horses_b.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.mule.horses_b.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.mule.horses_b.text.part2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.mule.donkeys.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.mule.donkeys.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.mule.donkeys.text.part2"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:medium_mule"
+    }
+  ]
+}

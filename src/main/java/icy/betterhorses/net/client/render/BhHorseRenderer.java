@@ -38,6 +38,7 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
 
     private final BhHorseModel<T> adultModel;
     private final BhHorseModel<T> babyModel;
+    private Function<ModelLayerLocation, BhHorseModel<T>> tackModels;
     private final Matrix4f originInverse = new Matrix4f();
     private final Vector3f[] hooves = {new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()};
 
@@ -71,6 +72,7 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
                               ModelLayerLocation chestBaby,
                               BhTackTextures textures) {
         this(context, adultModel, babyModel);
+        this.tackModels = models;
         addLayer(new BhTackLayer<>(this, models.apply(saddle), models.apply(saddleBaby), entity ->
                 entity.isSaddled() && carpetOf(entity) == null
                         ? textures.saddle(IHorseData.of(entity).bh_hasUpgradedSaddle())
@@ -103,6 +105,15 @@ public class BhHorseRenderer<T extends BhBreedHorse> extends MobRenderer<T, BhHo
         if (ModList.get().isLoaded("caverns_and_chasms")) {
             addLayer(new BhUnicornHornLayer<>(this));
         }
+    }
+
+    protected void addHorseshoes(ModelLayerLocation body) {
+        BhHorseshoes shoes = BhHorseshoes.of(body);
+        BhHorseModel<T> model = tackModels.apply(shoes.layer());
+        addLayer(new BhTackLayer<>(this, model, model, entity ->
+                !entity.isBaby() && BhConfig.hoovesEnabled() && IHorseData.of(entity).bh_hasGear(GearSlot.HOOVES)
+                        ? shoes.texture()
+                        : null));
     }
 
     private static boolean hasSterling() {

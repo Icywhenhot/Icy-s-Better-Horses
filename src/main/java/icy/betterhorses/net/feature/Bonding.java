@@ -39,7 +39,7 @@ public final class Bonding implements HorseFeature {
     private static final int GAPPLE_BOND = 2;
     private static final int FOAL_CAP = 50;
     private static final TagKey<Item> SNACKS = TagKey.create(Registries.ITEM,
-            new ResourceLocation(IcysBetterHorses.MOD_ID, "horse_snacks"));
+            new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "horse_snacks"));
     private static final Item[] TREATS = {Items.WHEAT, Items.SUGAR, Items.APPLE, Items.GOLDEN_CARROT};
 
     private double ridden;
@@ -63,6 +63,13 @@ public final class Bonding implements HorseFeature {
     public void tick(AbstractHorse horse, IHorseData data) {
         if (horse.level().isClientSide()) {
             return;
+        }
+        if (data.bh_getBreed().isZombie()) {
+            treat = BuiltInRegistries.ITEM.getKey(Items.ROTTEN_FLESH);
+            treatKnown = true;
+            if (!treat.toString().equals(data.bh_getShownTreat())) {
+                data.bh_showTreat(treat.toString());
+            }
         }
         double x = horse.getX();
         double y = horse.getY();
@@ -185,6 +192,10 @@ public final class Bonding implements HorseFeature {
     }
 
     private ResourceLocation treat(AbstractHorse horse) {
+        if (IHorseData.of(horse).bh_getBreed().isZombie()) {
+            treat = BuiltInRegistries.ITEM.getKey(Items.ROTTEN_FLESH);
+            return treat;
+        }
         if (treat == null) {
             List<Item> pool = new ArrayList<>(List.of(TREATS));
             BuiltInRegistries.ITEM.getTag(SNACKS).ifPresent(set -> set.stream().map(Holder::value).forEach(pool::add));
@@ -202,6 +213,10 @@ public final class Bonding implements HorseFeature {
         saves = tag.getInt("Saves");
         treat = tag.contains("Treat") ? ResourceLocation.tryParse(tag.getString("Treat")) : null;
         treatKnown = treat != null && tag.getBoolean("TreatKnown");
+        if (data.bh_getBreed().isZombie()) {
+            treat = BuiltInRegistries.ITEM.getKey(Items.ROTTEN_FLESH);
+            treatKnown = true;
+        }
         treatReadyAt = tag.getLong("TreatReadyAt");
         gappleReadyAt = tag.getLong("GappleReadyAt");
         data.bh_showTreat(treatKnown ? treat.toString() : "");

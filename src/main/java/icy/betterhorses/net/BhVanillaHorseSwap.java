@@ -1,14 +1,28 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.entity.BhBreedHorse;
+import icy.betterhorses.net.entity.BhUndeadHorse;
 import icy.betterhorses.net.registry.BhBreeds;
 import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.Donkey;
+import net.minecraft.world.entity.animal.horse.Mule;
+import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
+import icy.betterhorses.net.registry.BhContent;
 import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.world.entity.animal.horse.SkeletonHorse;
+import net.minecraft.world.entity.animal.horse.ZombieHorse;
+import net.minecraft.world.SimpleContainer;
+import icy.betterhorses.net.inventory.GearSlot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,9 +33,12 @@ public final class BhVanillaHorseSwap {
     private BhVanillaHorseSwap() {}
 
     public static boolean trySwap(Entity entity) {
-        if (!(entity instanceof Horse horse) || horse.getClass() != Horse.class
+        if (!(entity instanceof AbstractHorse horse)
+                || (horse.getClass() != Horse.class && horse.getClass() != Donkey.class && horse.getClass() != Mule.class
+                    && horse.getClass() != SkeletonHorse.class && horse.getClass() != ZombieHorse.class)
                 || !(horse.level() instanceof ServerLevel level)
-                || !horse.isAlive() || horse.isPassenger()) {
+                || !horse.isAlive() || horse.isPassenger()
+                || horse instanceof SkeletonHorse skeleton && skeleton.isTrap()) {
             return false;
         }
         List<Entity> riders = List.copyOf(horse.getPassengers());
@@ -35,8 +52,21 @@ public final class BhVanillaHorseSwap {
         EntityType<?> restored = backup == null ? null : BhHorseBackup.typeOf(backup);
         ResourceKey<BreedType> breedKey = null;
         EntityType<?> entityType = restored;
+        if (entityType == null && (horse instanceof SkeletonHorse || horse instanceof ZombieHorse)) {
+            var pool = horse instanceof SkeletonHorse ? ModEntities.SKELETONS : ModEntities.ZOMBIES;
+            entityType = pool.get(horse.getRandom().nextInt(pool.size())).get();
+            breedKey = BhBreeds.keyOf(HorseBreed.byId(EntityType.getKey(entityType).getPath()));
+        }
+        if (entityType == null && horse instanceof Mule) {
+            int size = horse.getRandom().nextInt(ModEntities.MULES.size());
+            entityType = ModEntities.MULES.get(size).get();
+            breedKey = List.of(BhContent.SMALL_MULE, BhContent.MEDIUM_MULE, BhContent.LARGE_MULE).get(size).getKey();
+        }
         if (entityType == null) {
-            breedKey = IHorseData.of(horse).bh_getBreedKey();
+            breedKey = horse instanceof Donkey ? null : IHorseData.of(horse).bh_getBreedKey();
+            if (breedKey == null && horse instanceof Donkey) {
+                breedKey = BhBreeds.keyOf(HorseBreed.pickDonkey(level.getBiome(horse.blockPosition()), horse.getRandom()));
+            }
             if (breedKey == null) {
                 breedKey = pickForBiome(level, horse);
                 if (breedKey == null) {
@@ -61,7 +91,7 @@ public final class BhVanillaHorseSwap {
         swap.load(tag);
         if (restored == null) {
             swap.bhConvertFrom(horse);
-            swap.setHealth(Math.min(horse.getHealth(), swap.getMaxHealth()));
+            if (!(swap instanceof BhUndeadHorse)) swap.setHealth(Math.min(horse.getHealth(), swap.getMaxHealth()));
         }
         horse.ejectPassengers();
         horse.remove(Entity.RemovalReason.CHANGED_DIMENSION);
@@ -74,8 +104,43 @@ public final class BhVanillaHorseSwap {
             return false;
         }
         reseat(riders, swap);
+        if (horse instanceof AbstractChestedHorse chested && chested.hasChest()) {
+            moveChest(swap, level, tag.getList("Items", Tag.TAG_COMPOUND));
+        }
         if (IHorseData.of(swap).bh_isOwned()) HorseTracker.register(swap);
         return true;
+    }
+
+    private static void moveChest(BhBreedHorse swap, ServerLevel level, ListTag items) {
+        IHorseData data = IHorseData.of(swap);
+        SimpleContainer gear = data.bh_getGearContainer();
+        ItemStack fitted = gear.getItem(GearSlot.CHEST.ordinal());
+        if (fitted.isEmpty()) {
+            gear.setItem(GearSlot.CHEST.ordinal(), new ItemStack(Items.CHEST));
+        } else if (!GearSlot.isStorageChest(fitted)) {
+            swap.spawnAtLocation(Items.CHEST);
+        }
+        SimpleContainer chest = data.bh_getChestContainer();
+        int slots = GearSlot.isStorageChest(gear.getItem(GearSlot.CHEST.ordinal()))
+                ? Math.min(data.bh_getChestRows() * 9, chest.getContainerSize()) : 0;
+        int slot = 0;
+        for (int i = 0; i < items.size(); i++) {
+            ItemStack stack = ItemStack.of(items.getCompound(i));
+            if (stack.isEmpty()) {
+                continue;
+            }
+            while (slot < slots && !chest.getItem(slot).isEmpty()) {
+                slot++;
+            }
+            if (slot < slots) {
+                chest.setItem(slot++, stack);
+                continue;
+            }
+            while (!stack.isEmpty()) {
+                swap.spawnAtLocation(stack.split(stack.getMaxStackSize()));
+            }
+        }
+        chest.setChanged();
     }
 
     private static void reseat(List<Entity> riders, Entity mount) {
@@ -84,7 +149,7 @@ public final class BhVanillaHorseSwap {
         }
     }
 
-    private static @Nullable ResourceKey<BreedType> pickForBiome(ServerLevel level, Horse horse) {
+    private static @Nullable ResourceKey<BreedType> pickForBiome(ServerLevel level, AbstractHorse horse) {
         HorseBreed picked = HorseBreed.pickForBiome(level.getBiome(horse.blockPosition()), horse.getRandom());
         HorseBreed fallback = picked != null
                 ? picked

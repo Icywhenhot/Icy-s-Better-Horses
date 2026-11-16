@@ -7,6 +7,12 @@ import net.minecraftforge.event.level.ExplosionEvent;
 import net.minecraftforge.event.AnvilUpdateEvent;
 import net.minecraft.world.item.ItemStack;
 import icy.betterhorses.net.feature.breed.Ironclad;
+import icy.betterhorses.net.feature.breed.FieldHand;
+import icy.betterhorses.net.feature.breed.SculkHush;
+import icy.betterhorses.net.feature.breed.RottenRations;
+import icy.betterhorses.net.feature.breed.FrostCharge;
+import icy.betterhorses.net.feature.breed.DrownedLungs;
+import icy.betterhorses.net.feature.breed.DrownedRider;
 import icy.betterhorses.net.network.BreedDataPayload;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.entity.HorseCartEntity;
@@ -18,7 +24,6 @@ import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.registry.CommandType;
 import net.minecraft.resources.ResourceLocation;
 import icy.betterhorses.net.registry.BhRegistries;
-import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LightningBolt;
@@ -29,8 +34,6 @@ import net.minecraft.world.entity.monster.Creeper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -38,16 +41,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.EntityHitResult;
@@ -73,7 +70,6 @@ import net.minecraftforge.common.MinecraftForge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Mod(IcysBetterHorses.MOD_ID)
@@ -107,6 +103,16 @@ public final class IcysBetterHorses {
         modEventBus.addListener(this::onCommonSetup);
         modEventBus.addListener(ModEntities::registerAttributes);
         MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.addListener(DrownedRider::breathe);
+        MinecraftForge.EVENT_BUS.addListener(DrownedLungs::breathe);
+        MinecraftForge.EVENT_BUS.addListener(FrostCharge::hit);
+        MinecraftForge.EVENT_BUS.addListener(RottenRations::damage);
+        MinecraftForge.EVENT_BUS.addListener(this::applyThickHide);
+        MinecraftForge.EVENT_BUS.addListener(RottenRations::hit);
+        MinecraftForge.EVENT_BUS.addListener(SculkHush::hit);
+        MinecraftForge.EVENT_BUS.addListener(FieldHand::onTrample);
+        MinecraftForge.EVENT_BUS.addListener(icy.betterhorses.net.feature.breed.FarmCompanion::onBabySpawn);
+        MinecraftForge.EVENT_BUS.addListener(icy.betterhorses.net.feature.breed.FarmCompanion::onAnimalTick);
         LOGGER.info("Icy's Better Horses initialized.");
     }
 
@@ -246,10 +252,10 @@ public final class IcysBetterHorses {
             return;
         }
         IHorseData d = IHorseData.of(horse);
-        if (!Objects.equals(d.bh_getBreedKey(), BhContent.AMERICAN_PAINT.getKey()) || !BhAbility.PAINT_LOOTING.on()) {
-            return;
+        int tier = BhAbility.PAINT_LOOTING.tier(d, BhContent.AMERICAN_PAINT.getKey());
+        if (tier >= 0) {
+            event.setLootingLevel(Math.max(event.getLootingLevel(), tier + 1));
         }
-        event.setLootingLevel(Math.max(event.getLootingLevel(), BhHorseTraits.bondTier(d.bh_getBond()) + 1));
     }
 
     @SubscribeEvent
@@ -356,8 +362,14 @@ public final class IcysBetterHorses {
         }
         HorseTracker.tick(server.getTickCount());
         BhTwinWatch.tick(server, server.getTickCount());
+        BhUndeadSpawns.tick(server);
         discardStaleHorses();
         applyPendingReleases();
+    }
+
+    private void applyThickHide(net.minecraftforge.event.entity.living.LivingHurtEvent event) {
+        event.setAmount(event.getAmount() * icy.betterhorses.net.feature.breed.ThickHide.damageScale(
+                event.getEntity(), event.getSource()));
     }
 
     @SubscribeEvent

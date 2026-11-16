@@ -1,13 +1,13 @@
 package icy.betterhorses.net;
 
 import icy.betterhorses.net.item.BhSpawnEggItem;
+import icy.betterhorses.net.item.UndeadEggItem;
 import icy.betterhorses.net.item.HorseCartItem;
 import icy.betterhorses.net.item.UpgradedSaddleItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
@@ -108,6 +108,29 @@ public final class ModItems {
             "clydesdale_horse_spawn_egg",
             () -> new BhSpawnEggItem(ModEntities.CLYDESDALE_HORSE, 0x6E4937, 0xF2EFE8, new Item.Properties()));
 
+    public static final RegistryObject<Item> ANDALUSIAN_DONKEY_SPAWN_EGG = ITEMS.register("andalusian_donkey_spawn_egg",
+            () -> new BhSpawnEggItem(ModEntities.ANDALUSIAN_DONKEY, 0x776F63, 0x4A4441, new Item.Properties()));
+    public static final RegistryObject<Item> ASINARA_DONKEY_SPAWN_EGG = ITEMS.register("asinara_donkey_spawn_egg",
+            () -> new BhSpawnEggItem(ModEntities.ASINARA_DONKEY, 0xDBD0B5, 0x857664, new Item.Properties()));
+    public static final RegistryObject<Item> MAMMOTH_DONKEY_SPAWN_EGG = ITEMS.register("mammoth_donkey_spawn_egg",
+            () -> new BhSpawnEggItem(ModEntities.MAMMOTH_DONKEY, 0xB19886, 0x4A302C, new Item.Properties()));
+    public static final RegistryObject<Item> MINIATURE_DONKEY_SPAWN_EGG = ITEMS.register("miniature_donkey_spawn_egg",
+            () -> new BhSpawnEggItem(ModEntities.MINIATURE_DONKEY, 0x8F8E86, 0x615657, new Item.Properties()));
+    public static final RegistryObject<Item> PEGA_DONKEY_SPAWN_EGG = ITEMS.register("pega_donkey_spawn_egg",
+            () -> new BhSpawnEggItem(ModEntities.PEGA_DONKEY, 0x949596, 0x383631, new Item.Properties()));
+    public static final RegistryObject<Item> POITOU_DONKEY_SPAWN_EGG = ITEMS.register("poitou_donkey_spawn_egg",
+            () -> new BhSpawnEggItem(ModEntities.POITOU_DONKEY, 0x694E47, 0x433332, new Item.Properties()));
+    public static final RegistryObject<Item> ZAMORANO_DONKEY_SPAWN_EGG = ITEMS.register("zamorano_donkey_spawn_egg",
+            () -> new BhSpawnEggItem(ModEntities.ZAMORANO_DONKEY, 0x614740, 0x412E2B, new Item.Properties()));
+    public static final RegistryObject<Item> STRAY_HORSE_SPAWN_EGG = ITEMS.register("stray_horse_spawn_egg",
+            () -> new UndeadEggItem(ModEntities.STRAYS, 0xC9D4D2, 0x3E5656, new Item.Properties()));
+    public static final RegistryObject<Item> SCULK_HORSE_SPAWN_EGG = ITEMS.register("sculk_horse_spawn_egg",
+            () -> new UndeadEggItem(ModEntities.SCULKS, 0x0C3B45, 0x2BD9E6, new Item.Properties()));
+    public static final RegistryObject<Item> HUSK_HORSE_SPAWN_EGG = ITEMS.register("husk_horse_spawn_egg",
+            () -> new UndeadEggItem(ModEntities.HUSKS, 0x9C8B63, 0x584631, new Item.Properties()));
+    public static final RegistryObject<Item> DROWNED_HORSE_SPAWN_EGG = ITEMS.register("drowned_horse_spawn_egg",
+            () -> new UndeadEggItem(ModEntities.DROWNEDS, 0x5AA39A, 0x2B4F46, new Item.Properties()));
+
     public static final List<RegistryObject<Item>> BREED_SPAWN_EGGS = List.of(
             ICELANDIC_HORSE_SPAWN_EGG,
             FRIESIAN_HORSE_SPAWN_EGG,
@@ -123,7 +146,18 @@ public final class ModItems {
             PERCHERON_HORSE_SPAWN_EGG,
             SHIRE_HORSE_SPAWN_EGG,
             BELGIAN_HORSE_SPAWN_EGG,
-            CLYDESDALE_HORSE_SPAWN_EGG);
+            CLYDESDALE_HORSE_SPAWN_EGG,
+            ANDALUSIAN_DONKEY_SPAWN_EGG,
+            ASINARA_DONKEY_SPAWN_EGG,
+            MAMMOTH_DONKEY_SPAWN_EGG,
+            MINIATURE_DONKEY_SPAWN_EGG,
+            PEGA_DONKEY_SPAWN_EGG,
+            POITOU_DONKEY_SPAWN_EGG,
+            ZAMORANO_DONKEY_SPAWN_EGG,
+            STRAY_HORSE_SPAWN_EGG,
+            SCULK_HORSE_SPAWN_EGG,
+            HUSK_HORSE_SPAWN_EGG,
+            DROWNED_HORSE_SPAWN_EGG);
 
     public static final RegistryObject<CreativeModeTab> STABLE_SUPPLIES_TAB = TABS.register("stable_supplies", () ->
             CreativeModeTab.builder()

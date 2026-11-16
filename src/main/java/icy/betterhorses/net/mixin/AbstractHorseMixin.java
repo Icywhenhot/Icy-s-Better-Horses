@@ -1,5 +1,6 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhGears;
@@ -35,7 +36,6 @@ import icy.betterhorses.net.feature.Bonding;
 import icy.betterhorses.net.feature.breed.BreedAbility;
 import icy.betterhorses.net.feature.CartRig;
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
-import icy.betterhorses.net.feature.breed.Ironclad;
 import icy.betterhorses.net.feature.HorseCombat;
 import icy.betterhorses.net.feature.FrostHooves;
 import icy.betterhorses.net.feature.HorseFeature;
@@ -84,7 +84,6 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -113,10 +112,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import icy.betterhorses.net.BhRiderSeat;
 import icy.betterhorses.net.entity.BhBreedEntity;
@@ -124,11 +120,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.ServerLevelAccessor;
 
 @Mixin(AbstractHorse.class)
@@ -270,6 +264,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private static final EntityDataAccessor<Integer> BH_COMBAT = bh_intKey();
     @Unique private static final EntityDataAccessor<Integer> BH_KICK = bh_intKey();
     @Unique private static final EntityDataAccessor<Integer> BH_STOMP = bh_intKey();
+    @Unique private int bh_channel;
     @Unique private static final EntityDataAccessor<Integer> BH_SURGE = bh_intKey();
     @Unique private static final EntityDataAccessor<Integer> BH_PULSE = bh_intKey();
     @Unique private static final EntityDataAccessor<Integer> BH_PERK = bh_intKey();
@@ -506,8 +501,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     public HorseBreed bh_getBreed() {
         ResourceKey<BreedType> key = bh_getBreedKey();
         if (key != null) {
-            HorseBreed mapped = HorseBreed.byId(key.location().getPath());
-            return mapped.isRealBreed() ? mapped : HorseBreed.UNKNOWN_SPECIES;
+            return HorseBreed.byId(key.location().getPath());
         }
         ResourceKey<SpeciesType> species = bh_getSpecies();
         if (species.equals(BhContent.SPECIES_DONKEY.getKey())) return HorseBreed.DONKEY_SPECIES;
@@ -631,7 +625,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique
     private void bh_syncBanner() {
         if (!((AbstractHorse) (Object) this).level().isClientSide()) {
-            this.entityData.set(BH_BANNER, bh_bannerContainer.getItem(0).copy());
+            this.entityData.set(BH_BANNER, icy.betterhorses.net.BhBanners.renderCopy(bh_bannerContainer.getItem(0)));
         }
     }
 
@@ -1229,14 +1223,17 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Override
     public int bh_getSurge() {
-        return this.entityData.get(BH_SURGE);
+        return bh_getAbilitySurge(bh_channel);
     }
 
     @Override
     public void bh_setSurge(int packed) {
-        if (this.entityData.get(BH_SURGE) != packed) {
-            bh_push(BH_SURGE, packed);
-        }
+        bh_setAbilitySurge(bh_channel, packed);
+    }
+
+    @Override
+    public void bh_setSurgeChannel(int slot) {
+        bh_channel = slot;
     }
 
     @Unique
@@ -1282,6 +1279,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Override
     public void bh_setPulse(int packed) {
+        if (bh_channel > 0) {
+            int phase = BhSurge.phase(bh_getAbilitySurge(bh_channel));
+            if (phase == BhSurge.IDLE || phase == BhSurge.PULSE) bh_setAbilitySurge(bh_channel, packed);
+            return;
+        }
         if (this.entityData.get(BH_PULSE) != packed) {
             bh_push(BH_PULSE, packed);
         }
@@ -1458,6 +1460,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Inject(method = "isFood", at = @At("RETURN"), cancellable = true)
     private void bh_breedingFoodIsFood(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+        if (bh_ours() && this.bh_getBreed().isZombie() && BhAbility.ZOMBIE_RATIONS.on() && stack.is(Items.ROTTEN_FLESH)) {
+            cir.setReturnValue(true);
+            return;
+        }
         if (!cir.getReturnValueZ() && bh_ours() && (BhConfig.breedingFood(stack) || stack.is(BH_SNACKS))) {
             cir.setReturnValue(true);
         }
@@ -1470,11 +1476,16 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
 
     @Inject(method = "handleEating", at = @At("RETURN"), cancellable = true)
     private void bh_eatSnack(Player player, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-        if (cir.getReturnValueZ() || !bh_ours() || !stack.is(BH_SNACKS)) return;
+        if (!bh_ours()) return;
+        boolean flesh = bh_getBreed().isZombie() && BhAbility.ZOMBIE_RATIONS.on() && stack.is(Items.ROTTEN_FLESH);
+        if (cir.getReturnValueZ() || !flesh && !stack.is(BH_SNACKS)) return;
         AbstractHorse self = (AbstractHorse) (Object) this;
         FoodProperties food = stack.getItem().getFoodProperties();
         int heal = Math.max(2, food == null ? 0 : food.getNutrition());
-        boolean ate = false;
+        boolean ate = flesh;
+        if (flesh && !self.level().isClientSide()) {
+            icy.betterhorses.net.feature.breed.RottenRations.feed(self, this);
+        }
         if (self.getHealth() < self.getMaxHealth()) {
             self.heal(heal);
             ate = true;
@@ -1502,6 +1513,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private void bh_breedFromConfiguredFood(Player player, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (!bh_ours() || self.level().isClientSide()) return;
+        if (bh_getBreed().isUndead() || bh_getBreed().isMule()) return;
         if (!BhConfig.breedingFood(stack)) {
             if (!this.bh_lovedBeforeEating && this.isInLove()) {
                 this.resetLove();
@@ -1799,6 +1811,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         goalSelector.addGoal(3, new HorseFollowOwnerGoal(self));
         goalSelector.addGoal(3, new HorseReturnHomeGoal(self));
         goalSelector.addGoal(3, new HorseWanderBoundsGoal(self));
+        goalSelector.addGoal(4, new icy.betterhorses.net.feature.breed.FieldHand.TendGoal(self));
+        goalSelector.addGoal(4, new icy.betterhorses.net.feature.breed.MiniatureCompanion.FetchGoal(self));
         goalSelector.addGoal(5, new HorseBegGoal(self));
     }
 

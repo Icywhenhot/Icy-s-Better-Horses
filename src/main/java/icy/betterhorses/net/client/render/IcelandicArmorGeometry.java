@@ -87,7 +87,7 @@ public final class IcelandicArmorGeometry {
         PartDefinition p_front_right_leg = root.addOrReplaceChild(
                 "front_right_leg",
                 CubeListBuilder.create()
-                        .texOffs(32, 39).addBox(-1.5000F, -10.0F, -1.5000F, 3.0F, 11.0F, 3.0F, new CubeDeformation(0.0800F)),
+                        .texOffs(20, 39).addBox(-1.5000F, -10.0F, -1.5000F, 3.0F, 11.0F, 3.0F, new CubeDeformation(0.0800F)),
                 PartPose.offset(-2.5000F, 23.0F, -9.4000F));
 
         PartDefinition p_front_left_leg = root.addOrReplaceChild(

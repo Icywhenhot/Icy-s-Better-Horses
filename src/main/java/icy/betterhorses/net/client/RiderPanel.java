@@ -1,5 +1,6 @@
 package icy.betterhorses.net.client;
 
+import icy.betterhorses.net.BhConfig;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import icy.betterhorses.net.BhNetworking;
@@ -38,7 +39,7 @@ public final class RiderPanel {
     private static final int ICON_X = -18;
     private static final int ICON_Y = 24;
     private static final int ICON_W = 16;
-    private static final int ICON_H = 21;
+    private static final int ICON_H = 22;
     private static final int FACE_SIZE = 16;
     private static final long POP_MS = 220L;
     private static final float POP_FROM = 0.4F;
@@ -190,7 +191,7 @@ public final class RiderPanel {
             gfx.pose().translate(this.getX() + ICON_W / 2.0F, this.getY() + ICON_H / 2.0F, 0.0F);
             gfx.pose().scale(scale, scale, 1.0F);
             gfx.pose().translate(-ICON_W / 2.0F, -ICON_H / 2.0F, 0.0F);
-            if (this.showing) {
+            if (this.showing != BhConfig.switcherShowsDestination()) {
                 PlayerFaceRenderer.draw(gfx, Minecraft.getInstance().player.getSkinTextureLocation(),
                         0, (ICON_H - FACE_SIZE) / 2, FACE_SIZE);
             } else {

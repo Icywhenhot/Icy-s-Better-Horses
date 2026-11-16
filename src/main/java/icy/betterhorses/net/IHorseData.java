@@ -121,6 +121,7 @@ public interface IHorseData {
 
     int bh_getSurge();
     void bh_setSurge(int packed);
+    void bh_setSurgeChannel(int slot);
 
     int bh_getAbilitySurge(int slot);
     void bh_setAbilitySurge(int slot, int packed);
@@ -180,6 +181,12 @@ public interface IHorseData {
     @Nullable HorseCartEntity bh_getCartEntity();
 
     void bh_bindCartEntity(HorseCartEntity cart);
+
+    default boolean bh_mayPullCart() {
+        ResourceKey<BreedType> key = bh_getBreedKey();
+        BreedType type = key == null ? null : icy.betterhorses.net.registry.BhRegistries.breedTypeRegistry().getValue(key.location());
+        return type == null || type.pullsCarts();
+    }
 
     default boolean bh_mayUseLargeCart() {
         ResourceKey<BreedType> breedKey = bh_getBreedKey();

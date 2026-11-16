@@ -22,5 +22,6 @@ public class ClydesdaleHorseRenderer extends BhHorseRenderer<ClydesdaleHorse> {
                 BhModelLayers.PERCHERON_CHEST,
                 BhModelLayers.PERCHERON_CHEST_BABY,
                 BhTackTextures.PERCHERON);
+        addHorseshoes(adultLayer);
     }
 }

@@ -1,0 +1,40 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.name",
+  "icon": "icys-better-horses:andalusian_donkey_spawn_egg",
+  "category": "icys_better_horses:donkeys",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.about.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.about.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.ability.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.ability.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.ability.text.part2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.harvest.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.harvest.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.harvest.text.part2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.spawns.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.breed_andalusian_donkey.spawns.title"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:andalusian_donkey"
+    }
+  ]
+}

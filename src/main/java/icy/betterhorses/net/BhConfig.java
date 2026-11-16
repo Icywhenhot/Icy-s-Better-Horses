@@ -7,12 +7,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -55,6 +55,8 @@ public final class BhConfig {
     private static final String KEY_HARNESS_GAP = "harness_gauge_gap";
     private static final String KEY_RADIAL_STYLE = "radial_style";
     private static final String KEY_BANNERS = "ability_banners";
+    private static final String KEY_CUSTOM_SCREENS = "custom_inventory_screens";
+    private static final String KEY_SWITCHER_DESTINATION = "switcher_shows_destination";
     private static final String KEY_BREEDING_FOODS = "breeding_foods";
 
     public static final int MAX_HUD_GAP = 100;
@@ -84,6 +86,7 @@ public final class BhConfig {
 
     private static final EnumMap<BhFeature, Boolean> features = new EnumMap<>(BhFeature.class);
     private static final EnumMap<BhAbility, Boolean> abilities = new EnumMap<>(BhAbility.class);
+    private static final EnumMap<HorseBreed, List<BhAbility>> BREED_ABILITIES = byBreed();
     private static BhTuning tuning = BhTuning.defaults();
     private static boolean classMaster = true;
     private static boolean breedMaster = true;
@@ -91,6 +94,8 @@ public final class BhConfig {
     private static Spot harness = DEFAULT_HARNESS;
     private static RadialStyle radial = DEFAULT_RADIAL;
     private static boolean banners = true;
+    private static boolean customScreens = true;
+    private static boolean switcherDestination = false;
     private static List<String> breedingFoods = DEFAULT_BREEDING_FOODS;
     private static volatile @Nullable Set<Item> breedingItems;
 
@@ -121,6 +126,8 @@ public final class BhConfig {
         harness = DEFAULT_HARNESS;
         radial = DEFAULT_RADIAL;
         banners = true;
+        customScreens = true;
+        switcherDestination = false;
         breedingFoods = DEFAULT_BREEDING_FOODS;
         breedingItems = null;
     }
@@ -213,12 +220,24 @@ public final class BhConfig {
         if (!breedMaster) {
             return false;
         }
-        for (BhAbility ability : BhAbility.values()) {
-            if (ability.breed() == breed && abilities.getOrDefault(ability, true)) {
+        for (BhAbility ability : BREED_ABILITIES.get(breed)) {
+            if (abilities.getOrDefault(ability, true)) {
                 return true;
             }
         }
         return false;
+    }
+
+    private static EnumMap<HorseBreed, List<BhAbility>> byBreed() {
+        EnumMap<HorseBreed, List<BhAbility>> out = new EnumMap<>(HorseBreed.class);
+        for (HorseBreed breed : HorseBreed.values()) {
+            List<BhAbility> list = new ArrayList<>();
+            for (BhAbility ability : BhAbility.values()) {
+                if (ability.appliesTo(breed)) list.add(ability);
+            }
+            out.put(breed, List.copyOf(list));
+        }
+        return out;
     }
 
     public static boolean classAbilitiesEnabled() {
@@ -309,18 +328,18 @@ public final class BhConfig {
 
     public static boolean knownItem(String raw) {
         ResourceLocation id = ResourceLocation.tryParse(raw.trim());
-        return id != null && ForgeRegistries.ITEMS.containsKey(id);
+        return id != null && BuiltInRegistries.ITEM.containsKey(id);
     }
 
     private static Set<Item> resolveFoods(List<String> ids) {
         Set<Item> out = new HashSet<>();
         for (String raw : ids) {
             ResourceLocation id = ResourceLocation.tryParse(raw);
-            if (id == null || !ForgeRegistries.ITEMS.containsKey(id)) {
+            if (id == null || !BuiltInRegistries.ITEM.containsKey(id)) {
                 IcysBetterHorses.LOGGER.warn("Breeding food '{}' is not an item, skipping it", raw);
                 continue;
             }
-            out.add(ForgeRegistries.ITEMS.getValue(id));
+            out.add(BuiltInRegistries.ITEM.get(id));
         }
         return Set.copyOf(out);
     }
@@ -350,11 +369,22 @@ public final class BhConfig {
         return banners;
     }
 
-    public static synchronized void applyHud(Spot meterSpot, Spot harnessSpot, RadialStyle radialPick, boolean showBanners) {
+    public static boolean customInventoryScreens() {
+        return customScreens;
+    }
+
+    public static boolean switcherShowsDestination() {
+        return switcherDestination;
+    }
+
+    public static synchronized void applyHud(Spot meterSpot, Spot harnessSpot, RadialStyle radialPick, boolean showBanners,
+                                              boolean customInventory, boolean switcherToDestination) {
         meter = meterSpot.clamped();
         harness = harnessSpot.clamped();
         radial = radialPick;
         banners = showBanners;
+        customScreens = customInventory;
+        switcherDestination = switcherToDestination;
         save();
     }
 
@@ -421,7 +451,10 @@ public final class BhConfig {
                 harness = readSpot(hud, KEY_HARNESS_SIDE, KEY_HARNESS_GAP, DEFAULT_HARNESS);
                 radial = readRadial(hud);
                 banners = readToggle(hud, KEY_BANNERS, true);
-                needsRewrite |= !hud.has(KEY_RADIAL_STYLE) || !hud.has(KEY_BANNERS);
+                customScreens = readToggle(hud, KEY_CUSTOM_SCREENS, true);
+                switcherDestination = readToggle(hud, KEY_SWITCHER_DESTINATION, false);
+                needsRewrite |= !hud.has(KEY_RADIAL_STYLE) || !hud.has(KEY_BANNERS) || !hud.has(KEY_CUSTOM_SCREENS)
+                        || !hud.has(KEY_SWITCHER_DESTINATION);
             }
 
             needsRewrite |= !root.has(KEY_BREEDING_FOODS);
@@ -641,6 +674,8 @@ public final class BhConfig {
         hud.addProperty(KEY_HARNESS_GAP, harness.gap());
         hud.addProperty(KEY_RADIAL_STYLE, radial.name().toLowerCase(Locale.ROOT));
         hud.addProperty(KEY_BANNERS, yesNo(banners));
+        hud.addProperty(KEY_CUSTOM_SCREENS, yesNo(customScreens));
+        hud.addProperty(KEY_SWITCHER_DESTINATION, yesNo(switcherDestination));
         root.add(KEY_HUD, hud);
 
         JsonArray foods = new JsonArray();

@@ -1,5 +1,8 @@
 package icy.betterhorses.net;
 
+import net.minecraft.world.item.Items;
+import java.util.List;
+
 import icy.betterhorses.net.client.render.BhJumpClips;
 import icy.betterhorses.net.client.render.BhBreedCarpets;
 import icy.betterhorses.net.client.render.BhNamedCoats;
@@ -19,6 +22,11 @@ import icy.betterhorses.net.client.render.ClydesdaleHorseRenderer;
 import icy.betterhorses.net.client.render.FriesianHorseRenderer;
 import icy.betterhorses.net.client.render.HaflingerHorseRenderer;
 import icy.betterhorses.net.client.render.HorseCartRenderer;
+import icy.betterhorses.net.client.render.DonkeyRenderer;
+import icy.betterhorses.net.client.render.LargeDonkeyModel;
+import icy.betterhorses.net.client.render.MiniatureDonkeyModel;
+import icy.betterhorses.net.client.render.UndeadHorseRenderer;
+import icy.betterhorses.net.client.render.MuleRenderer;
 import icy.betterhorses.net.client.render.IcelandicHorseRenderer;
 import icy.betterhorses.net.client.render.MediumHorseRenderer;
 import icy.betterhorses.net.client.render.PercheronHorseRenderer;
@@ -217,6 +225,90 @@ public final class IcysBetterHorsesClient {
 
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(ModEntities.LARGE_SKELETON_HORSE.get(), context -> new UndeadHorseRenderer(context,
+                BhModelLayers.LARGE_UNDEAD_HORSE, BhModelLayers.PERCHERON_SADDLE, BhModelLayers.PERCHERON_CARPET,
+                BhModelLayers.PERCHERON_ARMOR, BhModelLayers.PERCHERON_CHEST, BhTackTextures.PERCHERON));
+        event.registerEntityRenderer(ModEntities.MEDIUM_SKELETON_HORSE.get(), context -> new UndeadHorseRenderer(context,
+                BhModelLayers.MEDIUM_UNDEAD_HORSE, BhModelLayers.MEDIUM_SADDLE, BhModelLayers.MEDIUM_CARPET,
+                BhModelLayers.MEDIUM_ARMOR, BhModelLayers.MEDIUM_CHEST, BhTackTextures.MEDIUM));
+        event.registerEntityRenderer(ModEntities.SMALL_SKELETON_HORSE.get(), context -> new UndeadHorseRenderer(context,
+                BhModelLayers.SMALL_UNDEAD_HORSE, BhModelLayers.SMALL_SADDLE, BhModelLayers.SMALL_CARPET,
+                BhModelLayers.SMALL_ARMOR, BhModelLayers.SMALL_CHEST, BhTackTextures.SMALL));
+        event.registerEntityRenderer(ModEntities.LARGE_ZOMBIE_HORSE.get(), context -> new UndeadHorseRenderer(context,
+                BhModelLayers.LARGE_UNDEAD_HORSE, BhModelLayers.PERCHERON_SADDLE, BhModelLayers.PERCHERON_CARPET,
+                BhModelLayers.PERCHERON_ARMOR, BhModelLayers.PERCHERON_CHEST, BhTackTextures.PERCHERON));
+        event.registerEntityRenderer(ModEntities.MEDIUM_ZOMBIE_HORSE.get(), context -> new UndeadHorseRenderer(context,
+                BhModelLayers.MEDIUM_UNDEAD_HORSE, BhModelLayers.MEDIUM_SADDLE, BhModelLayers.MEDIUM_CARPET,
+                BhModelLayers.MEDIUM_ARMOR, BhModelLayers.MEDIUM_CHEST, BhTackTextures.MEDIUM));
+        event.registerEntityRenderer(ModEntities.SMALL_ZOMBIE_HORSE.get(), context -> new UndeadHorseRenderer(context,
+                BhModelLayers.SMALL_UNDEAD_HORSE, BhModelLayers.SMALL_SADDLE, BhModelLayers.SMALL_CARPET,
+                BhModelLayers.SMALL_ARMOR, BhModelLayers.SMALL_CHEST, BhTackTextures.SMALL));
+        for (var kind : List.of(ModEntities.STRAYS, ModEntities.SCULKS,
+                ModEntities.HUSKS, ModEntities.DROWNEDS)) {
+            event.registerEntityRenderer(kind.get(0).get(), context -> new UndeadHorseRenderer(context,
+                    BhModelLayers.LARGE_UNDEAD_HORSE, BhModelLayers.PERCHERON_SADDLE, BhModelLayers.PERCHERON_CARPET,
+                    BhModelLayers.PERCHERON_ARMOR, BhModelLayers.PERCHERON_CHEST, BhTackTextures.PERCHERON));
+            event.registerEntityRenderer(kind.get(1).get(), context -> new UndeadHorseRenderer(context,
+                    BhModelLayers.MEDIUM_UNDEAD_HORSE, BhModelLayers.MEDIUM_SADDLE, BhModelLayers.MEDIUM_CARPET,
+                    BhModelLayers.MEDIUM_ARMOR, BhModelLayers.MEDIUM_CHEST, BhTackTextures.MEDIUM));
+            event.registerEntityRenderer(kind.get(2).get(), context -> new UndeadHorseRenderer(context,
+                    BhModelLayers.SMALL_UNDEAD_HORSE, BhModelLayers.SMALL_SADDLE, BhModelLayers.SMALL_CARPET,
+                    BhModelLayers.SMALL_ARMOR, BhModelLayers.SMALL_CHEST, BhTackTextures.SMALL));
+        }
+        event.registerEntityRenderer(ModEntities.ANDALUSIAN_DONKEY.get(), context -> new DonkeyRenderer(context,
+                BhModelLayers.ANDALUSIAN_DONKEY, BhModelLayers.ANDALUSIAN_DONKEY_BABY,
+                BhModelLayers.ANDALUSIAN_DONKEY_SADDLE, BhModelLayers.ANDALUSIAN_DONKEY_SADDLE_BABY,
+                BhModelLayers.ANDALUSIAN_DONKEY_CARPET, BhModelLayers.ANDALUSIAN_DONKEY_CARPET_BABY,
+                BhModelLayers.ANDALUSIAN_DONKEY_ARMOR, BhModelLayers.ANDALUSIAN_DONKEY_ARMOR_BABY,
+                BhModelLayers.ANDALUSIAN_DONKEY_CHEST, BhModelLayers.ANDALUSIAN_DONKEY_CHEST_BABY,
+                BhTackTextures.ANDALUSIAN_DONKEY));
+        event.registerEntityRenderer(ModEntities.ASINARA_DONKEY.get(), context -> new DonkeyRenderer(context,
+                BhModelLayers.ASINARA_DONKEY, BhModelLayers.ASINARA_DONKEY_BABY,
+                BhModelLayers.ASINARA_DONKEY_SADDLE, BhModelLayers.ASINARA_DONKEY_SADDLE_BABY,
+                BhModelLayers.ASINARA_DONKEY_CARPET, BhModelLayers.ASINARA_DONKEY_CARPET_BABY,
+                BhModelLayers.ASINARA_DONKEY_ARMOR, BhModelLayers.ASINARA_DONKEY_ARMOR_BABY,
+                BhModelLayers.ASINARA_DONKEY_CHEST, BhModelLayers.ASINARA_DONKEY_CHEST_BABY,
+                BhTackTextures.ASINARA_DONKEY));
+        event.registerEntityRenderer(ModEntities.MAMMOTH_DONKEY.get(), context -> new DonkeyRenderer(context,
+                LargeDonkeyModel::new, BhModelLayers.MAMMOTH_DONKEY, BhModelLayers.MAMMOTH_DONKEY_BABY,
+                BhModelLayers.MAMMOTH_DONKEY_SADDLE, BhModelLayers.MAMMOTH_DONKEY_SADDLE_BABY,
+                BhModelLayers.MAMMOTH_DONKEY_CARPET, BhModelLayers.MAMMOTH_DONKEY_CARPET_BABY,
+                BhModelLayers.MAMMOTH_DONKEY_ARMOR, BhModelLayers.MAMMOTH_DONKEY_ARMOR_BABY,
+                BhModelLayers.MAMMOTH_DONKEY_CHEST, BhModelLayers.MAMMOTH_DONKEY_CHEST_BABY,
+                BhTackTextures.MAMMOTH_DONKEY));
+        event.registerEntityRenderer(ModEntities.MINIATURE_DONKEY.get(), context -> new DonkeyRenderer(context,
+                MiniatureDonkeyModel::new, BhModelLayers.MINIATURE_DONKEY, BhModelLayers.MINIATURE_DONKEY_BABY,
+                BhModelLayers.MINIATURE_DONKEY_SADDLE, BhModelLayers.MINIATURE_DONKEY_SADDLE_BABY,
+                BhModelLayers.MINIATURE_DONKEY_CARPET, BhModelLayers.MINIATURE_DONKEY_CARPET_BABY,
+                BhModelLayers.MINIATURE_DONKEY_ARMOR, BhModelLayers.MINIATURE_DONKEY_ARMOR_BABY,
+                BhModelLayers.MINIATURE_DONKEY_CHEST, BhModelLayers.MINIATURE_DONKEY_CHEST_BABY,
+                BhTackTextures.MINIATURE_DONKEY));
+        event.registerEntityRenderer(ModEntities.PEGA_DONKEY.get(), context -> new DonkeyRenderer(context,
+                LargeDonkeyModel::new, BhModelLayers.PEGA_DONKEY, BhModelLayers.PEGA_DONKEY_BABY,
+                BhModelLayers.PEGA_DONKEY_SADDLE, BhModelLayers.PEGA_DONKEY_SADDLE_BABY,
+                BhModelLayers.PEGA_DONKEY_CARPET, BhModelLayers.PEGA_DONKEY_CARPET_BABY,
+                BhModelLayers.PEGA_DONKEY_ARMOR, BhModelLayers.PEGA_DONKEY_ARMOR_BABY,
+                BhModelLayers.PEGA_DONKEY_CHEST, BhModelLayers.PEGA_DONKEY_CHEST_BABY,
+                BhTackTextures.PEGA_DONKEY));
+        event.registerEntityRenderer(ModEntities.POITOU_DONKEY.get(), context -> new DonkeyRenderer(context,
+                LargeDonkeyModel::new, BhModelLayers.POITOU_DONKEY, BhModelLayers.POITOU_DONKEY_BABY,
+                BhModelLayers.POITOU_DONKEY_SADDLE, BhModelLayers.POITOU_DONKEY_SADDLE_BABY,
+                BhModelLayers.POITOU_DONKEY_CARPET, BhModelLayers.POITOU_DONKEY_CARPET_BABY,
+                BhModelLayers.POITOU_DONKEY_ARMOR, BhModelLayers.POITOU_DONKEY_ARMOR_BABY,
+                BhModelLayers.POITOU_DONKEY_CHEST, BhModelLayers.POITOU_DONKEY_CHEST_BABY,
+                BhTackTextures.POITOU_DONKEY));
+        event.registerEntityRenderer(ModEntities.ZAMORANO_DONKEY.get(), context -> new DonkeyRenderer(context,
+                BhModelLayers.ZAMORANO_DONKEY, BhModelLayers.ZAMORANO_DONKEY_BABY,
+                BhModelLayers.ZAMORANO_DONKEY_SADDLE, BhModelLayers.ZAMORANO_DONKEY_SADDLE_BABY,
+                BhModelLayers.ZAMORANO_DONKEY_CARPET, BhModelLayers.ZAMORANO_DONKEY_CARPET_BABY,
+                BhModelLayers.ZAMORANO_DONKEY_ARMOR, BhModelLayers.ZAMORANO_DONKEY_ARMOR_BABY,
+                BhModelLayers.ZAMORANO_DONKEY_CHEST, BhModelLayers.ZAMORANO_DONKEY_CHEST_BABY,
+                BhTackTextures.ZAMORANO_DONKEY));
+
+        for (int i = 0; i < ModEntities.MULES.size(); i++) {
+            int size = i;
+            event.registerEntityRenderer(ModEntities.MULES.get(i).get(), ctx -> new MuleRenderer(ctx, size));
+        }
         event.registerEntityRenderer(ModEntities.HORSE_CART.get(), HorseCartRenderer::new);
         event.registerEntityRenderer(ModEntities.ICELANDIC_HORSE.get(), context ->
                 new IcelandicHorseRenderer(context,
@@ -247,6 +339,12 @@ public final class IcysBetterHorsesClient {
         event.registerEntityRenderer(ModEntities.CLYDESDALE_HORSE.get(), context ->
                 new ClydesdaleHorseRenderer(context,
                         BhModelLayers.CLYDESDALE_HORSE, BhModelLayers.CLYDESDALE_HORSE_BABY));
+    }
+
+    @SubscribeEvent
+    public static void registerItemColors(net.minecraftforge.client.event.RegisterColorHandlersEvent.Item event) {
+        event.register((stack, layer) -> -1, Items.SKELETON_HORSE_SPAWN_EGG,
+                Items.ZOMBIE_HORSE_SPAWN_EGG, Items.MULE_SPAWN_EGG);
     }
 
     @SubscribeEvent

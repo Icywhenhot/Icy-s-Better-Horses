@@ -1,0 +1,6 @@
+{
+  "values": [
+    {"id": "#forge:armors/helmets", "required": false},
+    "#icys-better-horses:horse_armor"
+  ]
+}

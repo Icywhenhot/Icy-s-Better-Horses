@@ -7,7 +7,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
-import java.util.Objects;
 
 public final class BhSecondChance {
 
@@ -22,9 +21,7 @@ public final class BhSecondChance {
             return false;
         }
         IHorseData data = IHorseData.of(horse);
-        if (!Objects.equals(data.bh_getBreedKey(), BhContent.ANDALUSIAN.getKey())
-                || !BhAbility.ANDALUSIAN_SAVE.on()
-                || BhHorseTraits.bondTier(data.bh_getBond()) < 2) {
+        if (BhAbility.ANDALUSIAN_SAVE.tier(data, BhContent.ANDALUSIAN.getKey()) < 2) {
             return false;
         }
         if (level.getGameTime() < data.bh_getRescueReadyAt()) return false;

@@ -10,7 +10,7 @@ import java.util.EnumSet;
 
 public class HorseWanderBoundsGoal extends Goal {
 
-    private static final double WANDER_HALF_EXTENT = 16.0D;
+    public static final double WANDER_HALF_EXTENT = 16.0D;
     private static final double RETURN_PADDING = 2.0D;
     private static final double RETURN_SPEED = 1.0D;
     private static final double MIN_TARGET_DISTANCE_SQ = 1.0D;

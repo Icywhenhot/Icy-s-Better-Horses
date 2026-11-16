@@ -1,8 +1,7 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.feature.breed.MuleLine;
 import icy.betterhorses.net.registry.AbilityType;
-import icy.betterhorses.net.registry.BhRegistries;
-import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 
@@ -90,15 +89,7 @@ public final class BhSurge {
     }
 
     public static int slotOf(IHorseData data, ResourceKey<AbilityType> ability) {
-        ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
-        if (breedKey == null) {
-            return -1;
-        }
-        BreedType type = BhRegistries.breedTypeRegistry().getValue(breedKey.location());
-        if (type == null) {
-            return -1;
-        }
-        int slot = type.abilities().indexOf(ability);
+        int slot = MuleLine.abilitiesOf(data).indexOf(ability);
         return slot < ABILITY_SLOTS ? slot : -1;
     }
 

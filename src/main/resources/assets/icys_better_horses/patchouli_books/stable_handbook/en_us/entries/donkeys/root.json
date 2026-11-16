@@ -1,0 +1,36 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.donkeys.root.name",
+  "icon": "minecraft:donkey_spawn_egg",
+  "category": "icys_better_horses:donkeys",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.root.about.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.root.about.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.root.perks.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.root.perks.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.root.perks.text.part2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.root.carrot.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.root.carrot.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.root.packing.text",
+      "title": "book.icys-better-horses.stable_handbook.donkeys.root.packing.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.donkeys.root.packing.text.part2"
+    }
+  ]
+}

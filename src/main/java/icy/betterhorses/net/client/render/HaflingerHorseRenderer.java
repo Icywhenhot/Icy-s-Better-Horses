@@ -19,5 +19,6 @@ public class HaflingerHorseRenderer extends BhHorseRenderer<HaflingerHorse> {
                 BhModelLayers.HAFLINGER_CHEST,
                 BhModelLayers.HAFLINGER_CHEST_BABY,
                 BhTackTextures.HAFLINGER);
+        addHorseshoes(BhModelLayers.HAFLINGER_HORSE);
     }
 }

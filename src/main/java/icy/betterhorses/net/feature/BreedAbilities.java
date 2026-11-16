@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.feature.breed.BhAbilityState;
 import icy.betterhorses.net.feature.breed.BreedAbility;
+import icy.betterhorses.net.feature.breed.MuleLine;
 import icy.betterhorses.net.registry.AbilityType;
 import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BhRegistries;
@@ -29,6 +30,7 @@ public final class BreedAbilities implements HorseFeature {
     private final BhAbilityState state = new BhAbilityState();
     private final ArchetypePerks perks = new ArchetypePerks();
     private @Nullable ResourceKey<BreedType> activeBreedKey;
+    private @Nullable MuleLine activeLine;
     private boolean breedInitialized;
     private final List<Slot> slots = new ArrayList<>();
     private int lastRows = -1;
@@ -58,7 +60,10 @@ public final class BreedAbilities implements HorseFeature {
         state.tick(horse);
         perks.tick(horse, data, archetype);
         BhSurge.decayAbilities(data);
-        for (Slot slot : slots) {
+        boolean mule = activeLine != null;
+        for (int i = 0; i < slots.size(); i++) {
+            Slot slot = slots.get(i);
+            if (mule) data.bh_setSurgeChannel(Math.min(i, BhSurge.ABILITY_SLOTS - 1));
             if (!enabled(slot, data)) {
                 if (slot.offered) {
                     slot.ability.onDetach(horse, data);
@@ -69,11 +74,13 @@ public final class BreedAbilities implements HorseFeature {
             slot.offered = true;
             slot.ability.tick(horse, data, state);
         }
+        if (mule) data.bh_setSurgeChannel(0);
     }
 
     public void initialize(AbstractHorse horse, IHorseData data) {
         ResourceKey<BreedType> key = data.bh_getBreedKey();
-        if (breedInitialized && Objects.equals(key, activeBreedKey)) return;
+        MuleLine line = MuleLine.of(data);
+        if (breedInitialized && Objects.equals(key, activeBreedKey) && Objects.equals(line, activeLine)) return;
         if (!horse.level().isClientSide()) {
             snapshot();
             detachAll(horse, data);
@@ -81,11 +88,12 @@ public final class BreedAbilities implements HorseFeature {
         }
         breedInitialized = true;
         activeBreedKey = key;
+        activeLine = line;
         slots.clear();
         BreedType breed = key == null ? null : BhRegistries.breedTypeRegistry().getValue(key.location());
         if (breed != null) {
             CompoundTag tags = saved.getCompound(key.location().toString());
-            for (ResourceKey<AbilityType> id : breed.abilities()) {
+            for (ResourceKey<AbilityType> id : MuleLine.abilitiesOf(data)) {
                 AbilityType type = BhRegistries.abilityTypeRegistry().getValue(id.location());
                 if (type == null) continue;
                 BreedAbility ability = type.create();
@@ -128,6 +136,7 @@ public final class BreedAbilities implements HorseFeature {
     }
 
     private static boolean enabled(Slot slot, IHorseData data) {
+        if (MuleLine.of(data) != null) return true;
         return slot.id.location().getNamespace().equals(IcysBetterHorses.MOD_ID)
                 && data.bh_getBreed().isRealBreed()
                 ? BhConfig.anyAbilityEnabled(data.bh_getBreed()) : slot.type.defaultEnabled();
@@ -138,6 +147,7 @@ public final class BreedAbilities implements HorseFeature {
         saved = tag.copy();
         breedInitialized = false;
         activeBreedKey = null;
+        activeLine = null;
         slots.clear();
     }
 
@@ -184,10 +194,9 @@ public final class BreedAbilities implements HorseFeature {
                                       ServerLevel level, int rows) {
         SimpleContainer chest = data.bh_getChestContainer();
         for (int i = rows * 9; i < chest.getContainerSize(); i++) {
-            ItemStack stack = chest.getItem(i);
-            if (!stack.isEmpty()) {
-                chest.setItem(i, ItemStack.EMPTY);
-                horse.spawnAtLocation(stack);
+            ItemStack stack = chest.removeItemNoUpdate(i);
+            while (!stack.isEmpty()) {
+                horse.spawnAtLocation(stack.split(stack.getMaxStackSize()));
             }
         }
         chest.setChanged();

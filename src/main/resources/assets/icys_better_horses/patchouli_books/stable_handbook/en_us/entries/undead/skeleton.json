@@ -1,0 +1,39 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.undead.skeleton.name",
+  "icon": "icys-better-horses:skeleton_horse_spawn_egg",
+  "category": "icys_better_horses:undead",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.undead.skeleton.stats.text",
+      "title": "book.icys-better-horses.stable_handbook.undead.skeleton.stats.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.undead.skeleton.ability.text",
+      "title": "book.icys-better-horses.stable_handbook.undead.skeleton.ability.title"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.undead.skeleton.ability.text.part2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "text": "book.icys-better-horses.stable_handbook.undead.skeleton.spawns.text",
+      "title": "book.icys-better-horses.stable_handbook.undead.skeleton.spawns.title"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:small_skeleton_horse"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:medium_skeleton_horse"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:large_skeleton_horse"
+    }
+  ]
+}

@@ -1,7 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
 import icy.betterhorses.net.BhHorseAttributes;
-import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
@@ -26,7 +25,7 @@ public final class StandstillBurst implements BreedAbility {
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
-        int tier = BhHorseTraits.bondTier(data.bh_getBond());
+        int tier = Math.max(0, BhAbility.QUARTER_BURST.tier(data));
 
         if (burst > 0) {
             burst--;
@@ -43,7 +42,7 @@ public final class StandstillBurst implements BreedAbility {
             data.bh_setSurge(BhSurge.pack(BhSurge.COOLING, cooldown, span, bonus));
             return;
         }
-        if (!BhAbility.QUARTER_BURST.on()) {
+        if (!BhAbility.QUARTER_BURST.on(data)) {
             data.bh_setSurge(0);
             return;
         }
