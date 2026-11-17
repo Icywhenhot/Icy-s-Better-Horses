@@ -1,5 +1,7 @@
 package icy.betterhorses.net.mixin;
 
+import icy.betterhorses.net.tuning.FoalRules;
+import icy.betterhorses.net.tuning.Tuning;
 import icy.betterhorses.net.BhHorseKind;
 import icy.betterhorses.net.BhConfig;
 import icy.betterhorses.net.BhCriteria;
@@ -117,9 +119,9 @@ public abstract class AnimalMixin {
             childData.bh_setMixedBreed(false);
         }
 
-        bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.MAX_HEALTH, VANILLA_MAX_HEALTH, HEALTH_DISPLAY_PER_RAW);
-        bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.MOVEMENT_SPEED, VANILLA_MAX_SPEED, SPEED_DISPLAY_PER_RAW);
-        bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.JUMP_STRENGTH, VANILLA_MAX_JUMP, JUMP_DISPLAY_PER_RAW);
+        bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.MAX_HEALTH, VANILLA_MAX_HEALTH, FoalRules.Stat.HEALTH);
+        bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.MOVEMENT_SPEED, VANILLA_MAX_SPEED, FoalRules.Stat.SPEED);
+        bh_inheritBetterStat(selfHorse, partnerHorse, childHorse, Attributes.JUMP_STRENGTH, VANILLA_MAX_JUMP, FoalRules.Stat.JUMP);
 
         childHorse.setHealth(childHorse.getMaxHealth());
 
@@ -163,24 +165,14 @@ public abstract class AnimalMixin {
     private static final double VANILLA_MAX_SPEED = 0.3375D;
     private static final double VANILLA_MAX_JUMP = 1.0D;
 
-    private static final double SPEED_DISPLAY_PER_RAW = 43.2D;
-    private static final double JUMP_DISPLAY_PER_RAW = 6.0D;
-    private static final double HEALTH_DISPLAY_PER_RAW = 1.0D;
-
-    private static final double VARIANCE_DISPLAY_MIN = -0.5D;
-    private static final double VARIANCE_DISPLAY_MAX = 1.0D;
-
     private static void bh_inheritBetterStat(AbstractHorse p1, AbstractHorse p2, AbstractHorse child,
-                                             Attribute attr, double cap, double displayPerRaw) {
+                                             Attribute attr, double cap, FoalRules.Stat stat) {
         AttributeInstance p1Attr = p1.getAttribute(attr);
         AttributeInstance p2Attr = p2.getAttribute(attr);
         AttributeInstance childAttr = child.getAttribute(attr);
         if (p1Attr == null || p2Attr == null || childAttr == null) return;
 
-        double best = Math.max(p1Attr.getBaseValue(), p2Attr.getBaseValue());
-        double deltaDisplay = VARIANCE_DISPLAY_MIN
-                + p1.getRandom().nextDouble() * (VARIANCE_DISPLAY_MAX - VARIANCE_DISPLAY_MIN);
-        double deltaRaw = deltaDisplay / displayPerRaw;
-        childAttr.setBaseValue(Math.max(0.0D, Math.min(cap, best + deltaRaw)));
+        double rolled = Tuning.foals().inherit(p1Attr.getBaseValue(), p2Attr.getBaseValue(), stat, p1.getRandom());
+        childAttr.setBaseValue(Math.max(0.0D, Math.min(cap, rolled)));
     }
 }

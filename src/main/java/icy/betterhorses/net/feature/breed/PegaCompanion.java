@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhSurge;
@@ -28,9 +29,10 @@ import java.util.Set;
 public final class PegaCompanion implements BreedAbility {
 
     private static final String KEY = "pega_companion";
-    private static final float REFUND_CHANCE = 0.4F;
-    private static final int RALLY_TICKS = 20 * 15;
-    private static final double RALLY_SPEED = 0.25D;
+    private static final Tune REFUND_CHANCE = Tune.of("pega_companion", "medkit_refund_chance", 0.4D).within(0.0D, 1.0D);
+    private static final Tune RALLY_TICKS = Tune.of("pega_companion", "rally_ticks", 300.0D).within(1.0D, 72000.0D);
+    private static final Tune RALLY_SPEED = Tune.of("pega_companion", "rally_speed", 0.25D).within(0.0D, 10.0D);
+    private static final Tune SEAT_HUNGER = Tune.of("pega_companion", "rider_hunger", 0.75D).within(0.0D, 10.0D);
 
     private final Set<MobEffect> ailments = new HashSet<>();
     private int kitWait;
@@ -43,7 +45,7 @@ public final class PegaCompanion implements BreedAbility {
             return;
         }
         if (kitWait > 0 && --kitWait == 0 && horse.isAlive()
-                && horse.getHealth() < horse.getMaxHealth() * ArchetypePerks.MEDKIT_THRESHOLD) {
+                && horse.getHealth() < horse.getMaxHealth() * ArchetypePerks.MEDKIT_THRESHOLD.f()) {
             ArchetypePerks.useMedkit(horse, data);
         }
         boolean stirred = freshAilment(horse) || horse.hurtTime > 0 || SlowBlockImmunity.wading(horse);
@@ -51,7 +53,7 @@ public final class PegaCompanion implements BreedAbility {
             if (rally == 0) {
                 BhSurge.pulse(data, 25, 3);
             }
-            rally = RALLY_TICKS;
+            rally = RALLY_TICKS.ticks();
         } else if (rally > 0) {
             rally--;
         }
@@ -59,7 +61,7 @@ public final class PegaCompanion implements BreedAbility {
             fast = rally > 0;
             if (fast) {
                 BhHorseAttributes.apply(horse, Attributes.MOVEMENT_SPEED, BhHorseAttributes.Source.ABILITY, KEY,
-                        RALLY_SPEED, AttributeModifier.Operation.MULTIPLY_BASE);
+                        RALLY_SPEED.get(), AttributeModifier.Operation.MULTIPLY_BASE);
             } else {
                 BhHorseAttributes.clear(horse, Attributes.MOVEMENT_SPEED, BhHorseAttributes.Source.ABILITY, KEY);
             }
@@ -90,7 +92,7 @@ public final class PegaCompanion implements BreedAbility {
             BhSurge.pulse(data, 0, 2);
         }
         PegaCompanion pega = of(horse);
-        if (tier < 0 || pega == null || horse.getRandom().nextFloat() >= REFUND_CHANCE) {
+        if (tier < 0 || pega == null || horse.getRandom().nextFloat() >= REFUND_CHANCE.f()) {
             return;
         }
         SimpleContainer gear = data.bh_getGearContainer();
@@ -119,7 +121,7 @@ public final class PegaCompanion implements BreedAbility {
     public static float exhaustion(Player player, float amount) {
         return player.getVehicle() instanceof AbstractHorse horse
                 && BhAbility.PEGA_SEAT.tier(IHorseData.of(horse), BhContent.PEGA_DONKEY.getKey()) >= 0
-                ? amount * 0.75F : amount;
+                ? amount * SEAT_HUNGER.f() : amount;
     }
 
     @Override

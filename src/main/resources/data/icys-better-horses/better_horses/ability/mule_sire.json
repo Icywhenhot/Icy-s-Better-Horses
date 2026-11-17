@@ -1,0 +1,8 @@
+{
+  "speed_bonus_min": 0.5,
+  "speed_bonus_max": 1.5,
+  "health_bonus_min": 2,
+  "health_bonus_max": 4,
+  "jump_bonus_min": 0.25,
+  "jump_bonus_max": 0.5
+}

@@ -24,9 +24,9 @@ public final class DrownedLungs implements BreedAbility {
         Player rider = BhBreedAbilities.rider(horse);
         int packed = 0;
         if (dash.push(horse, rider, eligible(horse, data, rider))) {
-            packed = BhSurge.pack(BhSurge.ACTIVE, dash.dash, WaterDash.DASH_TICKS, 0, 1);
+            packed = BhSurge.pack(BhSurge.ACTIVE, dash.dash, WaterDash.span(), 0, 1);
         } else if (dash.cooldown > 0 && BhAbility.DROWNED_DASH.on()) {
-            packed = BhSurge.pack(BhSurge.COOLING, dash.cooldown, WaterDash.COOLDOWN, 0, 1);
+            packed = BhSurge.pack(BhSurge.COOLING, dash.cooldown, WaterDash.rest(), 0, 1);
         } else if (rider != null && rider.isEyeInFluid(FluidTags.WATER) && BhAbility.DROWNED_GILLS.on()) {
             packed = BhSurge.pack(BhSurge.ACTIVE, 0, 0, 0, 0);
         }

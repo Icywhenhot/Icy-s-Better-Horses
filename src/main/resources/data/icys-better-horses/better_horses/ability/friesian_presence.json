@@ -1,0 +1,7 @@
+{
+  "calm_radius": 12,
+  "mount_calm_radius": 24,
+  "calms_hostiles": [0, 1, 1],
+  "dressage_radius": 5,
+  "dressage_push": 1.1
+}

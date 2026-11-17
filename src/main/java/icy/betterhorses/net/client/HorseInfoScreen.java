@@ -11,7 +11,8 @@ import icy.betterhorses.net.HorseManageAction;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.network.HorseManagePayload;
 import icy.betterhorses.net.BhNetworking;
-import icy.betterhorses.net.registry.ArchetypeType;
+import icy.betterhorses.net.BhBreedData;
+import icy.betterhorses.net.tuning.Tuning;
 import icy.betterhorses.net.registry.BreedType;
 import icy.betterhorses.net.registry.GenderType;
 import net.minecraft.client.gui.Font;
@@ -51,10 +52,6 @@ public class HorseInfoScreen extends Screen {
 
     private static final double SPEED_DISPLAY_FACTOR = 43.2D;
 
-    private static final double BOND_MAX_MULTIPLIER = 1.0D + 5 * 0.15D;
-    private static final double JUMP_MAX =
-            BhJumpHeight.blocks(ArchetypeType.topJump() * BOND_MAX_MULTIPLIER);
-    private static final double HEALTH_MAX = ArchetypeType.topHealth();
 
     private static final int DISOWN_BTN_WIDTH = 110;
     private static final int DISOWN_BTN_HEIGHT = 24;
@@ -185,7 +182,7 @@ public class HorseInfoScreen extends Screen {
         drawStatRow(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.bond"),
                 Component.translatable("screen.icys-better-horses.info.bond_value", bond),
-                bond / 100.0D);
+                bond / (double) Tuning.bond().maxBond());
         y += ROW_HEIGHT;
 
         double speedBlocksPerSec = horse.getAttributeValue(Attributes.MOVEMENT_SPEED) * SPEED_DISPLAY_FACTOR * statP;
@@ -193,7 +190,7 @@ public class HorseInfoScreen extends Screen {
                 Component.translatable("screen.icys-better-horses.info.speed"),
                 Component.translatable("screen.icys-better-horses.info.speed_value",
                         String.format(Locale.ROOT, "%.1f", speedBlocksPerSec)),
-                speedBlocksPerSec / (ArchetypeType.topSpeed() * BOND_MAX_MULTIPLIER * SPEED_DISPLAY_FACTOR));
+                speedBlocksPerSec / (BhBreedData.topSpeed() * Tuning.bond().speedScale() * SPEED_DISPLAY_FACTOR));
         y += ROW_HEIGHT;
 
         double jumpBlocks = BhJumpHeight.blocks(horse.getAttributeValue(Attributes.JUMP_STRENGTH)) * statP;
@@ -201,7 +198,7 @@ public class HorseInfoScreen extends Screen {
                 Component.translatable("screen.icys-better-horses.info.jump"),
                 Component.translatable("screen.icys-better-horses.info.jump_value",
                         String.format(Locale.ROOT, "%.2f", jumpBlocks)),
-                jumpBlocks / JUMP_MAX);
+                jumpBlocks / BhJumpHeight.blocks(BhBreedData.topJump() * Tuning.bond().jumpScale()));
         y += ROW_HEIGHT;
 
         double health = horse.getMaxHealth() * statP;
@@ -209,7 +206,7 @@ public class HorseInfoScreen extends Screen {
                 Component.translatable("screen.icys-better-horses.info.health"),
                 Component.translatable("screen.icys-better-horses.info.health_value",
                         String.format(Locale.ROOT, "%.1f", health)),
-                health / HEALTH_MAX);
+                health / (BhBreedData.topHealth() * Tuning.bond().healthScale()));
         y += ROW_HEIGHT;
 
         String shown = data.bh_getShownTreat();
@@ -407,7 +404,7 @@ public class HorseInfoScreen extends Screen {
         out.add(Component.translatable("screen.icys-better-horses.info.lineage",
                 line.horse().displayName(), line.donkey().displayName()));
         int reached = BhHorseTraits.bondTier(bond);
-        int[] needs = {0, BhHorseTraits.TIER_TWO_BOND, BhHorseTraits.TIER_THREE_BOND};
+        int[] needs = {0, Tuning.bond().tierTwo(), Tuning.bond().tierThree()};
         for (int k = 0; k < MuleLine.TIERS; k++) {
             Component what;
             List<BhAbility> traits = line.traits(k);

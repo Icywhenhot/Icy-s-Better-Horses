@@ -45,7 +45,8 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import icy.betterhorses.net.network.BreedDataPayload;
-import icy.betterhorses.net.registry.ArchetypeType;
+import icy.betterhorses.net.network.TuningPayload;
+import icy.betterhorses.net.tuning.Tuning;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.BhChargePayload;
 import net.minecraft.client.KeyMapping;
@@ -190,7 +191,15 @@ public final class IcysBetterHorsesClient {
     public static void receiveBreeds(BreedDataPayload payload) {
         if (Minecraft.getInstance().hasSingleplayerServer()) return;
         BhBreedData.replaceAll(payload.toMap());
-        payload.applyClassSpeeds();
+        tookServerBreeds = true;
+    }
+
+    public static void receiveTuning(TuningPayload payload) {
+        if (Minecraft.getInstance().hasSingleplayerServer()) return;
+        int warned = Tuning.apply(payload.files(), msg -> IcysBetterHorses.LOGGER.debug("[tuning] server {}", msg));
+        if (warned > 0) {
+            IcysBetterHorses.LOGGER.info("[tuning] server tuning had {} warnings", warned);
+        }
         tookServerBreeds = true;
     }
 
@@ -384,7 +393,7 @@ public final class IcysBetterHorsesClient {
         BhConfig.dropServer();
         if (tookServerBreeds) {
             BhBreedData.resetToBuiltIn();
-            ArchetypeType.resetSpeeds();
+            Tuning.reset();
             tookServerBreeds = false;
         }
         BhClientCaches.resetAll();

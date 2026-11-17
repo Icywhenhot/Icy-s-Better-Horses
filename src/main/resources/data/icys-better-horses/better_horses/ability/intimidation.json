@@ -1,0 +1,7 @@
+{
+  "fear_ticks": 100,
+  "snort_cooldown": 40,
+  "radius": [10, 16, 16],
+  "owner_reach": 16,
+  "push": 0.42
+}

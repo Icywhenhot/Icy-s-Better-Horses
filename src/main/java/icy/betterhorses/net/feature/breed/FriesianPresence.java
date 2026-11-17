@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.ICalmable;
@@ -24,13 +25,13 @@ import java.util.UUID;
 
 public final class FriesianPresence implements BreedAbility {
 
-    private static final double RADIUS = 12.0D;
-    private static final double MOUNT_RADIUS = 24.0D;
     private static final int INTERVAL = 10;
     private static final int CALM_TICKS = 30;
-
-    private static final double DRESSAGE_RADIUS = 5.0D;
-    private static final double DRESSAGE_PUSH = 1.1D;
+    private static final Tune RADIUS = Tune.of("friesian_presence", "calm_radius", 12.0D).within(0.0D, 128.0D);
+    private static final Tune MOUNT_RADIUS = Tune.of("friesian_presence", "mount_calm_radius", 24.0D).within(0.0D, 128.0D);
+    private static final Tune HOSTILES = Tune.of("friesian_presence", "calms_hostiles", 0.0D, 1.0D, 1.0D).within(0.0D, 1.0D);
+    private static final Tune DRESSAGE_RADIUS = Tune.of("friesian_presence", "dressage_radius", 5.0D).within(0.0D, 64.0D);
+    private static final Tune DRESSAGE_PUSH = Tune.of("friesian_presence", "dressage_push", 1.1D).within(0.0D, 10.0D);
 
     private final Set<UUID> calmed = new HashSet<>();
     private boolean hadRider;
@@ -47,12 +48,12 @@ public final class FriesianPresence implements BreedAbility {
         }
         boolean fresh = false;
         if (soothes && rider != null && !hadRider) {
-            fresh = calm(horse, rider, MOUNT_RADIUS, true, tier);
+            fresh = calm(horse, rider, MOUNT_RADIUS.get(), true, tier);
         }
         hadRider = rider != null;
 
         if (soothes && rider != null && horse.tickCount % INTERVAL == 0) {
-            fresh |= calm(horse, rider, RADIUS, false, tier);
+            fresh |= calm(horse, rider, RADIUS.get(), false, tier);
         }
         if (fresh) {
             BhSurge.pulse(data, 0, 1);
@@ -69,7 +70,7 @@ public final class FriesianPresence implements BreedAbility {
     private boolean dressage(AbstractHorse horse) {
         Vec3 look = horse.getLookAngle();
         Vec3 dir = new Vec3(look.x, 0.0D, look.z).normalize();
-        AABB box = horse.getBoundingBox().inflate(DRESSAGE_RADIUS);
+        AABB box = horse.getBoundingBox().inflate(DRESSAGE_RADIUS.get());
         boolean pushed = false;
         for (LivingEntity target : horse.level().getEntitiesOfClass(LivingEntity.class, box)) {
             if (target == horse || horse.hasIndirectPassenger(target) || !(target instanceof Enemy)) {
@@ -79,7 +80,7 @@ public final class FriesianPresence implements BreedAbility {
             if (to.lengthSqr() < 1.0E-4D || dir.dot(to.normalize()) < 0.0D) {
                 continue;
             }
-            Vec3 push = new Vec3(to.x, 0.0D, to.z).normalize().scale(DRESSAGE_PUSH);
+            Vec3 push = new Vec3(to.x, 0.0D, to.z).normalize().scale(DRESSAGE_PUSH.get());
             target.setDeltaMovement(target.getDeltaMovement().add(push.x, 0.4D, push.z));
             target.hurtMarked = true;
             if (target instanceof Mob mob) {
@@ -103,7 +104,7 @@ public final class FriesianPresence implements BreedAbility {
         AABB box = horse.getBoundingBox().inflate(radius);
         for (Mob mob : horse.level().getEntitiesOfClass(Mob.class, box)) {
             boolean neutral = mob instanceof NeutralMob;
-            if (!neutral && !(tier >= 1 && mob instanceof Enemy) || !(mob instanceof ICalmable calmable)) {
+            if (!neutral && !(HOSTILES.at(tier) >= 0.5D && mob instanceof Enemy) || !(mob instanceof ICalmable calmable)) {
                 continue;
             }
             if (calmable.bh_calmedBy(rider.getUUID())) {

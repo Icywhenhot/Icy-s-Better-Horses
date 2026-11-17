@@ -3,6 +3,7 @@ package icy.betterhorses.net;
 import icy.betterhorses.net.network.BhFreeLookPayload;
 import icy.betterhorses.net.network.BhRearPayload;
 import icy.betterhorses.net.network.BreedDataPayload;
+import icy.betterhorses.net.network.TuningPayload;
 import icy.betterhorses.net.network.CallHorsePayload;
 import icy.betterhorses.net.network.CartMenuPayload;
 import icy.betterhorses.net.network.BhChargePayload;
@@ -39,7 +40,7 @@ import java.util.function.Supplier;
 
 public final class BhNetworking {
 
-    private static final String PROTOCOL_VERSION = "9";
+    private static final String PROTOCOL_VERSION = "10";
     private static final ResourceLocation CHANNEL_ID =
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "main");
     private static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
@@ -93,6 +94,8 @@ public final class BhNetworking {
                 payload -> () -> IcysBetterHorsesClient.receiveConfig(payload));
         toClient(BreedDataPayload.class, BreedDataPayload::encode, BreedDataPayload::decode,
                 payload -> () -> IcysBetterHorsesClient.receiveBreeds(payload));
+        toClient(TuningPayload.class, TuningPayload::encode, TuningPayload::decode,
+                payload -> () -> IcysBetterHorsesClient.receiveTuning(payload));
         toServer(BhChargePayload.class, BhChargePayload::encode, BhChargePayload::decode,
                 (payload, player) -> HorseCombat.riderCharge(player.getUUID(), payload.on()));
 

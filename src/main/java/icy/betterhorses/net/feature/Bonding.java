@@ -3,6 +3,8 @@ package icy.betterhorses.net.feature;
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.IcysBetterHorses;
+import icy.betterhorses.net.tuning.BondRules;
+import icy.betterhorses.net.tuning.Tuning;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -22,22 +24,11 @@ import java.util.UUID;
 
 public final class Bonding implements HorseFeature {
 
-    private static final double RIDE_BLOCKS = 1000.0D;
     private static final double MAX_STEP = 4.0D;
     private static final int FULL_JUMP = 90;
     private static final double BIG_JUMP_RISE = 2.0D;
     private static final int JUMP_TIMEOUT = 60;
-    private static final int JUMPS_PER_BOND = 10;
-    private static final int JUMP_BOND_CAP = 2;
-    private static final int KILL_CAP = 3;
-    private static final int SAVE_CAP = 2;
-    private static final int SAVE_BOND = 2;
     public static final int SAVE_WINDOW = 100;
-    private static final int HIT_LOSS = 2;
-    private static final int TREAT_COOLDOWN = 6000;
-    private static final int GAPPLE_COOLDOWN = 6000;
-    private static final int GAPPLE_BOND = 2;
-    private static final int FOAL_CAP = 50;
     private static final TagKey<Item> SNACKS = TagKey.create(Registries.ITEM,
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "horse_snacks"));
     private static final Item[] TREATS = {Items.WHEAT, Items.SUGAR, Items.APPLE, Items.GOLDEN_CARROT};
@@ -84,9 +75,10 @@ public final class Bonding implements HorseFeature {
         if (owner != null && step <= MAX_STEP && !horse.isInWater() && !horse.isPassenger()
                 && horse.getPassengers().stream().anyMatch(p -> owner.equals(p.getUUID()))) {
             ridden += step;
-            if (ridden >= RIDE_BLOCKS) {
-                ridden -= RIDE_BLOCKS;
-                BhHorseTraits.grantBond(data, 1);
+            BondRules rules = Tuning.bond();
+            if (ridden >= rules.rideBlocks()) {
+                ridden = Math.min(ridden - rules.rideBlocks(), rules.rideBlocks());
+                BhHorseTraits.grantBond(data, rules.rideBond());
             }
         }
 
@@ -121,11 +113,12 @@ public final class Bonding implements HorseFeature {
 
     private void bigJump(AbstractHorse horse, IHorseData data) {
         rollDay(horse);
-        if (jumpBond >= JUMP_BOND_CAP) {
+        BondRules rules = Tuning.bond();
+        if (jumpBond >= rules.jumpDailyCap()) {
             return;
         }
         jumps++;
-        if (jumps >= JUMPS_PER_BOND) {
+        if (jumps >= rules.jumpsPerBond()) {
             jumps = 0;
             jumpBond++;
             BhHorseTraits.grantBond(data, 1);
@@ -134,26 +127,26 @@ public final class Bonding implements HorseFeature {
 
     public void mountedKill(AbstractHorse horse, IHorseData data) {
         rollDay(horse);
-        if (kills < KILL_CAP) {
+        if (kills < Tuning.bond().killDailyCap()) {
             kills++;
-            BhHorseTraits.grantBond(data, 1);
+            BhHorseTraits.grantBond(data, Tuning.bond().killBond());
         }
     }
 
     public void saved(AbstractHorse horse, IHorseData data) {
         rollDay(horse);
-        if (saves < SAVE_CAP) {
+        if (saves < Tuning.bond().saveDailyCap()) {
             saves++;
-            BhHorseTraits.grantBond(data, SAVE_BOND);
+            BhHorseTraits.grantBond(data, Tuning.bond().saveBond());
         }
     }
 
     public static void hitByOwner(IHorseData data) {
-        data.bh_setBond(data.bh_getBond() - HIT_LOSS);
+        data.bh_setBond(data.bh_getBond() - Tuning.bond().hitLoss());
     }
 
     public static int foalBond(IHorseData a, IHorseData b) {
-        return Math.min(FOAL_CAP, (a.bh_getBond() + b.bh_getBond()) / 2);
+        return Math.min(Tuning.bond().foalCap(), (a.bh_getBond() + b.bh_getBond()) / 2);
     }
 
     private void rollDay(AbstractHorse horse) {
@@ -178,16 +171,16 @@ public final class Bonding implements HorseFeature {
         }
         long now = horse.level().getGameTime();
         if (now >= treatReadyAt) {
-            treatReadyAt = now + TREAT_COOLDOWN;
-            BhHorseTraits.grantBond(data, 1);
+            treatReadyAt = now + Tuning.bond().treatCooldown();
+            BhHorseTraits.grantBond(data, Tuning.bond().treatBond());
         }
     }
 
     public void fedGapple(AbstractHorse horse, IHorseData data) {
         long now = horse.level().getGameTime();
         if (now >= gappleReadyAt) {
-            gappleReadyAt = now + GAPPLE_COOLDOWN;
-            BhHorseTraits.grantBond(data, GAPPLE_BOND);
+            gappleReadyAt = now + Tuning.bond().gappleCooldown();
+            BhHorseTraits.grantBond(data, Tuning.bond().gappleBond());
         }
     }
 

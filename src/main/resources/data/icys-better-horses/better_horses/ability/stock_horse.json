@@ -1,0 +1,7 @@
+{
+  "feed_every": 100,
+  "herd_radius": 20,
+  "feed_radius": 12,
+  "herd_stop_distance": 5,
+  "herd_speed": 2
+}

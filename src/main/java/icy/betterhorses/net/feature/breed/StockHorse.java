@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
@@ -27,11 +28,11 @@ public final class StockHorse implements BreedAbility {
     private static final int VISION_DURATION = 300;
     private static final int VISION_REFRESH = 100;
     private static final int HERD_INTERVAL = 10;
-    private static final int FEED_INTERVAL = 100;
-    private static final double HERD_RADIUS = 20.0D;
-    private static final double FEED_RADIUS = 12.0D;
-    private static final double HERD_STOP_SQ = 25.0D;
-    private static final double HERD_SPEED = 2.0D;
+    private static final Tune FEED_INTERVAL = Tune.of("stock_horse", "feed_every", 100.0D).within(1.0D, 72000.0D);
+    private static final Tune HERD_RADIUS = Tune.of("stock_horse", "herd_radius", 20.0D).within(0.0D, 128.0D);
+    private static final Tune FEED_RADIUS = Tune.of("stock_horse", "feed_radius", 12.0D).within(0.0D, 128.0D);
+    private static final Tune HERD_STOP = Tune.of("stock_horse", "herd_stop_distance", 5.0D).within(0.0D, 64.0D);
+    private static final Tune HERD_SPEED = Tune.of("stock_horse", "herd_speed", 2.0D).within(0.0D, 10.0D);
     private static final TagKey<EntityType<?>> LIVESTOCK = TagKey.create(Registries.ENTITY_TYPE,
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "livestock"));
 
@@ -54,18 +55,18 @@ public final class StockHorse implements BreedAbility {
             BhSurge.pulse(data, 0);
         }
         if (BhAbility.APPALOOSA_FEED.tier(data) >= 2
-                && horse.tickCount % FEED_INTERVAL == 0 && feed(horse, data)) {
+                && horse.tickCount % FEED_INTERVAL.ticks() == 0 && feed(horse, data)) {
             BhSurge.pulse(data, 0, 1);
         }
     }
 
     private boolean herd(AbstractHorse horse) {
         boolean moved = false;
-        for (Animal animal : nearby(horse, HERD_RADIUS)) {
-            if (animal.isBaby() || horse.distanceToSqr(animal) < HERD_STOP_SQ) {
+        for (Animal animal : nearby(horse, HERD_RADIUS.get())) {
+            if (animal.isBaby() || horse.distanceToSqr(animal) < HERD_STOP.get() * HERD_STOP.get()) {
                 continue;
             }
-            animal.getNavigation().moveTo(horse, HERD_SPEED);
+            animal.getNavigation().moveTo(horse, HERD_SPEED.get());
             moved = true;
         }
         return moved;
@@ -77,7 +78,7 @@ public final class StockHorse implements BreedAbility {
         }
         boolean fed = false;
         SimpleContainer chest = data.bh_getChestContainer();
-        for (Animal animal : nearby(horse, FEED_RADIUS)) {
+        for (Animal animal : nearby(horse, FEED_RADIUS.get())) {
             if (animal.getAge() != 0 || !animal.canFallInLove()) {
                 continue;
             }

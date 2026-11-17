@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.IcysBetterHorses;
@@ -18,8 +19,8 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 
 public final class FarmCompanion {
 
-    private static final double RADIUS = 16.0D;
-    private static final float TWIN_CHANCE = 0.25F;
+    private static final Tune RADIUS = Tune.of("farm_companion", "twin_radius", 16.0D).within(0.0D, 128.0D);
+    private static final Tune TWIN_CHANCE = Tune.of("farm_companion", "twin_chance", 0.25D).within(0.0D, 1.0D);
     private static final TagKey<EntityType<?>> LIVESTOCK = TagKey.create(Registries.ENTITY_TYPE,
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "livestock"));
 
@@ -30,7 +31,7 @@ public final class FarmCompanion {
                 || !(event.getParentA() instanceof Animal a) || !(event.getParentB() instanceof Animal b)
                 || !a.getType().is(LIVESTOCK)
                 || !(a.level() instanceof ServerLevel level)
-                || level.random.nextFloat() >= TWIN_CHANCE || !nearMiniature(level, a, 2)) {
+                || level.random.nextFloat() >= TWIN_CHANCE.f() || !nearMiniature(level, a, 2)) {
             return;
         }
         AgeableMob twin = a.getBreedOffspring(level, b);
@@ -58,10 +59,10 @@ public final class FarmCompanion {
     }
 
     private static boolean nearMiniature(ServerLevel level, Animal parent, int tier) {
-        return !level.getEntitiesOfClass(BhBreedHorse.class, parent.getBoundingBox().inflate(RADIUS), d -> {
+        return !level.getEntitiesOfClass(BhBreedHorse.class, parent.getBoundingBox().inflate(RADIUS.get()), d -> {
             IHorseData data = IHorseData.of(d);
             return d.isAlive() && !d.isBaby()
-                    && d.distanceToSqr(parent) <= RADIUS * RADIUS && !data.bh_isAbilityPaused()
+                    && d.distanceToSqr(parent) <= RADIUS.get() * RADIUS.get() && !data.bh_isAbilityPaused()
                     && BhAbility.MINIATURE_FARM.tier(data, BhContent.MINIATURE_DONKEY.getKey()) >= tier;
         }).isEmpty();
     }

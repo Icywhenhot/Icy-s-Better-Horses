@@ -1,5 +1,6 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.entity.BhBreedEntity;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -7,27 +8,26 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Horse;
 import icy.betterhorses.net.registry.BhContent;
+import icy.betterhorses.net.tuning.BondRules;
+import icy.betterhorses.net.tuning.Tuning;
 
 import java.util.List;
 
 public final class BhHorseTraits {
 
-    public static final int TIER_TWO_BOND = 40;
-    public static final int TIER_THREE_BOND = 100;
-
     private BhHorseTraits() {}
 
     public static int bondTier(int bond) {
-        if (bond >= TIER_THREE_BOND) return 2;
-        if (bond >= TIER_TWO_BOND) return 1;
-        return 0;
+        return Tuning.bond().tier(bond);
     }
+
+    private static final Tune MORGAN_RATE = Tune.of("easy_keeper", "bond_multiplier", 1.5D, 2.0D, 2.0D).within(0.0D, 10.0D);
 
     public static void grantBond(IHorseData data, int amount) {
         int gain = amount;
         int quick = BhAbility.MORGAN_BOND.tier(data, BhContent.MORGAN.getKey());
         if (quick >= 0) {
-            int halves = amount * (quick >= 1 ? 4 : 3) + data.bh_getBondRemainder();
+            int halves = amount * (int) Math.round(MORGAN_RATE.at(quick) * 2.0D) + data.bh_getBondRemainder();
             gain = halves / 2;
             data.bh_setBondRemainder(halves % 2);
         }
@@ -35,13 +35,20 @@ public final class BhHorseTraits {
     }
 
     public static void applyBondAttributes(AbstractHorse horse, int bond) {
-        double bonus = Math.min(bond / 20, 5) * 0.15D;
+        BondRules rules = Tuning.bond();
         BhHorseAttributes.apply(horse, Attributes.MOVEMENT_SPEED,
                 BhHorseAttributes.Source.BOND, "growth",
-                bonus, AttributeModifier.Operation.MULTIPLY_BASE);
+                rules.speedBonus(bond), AttributeModifier.Operation.MULTIPLY_BASE);
         BhHorseAttributes.apply(horse, Attributes.JUMP_STRENGTH,
                 BhHorseAttributes.Source.BOND, "growth",
-                bonus, AttributeModifier.Operation.MULTIPLY_BASE);
+                rules.jumpBonus(bond), AttributeModifier.Operation.MULTIPLY_BASE);
+        float hp = horse.getHealth();
+        BhHorseAttributes.apply(horse, Attributes.MAX_HEALTH,
+                BhHorseAttributes.Source.BOND, "growth",
+                rules.healthBonus(bond), AttributeModifier.Operation.MULTIPLY_BASE);
+        if (horse.getHealth() > horse.getMaxHealth() || hp > horse.getMaxHealth()) {
+            horse.setHealth(horse.getMaxHealth());
+        }
     }
 
     public static HorseBreed pickBreed(AbstractHorse horse, RandomSource random) {

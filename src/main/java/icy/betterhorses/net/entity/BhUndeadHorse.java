@@ -133,7 +133,7 @@ public class BhUndeadHorse extends BhBreedHorse {
             return;
         }
         double fraction = from.getHealth() / from.getMaxHealth();
-        ArchetypeType arch = BhBreedData.of(breed).archetype();
+        BhBreedData arch = BhBreedData.of(breed);
         getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(arch.rollSpeed(random));
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(arch.rollHealth(random));
         getAttribute(Attributes.JUMP_STRENGTH).setBaseValue(arch.rollJump(random));

@@ -1,0 +1,6 @@
+{
+  "min_speed": 0.3,
+  "wall_height": 3,
+  "cooldown": 600,
+  "self_damage": 4
+}

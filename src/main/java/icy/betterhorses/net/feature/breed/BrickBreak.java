@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.BhAbility;
@@ -23,12 +24,12 @@ public final class BrickBreak implements BreedAbility {
     private static final TagKey<Block> BREAKABLE = TagKey.create(Registries.BLOCK,
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "horse_breakable"));
 
-    public static final double MIN_SPEED = 0.30D;
     private static final double REACH = 1.2D;
-    private static final int WALL_HEIGHT = 3;
     private static final int WINDUP = 8;
-    private static final int COOLDOWN = 600;
-    private static final float SELF_DAMAGE = 4.0F;
+    private static final Tune MIN_SPEED = Tune.of("brick_break", "min_speed", 0.30D).within(0.0D, 10.0D);
+    private static final Tune WALL_HEIGHT = Tune.of("brick_break", "wall_height", 3.0D).within(1.0D, 16.0D);
+    private static final Tune COOLDOWN = Tune.of("brick_break", "cooldown", 600.0D).within(0.0D, 72000.0D);
+    private static final Tune SELF_DAMAGE = Tune.of("brick_break", "self_damage", 4.0D).within(0.0D, 1024.0D);
 
     private final int badge;
     private int cooldown;
@@ -53,7 +54,7 @@ public final class BrickBreak implements BreedAbility {
 
     private static boolean wall(ServerLevel level, Vec3 nose, double footY) {
         BlockPos foot = BlockPos.containing(nose.x, footY, nose.z);
-        for (int up = 0; up < WALL_HEIGHT; up++) {
+        for (int up = 0; up < WALL_HEIGHT.ticks(); up++) {
             BlockPos pos = foot.above(up);
             if (level.getBlockState(pos).getCollisionShape(level, pos).isEmpty()) {
                 return false;
@@ -76,7 +77,7 @@ public final class BrickBreak implements BreedAbility {
 
         Vec3 motion = IHorseData.of(horse).bh_getKnownMovement();
         Vec3 flat = new Vec3(motion.x, 0.0D, motion.z);
-        if (flat.length() >= MIN_SPEED) {
+        if (flat.length() >= MIN_SPEED.get()) {
             heading = flat.normalize();
             charged = WINDUP;
         } else if (charged > 0) {
@@ -94,7 +95,7 @@ public final class BrickBreak implements BreedAbility {
         Vec3 side = new Vec3(-heading.z, 0.0D, heading.x);
         boolean broke = false;
         for (int across = -1; across <= 1; across++) {
-            for (int up = 0; up < WALL_HEIGHT; up++) {
+            for (int up = 0; up < WALL_HEIGHT.ticks(); up++) {
                 BlockPos pos = BlockPos.containing(
                         nose.add(side.scale(across)).add(0.0D, up, 0.0D));
                 BlockState st = level.getBlockState(pos);
@@ -109,9 +110,9 @@ public final class BrickBreak implements BreedAbility {
             }
         }
         if (broke) {
-            cooldown = COOLDOWN;
+            cooldown = COOLDOWN.ticks();
             DamageSource src = level.damageSources().generic();
-            horse.hurt(src, SELF_DAMAGE);
+            horse.hurt(src, SELF_DAMAGE.f());
             BhSurge.pulse(data, 0, badge);
             charged = 0;
         }

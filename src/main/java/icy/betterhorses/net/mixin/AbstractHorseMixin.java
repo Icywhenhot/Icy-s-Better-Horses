@@ -15,6 +15,7 @@ import icy.betterhorses.net.HorseTracker;
 import icy.betterhorses.net.BhHorseInteraction;
 import icy.betterhorses.net.BhHorseStorage;
 import icy.betterhorses.net.BhHorseTraits;
+import icy.betterhorses.net.tuning.Tuning;
 import icy.betterhorses.net.BhVanillaHorseSwap;
 import icy.betterhorses.net.BhHorseSteering;
 import icy.betterhorses.net.BhBreedData;
@@ -155,6 +156,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private @Nullable ResourceKey<Level> bh_homeDim = null;
     @Unique private @Nullable BlockPos bh_wanderCenter = null;
     @Unique private int bh_bond = 0;
+    @Unique private int bh_tuneGen = -1;
     @Unique private boolean bh_nameTagBondReceived = false;
     @Unique private int bh_generation = 0;
     @Unique private @Nullable UUID bh_identity = null;
@@ -438,10 +440,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public void bh_setBond(int level) {
         int previous = this.bh_bond;
-        this.bh_bond = Math.max(0, Math.min(100, level));
+        int max = Tuning.bond().maxBond();
+        this.bh_bond = Math.max(0, Math.min(Math.max(max, previous), level));
         bh_push(BH_BOND, this.bh_bond);
         bh_applyBondAttributes();
-        if (previous < 100 && this.bh_bond >= 100) {
+        if (previous < max && this.bh_bond >= max) {
             bh_awardOwner(BhCriteria.BOND_MAX);
         }
     }
@@ -906,7 +909,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             bh_homeDim = ((AbstractHorse) (Object) this).level().dimension();
         }
         bh_applyBondAttributes();
+        bh_tuneGen = Tuning.generation();
         AbstractHorse self = (AbstractHorse) (Object) this;
+        if (input.contains("Health", Tag.TAG_ANY_NUMERIC) && input.getFloat("Health") > self.getHealth()) {
+            self.setHealth(input.getFloat("Health"));
+        }
         BhHorseStorage.readContainer(input, "BH_Gear", bh_gearContainer);
         BhHorseStorage.readContainer(input, "BH_Banner", bh_bannerContainer);
         bh_syncBanner();
@@ -1415,6 +1422,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         AbstractHorse self = (AbstractHorse) (Object) this;
         if (BhVanillaHorseSwap.trySwap(self) || HorseTracker.discardIfStale(self)) {
             return;
+        }
+        if (!self.level().isClientSide() && bh_tuneGen != Tuning.generation()) {
+            bh_tuneGen = Tuning.generation();
+            bh_applyBondAttributes();
         }
         if (self.level().isClientSide()) {
             int side = this.entityData.get(BH_BEG);

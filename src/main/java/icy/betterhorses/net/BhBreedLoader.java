@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.tuning.Ranges;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
@@ -71,12 +72,18 @@ public final class BhBreedLoader {
                         breedId, wanted, arch);
             }
         }
-        int rows = clampRows(root, "chest_rows", fallback.chestRows());
-        int bonded = clampRows(root, "bonded_chest_rows", Math.max(fallback.bondedChestRows(), rows));
+        int rows = root.has("chest_rows") ? clampRows(root, "chest_rows", 0)
+                : fallback.classRows() ? BhBreedData.CLASS_ROWS : fallback.chestRows();
+        int bonded = root.has("bonded_chest_rows") ? clampRows(root, "bonded_chest_rows", 0)
+                : fallback.classBondedRows() ? BhBreedData.CLASS_ROWS : fallback.bondedChestRows();
+        if (rows >= 0 && bonded >= 0) {
+            bonded = Math.max(bonded, rows);
+        }
         int weight = root.has("spawn_weight")
                 ? Math.max(0, root.get("spawn_weight").getAsInt())
                 : fallback.spawnWeight();
-        return new BhBreedData(arch, rows, Math.max(bonded, rows), weight);
+        Ranges ranges = Ranges.read(root, msg -> IcysBetterHorses.LOGGER.warn("[breeds] {}: {}", breedId, msg));
+        return new BhBreedData(arch, rows, bonded, weight, ranges);
     }
 
     private static @Nullable ArchetypeType resolveArchetype(String wanted) {

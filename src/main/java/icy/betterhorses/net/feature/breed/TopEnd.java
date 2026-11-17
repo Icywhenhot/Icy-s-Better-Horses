@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
@@ -12,9 +13,9 @@ import net.minecraft.world.entity.animal.horse.AbstractHorse;
 public final class TopEnd implements BreedAbility {
 
     private static final String KEY = "top_end";
-    private static final int COOLDOWN = 100;
-    private static final int BURST = 60;
-    private static final int LONG_BURST = 100;
+    private static final Tune BONUS = Tune.of("top_end", "speed_bonus", 0.35D, 0.50D, 0.50D).within(0.0D, 10.0D);
+    private static final Tune BURST = Tune.of("top_end", "duration", 60.0D, 60.0D, 100.0D).within(1.0D, 72000.0D);
+    private static final Tune COOLDOWN = Tune.of("top_end", "cooldown", 100.0D).within(0.0D, 72000.0D);
 
     private int burst;
     private int cooldown;
@@ -27,14 +28,14 @@ public final class TopEnd implements BreedAbility {
             burst--;
             if (burst == 0) {
                 clear(horse);
-                cooldown = COOLDOWN;
+                cooldown = COOLDOWN.ticks();
             }
             data.bh_setSurge(BhSurge.pack(BhSurge.ACTIVE, burst, span, bonus));
             return;
         }
         if (cooldown > 0) {
             cooldown--;
-            data.bh_setSurge(BhSurge.pack(BhSurge.COOLING, cooldown, COOLDOWN, bonus));
+            data.bh_setSurge(BhSurge.pack(BhSurge.COOLING, cooldown, COOLDOWN.ticks(), bonus));
             return;
         }
         data.bh_setSurge(0);
@@ -43,12 +44,12 @@ public final class TopEnd implements BreedAbility {
             return;
         }
         int tier = BhAbility.THOROUGHBRED_TOP_END.tier(data);
-        burst = tier >= 2 ? LONG_BURST : BURST;
+        burst = BURST.ticks(tier);
         span = burst;
-        bonus = tier >= 1 ? 50 : 35;
+        bonus = (int) Math.round(BONUS.at(tier) * 100.0D);
         BhHorseAttributes.apply(horse, Attributes.MOVEMENT_SPEED,
                 BhHorseAttributes.Source.ABILITY, KEY,
-                bonus / 100.0D,
+                BONUS.at(tier),
                 AttributeModifier.Operation.MULTIPLY_BASE);
         data.bh_setSurge(BhSurge.pack(BhSurge.ACTIVE, burst, span, bonus));
     }

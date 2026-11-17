@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import net.minecraftforge.common.ForgeMod;
 import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhAbility;
@@ -10,7 +11,7 @@ import net.minecraft.world.entity.animal.horse.AbstractHorse;
 public final class EasyKeeper implements BreedAbility {
 
     private static final String KEY = "adaptable";
-    private static final double STEP_BONUS = 0.5D;
+    private static final Tune STEP_BONUS = Tune.of("easy_keeper", "step_bonus", 0.5D).within(0.0D, 10.0D);
 
     private boolean applied;
 
@@ -23,7 +24,7 @@ public final class EasyKeeper implements BreedAbility {
         applied = want;
         BhHorseAttributes.apply(horse, ForgeMod.STEP_HEIGHT_ADDITION.get(),
                 BhHorseAttributes.Source.ABILITY, KEY,
-                want ? STEP_BONUS : 0.0D, AttributeModifier.Operation.ADDITION);
+                want ? STEP_BONUS.get() : 0.0D, AttributeModifier.Operation.ADDITION);
     }
 
     @Override

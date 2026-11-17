@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
@@ -20,7 +21,9 @@ public final class Ironclad implements BreedAbility {
 
     private static final String KEY = "ironclad";
     private static final int REFRESH = 40;
-    private static final int SHIELD_DURATION = 100;
+    private static final Tune SHIELD_DURATION = Tune.of("ironclad", "resistance_ticks", 100.0D).within(41.0D, 72000.0D);
+    private static final Tune SHIELD_LEVEL = Tune.of("ironclad", "resistance_level", 1.0D).within(1.0D, 5.0D);
+    private static final Tune ARMOR_SHARE = Tune.of("ironclad", "armor_per_barding_point", 0.25D).within(0.0D, 100.0D);
 
     private double applied = -1.0D;
     private boolean hadRider;
@@ -50,13 +53,14 @@ public final class Ironclad implements BreedAbility {
         Player rider = up;
         if (rider != null
                 && horse.getAttributeValue(Attributes.ARMOR) > 0.0D) {
-            BhBreedAbilities.applyQuietEffect(rider, MobEffects.DAMAGE_RESISTANCE, SHIELD_DURATION, 0);
+            BhBreedAbilities.applyQuietEffect(rider, MobEffects.DAMAGE_RESISTANCE, SHIELD_DURATION.ticks(),
+                    SHIELD_LEVEL.ticks(tier) - 1);
         }
     }
 
     private static double armorBonus(AbstractHorse horse) {
         ItemStack barding = ((AbstractHorseAccessor) horse).bh_inventory().getItem(AbstractHorse.INV_SLOT_ARMOR);
-        return barding.getItem() instanceof HorseArmorItem armor ? armor.getProtection() * 0.25D : 0.0D;
+        return barding.getItem() instanceof HorseArmorItem armor ? armor.getProtection() * ARMOR_SHARE.get() : 0.0D;
     }
 
     @Override

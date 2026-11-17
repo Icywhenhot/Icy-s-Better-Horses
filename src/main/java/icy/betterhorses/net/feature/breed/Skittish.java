@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import net.minecraft.network.chat.Component;
@@ -8,7 +9,7 @@ import net.minecraft.world.entity.player.Player;
 
 public final class Skittish implements BreedAbility {
 
-    private static final int RIDE_LIMIT = 100;
+    private static final Tune RIDE_LIMIT = Tune.of("skittish", "ride_ticks", 100.0D).within(1.0D, 72000.0D);
 
     private int ridden;
 
@@ -18,7 +19,7 @@ public final class Skittish implements BreedAbility {
             ridden = 0;
             return;
         }
-        if (++ridden < RIDE_LIMIT) {
+        if (++ridden < RIDE_LIMIT.ticks()) {
             return;
         }
         ridden = 0;

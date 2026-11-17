@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.registry.BhContent;
@@ -10,6 +11,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 public final class ThickHide implements BreedAbility {
+
+    private static final Tune TAKEN = Tune.of("thick_hide", "melee_damage_taken", 0.9D, 0.8D, 0.8D).within(0.0D, 10.0D);
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
@@ -32,7 +35,7 @@ public final class ThickHide implements BreedAbility {
                 || source.getDirectEntity() != source.getEntity()) {
             return 1.0F;
         }
-        return hide >= 1 ? 0.8F : 0.9F;
+        return TAKEN.f(hide);
     }
 
     public static boolean immune(LivingEntity target) {

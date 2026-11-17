@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
@@ -23,14 +24,13 @@ public final class Intimidation implements BreedAbility {
     private final BrickBreak charge = new BrickBreak(1);
 
     private static final int SWEEP = 5;
-    private static final int FEAR_TICKS = 100;
-    private static final int SNORT_COOLDOWN = 40;
     private static final int STOMP_TICKS = 10;
     private static final int WATCH_TICKS = 25;
-    private static final double RADIUS = 10.0D;
-    private static final double WIDE_RADIUS = 16.0D;
-    private static final double WARD_REACH_SQ = 256.0D;
-    private static final double BACKOFF = 0.42D;
+    private static final Tune FEAR_TICKS = Tune.of("intimidation", "fear_ticks", 100.0D).within(1.0D, 72000.0D);
+    private static final Tune SNORT_COOLDOWN = Tune.of("intimidation", "snort_cooldown", 40.0D).within(0.0D, 72000.0D);
+    private static final Tune RADIUS = Tune.of("intimidation", "radius", 10.0D, 16.0D, 16.0D).within(0.0D, 128.0D);
+    private static final Tune WARD_REACH = Tune.of("intimidation", "owner_reach", 16.0D).within(0.0D, 256.0D);
+    private static final Tune BACKOFF = Tune.of("intimidation", "push", 0.42D).within(0.0D, 10.0D);
     private static final double STILL_SPEED_SQ = 0.0025D;
 
     private final Map<UUID, Integer> feared = new HashMap<>();
@@ -63,7 +63,7 @@ public final class Intimidation implements BreedAbility {
             return;
         }
 
-        double radius = BhAbility.SHIRE_INTIMIDATE.tier(data) >= 1 ? WIDE_RADIUS : RADIUS;
+        double radius = RADIUS.at(BhAbility.SHIRE_INTIMIDATE.tier(data));
         AABB box = horse.getBoundingBox().inflate(radius);
         Mob fresh = null;
         int held = 0;
@@ -85,7 +85,7 @@ public final class Intimidation implements BreedAbility {
                 }
                 fresh = mob;
             }
-            feared.put(mob.getUUID(), FEAR_TICKS);
+            feared.put(mob.getUUID(), FEAR_TICKS.ticks());
             mob.setTarget(null);
             backAway(horse, mob);
             held++;
@@ -103,7 +103,7 @@ public final class Intimidation implements BreedAbility {
     }
 
     private void warn(AbstractHorse horse, IHorseData data, LivingEntity at) {
-        snortCooldown = SNORT_COOLDOWN;
+        snortCooldown = SNORT_COOLDOWN.ticks();
         if (at instanceof Mob threat) {
             watching = threat;
             watchTicks = WATCH_TICKS;
@@ -131,7 +131,7 @@ public final class Intimidation implements BreedAbility {
             return null;
         }
         Player nearby = horse.level().getPlayerByUUID(owner);
-        return nearby != null && nearby.distanceToSqr(horse) <= WARD_REACH_SQ ? nearby : null;
+        return nearby != null && nearby.distanceToSqr(horse) <= WARD_REACH.get() * WARD_REACH.get() ? nearby : null;
     }
 
     private static void backAway(AbstractHorse horse, Mob mob) {
@@ -139,7 +139,7 @@ public final class Intimidation implements BreedAbility {
         if (away.horizontalDistanceSqr() < 1.0E-4D) {
             return;
         }
-        Vec3 push = new Vec3(away.x, 0.0D, away.z).normalize().scale(BACKOFF);
+        Vec3 push = new Vec3(away.x, 0.0D, away.z).normalize().scale(BACKOFF.get());
         mob.getNavigation().moveTo(
                 mob.getX() + push.x * 8.0D, mob.getY(), mob.getZ() + push.z * 8.0D, 1.2D);
     }

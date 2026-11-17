@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
@@ -12,19 +13,19 @@ import net.minecraft.world.entity.animal.horse.AbstractHorse;
 public final class Endurance implements BreedAbility {
 
     private static final String KEY = "endurance";
-    private static final int RAMP = 400;
-    private static final int FAST_RAMP = 240;
-    private static final int GRACE = 40;
-    private static final double DECAY = 0.001D;
+    private static final Tune CAP = Tune.of("endurance", "max_bonus", 0.10D, 0.20D, 0.20D).within(0.0D, 10.0D);
+    private static final Tune RAMP = Tune.of("endurance", "ramp_ticks", 400.0D, 400.0D, 240.0D).within(1.0D, 72000.0D);
+    private static final Tune GRACE = Tune.of("endurance", "stop_grace", 0.0D, 0.0D, 40.0D).within(0.0D, 72000.0D);
+    private static final Tune DECAY = Tune.of("endurance", "decay_per_tick", 0.001D).within(0.0D, 10.0D);
 
     private double bonus;
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
         int tier = Math.max(0, BhAbility.ARABIAN_ENDURANCE.tier(data));
-        double cap = tier >= 1 ? 0.20D : 0.10D;
-        int ramp = tier >= 2 ? FAST_RAMP : RAMP;
-        int grace = tier >= 2 ? GRACE : 0;
+        double cap = CAP.at(tier);
+        int ramp = RAMP.ticks(tier);
+        int grace = GRACE.ticks(tier);
 
         boolean rolling = BhAbility.ARABIAN_ENDURANCE.on(data)
                 && BhBreedAbilities.rider(horse) != null
@@ -34,7 +35,7 @@ public final class Endurance implements BreedAbility {
         if (rolling) {
             bonus = Math.min(cap, bonus + cap / ramp);
         } else {
-            bonus = Math.max(0.0D, bonus - DECAY);
+            bonus = Math.max(0.0D, bonus - DECAY.get());
         }
         if (bonus != before) {
             BhHorseAttributes.apply(horse, Attributes.MOVEMENT_SPEED,

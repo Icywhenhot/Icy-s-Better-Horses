@@ -14,6 +14,8 @@ import icy.betterhorses.net.feature.breed.FrostCharge;
 import icy.betterhorses.net.feature.breed.DrownedLungs;
 import icy.betterhorses.net.feature.breed.DrownedRider;
 import icy.betterhorses.net.network.BreedDataPayload;
+import icy.betterhorses.net.network.TuningPayload;
+import icy.betterhorses.net.tuning.Tuning;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.network.HorseManageResultPayload;
@@ -274,14 +276,19 @@ public final class IcysBetterHorses {
                 BhConfig.disabledAbilities(),
                 BhConfig.tuning(),
                 BhConfig.breedingFoods()));
+        BhNetworking.sendToPlayer(player, TuningPayload.current());
         BhNetworking.sendToPlayer(player, BreedDataPayload.current());
     }
 
     @SubscribeEvent
     public void onDatapackSync(OnDatapackSyncEvent event) {
         if (event.getPlayer() != null) return;
+        TuningPayload tuning = TuningPayload.current();
         BreedDataPayload breeds = BreedDataPayload.current();
-        event.getPlayerList().getPlayers().forEach(player -> BhNetworking.sendToPlayer(player, breeds));
+        event.getPlayerList().getPlayers().forEach(player -> {
+            BhNetworking.sendToPlayer(player, tuning);
+            BhNetworking.sendToPlayer(player, breeds);
+        });
     }
 
     private void applyPendingReleases() {
@@ -345,8 +352,8 @@ public final class IcysBetterHorses {
 
     @SubscribeEvent
     public void onAddReloadListener(AddReloadListenerEvent event) {
+        Tuning.register(event);
         BhBreedLoader.register(event);
-        BhClassLoader.register(event);
     }
 
     @SubscribeEvent

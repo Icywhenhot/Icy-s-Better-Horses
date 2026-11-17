@@ -5,6 +5,7 @@ import icy.betterhorses.net.IcysBetterHorses;
 import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.registry.BhRegistries;
+import icy.betterhorses.net.tuning.Ranges;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -14,15 +15,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public record BreedDataPayload(List<Entry> entries, List<ClassSpeed> classes) {
+public record BreedDataPayload(List<Entry> entries) {
 
 
     private static final int MAX_ENTRIES = 128;
     private static final int MAX_NAME = 64;
 
-    public record Entry(String breed, String archetype, int chestRows, int bondedChestRows, int spawnWeight) {}
-
-    public record ClassSpeed(String archetype, double low, double high) {}
+    public record Entry(String breed, String archetype, int chestRows, int bondedChestRows, int spawnWeight,
+                        Ranges ranges) {}
 
     public static BreedDataPayload current() {
         List<Entry> out = new ArrayList<>();
@@ -32,27 +32,11 @@ public record BreedDataPayload(List<Entry> entries, List<ClassSpeed> classes) {
             ResourceLocation archetypeId = archetypes.getKey(data.archetype());
             out.add(new Entry(entry.getKey().getPath(),
                     archetypeId != null ? archetypeId.toString() : "",
-                    data.chestRows(), data.bondedChestRows(), data.spawnWeight()));
+                    data.classRows() ? BhBreedData.CLASS_ROWS : data.chestRows(),
+                    data.classBondedRows() ? BhBreedData.CLASS_ROWS : data.bondedChestRows(),
+                    data.spawnWeight(), data.ranges()));
         }
-        List<ClassSpeed> speeds = new ArrayList<>();
-        for (ArchetypeType arch : archetypes) {
-            ResourceLocation id = archetypes.getKey(arch);
-            if (id != null) {
-                speeds.add(new ClassSpeed(id.toString(), arch.lowSpeed(), arch.highSpeed()));
-            }
-        }
-        return new BreedDataPayload(out, speeds);
-    }
-
-    public void applyClassSpeeds() {
-        ArchetypeType.resetSpeeds();
-        for (ClassSpeed speed : classes) {
-            ResourceLocation id = ResourceLocation.tryParse(speed.archetype());
-            ArchetypeType arch = id != null ? BhRegistries.archetypeTypeRegistry().getValue(id) : null;
-            if (arch != null && speed.low() <= speed.high()) {
-                arch.setSpeed(speed.low(), speed.high());
-            }
-        }
+        return new BreedDataPayload(out);
     }
 
     public Map<ResourceLocation, BhBreedData> toMap() {
@@ -67,7 +51,8 @@ public record BreedDataPayload(List<Entry> entries, List<ClassSpeed> classes) {
             if (arch == null) {
                 arch = fallback != null ? fallback.archetype() : BhContent.NONE.get();
             }
-            map.put(breedId, new BhBreedData(arch, entry.chestRows(), entry.bondedChestRows(), entry.spawnWeight()));
+            map.put(breedId, new BhBreedData(arch, entry.chestRows(), entry.bondedChestRows(), entry.spawnWeight(),
+                    entry.ranges()));
         }
         return map;
     }
@@ -84,15 +69,13 @@ public record BreedDataPayload(List<Entry> entries, List<ClassSpeed> classes) {
             buf.writeVarInt(entry.chestRows());
             buf.writeVarInt(entry.bondedChestRows());
             buf.writeVarInt(entry.spawnWeight());
-        }
-        List<ClassSpeed> classes = payload.classes();
-        int classCount = Math.min(classes.size(), MAX_ENTRIES);
-        buf.writeVarInt(classCount);
-        for (int i = 0; i < classCount; i++) {
-            ClassSpeed speed = classes.get(i);
-            buf.writeUtf(speed.archetype(), MAX_NAME);
-            buf.writeDouble(speed.low());
-            buf.writeDouble(speed.high());
+            Ranges r = entry.ranges();
+            buf.writeDouble(r.lowSpeed());
+            buf.writeDouble(r.highSpeed());
+            buf.writeDouble(r.lowHealth());
+            buf.writeDouble(r.highHealth());
+            buf.writeDouble(r.lowJump());
+            buf.writeDouble(r.highJump());
         }
     }
 
@@ -103,15 +86,12 @@ public record BreedDataPayload(List<Entry> entries, List<ClassSpeed> classes) {
             entries.add(new Entry(
                     buf.readUtf(MAX_NAME),
                     buf.readUtf(MAX_NAME),
+                    Math.max(BhBreedData.CLASS_ROWS, Math.min(6, buf.readVarInt())),
+                    Math.max(BhBreedData.CLASS_ROWS, Math.min(6, buf.readVarInt())),
                     buf.readVarInt(),
-                    buf.readVarInt(),
-                    buf.readVarInt()));
+                    new Ranges(buf.readDouble(), buf.readDouble(), buf.readDouble(),
+                            buf.readDouble(), buf.readDouble(), buf.readDouble())));
         }
-        int classCount = Math.min(buf.readVarInt(), MAX_ENTRIES);
-        List<ClassSpeed> classes = new ArrayList<>(classCount);
-        for (int i = 0; i < classCount; i++) {
-            classes.add(new ClassSpeed(buf.readUtf(MAX_NAME), buf.readDouble(), buf.readDouble()));
-        }
-        return new BreedDataPayload(List.copyOf(entries), List.copyOf(classes));
+        return new BreedDataPayload(List.copyOf(entries));
     }
 }
