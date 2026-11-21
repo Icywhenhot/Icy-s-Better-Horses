@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
@@ -12,10 +13,10 @@ import net.minecraft.world.entity.animal.horse.AbstractHorse;
 public final class StandstillBurst implements BreedAbility {
 
     private static final String KEY = "standstill_burst";
-    private static final int SETTLE = 20;
-    private static final int BURST = 100;
-    private static final int COOLDOWN = 200;
-    private static final int SHORT_COOLDOWN = 160;
+    private static final Tune SETTLE = Tune.of("standstill_burst", "settle_ticks", 20.0D).within(1.0D, 72000.0D);
+    private static final Tune BURST = Tune.of("standstill_burst", "duration", 100.0D).within(1.0D, 72000.0D);
+    private static final Tune COOLDOWN = Tune.of("standstill_burst", "cooldown", 200.0D, 200.0D, 160.0D).within(0.0D, 72000.0D);
+    private static final Tune BONUS = Tune.of("standstill_burst", "speed_bonus", 0.30D, 0.45D, 0.45D).within(0.0D, 10.0D);
 
     private int burst;
     private int cooldown;
@@ -31,7 +32,7 @@ public final class StandstillBurst implements BreedAbility {
             burst--;
             if (burst == 0) {
                 clear(horse);
-                cooldown = tier >= 2 ? SHORT_COOLDOWN : COOLDOWN;
+                cooldown = COOLDOWN.ticks(tier);
                 span = cooldown;
             }
             data.bh_setSurge(BhSurge.pack(BhSurge.ACTIVE, burst, span, bonus));
@@ -46,9 +47,9 @@ public final class StandstillBurst implements BreedAbility {
             data.bh_setSurge(0);
             return;
         }
-        if (state.standstillTicks() >= SETTLE) {
+        if (state.standstillTicks() >= SETTLE.ticks()) {
             armed = true;
-            data.bh_setSurge(BhSurge.pack(BhSurge.ARMED, 0, 0, tier >= 1 ? 45 : 30));
+            data.bh_setSurge(BhSurge.pack(BhSurge.ARMED, 0, 0, (int) Math.round(BONUS.at(tier) * 100.0D)));
             return;
         }
         if (!armed || BhBreedAbilities.rider(horse) == null || state.movingTicks() == 0) {
@@ -56,12 +57,12 @@ public final class StandstillBurst implements BreedAbility {
             return;
         }
         armed = false;
-        burst = BURST;
-        span = BURST;
-        bonus = tier >= 1 ? 45 : 30;
+        burst = BURST.ticks(tier);
+        span = burst;
+        bonus = (int) Math.round(BONUS.at(tier) * 100.0D);
         BhHorseAttributes.apply(horse, Attributes.MOVEMENT_SPEED,
                 BhHorseAttributes.Source.ABILITY, KEY,
-                bonus / 100.0D,
+                BONUS.at(tier),
                 AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
         data.bh_setSurge(BhSurge.pack(BhSurge.ACTIVE, burst, span, bonus));
     }

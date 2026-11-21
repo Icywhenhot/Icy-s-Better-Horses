@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
@@ -17,13 +18,13 @@ import java.util.UUID;
 
 public final class WildInstincts implements BreedAbility {
 
-    private static final double ALERT_RADIUS = 15.0D;
     private static final int ALERT_INTERVAL = 20;
-    private static final int ALERT_COOLDOWN = 120;
-    private static final int GLOW_TICKS = 60;
-    private static final int[] SELF_HEAL = {300, 160, 160};
-    private static final int[] RIDER_HEAL = {0, 200, 100};
-    private static final float HEAL_AMOUNT = 2.0F;
+    private static final Tune ALERT_RADIUS = Tune.of("wild_instincts", "alert_radius", 15.0D).within(0.0D, 128.0D);
+    private static final Tune ALERT_COOLDOWN = Tune.of("wild_instincts", "alert_cooldown", 120.0D).within(0.0D, 72000.0D);
+    private static final Tune GLOW_TICKS = Tune.of("wild_instincts", "glow_ticks", 60.0D).within(1.0D, 72000.0D);
+    private static final Tune SELF_HEAL = Tune.of("wild_instincts", "self_heal_every", 300.0D, 160.0D, 160.0D).within(1.0D, 72000.0D);
+    private static final Tune RIDER_HEAL = Tune.of("wild_instincts", "rider_heal_every", 0.0D, 200.0D, 100.0D).within(0.0D, 72000.0D);
+    private static final Tune HEAL_AMOUNT = Tune.of("wild_instincts", "heal_amount", 2.0D).within(0.0D, 1024.0D);
 
     private int alertCooldown;
 
@@ -38,16 +39,16 @@ public final class WildInstincts implements BreedAbility {
 
         int heal = BhAbility.MUSTANG_SELF_HEAL.tier(data);
         if (heal >= 0
-                && horse.tickCount % SELF_HEAL[heal] == 0 && horse.getHealth() < horse.getMaxHealth()) {
-            horse.heal(HEAL_AMOUNT);
+                && horse.tickCount % SELF_HEAL.ticks(heal) == 0 && horse.getHealth() < horse.getMaxHealth()) {
+            horse.heal(HEAL_AMOUNT.f());
         }
 
         int mend = BhAbility.MUSTANG_RIDER_HEAL.tier(data);
-        int riderRate = mend >= 0 ? RIDER_HEAL[mend] : 0;
+        int riderRate = mend >= 0 ? RIDER_HEAL.ticks(mend) : 0;
         if (riderRate > 0 && horse.tickCount % riderRate == 0) {
             Player rider = BhBreedAbilities.rider(horse);
             if (rider != null && rider.getHealth() < rider.getMaxHealth()) {
-                rider.heal(HEAL_AMOUNT);
+                rider.heal(HEAL_AMOUNT.f());
                 BhSurge.pulse(data, 0, 1);
             }
         }
@@ -56,18 +57,18 @@ public final class WildInstincts implements BreedAbility {
                 || alertCooldown > 0 || horse.tickCount % ALERT_INTERVAL != 0) {
             return;
         }
-        List<LivingEntity> hostiles = BhBreedAbilities.hostilesNearby(horse, ALERT_RADIUS);
+        List<LivingEntity> hostiles = BhBreedAbilities.hostilesNearby(horse, ALERT_RADIUS.get());
         if (hostiles.isEmpty()) {
             return;
         }
 
-        alertCooldown = ALERT_COOLDOWN;
+        alertCooldown = ALERT_COOLDOWN.ticks();
         horse.level().playSound(null, horse.getX(), horse.getY(), horse.getZ(),
                 ModSounds.HORSE_ANGRY_SNORT, horse.getSoundSource(), 1.0F, 1.0F);
 
         for (LivingEntity hostile : hostiles) {
             hostile.addEffect(new net.minecraft.world.effect.MobEffectInstance(
-                    net.minecraft.world.effect.MobEffects.GLOWING, GLOW_TICKS, 0, false, false));
+                    net.minecraft.world.effect.MobEffects.GLOWING, GLOW_TICKS.ticks(), 0, false, false));
         }
     }
 }

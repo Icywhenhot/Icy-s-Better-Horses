@@ -1,0 +1,23 @@
+{
+  "min_speed": 10,
+  "max_speed": 17,
+  "min_health": 15,
+  "max_health": 20,
+  "min_jump": 3,
+  "max_jump": 5,
+  "bash_damage": 0.75,
+  "bash_knockback": 1,
+  "spook_chance": [0, 0, 0],
+  "chest_rows": 3,
+  "chest_and_riders": false,
+  "large_cart": false,
+  "steady": false,
+  "medkit_multiplier": 1,
+  "knockback_resistance": 0,
+  "heal_interval": 0,
+  "powder_snow": false,
+  "road_bonus": [0, 0, 0],
+  "fall_damage_waiver": 0,
+  "step_height": 1.125,
+  "armor_multiplier": 0
+}

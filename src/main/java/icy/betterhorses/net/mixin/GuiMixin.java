@@ -109,7 +109,7 @@ public abstract class GuiMixin {
                 ? BreedType.displayName(breedKey, data.bh_isMixedBreed())
                 : data.bh_getBreed().displayName(data.bh_isMixedBreed());
         Component title = Component.translatable("hud.icys-better-horses.horse_stats");
-        Component genderLine = Component.translatable("hud.icys-better-horses.gender", GenderType.displayName(data.bh_getGender()));
+        Component genderLine = Component.translatable("hud.icys-better-horses.gender", GenderType.displayName(data.bh_getGender(), data.bh_isGelded()));
         Component breedLine = Component.translatable("hud.icys-better-horses.breed", breedName);
         Component speedLine = Component.translatable("hud.icys-better-horses.speed", speedValue);
         Component jumpLine = Component.translatable("hud.icys-better-horses.jump", jumpValue);

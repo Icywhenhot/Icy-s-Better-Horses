@@ -10,6 +10,7 @@ public record HorseRosterEntry(
         String customName,
         String breedId,
         String genderId,
+        boolean gelded,
         boolean mixedBreed,
         int bond,
         boolean loaded,
@@ -29,6 +30,7 @@ public record HorseRosterEntry(
         buf.writeUtf(entry.customName());
         buf.writeUtf(entry.breedId());
         buf.writeUtf(entry.genderId());
+        buf.writeBoolean(entry.gelded());
         buf.writeBoolean(entry.mixedBreed());
         buf.writeVarInt(entry.bond());
         buf.writeBoolean(entry.loaded());
@@ -50,6 +52,7 @@ public record HorseRosterEntry(
                 buf.readUtf(),
                 buf.readUtf(),
                 buf.readUtf(),
+                buf.readBoolean(),
                 buf.readBoolean(),
                 buf.readVarInt(),
                 buf.readBoolean(),

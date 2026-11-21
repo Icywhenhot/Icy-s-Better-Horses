@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhSurge;
@@ -23,14 +24,17 @@ public final class WinterFeet implements BreedAbility {
     private static final TagKey<Block> SNOW = TagKey.create(Registries.BLOCK,
             ResourceLocation.fromNamespaceAndPath(IcysBetterHorses.RESOURCE_NAMESPACE, "snow_trail"));
 
+    private static final Tune SNOW_BONUS = Tune.of("winter_feet", "snow_speed_bonus", 0.0D, 0.2D, 0.5D).within(0.0D, 10.0D);
+    private static final Tune ICE_FRICTION = Tune.of("winter_feet", "ice_friction", 0.6D).within(0.0D, 1.0D);
+
     private double bonus = -1.0D;
 
     @Override
     public void tick(AbstractHorse horse, IHorseData data, BhAbilityState state) {
         int tier = BhAbility.ZAMORANO_SNOW.tier(data);
-        double want = tier >= 1 && horse.onGround()
+        double want = tier >= 0 && horse.onGround()
                 && (snow(horse.getBlockStateOn()) || snow(horse.level().getBlockState(horse.blockPosition())))
-                ? tier >= 2 ? 0.5D : 0.2D : 0.0D;
+                ? SNOW_BONUS.at(tier) : 0.0D;
         if (want != bonus) {
             bonus = want;
             BhHorseAttributes.apply(horse, Attributes.MOVEMENT_SPEED,
@@ -57,6 +61,6 @@ public final class WinterFeet implements BreedAbility {
         return target instanceof AbstractHorse horse
                 && BhAbility.ZAMORANO_ICE.tier(IHorseData.of(horse), BhContent.ZAMORANO_DONKEY.getKey()) >= 0
                 && horse.level().getBlockState(horse.getBlockPosBelowThatAffectsMyMovement()).is(BlockTags.ICE)
-                ? 0.6F : original;
+                ? ICE_FRICTION.f() : original;
     }
 }

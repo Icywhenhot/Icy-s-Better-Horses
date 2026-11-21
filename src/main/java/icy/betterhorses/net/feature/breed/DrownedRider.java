@@ -20,9 +20,9 @@ public final class DrownedRider implements BreedAbility {
         Player rider = BhBreedAbilities.rider(horse);
         int tier = BhHorseTraits.bondTier(data.bh_getBond());
         if (dash.push(horse, rider, eligible(horse, data, rider))) {
-            data.bh_setSurge(BhSurge.pack(BhSurge.ACTIVE, dash.dash, WaterDash.DASH_TICKS, 0, 2));
+            data.bh_setSurge(BhSurge.pack(BhSurge.ACTIVE, dash.dash, WaterDash.span(), 0, 2));
         } else if (dash.cooldown > 0 && BhAbility.SKELETON_DASH.on()) {
-            data.bh_setSurge(BhSurge.pack(BhSurge.COOLING, dash.cooldown, WaterDash.COOLDOWN, 0, 2));
+            data.bh_setSurge(BhSurge.pack(BhSurge.COOLING, dash.cooldown, WaterDash.rest(), 0, 2));
         } else if (rider != null && rider.isEyeInFluid(FluidTags.WATER)
                 && (tier >= 1 ? BhAbility.SKELETON_DIVE.on() : BhAbility.SKELETON_BREATH.on())) {
             data.bh_setSurge(BhSurge.pack(BhSurge.ACTIVE, 0, 0, tier >= 1 ? 0 : 50, tier >= 1 ? 1 : 0));

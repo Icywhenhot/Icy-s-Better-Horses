@@ -1,0 +1,6 @@
+{
+  "inherit": "best",
+  "speed_variance": [-0.5, 1],
+  "jump_variance": [-0.5, 1],
+  "health_variance": [-0.5, 1]
+}

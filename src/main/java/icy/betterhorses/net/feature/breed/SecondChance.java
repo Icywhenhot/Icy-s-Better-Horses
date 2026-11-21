@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhSurge;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.IHorseData;
@@ -10,7 +11,8 @@ import net.minecraft.world.entity.player.Player;
 
 public final class SecondChance implements BreedAbility {
 
-    private static final int DURATION = 100;
+    private static final Tune DURATION = Tune.of("second_chance", "resistance_ticks", 100.0D).within(41.0D, 72000.0D);
+    private static final Tune LEVEL = Tune.of("second_chance", "resistance_level", 1.0D, 2.0D, 2.0D).within(1.0D, 5.0D);
     private static final int REFRESH = 40;
 
     private boolean hadRider;
@@ -41,8 +43,7 @@ public final class SecondChance implements BreedAbility {
         if (guard < 0) {
             return;
         }
-        int amp = guard >= 1 ? 1 : 0;
-        BhBreedAbilities.applyQuietEffect(rider, MobEffects.DAMAGE_RESISTANCE, DURATION, amp);
+        BhBreedAbilities.applyQuietEffect(rider, MobEffects.DAMAGE_RESISTANCE, DURATION.ticks(), LEVEL.ticks(guard) - 1);
     }
 
 }

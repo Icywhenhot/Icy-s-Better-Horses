@@ -104,6 +104,21 @@ public final class BhBreedCoats {
                     "liver_chestnut", "kohlfuchs"),
             true);
 
+    public static final BhBreedCoats GIGANTEUS = new BhBreedCoats(
+            "giganteus",
+            List.of("dun", "grullo", "red_dun", "pale_dun"),
+            true);
+
+    public static final BhBreedCoats PRZEWALSKI = new BhBreedCoats(
+            "przewalski",
+            List.of("dun", "light_dun", "bay_dun"),
+            true);
+
+    public static final BhBreedCoats TARPAN = new BhBreedCoats(
+            "tarpan",
+            List.of("mouse_grey", "bay", "dark_grullo", "blanket", "varnish"),
+            true);
+
     public static final BhBreedCoats CLYDESDALE = new BhBreedCoats(
             "clydesdale",
             List.of("bay_sabino", "seal_brown", "black_sabino", "red_bay",

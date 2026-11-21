@@ -55,6 +55,12 @@ public final class HorseStabilizerLayer<T extends AbstractHorse, M extends Entit
             StabilizerBody.BELGIAN, BELGIAN));
 
     static {
+        BY_BODY.put(StabilizerBody.GIGANTEUS, new Variant(
+                new HorseStabilizerGeoRenderer(new GiganteusStabilizerGeoModel()), BREED_FEET_Y, 0.0D));
+        BY_BODY.put(StabilizerBody.PRZEWALSKI, new Variant(
+                new HorseStabilizerGeoRenderer(new PrzewalskiStabilizerGeoModel()), BREED_FEET_Y, 0.0D));
+        BY_BODY.put(StabilizerBody.TARPAN, new Variant(
+                new HorseStabilizerGeoRenderer(new TarpanStabilizerGeoModel()), BREED_FEET_Y, 0.0D));
         BY_BODY.put(StabilizerBody.ANDALUSIAN_DONKEY, new Variant(
                 new HorseStabilizerGeoRenderer(new DonkeyStabilizerGeoModel("andalusian_donkey")), BREED_FEET_Y, 0.0D));
         BY_BODY.put(StabilizerBody.ASINARA_DONKEY, new Variant(

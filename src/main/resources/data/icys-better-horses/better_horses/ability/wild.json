@@ -1,0 +1,13 @@
+{
+  "max_temper": 150,
+  "giganteus_max_temper": 200,
+  "bond_multiplier": 0.5,
+  "buck_check_ticks": 200,
+  "buck_chance": [
+    0.1,
+    0.04,
+    0
+  ],
+  "wary_radius": 12,
+  "weapon_radius": 20
+}

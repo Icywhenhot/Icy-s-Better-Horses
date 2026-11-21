@@ -19,5 +19,8 @@ public enum StabilizerBody {
     ZAMORANO_DONKEY,
     MULE,
     SMALL_MULE,
-    LARGE_MULE
+    LARGE_MULE,
+    GIGANTEUS,
+    PRZEWALSKI,
+    TARPAN
 }

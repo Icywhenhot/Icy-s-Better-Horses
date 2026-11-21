@@ -9,159 +9,136 @@ import java.util.List;
 
 public final class ArchetypeType {
 
-    private final double builtInLowSpeed;
-    private final double builtInHighSpeed;
-    private double lowSpeed;
-    private double highSpeed;
-    private final double lowHealth;
-    private final double highHealth;
-    private final double lowJump;
-    private final double highJump;
-    private final double bashDamage;
-    private final double bashKnockback;
-    private final double baseSpookChance;
-    private final int defaultChestRows;
-    private final boolean allowsChestAndRiders;
-    private final boolean allowsLargeCart;
-    private final boolean suppressesRear;
-    private final int medkitMultiplier;
-    private final double knockbackResistance;
-    private final int passiveHealInterval;
-    private final boolean walksOnPowderSnow;
-    private final double pathSpeedBonusTier0;
-    private final double pathSpeedBonusTier1;
-    private final double pathSpeedBonusTier2;
-    private final double fallDamageWaiver;
-    private final double stepHeight;
+    public record Stats(
+            double lowSpeed, double highSpeed,
+            double lowHealth, double highHealth,
+            double lowJump, double highJump,
+            double bashDamage, double bashKnockback,
+            double spook0, double spook1, double spook2,
+            int chestRows, boolean chestAndRiders, boolean largeCart, boolean steady,
+            int medkitMultiplier, double knockbackResistance, int healInterval, boolean powderSnow,
+            double road0, double road1, double road2,
+            double fallWaiver, double stepHeight, double armor) {
+    }
+
+    private final Stats builtIn;
+    private Stats live;
     private final List<ResourceKey<AbilityType>> classPerks;
 
     private ArchetypeType(Builder builder) {
-        this.builtInLowSpeed = builder.lowSpeed;
-        this.builtInHighSpeed = builder.highSpeed;
-        this.lowSpeed = builder.lowSpeed;
-        this.highSpeed = builder.highSpeed;
-        this.lowHealth = builder.lowHealth;
-        this.highHealth = builder.highHealth;
-        this.lowJump = builder.lowJump;
-        this.highJump = builder.highJump;
-        this.bashDamage = builder.bashDamage;
-        this.bashKnockback = builder.bashKnockback;
-        this.baseSpookChance = builder.baseSpookChance;
-        this.defaultChestRows = builder.defaultChestRows;
-        this.allowsChestAndRiders = builder.allowsChestAndRiders;
-        this.allowsLargeCart = builder.allowsLargeCart;
-        this.suppressesRear = builder.suppressesRear;
-        this.medkitMultiplier = builder.medkitMultiplier;
-        this.knockbackResistance = builder.knockbackResistance;
-        this.passiveHealInterval = builder.passiveHealInterval;
-        this.walksOnPowderSnow = builder.walksOnPowderSnow;
-        this.pathSpeedBonusTier0 = builder.pathSpeedBonusTier0;
-        this.pathSpeedBonusTier1 = builder.pathSpeedBonusTier1;
-        this.pathSpeedBonusTier2 = builder.pathSpeedBonusTier2;
-        this.fallDamageWaiver = builder.fallDamageWaiver;
-        this.stepHeight = builder.stepHeight;
+        this.builtIn = builder.stats();
+        this.live = builtIn;
         this.classPerks = List.copyOf(builder.classPerks);
     }
 
-    public double lowSpeed() {
-        return lowSpeed;
+    public Stats builtIn() {
+        return builtIn;
     }
 
-    public double highSpeed() {
-        return highSpeed;
+    public Stats stats() {
+        return live;
     }
 
-    public void setSpeed(double low, double high) {
-        this.lowSpeed = low;
-        this.highSpeed = high;
+    public void apply(Stats stats) {
+        this.live = stats;
     }
 
-    public static void resetSpeeds() {
+    public static void resetAll() {
         for (ArchetypeType a : BhRegistries.archetypeTypeRegistry()) {
-            a.lowSpeed = a.builtInLowSpeed;
-            a.highSpeed = a.builtInHighSpeed;
+            a.live = a.builtIn;
         }
     }
 
+    public double lowSpeed() {
+        return live.lowSpeed();
+    }
+
+    public double highSpeed() {
+        return live.highSpeed();
+    }
+
     public double lowHealth() {
-        return lowHealth;
+        return live.lowHealth();
     }
 
     public double highHealth() {
-        return highHealth;
+        return live.highHealth();
     }
 
     public double lowJump() {
-        return lowJump;
+        return live.lowJump();
     }
 
     public double highJump() {
-        return highJump;
+        return live.highJump();
     }
 
     public double bashDamage() {
-        return bashDamage;
+        return live.bashDamage();
     }
 
     public double kickDamage() {
-        return bashDamage;
+        return live.bashDamage();
     }
 
     public double bashKnockback() {
-        return bashKnockback;
+        return live.bashKnockback();
     }
 
     public double baseSpookChance() {
-        return baseSpookChance;
+        return live.spook0();
     }
 
     public double spookChance(int tier) {
-        double multiplier = tier >= 2 ? 0.5D : tier >= 1 ? 0.7D : 1.0D;
-        return baseSpookChance * multiplier;
+        return tier >= 2 ? live.spook2() : tier >= 1 ? live.spook1() : live.spook0();
     }
 
     public int defaultChestRows() {
-        return defaultChestRows;
+        return live.chestRows();
     }
 
     public boolean allowsChestAndRiders() {
-        return allowsChestAndRiders;
+        return live.chestAndRiders();
     }
 
     public boolean allowsLargeCart() {
-        return allowsLargeCart;
+        return live.largeCart();
     }
 
     public boolean suppressesRear() {
-        return suppressesRear;
+        return live.steady();
     }
 
     public int medkitMultiplier() {
-        return medkitMultiplier;
+        return live.medkitMultiplier();
     }
 
     public double knockbackResistance() {
-        return knockbackResistance;
+        return live.knockbackResistance();
     }
 
     public int passiveHealInterval() {
-        return passiveHealInterval;
+        return live.healInterval();
     }
 
     public boolean walksOnPowderSnow() {
-        return walksOnPowderSnow;
+        return live.powderSnow();
     }
 
     public double pathSpeedBonus(int tier) {
-        return tier >= 2 ? pathSpeedBonusTier2 : tier >= 1 ? pathSpeedBonusTier1 : pathSpeedBonusTier0;
+        return tier >= 2 ? live.road2() : tier >= 1 ? live.road1() : live.road0();
     }
 
     public double fallDamageWaiver() {
-        return fallDamageWaiver;
+        return live.fallWaiver();
     }
 
     public double stepHeight() {
-        return stepHeight;
+        return live.stepHeight();
+    }
+
+    public double armorMultiplier() {
+        return live.armor();
     }
 
     public List<ResourceKey<AbilityType>> classPerks() {
@@ -169,42 +146,42 @@ public final class ArchetypeType {
     }
 
     public double rollSpeed(RandomSource random) {
-        return spread(random, lowSpeed, highSpeed);
+        return spread(random, lowSpeed(), highSpeed());
     }
 
     public double rollHealth(RandomSource random) {
-        return Math.round(spread(random, lowHealth, highHealth));
+        return Math.round(spread(random, lowHealth(), highHealth()));
     }
 
     public double rollJump(RandomSource random) {
-        return spread(random, lowJump, highJump);
+        return spread(random, lowJump(), highJump());
     }
 
     public double clampSpeed(double v) {
-        return Mth.clamp(v, lowSpeed, highSpeed);
+        return Mth.clamp(v, lowSpeed(), highSpeed());
     }
 
     public double clampHealth(double v) {
-        return Math.round(Mth.clamp(v, lowHealth, highHealth));
+        return Math.round(Mth.clamp(v, lowHealth(), highHealth()));
     }
 
     public double clampJump(double v) {
-        return Mth.clamp(v, lowJump, highJump);
+        return Mth.clamp(v, lowJump(), highJump());
     }
 
     public double midSpeed() {
-        return (lowSpeed + highSpeed) * 0.5D;
+        return (builtIn.lowSpeed() + builtIn.highSpeed()) * 0.5D;
     }
 
     public double midHealth() {
-        return Math.round((lowHealth + highHealth) * 0.5D);
+        return Math.round((builtIn.lowHealth() + builtIn.highHealth()) * 0.5D);
     }
 
     public double midJump() {
-        return (lowJump + highJump) * 0.5D;
+        return (builtIn.lowJump() + builtIn.highJump()) * 0.5D;
     }
 
-    private static double spread(RandomSource random, double lo, double hi) {
+    public static double spread(RandomSource random, double lo, double hi) {
         double t = (random.nextDouble() + random.nextDouble() + random.nextDouble()) / 3.0D;
         return lo + t * (hi - lo);
     }
@@ -212,7 +189,7 @@ public final class ArchetypeType {
     public static double topSpeed() {
         double best = 0.0D;
         for (ArchetypeType a : BhRegistries.archetypeTypeRegistry()) {
-            best = Math.max(best, a.highSpeed);
+            best = Math.max(best, a.highSpeed());
         }
         return best;
     }
@@ -220,7 +197,7 @@ public final class ArchetypeType {
     public static double topJump() {
         double best = 0.0D;
         for (ArchetypeType a : BhRegistries.archetypeTypeRegistry()) {
-            best = Math.max(best, a.highJump);
+            best = Math.max(best, a.highJump());
         }
         return best;
     }
@@ -228,7 +205,7 @@ public final class ArchetypeType {
     public static double topHealth() {
         double best = 0.0D;
         for (ArchetypeType a : BhRegistries.archetypeTypeRegistry()) {
-            best = Math.max(best, a.highHealth);
+            best = Math.max(best, a.highHealth());
         }
         return best;
     }
@@ -260,6 +237,7 @@ public final class ArchetypeType {
         private double pathSpeedBonusTier2 = 0.0D;
         private double fallDamageWaiver = 0.0D;
         private double stepHeight = 1.125D;
+        private double armor = 0.0D;
         private final List<ResourceKey<AbilityType>> classPerks = new ArrayList<>();
 
         private Builder() {
@@ -355,9 +333,24 @@ public final class ArchetypeType {
             return this;
         }
 
+        public Builder armor(double value) {
+            this.armor = value;
+            return this;
+        }
+
         public Builder ability(ResourceKey<AbilityType> key) {
             this.classPerks.add(key);
             return this;
+        }
+
+        public Stats stats() {
+            return new Stats(lowSpeed, highSpeed, lowHealth, highHealth, lowJump, highJump,
+                    bashDamage, bashKnockback,
+                    baseSpookChance, baseSpookChance * 0.7D, baseSpookChance * 0.5D,
+                    defaultChestRows, allowsChestAndRiders, allowsLargeCart, suppressesRear,
+                    medkitMultiplier, knockbackResistance, passiveHealInterval, walksOnPowderSnow,
+                    pathSpeedBonusTier0, pathSpeedBonusTier1, pathSpeedBonusTier2,
+                    fallDamageWaiver, stepHeight, armor);
         }
 
         public ArchetypeType build() {

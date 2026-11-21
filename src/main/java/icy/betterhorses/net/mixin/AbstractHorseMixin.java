@@ -14,6 +14,7 @@ import icy.betterhorses.net.BhCriteria;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.HorseStabilizerState;
 import icy.betterhorses.net.HorseTracker;
+import icy.betterhorses.net.tuning.Tuning;
 import icy.betterhorses.net.BhHorseInteraction;
 import icy.betterhorses.net.BhHorseStorage;
 import icy.betterhorses.net.BhHorseTraits;
@@ -208,6 +209,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private int bh_grazeBlockedUntilTick = 0;
     @Unique private int bh_gear = 0;
     @Unique private int bh_jumpCue;
+    @Unique private int bh_tuneGen = -1;
     @Unique private @Nullable UUID bh_combatTarget = null;
     @Unique private boolean bh_abilityPaused = false;
     @Unique private int bh_spookTicks = 0;
@@ -345,10 +347,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public void bh_setBond(int level) {
         int previous = this.bh_bond;
-        this.bh_bond = Math.max(0, Math.min(100, level));
+        int max = Tuning.bond().maxBond();
+        this.bh_bond = Math.max(0, Math.min(Math.max(max, previous), level));
         ((AbstractHorse) (Object) this).setData(BhHorseAttachments.BOND, this.bh_bond);
         bh_applyBondAttributes();
-        if (previous < 100 && this.bh_bond >= 100) {
+        if (previous < max && this.bh_bond >= max) {
             bh_awardOwner(BhCriteria.BOND_MAX);
         }
     }
@@ -454,6 +457,26 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         ((AbstractHorse) (Object) this).setData(BhHorseAttachments.SPECIES, species.location().toString());
         if (!species.equals(BhContent.SPECIES_NONE.getKey())) {
             ((AbstractHorse) (Object) this).setData(BhHorseAttachments.BREED, "");
+        }
+    }
+
+    @Override
+    public boolean bh_isGelded() {
+        return ((AbstractHorse) (Object) this).getData(BhHorseAttachments.GELDED);
+    }
+
+    @Override
+    public void bh_setGelded(boolean gelded) {
+        ((AbstractHorse) (Object) this).setData(BhHorseAttachments.GELDED, gelded);
+        if (gelded) {
+            this.resetLove();
+        }
+    }
+
+    @Inject(method = "canParent", at = @At("HEAD"), cancellable = true)
+    private void bh_geldedCantParent(CallbackInfoReturnable<Boolean> cir) {
+        if (((AbstractHorse) (Object) this).getData(BhHorseAttachments.GELDED)) {
+            cir.setReturnValue(false);
         }
     }
 
@@ -757,6 +780,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         }
         output.putString("BH_SpeciesId", ((AbstractHorse) (Object) this).getData(BhHorseAttachments.SPECIES));
         output.putBoolean("BH_BreedMixed", ((AbstractHorse) (Object) this).getData(BhHorseAttachments.BREED_MIXED));
+        if (((AbstractHorse) (Object) this).getData(BhHorseAttachments.GELDED)) {
+            output.putBoolean("BH_Gelded", true);
+        }
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
@@ -796,7 +822,11 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
             bh_homeDim = ((AbstractHorse) (Object) this).level().dimension();
         }
         bh_applyBondAttributes();
+        bh_tuneGen = Tuning.generation();
         AbstractHorse self = (AbstractHorse) (Object) this;
+        if (input.contains("Health", Tag.TAG_ANY_NUMERIC) && input.getFloat("Health") > self.getHealth()) {
+            self.setHealth(input.getFloat("Health"));
+        }
         BhHorseStorage.readContainer(input, "BH_Gear", bh_gearContainer, self.registryAccess());
         BhHorseStorage.readContainer(input, "BH_Banner", bh_bannerContainer, self.registryAccess());
         bh_syncBanner();
@@ -815,6 +845,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         bh_syncGearFlags();
         bh_afterLoad();
 
+        self.setData(BhHorseAttachments.GELDED, input.getBoolean("BH_Gelded"));
         if (input.contains("BH_GenderId", Tag.TAG_STRING)) {
             self.setData(BhHorseAttachments.GENDER, input.getString("BH_GenderId"));
         } else if (input.contains("BH_Gender", Tag.TAG_INT)) {
@@ -1312,6 +1343,10 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         if (BhVanillaHorseSwap.trySwap(self) || HorseTracker.discardIfStale(self)) {
             return;
         }
+        if (!self.level().isClientSide() && bh_tuneGen != Tuning.generation()) {
+            bh_tuneGen = Tuning.generation();
+            bh_applyBondAttributes();
+        }
         if (self.level().isClientSide()) {
             int side = self.getData(BhHorseAttachments.BEG);
             if (side != 0) this.bh_begLean = side;
@@ -1553,6 +1588,15 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     }
 
     @Inject(method = "mobInteract", at = @At("HEAD"), cancellable = true)
+    private void bh_geldHorse(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
+        if (!bh_ours()) return;
+        InteractionResult result = BhHorseInteraction.geld((AbstractHorse) (Object) this, this, player, hand);
+        if (result != null) {
+            cir.setReturnValue(result);
+        }
+    }
+
+    @Inject(method = "mobInteract", at = @At("HEAD"), cancellable = true)
     private void bh_brushHorse(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
         if (!bh_ours() || !player.getItemInHand(hand).is(Items.BRUSH)) return;
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -1633,6 +1677,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private void bh_adjustFallDamage(float distance, float damageMultiplier, DamageSource source, CallbackInfoReturnable<Boolean> cir) {
         if (!bh_ours()) return;
         AbstractHorse self = (AbstractHorse) (Object) this;
+        icy.betterhorses.net.feature.breed.Earthshaker.land(self, this, distance);
         BhHorseInteraction.StabilizerLanding landing =
                 BhHorseInteraction.stabilizerLanding(self, this, distance);
         if (landing == BhHorseInteraction.StabilizerLanding.ABSORBED) {
@@ -1699,6 +1744,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private void bh_onRegisterGoals(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         goalSelector.addGoal(1, new SpookGoal(self));
+        goalSelector.addGoal(1, icy.betterhorses.net.goal.WildWaryGoal.armed(self));
+        goalSelector.addGoal(2, icy.betterhorses.net.goal.WildWaryGoal.wary(self));
         goalSelector.addGoal(2, new DefendOwnerGoal(self));
         goalSelector.addGoal(2, new icy.betterhorses.net.feature.breed.CoastalScout.TreasureGoal(self));
         goalSelector.addGoal(3, new HorseStayGoal(self));

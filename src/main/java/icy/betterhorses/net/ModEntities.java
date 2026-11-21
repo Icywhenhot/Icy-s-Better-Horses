@@ -4,7 +4,10 @@ import icy.betterhorses.net.entity.AmericanPaintHorse;
 import icy.betterhorses.net.entity.AndalusianHorse;
 import icy.betterhorses.net.entity.AppaloosaHorse;
 import icy.betterhorses.net.entity.FriesianHorse;
+import icy.betterhorses.net.entity.GiganteusHorse;
 import icy.betterhorses.net.entity.HaflingerHorse;
+import icy.betterhorses.net.entity.PrzewalskiHorse;
+import icy.betterhorses.net.entity.TarpanHorse;
 import icy.betterhorses.net.entity.HorseCartEntity;
 import icy.betterhorses.net.entity.IcelandicHorse;
 import icy.betterhorses.net.entity.ArabianHorse;
@@ -97,6 +100,33 @@ public final class ModEntities {
             registerSmall("arabian_horse", ArabianHorse::new);
     public static final EntityType<MorganHorse> MORGAN_HORSE =
             registerSmall("morgan_horse", MorganHorse::new);
+
+    public static final EntityType<GiganteusHorse> GIGANTEUS_HORSE = register(
+            "giganteus_horse",
+            EntityType.Builder.<GiganteusHorse>of(GiganteusHorse::new, MobCategory.CREATURE)
+                    .sized(GiganteusHorse.WIDTH, GiganteusHorse.HEIGHT)
+                    .eyeHeight(GiganteusHorse.HEIGHT * 0.95F)
+                    .passengerAttachments(GiganteusHorse.HEIGHT * 0.90F)
+                    .clientTrackingRange(10)
+                    .build(key("giganteus_horse")));
+
+    public static final EntityType<PrzewalskiHorse> PRZEWALSKI_HORSE = register(
+            "przewalski_horse",
+            EntityType.Builder.<PrzewalskiHorse>of(PrzewalskiHorse::new, MobCategory.CREATURE)
+                    .sized(PrzewalskiHorse.WIDTH, PrzewalskiHorse.HEIGHT)
+                    .eyeHeight(PrzewalskiHorse.HEIGHT * 0.95F)
+                    .passengerAttachments(PrzewalskiHorse.HEIGHT * 0.90F)
+                    .clientTrackingRange(10)
+                    .build(key("przewalski_horse")));
+
+    public static final EntityType<TarpanHorse> TARPAN_HORSE = register(
+            "tarpan_horse",
+            EntityType.Builder.<TarpanHorse>of(TarpanHorse::new, MobCategory.CREATURE)
+                    .sized(TarpanHorse.WIDTH, TarpanHorse.HEIGHT)
+                    .eyeHeight(TarpanHorse.HEIGHT * 0.95F)
+                    .passengerAttachments(TarpanHorse.HEIGHT * 0.90F)
+                    .clientTrackingRange(10)
+                    .build(key("tarpan_horse")));
 
     public static final EntityType<PercheronHorse> PERCHERON_HORSE =
             register("percheron_horse", EntityType.Builder.of(PercheronHorse::new, MobCategory.CREATURE)
@@ -284,6 +314,9 @@ public final class ModEntities {
         event.put(QUARTER_HORSE, QuarterHorse.createAttributes().build());
         event.put(ARABIAN_HORSE, ArabianHorse.createAttributes().build());
         event.put(MORGAN_HORSE, MorganHorse.createAttributes().build());
+        event.put(GIGANTEUS_HORSE, GiganteusHorse.createAttributes().build());
+        event.put(PRZEWALSKI_HORSE, PrzewalskiHorse.createAttributes().build());
+        event.put(TARPAN_HORSE, TarpanHorse.createAttributes().build());
         event.put(PERCHERON_HORSE, PercheronHorse.createAttributes().build());
         event.put(SHIRE_HORSE, ShireHorse.createAttributes().build());
         event.put(BELGIAN_HORSE, BelgianHorse.createAttributes().build());

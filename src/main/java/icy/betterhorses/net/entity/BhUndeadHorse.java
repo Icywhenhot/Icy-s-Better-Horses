@@ -4,7 +4,6 @@ import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.HorseBreed;
 import icy.betterhorses.net.IHorseData;
-import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BhContent;
 import icy.betterhorses.net.registry.BreedType;
 import net.minecraft.nbt.CompoundTag;
@@ -127,7 +126,7 @@ public class BhUndeadHorse extends BhBreedHorse {
             return;
         }
         double fraction = from.getHealth() / from.getMaxHealth();
-        ArchetypeType arch = BhBreedData.of(breed).archetype();
+        BhBreedData arch = BhBreedData.of(breed);
         getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(arch.rollSpeed(random));
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(arch.rollHealth(random));
         getAttribute(Attributes.JUMP_STRENGTH).setBaseValue(arch.rollJump(random));

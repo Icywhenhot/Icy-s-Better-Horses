@@ -16,6 +16,8 @@ import icy.betterhorses.net.ModEntities;
 import icy.betterhorses.net.feature.breed.MuleLine;
 import icy.betterhorses.net.feature.breed.MuleSire;
 import icy.betterhorses.net.registry.ArchetypeType;
+import icy.betterhorses.net.tuning.FoalRules;
+import icy.betterhorses.net.tuning.Tuning;
 import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedCoatSet;
 import icy.betterhorses.net.registry.BreedType;
@@ -70,12 +72,12 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
                 .add(Attributes.STEP_HEIGHT, arch.stepHeight());
     }
 
-    private ArchetypeType bhArchetype() {
-        return BhBreedData.of(bhFixedBreed()).archetype();
+    private BhBreedData bhStats() {
+        return BhBreedData.of(bhFixedBreed());
     }
 
     private void bhRollStats() {
-        ArchetypeType arch = bhArchetype();
+        BhBreedData arch = bhStats();
         setBase(Attributes.MAX_HEALTH, arch.rollHealth(this.random));
         setBase(Attributes.MOVEMENT_SPEED, arch.rollSpeed(this.random));
         setBase(Attributes.JUMP_STRENGTH, arch.rollJump(this.random));
@@ -83,16 +85,15 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
     }
 
     private void bhInheritStats(BhBreedHorse a, BhBreedHorse b) {
-        ArchetypeType arch = bhArchetype();
-        setBase(Attributes.MAX_HEALTH, arch.clampHealth(better(a, b, Attributes.MAX_HEALTH, 1.0D)));
-        setBase(Attributes.MOVEMENT_SPEED, arch.clampSpeed(better(a, b, Attributes.MOVEMENT_SPEED, 43.2D)));
-        setBase(Attributes.JUMP_STRENGTH, arch.clampJump(better(a, b, Attributes.JUMP_STRENGTH, 6.0D)));
+        BhBreedData arch = bhStats();
+        setBase(Attributes.MAX_HEALTH, arch.clampHealth(foal(a, b, Attributes.MAX_HEALTH, FoalRules.Stat.HEALTH)));
+        setBase(Attributes.MOVEMENT_SPEED, arch.clampSpeed(foal(a, b, Attributes.MOVEMENT_SPEED, FoalRules.Stat.SPEED)));
+        setBase(Attributes.JUMP_STRENGTH, arch.clampJump(foal(a, b, Attributes.JUMP_STRENGTH, FoalRules.Stat.JUMP)));
         setHealth(getMaxHealth());
     }
 
-    private double better(BhBreedHorse a, BhBreedHorse b, Holder<Attribute> attr, double shownPerRaw) {
-        double best = Math.max(a.getAttributeBaseValue(attr), b.getAttributeBaseValue(attr));
-        return best + (this.random.nextDouble() * 1.5D - 0.5D) / shownPerRaw;
+    private double foal(BhBreedHorse a, BhBreedHorse b, Holder<Attribute> attr, FoalRules.Stat stat) {
+        return Tuning.foals().inherit(a.getAttributeBaseValue(attr), b.getAttributeBaseValue(attr), stat, this.random);
     }
 
     private void setBase(Holder<Attribute> attr, double value) {
@@ -100,6 +101,11 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
         if (inst != null) {
             inst.setBaseValue(value);
         }
+    }
+
+    @Override
+    public int getMaxTemper() {
+        return icy.betterhorses.net.feature.breed.WildTraits.maxTemper(this, super.getMaxTemper());
     }
 
     @Override
@@ -144,7 +150,7 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
     }
 
     public void bhConvertFrom(AbstractHorse from) {
-        ArchetypeType arch = bhArchetype();
+        BhBreedData arch = bhStats();
         setBase(Attributes.MAX_HEALTH,
                 arch.clampHealth(from.getAttributeBaseValue(Attributes.MAX_HEALTH)));
         setBase(Attributes.MOVEMENT_SPEED,

@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhHorseAttributes;
 import icy.betterhorses.net.BhSurge;
@@ -18,6 +19,11 @@ import net.neoforged.neoforge.common.Tags;
 
 public final class MammothWorker implements BreedAbility {
 
+    private static final Tune BRACE_KNOCKBACK = Tune.of("mammoth_worker", "brace_knockback_resistance", 1.0D).within(0.0D, 1.0D);
+    private static final Tune BRACE_TAKEN = Tune.of("mammoth_worker", "brace_damage_taken", 0.8D).within(0.0D, 10.0D);
+    private static final Tune HASTE_RADIUS = Tune.of("mammoth_worker", "haste_radius", 12.0D).within(0.0D, 128.0D);
+    private static final Tune HASTE_LEVEL = Tune.of("mammoth_worker", "haste_level", 1.0D).within(1.0D, 10.0D);
+
     private boolean anchored;
 
     @Override
@@ -26,7 +32,7 @@ public final class MammothWorker implements BreedAbility {
         if (want != anchored) {
             anchored = want;
             BhHorseAttributes.apply(horse, Attributes.KNOCKBACK_RESISTANCE,
-                    BhHorseAttributes.Source.ABILITY, "mammoth_brace", want ? 1.0D : 0.0D,
+                    BhHorseAttributes.Source.ABILITY, "mammoth_brace", want ? BRACE_KNOCKBACK.get() : 0.0D,
                     AttributeModifier.Operation.ADD_VALUE);
             if (want) {
                 BhSurge.pulse(data, 0, 2);
@@ -36,12 +42,13 @@ public final class MammothWorker implements BreedAbility {
             DonkeyForaging.pickup(horse, data, MammothWorker::rubble);
         }
         if (BhAbility.MAMMOTH_WORK.tier(data) >= 1 && horse.tickCount % 20 == 0) {
+            double r = HASTE_RADIUS.get();
             for (Player player : horse.level().getEntitiesOfClass(Player.class,
-                    horse.getBoundingBox().inflate(12.0D), p -> p.isAlive() && horse.distanceToSqr(p) <= 144.0D)) {
+                    horse.getBoundingBox().inflate(r), p -> p.isAlive() && horse.distanceToSqr(p) <= r * r)) {
                 if (!player.hasEffect(MobEffects.DIG_SPEED)) {
                     BhSurge.pulse(data, 0, 1);
                 }
-                BhBreedAbilities.applyQuietEffect(player, MobEffects.DIG_SPEED, 40, 0);
+                BhBreedAbilities.applyQuietEffect(player, MobEffects.DIG_SPEED, 40, HASTE_LEVEL.ticks() - 1);
             }
         }
     }
@@ -62,7 +69,7 @@ public final class MammothWorker implements BreedAbility {
     }
 
     public static float resistanceScale(LivingEntity target) {
-        return braced(target) ? 0.8F : 1.0F;
+        return braced(target) ? BRACE_TAKEN.f() : 1.0F;
     }
 
     @Override

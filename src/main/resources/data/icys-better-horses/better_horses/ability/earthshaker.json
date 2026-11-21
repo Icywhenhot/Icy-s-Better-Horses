@@ -1,0 +1,8 @@
+{
+  "graze_every": 100,
+  "graze_heal": 2,
+  "min_drop": 3,
+  "radius": 4,
+  "damage": 30,
+  "launch": 0.9
+}

@@ -15,6 +15,7 @@ public enum BhFeature {
     HORSE_COMBAT("horse_combat", true),
     TRANSPARENT_HORSES("transparent_horses"),
     GENDER_BREEDING("gender_breeding"),
+    GELDING("gelding"),
     CART_PICKUP("cart_pickup"),
     PLOUGH_FOLIAGE("plough_foliage"),
     PLOUGH_CROPS("plough_crops", false, false),

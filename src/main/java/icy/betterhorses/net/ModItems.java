@@ -63,6 +63,18 @@ public final class ModItems {
             new SpawnEggItem(ModEntities.FRIESIAN_HORSE, 0x252525, 0x151515,
                     itemProperties("friesian_horse_spawn_egg")));
 
+    public static final Item GIGANTEUS_HORSE_SPAWN_EGG = register("giganteus_horse_spawn_egg",
+            new SpawnEggItem(ModEntities.GIGANTEUS_HORSE, 0xC29A64, 0x3B2E24,
+                    itemProperties("giganteus_horse_spawn_egg")));
+
+    public static final Item PRZEWALSKI_HORSE_SPAWN_EGG = register("przewalski_horse_spawn_egg",
+            new SpawnEggItem(ModEntities.PRZEWALSKI_HORSE, 0xD8B07A, 0x2F241C,
+                    itemProperties("przewalski_horse_spawn_egg")));
+
+    public static final Item TARPAN_HORSE_SPAWN_EGG = register("tarpan_horse_spawn_egg",
+            new SpawnEggItem(ModEntities.TARPAN_HORSE, 0x8C8580, 0x24201D,
+                    itemProperties("tarpan_horse_spawn_egg")));
+
     public static final Item HAFLINGER_HORSE_SPAWN_EGG = register("haflinger_horse_spawn_egg",
             new SpawnEggItem(ModEntities.HAFLINGER_HORSE, 0xC78A43, 0xEBD0A4,
                     itemProperties("haflinger_horse_spawn_egg")));
@@ -188,6 +200,9 @@ public final class ModItems {
             SHIRE_HORSE_SPAWN_EGG,
             BELGIAN_HORSE_SPAWN_EGG,
             CLYDESDALE_HORSE_SPAWN_EGG,
+            GIGANTEUS_HORSE_SPAWN_EGG,
+            PRZEWALSKI_HORSE_SPAWN_EGG,
+            TARPAN_HORSE_SPAWN_EGG,
             HAFLINGER_HORSE_SPAWN_EGG,
             ANDALUSIAN_DONKEY_SPAWN_EGG,
             ASINARA_DONKEY_SPAWN_EGG,

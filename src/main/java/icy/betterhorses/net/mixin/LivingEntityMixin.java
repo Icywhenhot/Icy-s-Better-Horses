@@ -90,7 +90,7 @@ public abstract class LivingEntityMixin extends Entity {
 
         float damageToHealth = this.bh_calculateHealthDamage(self, source, amount);
         float healthAfterDamage = self.getHealth() - damageToHealth;
-        if (healthAfterDamage < self.getMaxHealth() * ArchetypePerks.MEDKIT_THRESHOLD) {
+        if (healthAfterDamage < self.getMaxHealth() * ArchetypePerks.MEDKIT_THRESHOLD.get()) {
             this.bh_triggerHorseMedkitAfterDamage = true;
         }
     }

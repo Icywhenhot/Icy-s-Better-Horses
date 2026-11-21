@@ -25,6 +25,8 @@ public final class BhHorseSteering {
 
     private static final double FRONT_PASSENGER_Z_OFFSET = 0.35D;
     private static final double REAR_PASSENGER_Z_OFFSET = -0.35D;
+    private static final double[] BROAD_BACK_Z = {0.6D, -0.15D, -0.9D};
+    private static final double[] THREE_SEAT_Z = {0.5D, -0.05D, -0.6D};
     private static final float FREE_CAMERA_ANGLE_THRESHOLD = 90.0F;
 
     private static final TagKey<EntityType<?>> BLOCKED_RIDERS = TagKey.create(Registries.ENTITY_TYPE,
@@ -40,7 +42,14 @@ public final class BhHorseSteering {
                 && !data.bh_hasGear(GearSlot.CHEST)) {
             return 3;
         }
+        if (broadBack(data)) {
+            return data.bh_hasGear(GearSlot.CHEST) ? 2 : 3;
+        }
         return 2;
+    }
+
+    public static boolean broadBack(IHorseData data) {
+        return BhAbility.GIGANTEUS_BROAD_BACK.tier(data, BhContent.GIGANTEUS.getKey()) >= 1;
     }
 
     public static int benchSeatIndex(AbstractHorse horse, Entity passenger) {
@@ -70,6 +79,10 @@ public final class BhHorseSteering {
         }
 
         double zOffset = passengerIndex == 0 ? FRONT_PASSENGER_Z_OFFSET : REAR_PASSENGER_Z_OFFSET;
+        if (horse.getPassengers().size() >= 3) {
+            double[] seats = broadBack(IHorseData.of(horse)) ? BROAD_BACK_Z : THREE_SEAT_Z;
+            zOffset = seats[Math.min(passengerIndex, seats.length - 1)];
+        }
         return new Vec3(0.0D, 0.0D, zOffset).yRot(-horse.getYRot() * ((float) Math.PI / 180.0F));
     }
 
@@ -111,7 +124,8 @@ public final class BhHorseSteering {
                 && passenger instanceof LivingEntity && !passenger.getType().is(BLOCKED_RIDERS);
         if ((passenger instanceof Player || npc) && !passengers.isEmpty()
                 && data.bh_hasGear(GearSlot.CHEST)
-                && !BhBreedData.of(data.bh_getBreedKey()).archetype().allowsChestAndRiders()) {
+                && !BhBreedData.of(data.bh_getBreedKey()).archetype().allowsChestAndRiders()
+                && !broadBack(data)) {
             return false;
         }
 

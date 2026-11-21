@@ -17,6 +17,9 @@ import icy.betterhorses.net.client.render.UndeadHorseRenderer;
 import icy.betterhorses.net.client.render.FriesianHorseRenderer;
 import icy.betterhorses.net.client.render.PercheronHorseRenderer;
 import icy.betterhorses.net.client.render.BelgianHorseRenderer;
+import icy.betterhorses.net.client.render.GiganteusHorseRenderer;
+import icy.betterhorses.net.client.render.PrzewalskiHorseRenderer;
+import icy.betterhorses.net.client.render.TarpanHorseRenderer;
 import icy.betterhorses.net.client.render.ClydesdaleHorseRenderer;
 import icy.betterhorses.net.client.render.ShireHorseRenderer;
 import icy.betterhorses.net.client.render.HorseCartRenderer;
@@ -38,7 +41,8 @@ import icy.betterhorses.net.network.HorseJumpPayload;
 import icy.betterhorses.net.network.HorseManageResultPayload;
 import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.BreedDataPayload;
-import icy.betterhorses.net.registry.ArchetypeType;
+import icy.betterhorses.net.network.TuningPayload;
+import icy.betterhorses.net.tuning.Tuning;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.BhChargePayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
@@ -274,6 +278,11 @@ public class IcysBetterHorsesClient {
                         BhModelLayers.FRIESIAN_HORSE_BABY));
 
         event.registerEntityRenderer(ModEntities.HAFLINGER_HORSE, HaflingerHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.PRZEWALSKI_HORSE, PrzewalskiHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.TARPAN_HORSE, TarpanHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.GIGANTEUS_HORSE, context ->
+                new GiganteusHorseRenderer(context,
+                        BhModelLayers.GIGANTEUS_HORSE, BhModelLayers.GIGANTEUS_HORSE_BABY));
 
         event.registerEntityRenderer(ModEntities.ANDALUSIAN_DONKEY, context -> new DonkeyRenderer(context,
                 BhModelLayers.ANDALUSIAN_DONKEY, BhModelLayers.ANDALUSIAN_DONKEY_BABY,
@@ -325,7 +334,8 @@ public class IcysBetterHorsesClient {
                 BhModelLayers.ZAMORANO_DONKEY_CHEST, BhModelLayers.ZAMORANO_DONKEY_CHEST_BABY,
                 BhTackTextures.ZAMORANO_DONKEY));
 
-        event.registerEntityRenderer(ModEntities.APPALOOSA_HORSE, MediumHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.APPALOOSA_HORSE, context ->
+                new MediumHorseRenderer<>(context, BhModelLayers.APPALOOSA_HORSE));
         event.registerEntityRenderer(ModEntities.THOROUGHBRED_HORSE, MediumHorseRenderer::new);
         event.registerEntityRenderer(ModEntities.AMERICAN_PAINT_HORSE, MediumHorseRenderer::new);
         event.registerEntityRenderer(ModEntities.ANDALUSIAN_HORSE, MediumHorseRenderer::new);
@@ -448,7 +458,15 @@ public class IcysBetterHorsesClient {
     public static void receiveBreeds(BreedDataPayload payload) {
         if (Minecraft.getInstance().hasSingleplayerServer()) return;
         BhBreedData.replaceAll(payload.toMap());
-        payload.applyClassSpeeds();
+        tookServerBreeds = true;
+    }
+
+    public static void receiveTuning(TuningPayload payload) {
+        if (Minecraft.getInstance().hasSingleplayerServer()) return;
+        int warned = Tuning.apply(payload.files(), msg -> IcysBetterHorses.LOGGER.debug("[tuning] server {}", msg));
+        if (warned > 0) {
+            IcysBetterHorses.LOGGER.info("[tuning] server tuning had {} warnings", warned);
+        }
         tookServerBreeds = true;
     }
 
@@ -456,7 +474,7 @@ public class IcysBetterHorsesClient {
         BhConfig.dropServer();
         if (tookServerBreeds) {
             BhBreedData.resetToBuiltIn();
-            ArchetypeType.resetSpeeds();
+            Tuning.reset();
             tookServerBreeds = false;
         }
         BhClientCaches.resetAll();

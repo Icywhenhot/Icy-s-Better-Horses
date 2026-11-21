@@ -29,7 +29,10 @@ public enum BhHorseshoes {
     ZAMORANO_DONKEY("zamorano_donkey", BhModelLayers.ZAMORANO_DONKEY, ZamoranoDonkeyHorseshoeGeometry::createBodyLayer),
     SMALL_MULE("small_mule", BhModelLayers.SMALL_MULE, SmallMuleHorseshoeGeometry::createBodyLayer),
     MULE("mule", BhModelLayers.MULE, MuleHorseshoeGeometry::createBodyLayer),
-    LARGE_MULE("large_mule", BhModelLayers.LARGE_MULE, LargeMuleHorseshoeGeometry::createBodyLayer);
+    LARGE_MULE("large_mule", BhModelLayers.LARGE_MULE, LargeMuleHorseshoeGeometry::createBodyLayer),
+    GIGANTEUS("giganteus", BhModelLayers.GIGANTEUS_HORSE, GiganteusHorseshoeGeometry::createBodyLayer),
+    PRZEWALSKI("przewalski", BhModelLayers.PRZEWALSKI_HORSE, PrzewalskiHorseshoeGeometry::createBodyLayer),
+    TARPAN("tarpan", BhModelLayers.TARPAN_HORSE, TarpanHorseshoeGeometry::createBodyLayer);
 
     private final ModelLayerLocation body;
     private final ModelLayerLocation layer;

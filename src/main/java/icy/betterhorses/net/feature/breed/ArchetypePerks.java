@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhBreedData;
 import icy.betterhorses.net.BhConfig;
@@ -38,34 +39,35 @@ public final class ArchetypePerks {
     private static final int PATH_INTERVAL = 10;
     private static final int PATH_GRACE = 40;
     private static final double DEFAULT_STEP_HEIGHT = 1.125D;
-    private static final double DONKEY_ARMOR = -0.25D;
     private static final int GUARD_INTERVAL = 20;
     public static final int MEDKIT_BADGE = 1;
-    public static final float MEDKIT_THRESHOLD = 0.5F;
-    private static final int MEDKIT_TICKS = 20 * 30;
+    public static final Tune MEDKIT_THRESHOLD = Tune.of("medkit", "use_below_health", 0.5D).within(0.0D, 1.0D);
+    private static final Tune MEDKIT_TICKS = Tune.of("medkit", "effect_ticks", 600.0D).within(1.0D, 72000.0D);
     private static final int SNOW_BADGE = 2;
     public static final int FALL_BADGE = 3;
 
     private double pathBonus = -1.0D;
     private int graceUntil;
     private double mass = Double.NaN;
+    private double armor = Double.NaN;
     private double step = Double.NaN;
 
     public void onBreedChanged(AbstractHorse horse, ArchetypeType arch) {
         BhHorseAttributes.apply(horse, Attributes.KNOCKBACK_RESISTANCE,
                 BhHorseAttributes.Source.ARCHETYPE, "mass",
                 knockbackResistance(arch), AttributeModifier.Operation.ADD_VALUE);
-        double armor = arch == BhContent.DONKEY.get() ? DONKEY_ARMOR : 0.0D;
+        double mult = arch.armorMultiplier();
         BhHorseAttributes.apply(horse, Attributes.ARMOR, BhHorseAttributes.Source.ARCHETYPE, "armor",
-                armor, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+                mult, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         BhHorseAttributes.apply(horse, Attributes.ARMOR_TOUGHNESS, BhHorseAttributes.Source.ARCHETYPE, "armor",
-                armor, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+                mult, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
     }
 
     public void tick(AbstractHorse horse, IHorseData data, ArchetypeType arch) {
         double wantedMass = knockbackResistance(arch);
-        if (wantedMass != mass) {
+        if (wantedMass != mass || arch.armorMultiplier() != armor) {
             mass = wantedMass;
+            armor = arch.armorMultiplier();
             onBreedChanged(horse, arch);
         }
         double wantedStep = stepHeight(arch);
@@ -83,6 +85,9 @@ public final class ArchetypePerks {
         }
         if (arch == BhContent.DONKEY.get() && horse.tickCount % GUARD_INTERVAL == 0 && BhAbility.DONKEY_GUARD.on()) {
             Guardian.hunt(horse, data);
+        }
+        if (arch == BhContent.WILD.get()) {
+            WildTraits.tick(horse, data);
         }
     }
 
@@ -204,7 +209,7 @@ public final class ArchetypePerks {
         SimpleContainer gear = data.bh_getGearContainer();
         gear.setItem(GearSlot.MEDKIT.ordinal(), ItemStack.EMPTY);
         gear.setChanged();
-        int duration = MEDKIT_TICKS * medkitMultiplier(BhBreedData.of(data.bh_getBreedKey()).archetype());
+        int duration = MEDKIT_TICKS.ticks() * medkitMultiplier(BhBreedData.of(data.bh_getBreedKey()).archetype());
         for (MobEffectInstance effect : medkitEffects(duration)) {
             self.addEffect(effect);
         }

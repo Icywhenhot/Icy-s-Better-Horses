@@ -45,6 +45,12 @@ public record MuleLine(HorseBreed horse, HorseBreed donkey, int flips) {
                 List.of(BhAbility.PAINT_STRUCTURES));
         put(HorseBreed.APPALOOSA, List.of(BhAbility.APPALOOSA_NIGHT), List.of(BhAbility.APPALOOSA_HERD),
                 List.of(BhAbility.APPALOOSA_FEED));
+        put(HorseBreed.GIGANTEUS, List.of(BhAbility.GIGANTEUS_CART, BhAbility.GIGANTEUS_FORAGER),
+                List.of(BhAbility.GIGANTEUS_BROAD_BACK), List.of(BhAbility.GIGANTEUS_QUAKE));
+        put(HorseBreed.PRZEWALSKI, List.of(BhAbility.PRZEWALSKI_MOMENTUM), List.of(BhAbility.PRZEWALSKI_SIDESTEP),
+                List.of(BhAbility.PRZEWALSKI_UNTOUCHABLE));
+        put(HorseBreed.TARPAN, List.of(BhAbility.TARPAN_FURY, BhAbility.TARPAN_RUSH), List.of(BhAbility.TARPAN_RUSH),
+                List.of(BhAbility.TARPAN_VANISH));
 
         put(HorseBreed.ANDALUSIAN_DONKEY, List.of(BhAbility.ANDALUSIAN_FARM), List.of(BhAbility.ANDALUSIAN_FARM),
                 List.of(BhAbility.ANDALUSIAN_FARM));

@@ -34,6 +34,7 @@ public final class BhHorseAttachments {
     public static final AttachmentType<String> BREED = string("");
     public static final AttachmentType<String> SPECIES = string("");
     public static final AttachmentType<Boolean> BREED_MIXED = bool(false);
+    public static final AttachmentType<Boolean> GELDED = bool(false);
     public static final AttachmentType<String> OWNER = string("");
     public static final AttachmentType<String> TREAT = string("");
     public static final AttachmentType<String> COMMAND = string(BhContent.COMMAND_FOLLOW.getKey().location().toString());
@@ -72,6 +73,7 @@ public final class BhHorseAttachments {
         register(event, "breed", BREED);
         register(event, "species", SPECIES);
         register(event, "breed_mixed", BREED_MIXED);
+        register(event, "gelded", GELDED);
         register(event, "owner", OWNER);
         register(event, "treat", TREAT);
         register(event, "command", COMMAND);

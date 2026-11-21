@@ -1,6 +1,9 @@
 package icy.betterhorses.net;
 
+import icy.betterhorses.net.tuning.BondRules;
+import icy.betterhorses.net.tuning.Tuning;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -12,7 +15,6 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import icy.betterhorses.net.entity.BhBreedHorse;
-import icy.betterhorses.net.registry.ArchetypeType;
 import icy.betterhorses.net.registry.BhRegistries;
 import icy.betterhorses.net.registry.BreedCoatSet;
 import icy.betterhorses.net.registry.BreedType;
@@ -55,7 +57,6 @@ public final class BhHorseCommands {
     private static final double SPEED_FACTOR = 43.2D;
     private static final double REACH = 8.0D;
     private static final double LOOK_REACH = 6.0D;
-    private static final int BOND_MAX = 100;
     private static final String RANDOM = "random";
     private static final List<String> OPTION_KEYS =
             List.of("coat", "gender", "speed", "jump", "health", "bond", "baby", "owner");
@@ -102,27 +103,27 @@ public final class BhHorseCommands {
             };
         }
 
-        double low(ArchetypeType arch) {
+        double[] range(BhBreedData data) {
             return switch (this) {
-                case SPEED -> arch.lowSpeed();
-                case JUMP -> arch.lowJump();
-                case HEALTH -> arch.lowHealth();
+                case SPEED -> data.speedRange();
+                case JUMP -> data.jumpRange();
+                case HEALTH -> data.healthRange();
             };
         }
 
-        double high(ArchetypeType arch) {
-            return switch (this) {
-                case SPEED -> arch.highSpeed();
-                case JUMP -> arch.highJump();
-                case HEALTH -> arch.highHealth();
-            };
+        double low(BhBreedData data) {
+            return range(data)[0];
         }
 
-        double clamp(ArchetypeType arch, double base) {
+        double high(BhBreedData data) {
+            return range(data)[1];
+        }
+
+        double clamp(BhBreedData data, double base) {
             return switch (this) {
-                case SPEED -> arch.clampSpeed(base);
-                case JUMP -> arch.clampJump(base);
-                case HEALTH -> arch.clampHealth(base);
+                case SPEED -> data.clampSpeed(base);
+                case JUMP -> data.clampJump(base);
+                case HEALTH -> data.clampHealth(base);
             };
         }
 
@@ -164,6 +165,9 @@ public final class BhHorseCommands {
                 .then(Commands.argument("gender", StringArgumentType.word())
                         .suggests((context, builder) -> SharedSuggestionProvider.suggest(genderIds(), builder))
                         .executes(context -> setGender(context, targeted))));
+        node.then(Commands.literal("gelded")
+                .then(Commands.argument("gelded", BoolArgumentType.bool())
+                        .executes(context -> setGelded(context, targeted))));
         for (Stat stat : Stat.values()) {
             node.then(Commands.literal(stat.key)
                     .then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0D))
@@ -171,7 +175,7 @@ public final class BhHorseCommands {
                             .executes(context -> setStat(context, targeted, stat))));
         }
         node.then(Commands.literal("bond")
-                .then(Commands.argument("level", IntegerArgumentType.integer(0, BOND_MAX))
+                .then(Commands.argument("level", IntegerArgumentType.integer(0, BondRules.CEILING))
                         .executes(context -> setBond(context, targeted))));
         return node;
     }
@@ -226,8 +230,8 @@ public final class BhHorseCommands {
         return best;
     }
 
-    private static ArchetypeType archetype(BhBreedHorse horse) {
-        return BhBreedData.of(horse.bhFixedBreed()).archetype();
+    private static BhBreedData archetype(BhBreedHorse horse) {
+        return BhBreedData.of(horse.bhFixedBreed());
     }
 
     private static Component name(BhBreedHorse horse) {
@@ -272,6 +276,21 @@ public final class BhHorseCommands {
         return done;
     }
 
+    private static int setGelded(CommandContext<CommandSourceStack> context, boolean targeted)
+            throws CommandSyntaxException {
+        CommandSourceStack source = context.getSource();
+        boolean gelded = BoolArgumentType.getBool(context, "gelded");
+        int done = 0;
+        for (BhBreedHorse horse : targets(context, targeted)) {
+            IHorseData data = IHorseData.of(horse);
+            data.bh_setGelded(gelded);
+            done++;
+            source.sendSuccess(() -> Component.translatable(MSG + "gender_set", name(horse),
+                    GenderType.displayName(data.bh_getGender(), gelded)).withStyle(ChatFormatting.GREEN), true);
+        }
+        return done;
+    }
+
     private static int setStat(CommandContext<CommandSourceStack> context, boolean targeted, Stat stat)
             throws CommandSyntaxException {
         CommandSourceStack source = context.getSource();
@@ -299,7 +318,7 @@ public final class BhHorseCommands {
 
     private static void report(CommandSourceStack source, BhBreedHorse horse, Stat stat, double wanted, double actual) {
         if (Math.abs(actual - wanted) > 0.05D) {
-            ArchetypeType arch = archetype(horse);
+            BhBreedData arch = archetype(horse);
             source.sendSuccess(() -> Component.translatable(MSG + "stat_clamped", name(horse), stat.label(),
                     stat.amount(actual), stat.amount(stat.shown(stat.low(arch))), stat.amount(stat.shown(stat.high(arch))))
                     .withStyle(ChatFormatting.YELLOW), true);
@@ -318,9 +337,10 @@ public final class BhHorseCommands {
             IHorseData.of(horse).bh_setBond(level);
             refresh(horse);
             done++;
-            int tier = BhHorseTraits.bondTier(level);
+            int got = IHorseData.of(horse).bh_getBond();
+            int tier = BhHorseTraits.bondTier(got);
             source.sendSuccess(() -> Component.translatable("message.icys-better-horses.bond.set",
-                    name(horse), level, tier + 1).withStyle(ChatFormatting.GREEN), true);
+                    name(horse), got, tier + 1).withStyle(ChatFormatting.GREEN), true);
         }
         return done;
     }
@@ -396,7 +416,7 @@ public final class BhHorseCommands {
         Integer bond = null;
         String rawBond = picked.get("bond");
         if (rawBond != null) {
-            bond = (int) Math.max(0, Math.min(BOND_MAX, Math.round(number("bond", rawBond))));
+            bond = (int) Math.max(0, Math.min(Tuning.bond().maxBond(), Math.round(number("bond", rawBond))));
         }
 
         if (!level.addFreshEntity(horse)) {
@@ -421,7 +441,7 @@ public final class BhHorseCommands {
         source.sendSuccess(() -> Component.translatable(MSG + "spawned",
                 BreedType.displayName(breedKey, false),
                 coats.displayName(horse.bhCoat()),
-                GenderType.displayName(IHorseData.of(horse).bh_getGender()),
+                GenderType.displayName(IHorseData.of(horse).bh_getGender(), IHorseData.of(horse).bh_isGelded()),
                 fmt(Stat.SPEED.shown(horse.getAttributeBaseValue(Attributes.MOVEMENT_SPEED))),
                 fmt(Stat.JUMP.shown(horse.getAttributeBaseValue(Attributes.JUMP_STRENGTH))),
                 fmt(horse.getAttributeBaseValue(Attributes.MAX_HEALTH))).withStyle(ChatFormatting.GREEN), true);
@@ -551,7 +571,7 @@ public final class BhHorseCommands {
         }
     }
 
-    private static CompletableFuture<Suggestions> suggestRange(SuggestionsBuilder builder, ArchetypeType arch, Stat stat) {
+    private static CompletableFuture<Suggestions> suggestRange(SuggestionsBuilder builder, BhBreedData arch, Stat stat) {
         String high = fmt(stat.shown(stat.high(arch)));
         String low = fmt(stat.shown(stat.low(arch)));
         if (high.startsWith(builder.getRemaining())) {
@@ -591,7 +611,7 @@ public final class BhHorseCommands {
         SuggestionsBuilder values = builder.createOffset(builder.getStart() + tokenStart + eq + 1);
         ResourceKey<BreedType> breedKey = breedOrNull(context);
         BreedType type = breedKey == null ? null : BhRegistries.breedTypeRegistry().get(breedKey.location());
-        ArchetypeType arch = breedKey == null ? null : BhBreedData.of(breedKey).archetype();
+        BhBreedData arch = breedKey == null ? null : BhBreedData.of(breedKey);
         switch (key) {
             case "coat" -> {
                 List<String> ids = new ArrayList<>();

@@ -1,0 +1,50 @@
+{
+  "type": "modonomicon:content",
+  "id": "icys-better-horses:classes/breed_giganteus",
+  "category": "icys-better-horses:classes",
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_giganteus.name",
+  "icon": {
+    "id": "icys-better-horses:giganteus_horse_spawn_egg"
+  },
+  "background": {
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26,
+    "height": 26
+  },
+  "x": 6,
+  "y": 4,
+  "sort_number": 23,
+  "parents": [
+    {
+      "entry": "icys-better-horses:classes/wild"
+    }
+  ],
+  "pages": [
+    {
+      "type": "modonomicon:text",
+      "id": "about",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_giganteus.about.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_giganteus.about.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "ability",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_giganteus.ability.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_giganteus.ability.text"
+    },
+    {
+      "type": "modonomicon:text",
+      "id": "spawns",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_giganteus.spawns.title",
+      "show_title_separator": true,
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_giganteus.spawns.text"
+    },
+    {
+      "type": "icys-better-horses:breed_coats",
+      "id": "coats",
+      "entity": "icys-better-horses:giganteus_horse"
+    }
+  ]
+}

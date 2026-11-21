@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhDamageTypes;
 import icy.betterhorses.net.BhHorseTraits;
@@ -18,7 +19,11 @@ import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
 public final class RottenRations implements BreedAbility {
 
-    private static final int FUEL_TICKS = 400;
+    private static final Tune FUEL_TICKS = Tune.of("rotten_rations", "fuel_ticks", 400.0D).within(1.0D, 72000.0D);
+    private static final Tune DAMAGE = Tune.of("rotten_rations", "fueled_damage_bonus", 0.15D).within(0.0D, 10.0D);
+    private static final Tune WEAKNESS_TICKS = Tune.of("rotten_rations", "weakness_ticks", 0.0D, 80.0D, 100.0D).within(0.0D, 72000.0D);
+    private static final Tune WEAKNESS_LEVEL = Tune.of("rotten_rations", "weakness_level", 1.0D, 1.0D, 2.0D).within(1.0D, 5.0D);
+    private static final Tune HUNGER_TICKS = Tune.of("rotten_rations", "hunger_ticks", 0.0D, 0.0D, 100.0D).within(0.0D, 72000.0D);
 
     private int fuel;
 
@@ -29,7 +34,7 @@ public final class RottenRations implements BreedAbility {
         } else if (fuel > 0) {
             fuel--;
         }
-        data.bh_setSurge(fuel > 0 ? BhSurge.pack(BhSurge.ACTIVE, fuel, FUEL_TICKS, 15, 1) : 0);
+        data.bh_setSurge(fuel > 0 ? BhSurge.pack(BhSurge.ACTIVE, fuel, FUEL_TICKS.ticks(), percent(), 1) : 0);
     }
 
     public static void feed(AbstractHorse horse, IHorseData data) {
@@ -39,8 +44,8 @@ public final class RottenRations implements BreedAbility {
         }
         RottenRations ability = of(horse);
         if (ability != null) {
-            ability.fuel = FUEL_TICKS;
-            data.bh_setSurge(BhSurge.pack(BhSurge.ACTIVE, FUEL_TICKS, FUEL_TICKS, 15, 1));
+            ability.fuel = FUEL_TICKS.ticks();
+            data.bh_setSurge(BhSurge.pack(BhSurge.ACTIVE, ability.fuel, ability.fuel, percent(), 1));
         }
     }
 
@@ -52,7 +57,7 @@ public final class RottenRations implements BreedAbility {
         }
         RottenRations ability = of(horse);
         if (ability != null && ability.fuel > 0) {
-            event.setAmount(event.getAmount() * 1.15F);
+            event.setAmount(event.getAmount() * (1.0F + DAMAGE.f()));
         }
     }
 
@@ -66,9 +71,12 @@ public final class RottenRations implements BreedAbility {
         if (tier < 1 || !event.getEntity().isAlive()) {
             return;
         }
-        BhBreedAbilities.applyQuietEffect(event.getEntity(), MobEffects.WEAKNESS, tier >= 2 ? 100 : 80, tier >= 2 ? 1 : 0);
-        if (tier >= 2) {
-            BhBreedAbilities.applyQuietEffect(event.getEntity(), MobEffects.HUNGER, 100, 0);
+        if (WEAKNESS_TICKS.ticks(tier) > 0) {
+            BhBreedAbilities.applyQuietEffect(event.getEntity(), MobEffects.WEAKNESS, WEAKNESS_TICKS.ticks(tier),
+                    WEAKNESS_LEVEL.ticks(tier) - 1);
+        }
+        if (HUNGER_TICKS.ticks(tier) > 0) {
+            BhBreedAbilities.applyQuietEffect(event.getEntity(), MobEffects.HUNGER, HUNGER_TICKS.ticks(tier), 0);
         }
         BhSurge.pulse(data, 0, tier >= 2 ? 2 : 0);
     }
@@ -84,6 +92,10 @@ public final class RottenRations implements BreedAbility {
             return null;
         }
         return horse;
+    }
+
+    private static int percent() {
+        return (int) Math.round(DAMAGE.get() * 100.0D);
     }
 
     private static RottenRations of(AbstractHorse horse) {
@@ -110,6 +122,6 @@ public final class RottenRations implements BreedAbility {
 
     @Override
     public void load(CompoundTag tag) {
-        fuel = Math.clamp(tag.getInt("fuel"), 0, FUEL_TICKS);
+        fuel = Math.clamp(tag.getInt("fuel"), 0, FUEL_TICKS.ticks());
     }
 }

@@ -1,5 +1,6 @@
 package icy.betterhorses.net.feature.breed;
 
+import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.BhAbility;
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.BhSurge;
@@ -15,9 +16,9 @@ import org.jetbrains.annotations.Nullable;
 
 public final class SculkHush implements BreedAbility {
 
-    private static final double LULL_RANGE = 48.0D;
     private static final int LULL_EVERY = 40;
-    private static final int BROKEN_TICKS = 600;
+    private static final Tune LULL_RANGE = Tune.of("sculk_hush", "warden_range", 48.0D).within(0.0D, 256.0D);
+    private static final Tune BROKEN_TICKS = Tune.of("sculk_hush", "broken_ticks", 600.0D).within(0.0D, 72000.0D);
     private static final String BROKEN_TAG = "BH_HushBroken";
 
     @Override
@@ -30,7 +31,7 @@ public final class SculkHush implements BreedAbility {
             BhSurge.set(data, BhContent.SCULK_HUSH.getKey(), 0);
             return;
         }
-        boolean near = !horse.level().getEntitiesOfClass(Warden.class, horse.getBoundingBox().inflate(LULL_RANGE)).isEmpty();
+        boolean near = !horse.level().getEntitiesOfClass(Warden.class, horse.getBoundingBox().inflate(LULL_RANGE.get())).isEmpty();
         BhSurge.set(data, BhContent.SCULK_HUSH.getKey(), near ? BhSurge.pack(BhSurge.ACTIVE, 0, 0, 0, 1) : 0);
     }
 
@@ -64,7 +65,7 @@ public final class SculkHush implements BreedAbility {
         AbstractHorse horse = attacker instanceof AbstractHorse h ? h
                 : attacker instanceof Player p && p.getVehicle() instanceof AbstractHorse h ? h : null;
         if (horse != null && IHorseData.of(horse).bh_getBreed().isSculk()) {
-            horse.getPersistentData().putLong(BROKEN_TAG, horse.level().getGameTime() + BROKEN_TICKS);
+            horse.getPersistentData().putLong(BROKEN_TAG, horse.level().getGameTime() + BROKEN_TICKS.ticks());
         }
     }
 

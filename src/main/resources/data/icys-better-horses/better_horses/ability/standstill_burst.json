@@ -1,0 +1,6 @@
+{
+  "settle_ticks": 20,
+  "duration": 100,
+  "cooldown": [200, 200, 160],
+  "speed_bonus": [0.3, 0.45, 0.45]
+}

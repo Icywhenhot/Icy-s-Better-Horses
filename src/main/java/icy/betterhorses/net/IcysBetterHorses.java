@@ -32,6 +32,8 @@ import icy.betterhorses.net.network.HorseRosterSyncPayload;
 import icy.betterhorses.net.network.OpenHorseRosterPayload;
 import icy.betterhorses.net.network.RadialCommandPayload;
 import icy.betterhorses.net.network.BreedDataPayload;
+import icy.betterhorses.net.network.TuningPayload;
+import icy.betterhorses.net.tuning.Tuning;
 import icy.betterhorses.net.network.ConfigSyncPayload;
 import icy.betterhorses.net.network.TrustSyncPayload;
 import icy.betterhorses.net.registry.BhContent;
@@ -113,6 +115,7 @@ public class IcysBetterHorses {
         modEventBus.addListener(BhRegistries::onNewRegistry);
         BhContent.register(modEventBus);
         modEventBus.addListener(this::onCommonSetup);
+        NeoForge.EVENT_BUS.addListener(Tuning::register);
         NeoForge.EVENT_BUS.addListener(BhBreedLoader::register);
         NeoForge.EVENT_BUS.addListener(FarmCompanion::onBabySpawn);
         NeoForge.EVENT_BUS.addListener(FarmCompanion::onAnimalTick);
@@ -125,7 +128,8 @@ public class IcysBetterHorses {
         NeoForge.EVENT_BUS.addListener(FrostCharge::hit);
         NeoForge.EVENT_BUS.addListener(SculkHush::hit);
         NeoForge.EVENT_BUS.addListener(DrownedLungs::breathe);
-        NeoForge.EVENT_BUS.addListener(BhClassLoader::register);
+        NeoForge.EVENT_BUS.addListener(icy.betterhorses.net.feature.breed.Sidestep::attack);
+        NeoForge.EVENT_BUS.addListener(icy.betterhorses.net.feature.breed.Fury::hurt);
         NeoForge.EVENT_BUS.addListener(BhCommands::register);
         NeoForge.EVENT_BUS.addListener(this::onPlayerJoin);
         NeoForge.EVENT_BUS.addListener(this::onDatapackSync);
@@ -178,6 +182,8 @@ public class IcysBetterHorses {
                 (payload, context) -> context.enqueueWork(() -> IcysBetterHorsesClient.receiveTrust(payload)));
         registrar.playToClient(ConfigSyncPayload.TYPE, new ConfigSyncPayload.StreamCodec(),
                 (payload, context) -> context.enqueueWork(() -> IcysBetterHorsesClient.receiveConfig(payload)));
+        registrar.playToClient(TuningPayload.TYPE, new TuningPayload.StreamCodec(),
+                (payload, context) -> context.enqueueWork(() -> IcysBetterHorsesClient.receiveTuning(payload)));
         registrar.playToClient(BreedDataPayload.TYPE, new BreedDataPayload.StreamCodec(),
                 (payload, context) -> context.enqueueWork(() -> IcysBetterHorsesClient.receiveBreeds(payload)));
         registrar.playToClient(HorseChargeShakePayload.TYPE, new HorseChargeShakePayload.StreamCodec(),
@@ -215,6 +221,12 @@ public class IcysBetterHorses {
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 BhHorseSpawnRules::checkHorseSpawnRules,
                 RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        for (EntityType<? extends AbstractHorse> wild : List.of(ModEntities.GIGANTEUS_HORSE,
+                ModEntities.PRZEWALSKI_HORSE, ModEntities.TARPAN_HORSE)) {
+            event.register(wild, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                    (type, level, reason, pos, random) -> BhHorseSpawnRules.checkHorseGroundRules(level, reason, pos),
+                    RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        }
     }
 
     private static void sendRoster(ServerPlayer player) {
@@ -369,13 +381,18 @@ public class IcysBetterHorses {
                 BhConfig.disabledAbilities(),
                 BhConfig.tuning(),
                 BhConfig.breedingFoods()));
+        PacketDistributor.sendToPlayer(player, TuningPayload.current());
         PacketDistributor.sendToPlayer(player, BreedDataPayload.current());
     }
 
     private void onDatapackSync(OnDatapackSyncEvent event) {
         if (event.getPlayer() != null) return;
+        TuningPayload tuning = TuningPayload.current();
         BreedDataPayload breeds = BreedDataPayload.current();
-        event.getRelevantPlayers().forEach(player -> PacketDistributor.sendToPlayer(player, breeds));
+        event.getRelevantPlayers().forEach(player -> {
+            PacketDistributor.sendToPlayer(player, tuning);
+            PacketDistributor.sendToPlayer(player, breeds);
+        });
     }
 
     private void onEntityJoin(EntityJoinLevelEvent event) {

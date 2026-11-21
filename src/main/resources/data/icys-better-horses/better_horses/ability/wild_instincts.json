@@ -1,0 +1,8 @@
+{
+  "alert_radius": 15,
+  "alert_cooldown": 120,
+  "glow_ticks": 60,
+  "self_heal_every": [300, 160, 160],
+  "rider_heal_every": [0, 200, 100],
+  "heal_amount": 2
+}
