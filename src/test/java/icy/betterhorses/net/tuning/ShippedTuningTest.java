@@ -71,6 +71,9 @@ class ShippedTuningTest {
                 .speed(8.0D / 43.2D, 11.0D / 43.2D).health(39.0D, 54.0D)
                 .jump(BhJumpHeight.strength(2.0D), BhJumpHeight.strength(4.0D))
                 .bashDamage(1.5D).bashKnockback(1.0D).defaultChestRows(3).baseSpookChance(0.0D).stats());
+        EXPECTED.put("wild", ArchetypeType.builder()
+                .speed(7.0D / 43.2D, 14.0D / 43.2D).health(25.0D, 50.0D).jump(0.45D, 0.90D)
+                .bashDamage(1.5D).bashKnockback(1.2D).defaultChestRows(3).baseSpookChance(0.20D).stats());
     }
 
     private static JsonObject json(Path p) throws IOException {

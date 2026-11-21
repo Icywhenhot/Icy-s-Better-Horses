@@ -1,0 +1,10 @@
+{
+  "fury_ticks": 100,
+  "fury_multiplier": 2,
+  "rush_ticks": 100,
+  "rush_level": [1, 2, 2],
+  "vanish_health": 0.25,
+  "vanish_ticks": 100,
+  "vanish_cooldown": 1200,
+  "vanish_radius": 32
+}

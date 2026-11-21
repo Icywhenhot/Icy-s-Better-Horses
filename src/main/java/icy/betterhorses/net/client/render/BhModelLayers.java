@@ -46,6 +46,36 @@ public final class BhModelLayers {
     public static final ModelLayerLocation SMALL_CHEST = layer("small_horse", "chest");
     public static final ModelLayerLocation SMALL_CHEST_BABY = layer("small_horse", "chest_baby");
 
+    public static final ModelLayerLocation GIGANTEUS_HORSE = layer("giganteus_horse", "main");
+    public static final ModelLayerLocation GIGANTEUS_HORSE_BABY = layer("giganteus_horse", "baby");
+    public static final ModelLayerLocation GIGANTEUS_SADDLE = layer("giganteus_horse", "saddle");
+    public static final ModelLayerLocation GIGANTEUS_SADDLE_BABY = layer("giganteus_horse", "saddle_baby");
+    public static final ModelLayerLocation GIGANTEUS_CARPET = layer("giganteus_horse", "carpet");
+    public static final ModelLayerLocation GIGANTEUS_CARPET_BABY = layer("giganteus_horse", "carpet_baby");
+    public static final ModelLayerLocation GIGANTEUS_ARMOR = layer("giganteus_horse", "armor");
+    public static final ModelLayerLocation GIGANTEUS_ARMOR_BABY = layer("giganteus_horse", "armor_baby");
+    public static final ModelLayerLocation GIGANTEUS_CHEST = layer("giganteus_horse", "chest");
+    public static final ModelLayerLocation GIGANTEUS_CHEST_BABY = layer("giganteus_horse", "chest_baby");
+    public static final ModelLayerLocation PRZEWALSKI_HORSE = layer("przewalski_horse", "main");
+    public static final ModelLayerLocation PRZEWALSKI_HORSE_BABY = layer("przewalski_horse", "baby");
+    public static final ModelLayerLocation PRZEWALSKI_SADDLE = layer("przewalski_horse", "saddle");
+    public static final ModelLayerLocation PRZEWALSKI_SADDLE_BABY = layer("przewalski_horse", "saddle_baby");
+    public static final ModelLayerLocation PRZEWALSKI_CARPET = layer("przewalski_horse", "carpet");
+    public static final ModelLayerLocation PRZEWALSKI_CARPET_BABY = layer("przewalski_horse", "carpet_baby");
+    public static final ModelLayerLocation PRZEWALSKI_ARMOR = layer("przewalski_horse", "armor");
+    public static final ModelLayerLocation PRZEWALSKI_ARMOR_BABY = layer("przewalski_horse", "armor_baby");
+    public static final ModelLayerLocation PRZEWALSKI_CHEST = layer("przewalski_horse", "chest");
+    public static final ModelLayerLocation PRZEWALSKI_CHEST_BABY = layer("przewalski_horse", "chest_baby");
+    public static final ModelLayerLocation TARPAN_HORSE = layer("tarpan_horse", "main");
+    public static final ModelLayerLocation TARPAN_HORSE_BABY = layer("tarpan_horse", "baby");
+    public static final ModelLayerLocation TARPAN_SADDLE = layer("tarpan_horse", "saddle");
+    public static final ModelLayerLocation TARPAN_SADDLE_BABY = layer("tarpan_horse", "saddle_baby");
+    public static final ModelLayerLocation TARPAN_CARPET = layer("tarpan_horse", "carpet");
+    public static final ModelLayerLocation TARPAN_CARPET_BABY = layer("tarpan_horse", "carpet_baby");
+    public static final ModelLayerLocation TARPAN_ARMOR = layer("tarpan_horse", "armor");
+    public static final ModelLayerLocation TARPAN_ARMOR_BABY = layer("tarpan_horse", "armor_baby");
+    public static final ModelLayerLocation TARPAN_CHEST = layer("tarpan_horse", "chest");
+    public static final ModelLayerLocation TARPAN_CHEST_BABY = layer("tarpan_horse", "chest_baby");
     public static final ModelLayerLocation HAFLINGER_HORSE = layer("haflinger_horse", "main");
     public static final ModelLayerLocation HAFLINGER_HORSE_BABY = layer("haflinger_horse", "baby");
     public static final ModelLayerLocation HAFLINGER_SADDLE = layer("haflinger_horse", "saddle");
@@ -59,6 +89,7 @@ public final class BhModelLayers {
 
     public static final ModelLayerLocation MEDIUM_HORSE = layer("medium_horse", "main");
     public static final ModelLayerLocation MEDIUM_HORSE_BABY = layer("medium_horse", "baby");
+    public static final ModelLayerLocation APPALOOSA_HORSE = layer("appaloosa_horse", "main");
     public static final ModelLayerLocation MEDIUM_SADDLE = layer("medium_horse", "saddle");
     public static final ModelLayerLocation MEDIUM_SADDLE_BABY = layer("medium_horse", "saddle_baby");
     public static final ModelLayerLocation MEDIUM_CARPET = layer("medium_horse", "carpet");
@@ -278,6 +309,66 @@ public final class BhModelLayers {
                 SMALL_CHEST_BABY, SmallChestGeometry::createBodyLayer);
 
         event.registerLayerDefinition(
+                GIGANTEUS_HORSE, GiganteusHorseGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                GIGANTEUS_HORSE_BABY, PercheronFoalGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                GIGANTEUS_SADDLE, GiganteusSaddleGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                GIGANTEUS_SADDLE_BABY, GiganteusSaddleGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                GIGANTEUS_CARPET, GiganteusCarpetGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                GIGANTEUS_CARPET_BABY, GiganteusCarpetGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                GIGANTEUS_ARMOR, GiganteusArmorGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                GIGANTEUS_ARMOR_BABY, GiganteusArmorGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                GIGANTEUS_CHEST, GiganteusChestGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                GIGANTEUS_CHEST_BABY, GiganteusChestGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                PRZEWALSKI_HORSE, PrzewalskiHorseGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                PRZEWALSKI_HORSE_BABY, SmallFoalGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                PRZEWALSKI_SADDLE, PrzewalskiSaddleGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                PRZEWALSKI_SADDLE_BABY, PrzewalskiSaddleGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                PRZEWALSKI_CARPET, PrzewalskiCarpetGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                PRZEWALSKI_CARPET_BABY, PrzewalskiCarpetGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                PRZEWALSKI_ARMOR, PrzewalskiArmorGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                PRZEWALSKI_ARMOR_BABY, PrzewalskiArmorGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                PRZEWALSKI_CHEST, PrzewalskiChestGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                PRZEWALSKI_CHEST_BABY, PrzewalskiChestGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                TARPAN_HORSE, TarpanHorseGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                TARPAN_HORSE_BABY, SmallFoalGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                TARPAN_SADDLE, TarpanSaddleGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                TARPAN_SADDLE_BABY, TarpanSaddleGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                TARPAN_CARPET, TarpanCarpetGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                TARPAN_CARPET_BABY, TarpanCarpetGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                TARPAN_ARMOR, TarpanArmorGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                TARPAN_ARMOR_BABY, TarpanArmorGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                TARPAN_CHEST, TarpanChestGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                TARPAN_CHEST_BABY, TarpanChestGeometry::createBodyLayer);
+        event.registerLayerDefinition(
                 HAFLINGER_HORSE, HaflingerHorseGeometry::createBodyLayer);
         event.registerLayerDefinition(
                 HAFLINGER_HORSE_BABY, SmallFoalGeometry::createBodyLayer);
@@ -300,6 +391,8 @@ public final class BhModelLayers {
 
         event.registerLayerDefinition(
                 MEDIUM_HORSE, MediumHorseGeometry::createBodyLayer);
+        event.registerLayerDefinition(
+                APPALOOSA_HORSE, AppaloosaHorseGeometry::createBodyLayer);
         event.registerLayerDefinition(
                 MEDIUM_HORSE_BABY, MediumFoalGeometry::createBodyLayer);
         event.registerLayerDefinition(
@@ -493,6 +586,9 @@ public final class BhModelLayers {
         registerPlates(event, FRIESIAN_ARMOR, FriesianArmorGeometry::createBodyLayer);
         registerPlates(event, SMALL_ARMOR, SmallArmorGeometry::createBodyLayer);
         registerPlates(event, HAFLINGER_ARMOR, HaflingerArmorGeometry::createBodyLayer);
+        registerPlates(event, GIGANTEUS_ARMOR, GiganteusArmorGeometry::createBodyLayer);
+        registerPlates(event, PRZEWALSKI_ARMOR, PrzewalskiArmorGeometry::createBodyLayer);
+        registerPlates(event, TARPAN_ARMOR, TarpanArmorGeometry::createBodyLayer);
         registerPlates(event, MEDIUM_ARMOR, MediumArmorGeometry::createBodyLayer);
         registerPlates(event, PERCHERON_ARMOR, PercheronArmorGeometry::createBodyLayer);
         registerPlates(event, SHIRE_ARMOR, ShireArmorGeometry::createBodyLayer);

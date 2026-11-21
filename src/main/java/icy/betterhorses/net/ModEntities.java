@@ -11,7 +11,10 @@ import icy.betterhorses.net.entity.MediumHorse;
 import icy.betterhorses.net.entity.SmallHorse;
 import icy.betterhorses.net.entity.IcelandicHorse;
 import icy.betterhorses.net.entity.FriesianHorse;
+import icy.betterhorses.net.entity.GiganteusHorse;
 import icy.betterhorses.net.entity.HaflingerHorse;
+import icy.betterhorses.net.entity.PrzewalskiHorse;
+import icy.betterhorses.net.entity.TarpanHorse;
 import icy.betterhorses.net.entity.PercheronHorse;
 import icy.betterhorses.net.entity.ShireHorse;
 import icy.betterhorses.net.entity.BelgianHorse;
@@ -70,6 +73,27 @@ public final class ModEntities {
                     .sized(HaflingerHorse.WIDTH, HaflingerHorse.HEIGHT)
                     .clientTrackingRange(10)
                     .build(key("haflinger_horse")));
+
+    public static final RegistryObject<EntityType<GiganteusHorse>> GIGANTEUS_HORSE = TYPES.register(
+            "giganteus_horse",
+            () -> EntityType.Builder.<GiganteusHorse>of(GiganteusHorse::new, MobCategory.CREATURE)
+                    .sized(GiganteusHorse.WIDTH, GiganteusHorse.HEIGHT)
+                    .clientTrackingRange(10)
+                    .build(key("giganteus_horse")));
+
+    public static final RegistryObject<EntityType<PrzewalskiHorse>> PRZEWALSKI_HORSE = TYPES.register(
+            "przewalski_horse",
+            () -> EntityType.Builder.<PrzewalskiHorse>of(PrzewalskiHorse::new, MobCategory.CREATURE)
+                    .sized(PrzewalskiHorse.WIDTH, PrzewalskiHorse.HEIGHT)
+                    .clientTrackingRange(10)
+                    .build(key("przewalski_horse")));
+
+    public static final RegistryObject<EntityType<TarpanHorse>> TARPAN_HORSE = TYPES.register(
+            "tarpan_horse",
+            () -> EntityType.Builder.<TarpanHorse>of(TarpanHorse::new, MobCategory.CREATURE)
+                    .sized(TarpanHorse.WIDTH, TarpanHorse.HEIGHT)
+                    .clientTrackingRange(10)
+                    .build(key("tarpan_horse")));
 
     public static final RegistryObject<EntityType<PercheronHorse>> PERCHERON_HORSE = TYPES.register(
             "percheron_horse",
@@ -251,6 +275,9 @@ public final class ModEntities {
         event.put(ICELANDIC_HORSE.get(), IcelandicHorse.createAttributes().build());
         event.put(FRIESIAN_HORSE.get(), FriesianHorse.createAttributes().build());
         event.put(HAFLINGER_HORSE.get(), HaflingerHorse.createAttributes().build());
+        event.put(GIGANTEUS_HORSE.get(), GiganteusHorse.createAttributes().build());
+        event.put(PRZEWALSKI_HORSE.get(), PrzewalskiHorse.createAttributes().build());
+        event.put(TARPAN_HORSE.get(), TarpanHorse.createAttributes().build());
         event.put(PERCHERON_HORSE.get(), PercheronHorse.createAttributes().build());
         event.put(SHIRE_HORSE.get(), ShireHorse.createAttributes().build());
         event.put(BELGIAN_HORSE.get(), BelgianHorse.createAttributes().build());

@@ -1,0 +1,31 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_tarpan.name",
+  "category": "icys_better_horses:breeds",
+  "icon": "icys-better-horses:tarpan_horse_spawn_egg",
+  "sortnum": 24,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_tarpan.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_tarpan.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_tarpan.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_tarpan.ability.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_tarpan.ability.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_tarpan.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_tarpan.spawns.text"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:tarpan_horse"
+    }
+  ]
+}

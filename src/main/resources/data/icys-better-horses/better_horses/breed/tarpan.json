@@ -1,0 +1,12 @@
+{
+  "class": "wild",
+  "chest_rows": 3,
+  "bonded_chest_rows": 4,
+  "spawn_weight": 0,
+  "min_speed": 10,
+  "max_speed": 14,
+  "min_health": 22,
+  "max_health": 32,
+  "min_jump": 2.5,
+  "max_jump": 4.3
+}

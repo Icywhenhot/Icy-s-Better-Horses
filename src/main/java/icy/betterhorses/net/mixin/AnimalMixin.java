@@ -27,6 +27,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.LevelAccessor;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -50,6 +51,13 @@ public abstract class AnimalMixin {
                                                  CallbackInfoReturnable<Boolean> cir) {
         if (BhHorseSpawnRules.appliesTo(type)) {
             cir.setReturnValue(BhHorseSpawnRules.checkHorseLikeGroundRules(type, level, reason, pos));
+        }
+    }
+
+    @Inject(method = "setInLove", at = @At("HEAD"), cancellable = true)
+    private void bh_geldedNoLove(@Nullable Player player, CallbackInfo ci) {
+        if ((Object) this instanceof AbstractHorse horse && IHorseData.of(horse).bh_isGelded()) {
+            ci.cancel();
         }
     }
 

@@ -8,6 +8,9 @@ import icy.betterhorses.net.feature.breed.DrownedLungs;
 import icy.betterhorses.net.feature.breed.FrostCharge;
 import icy.betterhorses.net.feature.breed.SunBaked;
 import icy.betterhorses.net.feature.breed.SculkHush;
+import icy.betterhorses.net.feature.breed.Earthshaker;
+import icy.betterhorses.net.feature.breed.Fury;
+import icy.betterhorses.net.feature.breed.Sidestep;
 import icy.betterhorses.net.entity.BhBreedCoats;
 import icy.betterhorses.net.feature.breed.BrickBreak;
 import icy.betterhorses.net.feature.breed.EasyKeeper;
@@ -113,6 +116,13 @@ public final class BhContent {
             .bashDamage(1.5D).bashKnockback(1.0D).defaultChestRows(3)
             .baseSpookChance(0.0D).build());
 
+    public static final RegistryObject<ArchetypeType> WILD = ARCHETYPES.register("wild", () -> ArchetypeType.builder()
+            .speed(7.0D / 43.2D, 14.0D / 43.2D).health(25.0D, 50.0D).jump(0.45D, 0.90D)
+            .bashDamage(1.5D).bashKnockback(1.2D)
+            .defaultChestRows(3).allowsChestAndRiders(false)
+            .baseSpookChance(0.20D)
+            .build());
+
     public static final DeferredRegister<AbilityType> ABILITIES =
             DeferredRegister.create(BhRegistries.ABILITY_TYPES, IcysBetterHorses.MOD_ID);
 
@@ -136,6 +146,12 @@ public final class BhContent {
             ABILITIES.register("brick_break", () -> new AbilityType(BrickBreak::new, true));
     public static final RegistryObject<AbilityType> HARDY_NORTHERN =
             ABILITIES.register("hardy_northern", () -> new AbilityType(HardyNorthern::new, true));
+    public static final RegistryObject<AbilityType> EARTHSHAKER =
+            ABILITIES.register("earthshaker", () -> new AbilityType(Earthshaker::new, true));
+    public static final RegistryObject<AbilityType> SIDESTEP =
+            ABILITIES.register("sidestep", () -> new AbilityType(Sidestep::new, true));
+    public static final RegistryObject<AbilityType> FURY =
+            ABILITIES.register("fury", () -> new AbilityType(Fury::new, true));
     public static final RegistryObject<AbilityType> WILD_INSTINCTS =
             ABILITIES.register("wild_instincts", () -> new AbilityType(WildInstincts::new, true));
     public static final RegistryObject<AbilityType> HEARTHLIGHT =
@@ -308,6 +324,33 @@ public final class BhContent {
                     .chestRows(3).bondedChestRows(3)
                     .ability(STOCK_HORSE.getKey())
                     .stabilizerBody(StabilizerBody.MEDIUM)
+                    .build());
+
+    public static final RegistryObject<BreedType> GIGANTEUS = BREEDS.register("giganteus", () ->
+            BreedType.builder(WILD.getKey()).large()
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.GIGANTEUS.folder(), BhBreedCoats.GIGANTEUS.coatIds(), BhBreedCoats.GIGANTEUS.hasFoalVariant())
+                    .entityType(entity("giganteus_horse"))
+                    .chestRows(4).bondedChestRows(6)
+                    .ability(EARTHSHAKER.getKey())
+                    .stabilizerBody(StabilizerBody.GIGANTEUS)
+                    .build());
+
+    public static final RegistryObject<BreedType> PRZEWALSKI = BREEDS.register("przewalski", () ->
+            BreedType.builder(WILD.getKey()).small()
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.PRZEWALSKI.folder(), BhBreedCoats.PRZEWALSKI.coatIds(), BhBreedCoats.PRZEWALSKI.hasFoalVariant())
+                    .entityType(entity("przewalski_horse"))
+                    .chestRows(3).bondedChestRows(4)
+                    .ability(SIDESTEP.getKey())
+                    .stabilizerBody(StabilizerBody.PRZEWALSKI)
+                    .build());
+
+    public static final RegistryObject<BreedType> TARPAN = BREEDS.register("tarpan", () ->
+            BreedType.builder(WILD.getKey()).small()
+                    .coats(IcysBetterHorses.RESOURCE_NAMESPACE, BhBreedCoats.TARPAN.folder(), BhBreedCoats.TARPAN.coatIds(), BhBreedCoats.TARPAN.hasFoalVariant())
+                    .entityType(entity("tarpan_horse"))
+                    .chestRows(3).bondedChestRows(4)
+                    .ability(FURY.getKey())
+                    .stabilizerBody(StabilizerBody.TARPAN)
                     .build());
 
     public static final RegistryObject<BreedType> ANDALUSIAN_DONKEY = BREEDS.register("andalusian_donkey", () ->

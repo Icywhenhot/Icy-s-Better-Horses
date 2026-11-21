@@ -4,6 +4,7 @@ import icy.betterhorses.net.tuning.Tune;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.feature.HorseCombat;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.animal.Fox;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -21,7 +22,8 @@ public final class Guardian {
         LivingEntity prey = null;
         double best = RADIUS.get() * RADIUS.get();
         for (LivingEntity e : horse.level().getEntitiesOfClass(LivingEntity.class, horse.getBoundingBox().inflate(RADIUS.get()),
-                e -> (e instanceof Wolf || e instanceof Fox) && e.isAlive() && HorseCombat.mayTarget(e))) {
+                e -> (e instanceof Wolf || e instanceof Fox) && e.isAlive() && HorseCombat.mayTarget(e)
+                        && !(e instanceof OwnableEntity pet && pet.getOwnerUUID() != null))) {
             double d = horse.distanceToSqr(e);
             if (d < best) {
                 best = d;

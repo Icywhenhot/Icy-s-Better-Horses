@@ -1,13 +1,18 @@
 package icy.betterhorses.net.client.render;
 
 import icy.betterhorses.net.entity.MediumHorse;
+import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 
 public class MediumHorseRenderer<T extends MediumHorse> extends BhHorseRenderer<T> {
 
     public MediumHorseRenderer(EntityRendererProvider.Context context) {
+        this(context, BhModelLayers.MEDIUM_HORSE);
+    }
+
+    public MediumHorseRenderer(EntityRendererProvider.Context context, ModelLayerLocation body) {
         super(context,
-                new MediumHorseModel<>(context.bakeLayer(BhModelLayers.MEDIUM_HORSE)),
+                new MediumHorseModel<>(context.bakeLayer(body)),
                 new MediumFoalModel<>(context.bakeLayer(BhModelLayers.MEDIUM_HORSE_BABY)),
                 layer -> new MediumHorseModel<>(context.bakeLayer(layer)),
                 BhModelLayers.MEDIUM_SADDLE,

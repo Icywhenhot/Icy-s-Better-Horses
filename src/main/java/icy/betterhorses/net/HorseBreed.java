@@ -96,7 +96,10 @@ public enum HorseBreed {
     SMALL_DROWNED_HORSE(BreedArchetype.ZOMBIE),
     SMALL_MULE(BreedArchetype.MULE),
     MEDIUM_MULE(BreedArchetype.MULE),
-    LARGE_MULE(BreedArchetype.MULE);
+    LARGE_MULE(BreedArchetype.MULE),
+    GIGANTEUS(BreedArchetype.WILD),
+    PRZEWALSKI(BreedArchetype.WILD),
+    TARPAN(BreedArchetype.WILD);
 
     public record Coat(Variant color, Markings markings) {}
 
@@ -168,7 +171,12 @@ public enum HorseBreed {
 
     public boolean isRealBreed() {
         return ordinal() < HORSE_BREED_COUNT || isDonkey() || isMule()
-                || archetype == BreedArchetype.SKELETON || archetype == BreedArchetype.ZOMBIE;
+                || archetype == BreedArchetype.SKELETON || archetype == BreedArchetype.ZOMBIE
+                || archetype == BreedArchetype.WILD;
+    }
+
+    public boolean isWild() {
+        return archetype == BreedArchetype.WILD;
     }
 
     public boolean isDonkey() {
@@ -249,14 +257,14 @@ public enum HorseBreed {
     public static List<HorseBreed> breedsForBiome(Holder<Biome> biome) {
         List<HorseBreed> matches = new ArrayList<>();
         for (HorseBreed breed : VALUES) {
-            if (!breed.isRealBreed() || breed.isDonkey() || breed.isMule() || breed.isUndead()) continue;
+            if (!breed.isRealBreed() || breed.isDonkey() || breed.isMule() || breed.isUndead() || breed.isWild()) continue;
             if (biome.is(breed.biomeTag())) {
                 matches.add(breed);
             }
         }
         if (matches.isEmpty()) {
             for (HorseBreed breed : VALUES) {
-                if (breed.isRealBreed() && !breed.isDonkey() && !breed.isMule() && !breed.isUndead() && biome.is(breed.moddedTag)) matches.add(breed);
+                if (breed.isRealBreed() && !breed.isDonkey() && !breed.isMule() && !breed.isUndead() && !breed.isWild() && biome.is(breed.moddedTag)) matches.add(breed);
             }
         }
         return matches;

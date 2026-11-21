@@ -160,7 +160,7 @@ public class HorseInfoScreen extends Screen {
 
         drawLabel(gfx, font, left + PADDING, y,
                 Component.translatable("screen.icys-better-horses.info.gender"),
-                GenderType.displayName(data.bh_getGender()));
+                GenderType.displayName(data.bh_getGender(), data.bh_isGelded()));
         y += ROW_HEIGHT;
 
         ResourceKey<BreedType> breedKey = data.bh_getBreedKey();

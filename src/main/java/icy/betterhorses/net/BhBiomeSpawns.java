@@ -15,6 +15,9 @@ import net.minecraftforge.common.world.ModifiableBiomeInfo;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.RegistryObject;
+
+import java.util.List;
 
 public final class BhBiomeSpawns {
 
@@ -25,6 +28,17 @@ public final class BhBiomeSpawns {
 
     private static final TagKey<Biome> DONKEY_SPAWNS = TagKey.create(Registries.BIOME,
             new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "spawns_donkeys"));
+
+    private record WildSpawn(TagKey<Biome> biomes, RegistryObject<? extends EntityType<?>> type, int weight, int min, int max) {}
+
+    private static final List<WildSpawn> WILD = List.of(
+            new WildSpawn(wildTag("giganteus"), ModEntities.GIGANTEUS_HORSE, 1, 1, 1),
+            new WildSpawn(wildTag("przewalski"), ModEntities.PRZEWALSKI_HORSE, 2, 2, 4),
+            new WildSpawn(wildTag("tarpan"), ModEntities.TARPAN_HORSE, 2, 2, 4));
+
+    private static TagKey<Biome> wildTag(String breed) {
+        return TagKey.create(Registries.BIOME, new ResourceLocation(IcysBetterHorses.RESOURCE_NAMESPACE, "spawns_wild/" + breed));
+    }
 
     private static final DeferredRegister<Codec<? extends BiomeModifier>> SERIALIZERS =
             DeferredRegister.create(ForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS,
@@ -54,6 +68,12 @@ public final class BhBiomeSpawns {
         @Override
         public void modify(Holder<Biome> biome, Phase phase, ModifiableBiomeInfo.BiomeInfo.Builder builder) {
             if (phase != Phase.ADD) return;
+            for (WildSpawn wild : WILD) {
+                if (biome.is(wild.biomes())) {
+                    builder.getMobSpawnSettings().addSpawn(MobCategory.CREATURE,
+                            new MobSpawnSettings.SpawnerData(wild.type().get(), wild.weight(), wild.min(), wild.max()));
+                }
+            }
             if (biome.is(DONKEY_SPAWNS) && biome.value().getMobSettings().getMobs(MobCategory.CREATURE)
                     .unwrap().stream().noneMatch(spawn -> spawn.type == EntityType.DONKEY)) {
                 builder.getMobSpawnSettings().addSpawn(MobCategory.CREATURE,

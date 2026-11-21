@@ -112,6 +112,8 @@ public final class IcysBetterHorses {
         MinecraftForge.EVENT_BUS.addListener(this::applyThickHide);
         MinecraftForge.EVENT_BUS.addListener(RottenRations::hit);
         MinecraftForge.EVENT_BUS.addListener(SculkHush::hit);
+        MinecraftForge.EVENT_BUS.addListener(icy.betterhorses.net.feature.breed.Sidestep::attack);
+        MinecraftForge.EVENT_BUS.addListener(icy.betterhorses.net.feature.breed.Fury::hurt);
         MinecraftForge.EVENT_BUS.addListener(FieldHand::onTrample);
         MinecraftForge.EVENT_BUS.addListener(icy.betterhorses.net.feature.breed.FarmCompanion::onBabySpawn);
         MinecraftForge.EVENT_BUS.addListener(icy.betterhorses.net.feature.breed.FarmCompanion::onAnimalTick);
@@ -216,6 +218,12 @@ public final class IcysBetterHorses {
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 BhHorseSpawnRules::checkHorseSpawnRules,
                 SpawnPlacementRegisterEvent.Operation.REPLACE);
+        for (EntityType<? extends AbstractHorse> wild : List.of(ModEntities.GIGANTEUS_HORSE.get(),
+                ModEntities.PRZEWALSKI_HORSE.get(), ModEntities.TARPAN_HORSE.get())) {
+            event.register(wild, SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                    (type, level, reason, pos, random) -> BhHorseSpawnRules.checkHorseGroundRules(level, reason, pos),
+                    SpawnPlacementRegisterEvent.Operation.REPLACE);
+        }
     }
 
     @SubscribeEvent

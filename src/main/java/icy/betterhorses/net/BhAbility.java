@@ -21,6 +21,10 @@ public enum BhAbility {
     PONY_HEAL(BreedArchetype.PONY),
     DONKEY_GUARD(BreedArchetype.DONKEY),
     MULE_SURE_FOOT(BreedArchetype.MULE),
+    WILD_TAMING(BreedArchetype.WILD),
+    WILD_BOND(BreedArchetype.WILD),
+    WILD_BUCK(BreedArchetype.WILD),
+    WILD_SKITTISH(BreedArchetype.WILD),
 
     THOROUGHBRED_TOP_END(HorseBreed.THOROUGHBRED),
     ARABIAN_ENDURANCE(HorseBreed.ARABIAN),
@@ -89,7 +93,17 @@ public enum BhAbility {
     HUSK_SHARE(HorseBreed.HUSK_SPECIES),
     DROWNED_GILLS(HorseBreed.DROWNED_SPECIES),
     DROWNED_SWIM(HorseBreed.DROWNED_SPECIES),
-    DROWNED_DASH(HorseBreed.DROWNED_SPECIES);
+    DROWNED_DASH(HorseBreed.DROWNED_SPECIES),
+    GIGANTEUS_CART(HorseBreed.GIGANTEUS),
+    GIGANTEUS_FORAGER(HorseBreed.GIGANTEUS),
+    GIGANTEUS_BROAD_BACK(HorseBreed.GIGANTEUS),
+    GIGANTEUS_QUAKE(HorseBreed.GIGANTEUS),
+    PRZEWALSKI_MOMENTUM(HorseBreed.PRZEWALSKI),
+    PRZEWALSKI_SIDESTEP(HorseBreed.PRZEWALSKI),
+    PRZEWALSKI_UNTOUCHABLE(HorseBreed.PRZEWALSKI),
+    TARPAN_FURY(HorseBreed.TARPAN),
+    TARPAN_RUSH(HorseBreed.TARPAN),
+    TARPAN_VANISH(HorseBreed.TARPAN);
 
     private final @Nullable BreedArchetype archetype;
     private final @Nullable HorseBreed breed;

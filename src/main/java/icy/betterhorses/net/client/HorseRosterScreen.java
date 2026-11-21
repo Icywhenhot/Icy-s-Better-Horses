@@ -681,7 +681,7 @@ public class HorseRosterScreen extends Screen {
                 ? Component.literal(BhScreenDraw.prettifyDimension(entry.dimensionId()))
                 : Component.translatable("screen.icys-better-horses.manage.resting");
         return Component.empty()
-                .append(GenderType.displayName(bh_genderKey(entry.genderId())))
+                .append(GenderType.displayName(bh_genderKey(entry.genderId()), entry.gelded()))
                 .append(" · ")
                 .append(where);
     }

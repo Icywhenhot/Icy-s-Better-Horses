@@ -1,0 +1,31 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.breed_giganteus.name",
+  "category": "icys_better_horses:breeds",
+  "icon": "icys-better-horses:giganteus_horse_spawn_egg",
+  "sortnum": 22,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_giganteus.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_giganteus.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_giganteus.ability.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_giganteus.ability.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_giganteus.ability.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.breed_giganteus.spawns.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.breed_giganteus.spawns.text"
+    },
+    {
+      "type": "icys_better_horses:breed_coats",
+      "entity": "icys-better-horses:giganteus_horse"
+    }
+  ]
+}

@@ -51,6 +51,9 @@ public interface IHorseData {
     ResourceKey<GenderType> bh_getGender();
     void bh_setGender(ResourceKey<GenderType> gender);
 
+    boolean bh_isGelded();
+    void bh_setGelded(boolean gelded);
+
     HorseBreed bh_getBreed();
     void bh_setBreed(HorseBreed breed);
 
@@ -107,7 +110,12 @@ public interface IHorseData {
         if (bh_hasEnderChestGear()) {
             return 3;
         }
-        return BhBreedData.of(bh_getBreedKey()).rowsAt(BhHorseTraits.bondTier(bh_getBond()));
+        BhBreedData breed = BhBreedData.of(bh_getBreedKey());
+        int rows = breed.rowsAt(BhHorseTraits.bondTier(bh_getBond()));
+        if (BhAbility.GIGANTEUS_BROAD_BACK.tier(this, icy.betterhorses.net.registry.BhContent.GIGANTEUS.getKey()) >= 1) {
+            rows = Math.max(rows, breed.chestRows() + 1);
+        }
+        return rows;
     }
 
     int bh_getGaitGear();
@@ -190,7 +198,8 @@ public interface IHorseData {
 
     default boolean bh_mayUseLargeCart() {
         ResourceKey<BreedType> breedKey = bh_getBreedKey();
-        return breedKey != null && BhBreedData.of(breedKey).archetype().allowsLargeCart();
+        return breedKey != null && (BhBreedData.of(breedKey).archetype().allowsLargeCart()
+                || BhAbility.GIGANTEUS_CART.tier(this, icy.betterhorses.net.registry.BhContent.GIGANTEUS.getKey()) >= 0);
     }
 
     CartType bh_getCartType();

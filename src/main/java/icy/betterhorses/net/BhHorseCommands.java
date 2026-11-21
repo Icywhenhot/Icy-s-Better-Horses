@@ -3,6 +3,7 @@ package icy.betterhorses.net;
 import icy.betterhorses.net.tuning.BondRules;
 import icy.betterhorses.net.tuning.Tuning;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -163,6 +164,9 @@ public final class BhHorseCommands {
                 .then(Commands.argument("gender", StringArgumentType.word())
                         .suggests((context, builder) -> SharedSuggestionProvider.suggest(genderIds(), builder))
                         .executes(context -> setGender(context, targeted))));
+        node.then(Commands.literal("gelded")
+                .then(Commands.argument("gelded", BoolArgumentType.bool())
+                        .executes(context -> setGelded(context, targeted))));
         for (Stat stat : Stat.values()) {
             node.then(Commands.literal(stat.key)
                     .then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0D))
@@ -267,6 +271,21 @@ public final class BhHorseCommands {
             done++;
             source.sendSuccess(() -> Component.translatable(MSG + "gender_set", name(horse),
                     GenderType.displayName(gender)).withStyle(ChatFormatting.GREEN), true);
+        }
+        return done;
+    }
+
+    private static int setGelded(CommandContext<CommandSourceStack> context, boolean targeted)
+            throws CommandSyntaxException {
+        CommandSourceStack source = context.getSource();
+        boolean gelded = BoolArgumentType.getBool(context, "gelded");
+        int done = 0;
+        for (BhBreedHorse horse : targets(context, targeted)) {
+            IHorseData data = IHorseData.of(horse);
+            data.bh_setGelded(gelded);
+            done++;
+            source.sendSuccess(() -> Component.translatable(MSG + "gender_set", name(horse),
+                    GenderType.displayName(data.bh_getGender(), gelded)).withStyle(ChatFormatting.GREEN), true);
         }
         return done;
     }
@@ -421,7 +440,7 @@ public final class BhHorseCommands {
         source.sendSuccess(() -> Component.translatable(MSG + "spawned",
                 BreedType.displayName(breedKey, false),
                 coats.displayName(horse.bhCoat()),
-                GenderType.displayName(IHorseData.of(horse).bh_getGender()),
+                GenderType.displayName(IHorseData.of(horse).bh_getGender(), IHorseData.of(horse).bh_isGelded()),
                 fmt(Stat.SPEED.shown(horse.getAttributeBaseValue(Attributes.MOVEMENT_SPEED))),
                 fmt(Stat.JUMP.shown(horse.getAttributeBaseValue(Attributes.JUMP_STRENGTH))),
                 fmt(horse.getAttributeBaseValue(Attributes.MAX_HEALTH))).withStyle(ChatFormatting.GREEN), true);

@@ -20,7 +20,10 @@ import icy.betterhorses.net.client.render.BelgianHorseRenderer;
 import icy.betterhorses.net.client.render.BhModelLayers;
 import icy.betterhorses.net.client.render.ClydesdaleHorseRenderer;
 import icy.betterhorses.net.client.render.FriesianHorseRenderer;
+import icy.betterhorses.net.client.render.GiganteusHorseRenderer;
 import icy.betterhorses.net.client.render.HaflingerHorseRenderer;
+import icy.betterhorses.net.client.render.PrzewalskiHorseRenderer;
+import icy.betterhorses.net.client.render.TarpanHorseRenderer;
 import icy.betterhorses.net.client.render.HorseCartRenderer;
 import icy.betterhorses.net.client.render.DonkeyRenderer;
 import icy.betterhorses.net.client.render.LargeDonkeyModel;
@@ -326,8 +329,14 @@ public final class IcysBetterHorsesClient {
                 new FriesianHorseRenderer(context,
                         BhModelLayers.FRIESIAN_HORSE, BhModelLayers.FRIESIAN_HORSE_BABY));
         event.registerEntityRenderer(ModEntities.HAFLINGER_HORSE.get(), HaflingerHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.PRZEWALSKI_HORSE.get(), PrzewalskiHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.TARPAN_HORSE.get(), TarpanHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.GIGANTEUS_HORSE.get(), context ->
+                new GiganteusHorseRenderer(context,
+                        BhModelLayers.GIGANTEUS_HORSE, BhModelLayers.GIGANTEUS_HORSE_BABY));
 
-        event.registerEntityRenderer(ModEntities.APPALOOSA_HORSE.get(), MediumHorseRenderer::new);
+        event.registerEntityRenderer(ModEntities.APPALOOSA_HORSE.get(), context ->
+                new MediumHorseRenderer<>(context, BhModelLayers.APPALOOSA_HORSE));
         event.registerEntityRenderer(ModEntities.THOROUGHBRED_HORSE.get(), MediumHorseRenderer::new);
         event.registerEntityRenderer(ModEntities.AMERICAN_PAINT_HORSE.get(), MediumHorseRenderer::new);
         event.registerEntityRenderer(ModEntities.ANDALUSIAN_HORSE.get(), MediumHorseRenderer::new);

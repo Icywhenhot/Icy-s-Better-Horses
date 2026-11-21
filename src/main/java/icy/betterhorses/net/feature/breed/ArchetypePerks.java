@@ -86,6 +86,9 @@ public final class ArchetypePerks {
         if (arch == BhContent.DONKEY.get() && horse.tickCount % GUARD_INTERVAL == 0 && BhAbility.DONKEY_GUARD.on()) {
             Guardian.hunt(horse, data);
         }
+        if (arch == BhContent.WILD.get()) {
+            WildTraits.tick(horse, data);
+        }
     }
 
     private void updatePath(AbstractHorse horse, IHorseData data, ArchetypeType arch) {

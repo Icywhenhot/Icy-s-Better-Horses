@@ -278,6 +278,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Unique private static final EntityDataAccessor<String> BH_COMMAND_ID =
             SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.STRING);
     @Unique private static final EntityDataAccessor<Boolean> BH_FREE_LOOK = bh_boolKey();
+    @Unique private static final EntityDataAccessor<Boolean> BH_GELDED = bh_boolKey();
     @Unique private static final EntityDataAccessor<Boolean> BH_CART = bh_boolKey();
     @Unique private static final EntityDataAccessor<Integer> BH_CARPET = bh_intKey();
     @Unique private static final EntityDataAccessor<Boolean> BH_CART_CHEST = bh_boolKey();
@@ -318,6 +319,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         this.entityData.define(BH_BREED_ID, "");
         this.entityData.define(BH_SPECIES_ID, "");
         this.entityData.define(BH_BREED_MIXED, false);
+        this.entityData.define(BH_GELDED, false);
         this.entityData.define(BH_GEAR, 0);
         this.entityData.define(BH_GAIT_GEAR, 0);
         this.entityData.define(BH_COMBAT, 0);
@@ -498,6 +500,26 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     @Override
     public void bh_setGender(ResourceKey<GenderType> gender) {
         bh_push(BH_GENDER_ID, gender.location().toString());
+    }
+
+    @Override
+    public boolean bh_isGelded() {
+        return this.entityData.get(BH_GELDED);
+    }
+
+    @Override
+    public void bh_setGelded(boolean gelded) {
+        bh_push(BH_GELDED, gelded);
+        if (gelded) {
+            this.resetLove();
+        }
+    }
+
+    @Inject(method = "canParent", at = @At("HEAD"), cancellable = true)
+    private void bh_geldedCantParent(CallbackInfoReturnable<Boolean> cir) {
+        if (this.entityData.get(BH_GELDED)) {
+            cir.setReturnValue(false);
+        }
     }
 
     @Override
@@ -870,6 +892,9 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         }
         output.putString("BH_SpeciesId", this.entityData.get(BH_SPECIES_ID));
         output.putBoolean("BH_BreedMixed", this.entityData.get(BH_BREED_MIXED));
+        if (this.entityData.get(BH_GELDED)) {
+            output.putBoolean("BH_Gelded", true);
+        }
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
@@ -932,6 +957,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
         bh_syncGearFlags();
         bh_afterLoad();
 
+        bh_push(BH_GELDED, input.getBoolean("BH_Gelded"));
         if (input.contains("BH_GenderId", Tag.TAG_STRING)) {
             bh_push(BH_GENDER_ID, input.getString("BH_GenderId"));
         } else if (input.contains("BH_Gender", Tag.TAG_INT)) {
@@ -1671,6 +1697,15 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     }
 
     @Inject(method = "mobInteract", at = @At("HEAD"), cancellable = true)
+    private void bh_geldHorse(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
+        if (!bh_ours()) return;
+        InteractionResult result = BhHorseInteraction.geld((AbstractHorse) (Object) this, this, player, hand);
+        if (result != null) {
+            cir.setReturnValue(result);
+        }
+    }
+
+    @Inject(method = "mobInteract", at = @At("HEAD"), cancellable = true)
     private void bh_brushHorse(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
         if (!bh_ours() || !player.getItemInHand(hand).is(Items.BRUSH)) return;
         AbstractHorse self = (AbstractHorse) (Object) this;
@@ -1751,6 +1786,7 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private void bh_adjustFallDamage(float distance, float damageMultiplier, DamageSource source, CallbackInfoReturnable<Boolean> cir) {
         if (!bh_ours()) return;
         AbstractHorse self = (AbstractHorse) (Object) this;
+        icy.betterhorses.net.feature.breed.Earthshaker.land(self, this, distance);
         BhHorseInteraction.StabilizerLanding landing =
                 BhHorseInteraction.stabilizerLanding(self, this, distance);
         if (landing == BhHorseInteraction.StabilizerLanding.ABSORBED) {
@@ -1817,6 +1853,8 @@ public abstract class AbstractHorseMixin extends Animal implements IHorseData, I
     private void bh_onRegisterGoals(CallbackInfo ci) {
         AbstractHorse self = (AbstractHorse) (Object) this;
         goalSelector.addGoal(1, new SpookGoal(self));
+        goalSelector.addGoal(1, icy.betterhorses.net.goal.WildWaryGoal.armed(self));
+        goalSelector.addGoal(2, icy.betterhorses.net.goal.WildWaryGoal.wary(self));
         goalSelector.addGoal(2, new DefendOwnerGoal(self));
         goalSelector.addGoal(3, new HorseStayGoal(self));
         goalSelector.addGoal(3, new HorseFollowOwnerGoal(self));

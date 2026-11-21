@@ -10,5 +10,6 @@ public enum BreedArchetype {
     NONE,
     SKELETON,
     ZOMBIE,
-    MULE
+    MULE,
+    WILD
 }

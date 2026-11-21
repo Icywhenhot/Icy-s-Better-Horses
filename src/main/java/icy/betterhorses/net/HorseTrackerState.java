@@ -185,6 +185,7 @@ public class HorseTrackerState extends SavedData {
         ResourceKey<BreedType> breedKey = data.bh_getBreedKey();
         summary.putString("breedId", breedKey != null ? breedKey.location().toString() : data.bh_getBreed().id());
         summary.putString("gender", data.bh_getGender().location().toString());
+        summary.putBoolean("gelded", data.bh_isGelded());
         summary.putBoolean("mixed", data.bh_isMixedBreed());
         summary.putInt("bond", data.bh_getBond());
         summary.putBoolean("home", data.bh_getHome() != null);

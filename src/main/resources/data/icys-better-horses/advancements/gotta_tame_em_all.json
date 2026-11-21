@@ -42,6 +42,12 @@
       },
       "trigger": "icys-better-horses:milestone"
     },
+    "giganteus": {
+      "conditions": {
+        "key": "breed/giganteus"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
     "haflinger": {
       "conditions": {
         "key": "breed/haflinger"
@@ -72,6 +78,12 @@
       },
       "trigger": "icys-better-horses:milestone"
     },
+    "przewalski": {
+      "conditions": {
+        "key": "breed/przewalski"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
     "quarter": {
       "conditions": {
         "key": "breed/quarter"
@@ -81,6 +93,12 @@
     "shire": {
       "conditions": {
         "key": "breed/shire"
+      },
+      "trigger": "icys-better-horses:milestone"
+    },
+    "tarpan": {
+      "conditions": {
+        "key": "breed/tarpan"
       },
       "trigger": "icys-better-horses:milestone"
     },
@@ -151,6 +169,15 @@
     ],
     [
       "appaloosa"
+    ],
+    [
+      "giganteus"
+    ],
+    [
+      "przewalski"
+    ],
+    [
+      "tarpan"
     ]
   ],
   "rewards": {

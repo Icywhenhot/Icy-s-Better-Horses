@@ -95,7 +95,7 @@ public final class BhHorseHud {
                 : data.bh_getBreed().displayName(data.bh_isMixedBreed());
         Component title = Component.translatable("hud.icys-better-horses.horse_stats");
         Component[] lines = {
-                Component.translatable("hud.icys-better-horses.gender", GenderType.displayName(data.bh_getGender())),
+                Component.translatable("hud.icys-better-horses.gender", GenderType.displayName(data.bh_getGender(), data.bh_isGelded())),
                 Component.translatable("hud.icys-better-horses.breed", breedName),
                 Component.translatable("hud.icys-better-horses.speed", speedValue),
                 Component.translatable("hud.icys-better-horses.jump", jumpValue),

@@ -21,7 +21,7 @@ public record BreedDataPayload(List<Entry> entries) {
     private static final int MAX_ENTRIES = 128;
     private static final int MAX_NAME = 64;
 
-    public record Entry(String breed, String archetype, int chestRows, int bondedChestRows, int spawnWeight,
+    public record Entry(String breed, String archetype, int chestRows, int midChestRows, int bondedChestRows, int spawnWeight,
                         Ranges ranges) {}
 
     public static BreedDataPayload current() {
@@ -33,6 +33,7 @@ public record BreedDataPayload(List<Entry> entries) {
             out.add(new Entry(entry.getKey().getPath(),
                     archetypeId != null ? archetypeId.toString() : "",
                     data.classRows() ? BhBreedData.CLASS_ROWS : data.chestRows(),
+                    data.classMidRows() ? BhBreedData.CLASS_ROWS : data.midChestRows(),
                     data.classBondedRows() ? BhBreedData.CLASS_ROWS : data.bondedChestRows(),
                     data.spawnWeight(), data.ranges()));
         }
@@ -51,7 +52,7 @@ public record BreedDataPayload(List<Entry> entries) {
             if (arch == null) {
                 arch = fallback != null ? fallback.archetype() : BhContent.NONE.get();
             }
-            map.put(breedId, new BhBreedData(arch, entry.chestRows(), entry.bondedChestRows(), entry.spawnWeight(),
+            map.put(breedId, new BhBreedData(arch, entry.chestRows(), entry.midChestRows(), entry.bondedChestRows(), entry.spawnWeight(),
                     entry.ranges()));
         }
         return map;
@@ -67,6 +68,7 @@ public record BreedDataPayload(List<Entry> entries) {
             buf.writeUtf(entry.breed(), MAX_NAME);
             buf.writeUtf(entry.archetype(), MAX_NAME);
             buf.writeVarInt(entry.chestRows());
+            buf.writeVarInt(entry.midChestRows());
             buf.writeVarInt(entry.bondedChestRows());
             buf.writeVarInt(entry.spawnWeight());
             Ranges r = entry.ranges();
@@ -86,6 +88,7 @@ public record BreedDataPayload(List<Entry> entries) {
             entries.add(new Entry(
                     buf.readUtf(MAX_NAME),
                     buf.readUtf(MAX_NAME),
+                    Math.max(BhBreedData.CLASS_ROWS, Math.min(6, buf.readVarInt())),
                     Math.max(BhBreedData.CLASS_ROWS, Math.min(6, buf.readVarInt())),
                     Math.max(BhBreedData.CLASS_ROWS, Math.min(6, buf.readVarInt())),
                     buf.readVarInt(),

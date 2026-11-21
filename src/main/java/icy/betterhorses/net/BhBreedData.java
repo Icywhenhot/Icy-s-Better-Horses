@@ -14,12 +14,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public record BhBreedData(ArchetypeType archetype, int chestRows, int bondedChestRows, int spawnWeight, Ranges ranges) {
+public record BhBreedData(ArchetypeType archetype, int chestRows, int midChestRows, int bondedChestRows, int spawnWeight, Ranges ranges) {
 
     private static final int DEFAULT_SPAWN_WEIGHT = 5;
     public static final int CLASS_ROWS = -1;
     private static final BhBreedData SPECIES_DEFAULT = new BhBreedData(
-            BhContent.NONE.get(), CLASS_ROWS, CLASS_ROWS, DEFAULT_SPAWN_WEIGHT, Ranges.NONE);
+            BhContent.NONE.get(), CLASS_ROWS, CLASS_ROWS, CLASS_ROWS, DEFAULT_SPAWN_WEIGHT, Ranges.NONE);
 
     private static Map<ResourceLocation, BhBreedData> BUILT_IN = Map.of();
     private static final Map<ResourceLocation, BhBreedData> live = new HashMap<>();
@@ -82,6 +82,11 @@ public record BhBreedData(ArchetypeType archetype, int chestRows, int bondedChes
     }
 
     @Override
+    public int midChestRows() {
+        return midChestRows < 0 ? chestRows() : Math.min(Math.max(midChestRows, chestRows()), bondedChestRows());
+    }
+
+    @Override
     public int bondedChestRows() {
         return bondedChestRows < 0 ? chestRows() : Math.max(bondedChestRows, chestRows());
     }
@@ -90,12 +95,16 @@ public record BhBreedData(ArchetypeType archetype, int chestRows, int bondedChes
         return chestRows < 0;
     }
 
+    public boolean classMidRows() {
+        return midChestRows < 0;
+    }
+
     public boolean classBondedRows() {
         return bondedChestRows < 0;
     }
 
     public int rowsAt(int bondTier) {
-        return bondTier >= 2 ? bondedChestRows() : chestRows();
+        return bondTier >= 2 ? bondedChestRows() : bondTier == 1 ? midChestRows() : chestRows();
     }
 
     public double rollSpeed(RandomSource random) {
@@ -172,8 +181,9 @@ public record BhBreedData(ArchetypeType archetype, int chestRows, int bondedChes
             }
             ArchetypeType archetype = resolveArchetype(type.archetype());
             int rows = type.chestRowsOverride() != null ? type.chestRowsOverride() : CLASS_ROWS;
+            int mid = type.midChestRowsOverride() != null ? type.midChestRowsOverride() : CLASS_ROWS;
             int bonded = type.bondedChestRowsOverride() != null ? type.bondedChestRowsOverride() : CLASS_ROWS;
-            map.put(id, new BhBreedData(archetype, rows, bonded, DEFAULT_SPAWN_WEIGHT, Ranges.NONE));
+            map.put(id, new BhBreedData(archetype, rows, mid, bonded, DEFAULT_SPAWN_WEIGHT, Ranges.NONE));
         }
         return Map.copyOf(map);
     }

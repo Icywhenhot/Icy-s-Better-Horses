@@ -59,7 +59,11 @@ public final class SlowBlockImmunity implements BreedAbility {
         if (Objects.equals(breedKey, BhContent.ICELANDIC.getKey())) {
             return BhAbility.ICELANDIC_MOMENTUM.on();
         }
+        if (Objects.equals(breedKey, BhContent.PRZEWALSKI.getKey())) {
+            return BhAbility.PRZEWALSKI_MOMENTUM.on();
+        }
         return MuleLine.of(data) != null
-                && (BhAbility.PERCHERON_MOMENTUM.on(data) || BhAbility.ICELANDIC_MOMENTUM.on(data));
+                && (BhAbility.PERCHERON_MOMENTUM.on(data) || BhAbility.ICELANDIC_MOMENTUM.on(data)
+                || BhAbility.PRZEWALSKI_MOMENTUM.on(data));
     }
 }

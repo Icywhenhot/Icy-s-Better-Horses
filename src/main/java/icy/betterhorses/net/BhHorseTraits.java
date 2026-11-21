@@ -26,8 +26,10 @@ public final class BhHorseTraits {
     public static void grantBond(IHorseData data, int amount) {
         int gain = amount;
         int quick = BhAbility.MORGAN_BOND.tier(data, BhContent.MORGAN.getKey());
-        if (quick >= 0) {
-            int halves = amount * (int) Math.round(MORGAN_RATE.at(quick) * 2.0D) + data.bh_getBondRemainder();
+        double rate = quick >= 0 ? MORGAN_RATE.at(quick)
+                : amount > 0 ? icy.betterhorses.net.feature.breed.WildTraits.bondRate(data) : 1.0D;
+        if (quick >= 0 || rate != 1.0D) {
+            int halves = amount * (int) Math.round(rate * 2.0D) + data.bh_getBondRemainder();
             gain = halves / 2;
             data.bh_setBondRemainder(halves % 2);
         }

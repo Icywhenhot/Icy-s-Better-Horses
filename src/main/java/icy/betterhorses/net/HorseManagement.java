@@ -103,6 +103,7 @@ public final class HorseManagement {
                     horse.hasCustomName() ? horse.getCustomName().getString() : "",
                     data.bh_getBreedKey() != null ? data.bh_getBreedKey().location().toString() : data.bh_getBreed().id(),
                     data.bh_getGender().location().toString(),
+                    data.bh_isGelded(),
                     data.bh_isMixedBreed(),
                     data.bh_getBond(),
                     loaded != null,
@@ -143,6 +144,7 @@ public final class HorseManagement {
                                                 String dimension, BlockPos pos, boolean dead) {
         return new HorseRosterEntry(horseId, summary.getString("name"),
                 bh_summaryBreed(summary), summary.getString("gender"),
+                summary.getBoolean("gelded"),
                 summary.getBoolean("mixed"), summary.getInt("bond"), false,
                 summary.getBoolean("home"), active, dimension, pos, summary.getString("type"),
                 summary.contains("variant") ? summary.getInt("variant") : -1,

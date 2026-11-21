@@ -3,6 +3,10 @@ package icy.betterhorses.net.tuning;
 import icy.betterhorses.net.BhHorseTraits;
 import icy.betterhorses.net.feature.breed.ArchetypePerks;
 import icy.betterhorses.net.feature.breed.BrickBreak;
+import icy.betterhorses.net.feature.breed.Earthshaker;
+import icy.betterhorses.net.feature.breed.Fury;
+import icy.betterhorses.net.feature.breed.Sidestep;
+import icy.betterhorses.net.feature.breed.WildTraits;
 import icy.betterhorses.net.feature.breed.EasyKeeper;
 import icy.betterhorses.net.feature.breed.Endurance;
 import icy.betterhorses.net.feature.breed.FarmCompanion;
@@ -34,7 +38,8 @@ public final class TuneHolders {
             FarmCompanion.class, FriesianPresence.class, FrostCharge.class, Guardian.class, Intimidation.class,
             Ironclad.class, MammothWorker.class, MuleSire.class, PegaCompanion.class, RottenRations.class,
             SculkHush.class, SecondChance.class, Skittish.class, StandstillBurst.class, StockHorse.class,
-            SunBaked.class, ThickHide.class, TopEnd.class, WaterDash.class, WildInstincts.class, WinterFeet.class
+            SunBaked.class, ThickHide.class, TopEnd.class, WaterDash.class, WildInstincts.class, WinterFeet.class,
+            Earthshaker.class, Fury.class, Sidestep.class, WildTraits.class
     };
 
     private TuneHolders() {}

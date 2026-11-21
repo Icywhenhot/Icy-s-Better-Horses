@@ -109,6 +109,11 @@ public abstract class BhBreedHorse extends Horse implements BhBreedEntity {
     }
 
     @Override
+    public int getMaxTemper() {
+        return icy.betterhorses.net.feature.breed.WildTraits.maxTemper(this, super.getMaxTemper());
+    }
+
+    @Override
     public double getPassengersRidingOffset() {
         return this.getBbHeight() * 0.90D;
     }

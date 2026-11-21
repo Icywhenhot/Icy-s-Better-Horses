@@ -1,0 +1,27 @@
+{
+  "name": "book.icys-better-horses.stable_handbook.classes.wild.name",
+  "category": "icys_better_horses:classes",
+  "icon": "minecraft:lead",
+  "sortnum": 6,
+  "pages": [
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.wild.about.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.wild.about.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.wild.perks.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.wild.perks.text"
+    },
+    {
+      "type": "icys_better_horses:padded_text_plain",
+      "text": "book.icys-better-horses.stable_handbook.classes.wild.perks.text2"
+    },
+    {
+      "type": "icys_better_horses:padded_text",
+      "title": "book.icys-better-horses.stable_handbook.classes.wild.stats.title",
+      "text": "book.icys-better-horses.stable_handbook.classes.wild.stats.text"
+    }
+  ]
+}

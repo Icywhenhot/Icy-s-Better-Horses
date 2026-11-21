@@ -74,6 +74,8 @@ public final class BhBreedLoader {
         }
         int rows = root.has("chest_rows") ? clampRows(root, "chest_rows", 0)
                 : fallback.classRows() ? BhBreedData.CLASS_ROWS : fallback.chestRows();
+        int mid = root.has("mid_chest_rows") ? clampRows(root, "mid_chest_rows", 0)
+                : fallback.classMidRows() ? BhBreedData.CLASS_ROWS : fallback.midChestRows();
         int bonded = root.has("bonded_chest_rows") ? clampRows(root, "bonded_chest_rows", 0)
                 : fallback.classBondedRows() ? BhBreedData.CLASS_ROWS : fallback.bondedChestRows();
         if (rows >= 0 && bonded >= 0) {
@@ -83,7 +85,7 @@ public final class BhBreedLoader {
                 ? Math.max(0, root.get("spawn_weight").getAsInt())
                 : fallback.spawnWeight();
         Ranges ranges = Ranges.read(root, msg -> IcysBetterHorses.LOGGER.warn("[breeds] {}: {}", breedId, msg));
-        return new BhBreedData(arch, rows, bonded, weight, ranges);
+        return new BhBreedData(arch, rows, mid, bonded, weight, ranges);
     }
 
     private static @Nullable ArchetypeType resolveArchetype(String wanted) {

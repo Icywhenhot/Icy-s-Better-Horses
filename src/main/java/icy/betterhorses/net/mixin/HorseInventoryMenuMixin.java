@@ -1,6 +1,8 @@
 package icy.betterhorses.net.mixin;
 
 import icy.betterhorses.net.BhBanners;
+import icy.betterhorses.net.BhHorseStorage;
+import icy.betterhorses.net.entity.BhBreedDonkey;
 import icy.betterhorses.net.HorseInventoryLayoutAccess;
 import icy.betterhorses.net.IHorseData;
 import icy.betterhorses.net.entity.BhBreedHorse;
@@ -12,6 +14,7 @@ import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.PlayerEnderChestContainer;
@@ -240,6 +243,25 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
                 final int chestSlot = col + row * 9;
                 this.addSlot(new Slot(extraStorage, chestSlot, BH_CHEST_SLOT_X + col * 18, BH_CHEST_SLOT_Y + row * 18) {
                     @Override
+                    public int getMaxStackSize(ItemStack stack) {
+                        return HorseInventoryMenuMixin.this.bh_packs()
+                                ? BhHorseStorage.chestLimit(horse, stack)
+                                : super.getMaxStackSize(stack);
+                    }
+
+                    @Override
+                    public ItemStack remove(int amount) {
+                        return super.remove(Math.min(amount, this.getItem().getMaxStackSize()));
+                    }
+
+                    @Override
+                    public boolean mayPlace(ItemStack stack) {
+                        ItemStack stored = this.getItem();
+                        return this.isActive() && (stored.getCount() <= stored.getMaxStackSize()
+                                || ItemStack.isSameItemSameTags(stored, stack));
+                    }
+
+                    @Override
                     public boolean isActive() {
                         return chestSlot < HorseInventoryMenuMixin.this.bh_chestRows * 9
                                 && HorseInventoryMenuMixin.this.bh_hasUpgradedSaddleInMenu()
@@ -268,6 +290,66 @@ public abstract class HorseInventoryMenuMixin extends AbstractContainerMenu impl
         });
 
         this.bh_refreshLayout();
+    }
+
+    @Unique
+    private boolean bh_packs() {
+        return this.bh_horse instanceof BhBreedDonkey && this.bh_gearContainer != null
+                && !this.bh_isEnderChestGear(this.bh_gearContainer.getItem(GearSlot.CHEST.ordinal()));
+    }
+
+    @Override
+    protected boolean moveItemStackTo(ItemStack stack, int start, int end, boolean reverse) {
+        if (!this.bh_packs()) {
+            return super.moveItemStackTo(stack, start, end, reverse);
+        }
+        int count = stack.getCount();
+        if (start >= this.bh_chestStartIndex && end <= this.bh_chestStartIndex + this.bh_chestRows * 9) {
+            for (int i = reverse ? end - 1 : start; !stack.isEmpty() && (reverse ? i >= start : i < end); i += reverse ? -1 : 1) {
+                Slot slot = this.slots.get(i);
+                if (slot.hasItem() && ItemStack.isSameItemSameTags(slot.getItem(), stack)) {
+                    slot.safeInsert(stack);
+                }
+            }
+        }
+        boolean moved = false;
+        while (!stack.isEmpty()) {
+            ItemStack part = stack.split(stack.getMaxStackSize());
+            moved |= super.moveItemStackTo(part, start, end, reverse);
+            if (!part.isEmpty()) {
+                stack.grow(part.getCount());
+                break;
+            }
+        }
+        return moved || count != stack.getCount();
+    }
+
+    @Override
+    public void clicked(int slotId, int button, ClickType type, Player player) {
+        if (this.bh_packs() && slotId >= this.bh_chestStartIndex
+                && slotId < this.bh_chestStartIndex + this.bh_chestRows * 9) {
+            Slot slot = this.slots.get(slotId);
+            ItemStack stored = slot.getItem();
+            if (slot.isActive() && stored.getCount() > stored.getMaxStackSize()) {
+                if (type == ClickType.SWAP && (button >= 0 && button < 9 || button == 40)) {
+                    ItemStack held = player.getInventory().getItem(button);
+                    if (held.isEmpty()) {
+                        player.getInventory().setItem(button, slot.safeTake(stored.getMaxStackSize(), Integer.MAX_VALUE, player));
+                    } else if (ItemStack.isSameItemSameTags(held, stored)) {
+                        held.grow(slot.safeTake(held.getMaxStackSize() - held.getCount(), Integer.MAX_VALUE, player).getCount());
+                    }
+                    return;
+                }
+                if (type == ClickType.THROW && button == 1 && this.getCarried().isEmpty()) {
+                    int max = stored.getMaxStackSize();
+                    while (slot.hasItem()) {
+                        player.drop(slot.safeTake(max, Integer.MAX_VALUE, player), true);
+                    }
+                    return;
+                }
+            }
+        }
+        super.clicked(slotId, button, type, player);
     }
 
     @Unique
